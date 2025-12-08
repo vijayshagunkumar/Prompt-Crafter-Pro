@@ -1,8 +1,13 @@
-// Application State
+// ===== APPLICATION STATE =====
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "ft:gpt-3.5-turbo-1106:personal::CkAjxivm";
+const OPENAI_MODEL = "gpt-3.5-turbo"; // Using standard model for compatibility
 
 let currentPreset = "default";
+let userPresetLocked = false;
+let lastPresetSource = "auto";
+let lastTaskLabel = "General";
+let lastRole = "expert assistant";
+
 let autoConvertEnabled = true;
 let autoConvertDelay = 60;
 let usageCount = 0;
@@ -13,17 +18,58 @@ let autoConvertCountdown = 60;
 let countdownInterval;
 let editingTemplateId = null;
 let templates = [];
+let currentTheme = "light";
 
-// Template categories
+// Template categories with beautiful colors
 const TEMPLATE_CATEGORIES = {
-  communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
-  coding: { name: "Coding", icon: "fa-code", color: "#10b981" },
-  writing: { name: "Writing", icon: "fa-pen", color: "#8b5cf6" },
-  analysis: { name: "Analysis", icon: "fa-chart-bar", color: "#f59e0b" },
-  business: { name: "Business", icon: "fa-briefcase", color: "#ef4444" },
-  creative: { name: "Creative", icon: "fa-palette", color: "#ec4899" },
-  education: { name: "Education", icon: "fa-graduation-cap", color: "#06b6d4" },
-  other: { name: "Other", icon: "fa-th", color: "#6b7280" }
+  communication: { 
+    name: "Communication", 
+    icon: "fa-envelope", 
+    color: "#3b82f6",
+    gradient: "linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%)"
+  },
+  coding: { 
+    name: "Coding", 
+    icon: "fa-code", 
+    color: "#10b981",
+    gradient: "linear-gradient(135deg, #10b981 0%, #22c55e 100%)"
+  },
+  writing: { 
+    name: "Writing", 
+    icon: "fa-pen", 
+    color: "#8b5cf6",
+    gradient: "linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%)"
+  },
+  analysis: { 
+    name: "Analysis", 
+    icon: "fa-chart-bar", 
+    color: "#f59e0b",
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)"
+  },
+  business: { 
+    name: "Business", 
+    icon: "fa-briefcase", 
+    color: "#6366f1",
+    gradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)"
+  },
+  creative: { 
+    name: "Creative", 
+    icon: "fa-palette", 
+    color: "#ec4899",
+    gradient: "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)"
+  },
+  education: { 
+    name: "Education", 
+    icon: "fa-graduation-cap", 
+    color: "#06b6d4",
+    gradient: "linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)"
+  },
+  other: { 
+    name: "Other", 
+    icon: "fa-th", 
+    color: "#64748b",
+    gradient: "linear-gradient(135deg, #64748b 0%, #94a3b8 100%)"
+  }
 };
 
 // Default templates
@@ -58,8 +104,7 @@ Write a professional email about [TOPIC] to [RECIPIENT]
 - Use proper email formatting
 - Include subject line
 - Check for tone appropriateness`,
-    example:
-      "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
+    example: "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
     usageCount: 5,
     createdAt: Date.now() - 86400000,
     isDefault: true
@@ -92,15 +137,49 @@ Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
 - Be specific about what to review
 - Mention deadlines if any
 - Thank the reviewer in advance`,
-    example:
-      "Request code review for the new user authentication system from the backend team.",
+    example: "Request code review for the new user authentication system from the backend team.",
     usageCount: 3,
     createdAt: Date.now() - 172800000,
+    isDefault: true
+  },
+  {
+    id: "3",
+    name: "Market Analysis",
+    description: "Analyze market trends and provide insights",
+    category: "analysis",
+    tags: ["analysis", "market", "research"],
+    content: `# Role
+You are a senior market analyst with expertise in industry research.
+
+# Objective
+Analyze [MARKET/INDUSTRY] and provide comprehensive insights
+
+# Context
+- Industry: [SPECIFY INDUSTRY]
+- Timeframe: [ANALYSIS PERIOD]
+- Scope: [GEOGRAPHICAL/LOCAL]
+
+# Instructions
+1. Start with executive summary
+2. Analyze current market size and growth
+3. Identify key trends and drivers
+4. Evaluate competitive landscape
+5. Assess risks and opportunities
+6. Provide actionable recommendations
+
+# Notes
+- Use data-driven insights
+- Include charts/graphs where helpful
+- Focus on practical implications
+- Keep language professional but accessible`,
+    example: "Analyze the electric vehicle market in Europe for Q1 2024",
+    usageCount: 2,
+    createdAt: Date.now() - 259200000,
     isDefault: true
   }
 ];
 
-// Preset templates – markdown with Role / Objective / Context / Instructions / Notes
+// Preset templates
 const PRESETS = {
   default: (role, requirement) =>
     `# Role
@@ -183,7 +262,104 @@ ${requirement}
 - Include examples or explanations only if they help the user apply the result.`
 };
 
-// Initialize Application
+// ===== HELPER FUNCTIONS =====
+function getRoleAndPreset(text) {
+  const lower = (text || "").toLowerCase();
+  let role = "expert assistant";
+  let preset = "default";
+  let label = "General";
+
+  if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
+    role = "expert email writer";
+    preset = "default";
+    label = "Email";
+  } else if (/code|program|script|develop|software|function|python|javascript|typescript|java|c#|sql|api|bug fix|refactor/i.test(lower)) {
+    role = "expert developer";
+    preset = "chatgpt";
+    label = "Code";
+  } else if (/analyze|analysis|market|research|evaluate|assessment|review|trend|report|insight|metrics/i.test(lower)) {
+    role = "expert analyst";
+    preset = "detailed";
+    label = "Analysis";
+  } else if (/blog|article|story|linkedin post|caption|copywriting|content/i.test(lower)) {
+    role = "expert content writer";
+    preset = "default";
+    label = "Writing";
+  } else if (/workout|exercise|fitness|gym|diet|meal plan|training plan/i.test(lower)) {
+    role = "expert fitness trainer";
+    preset = "detailed";
+    label = "Workout";
+  } else if (/strategy|business plan|roadmap|pitch deck|proposal|go[- ]to[- ]market|g2m/i.test(lower)) {
+    role = "expert business consultant";
+    preset = "detailed";
+    label = "Business";
+  } else if (/teach|explain|lesson|tutorial|guide|training material|curriculum/i.test(lower)) {
+    role = "expert educator";
+    preset = "detailed";
+    label = "Education";
+  } else if (/design|creative|art|graphic|visual|branding/i.test(lower)) {
+    role = "expert designer";
+    preset = "detailed";
+    label = "Creative";
+  }
+
+  return { role, preset, label };
+}
+
+function setCurrentPreset(presetId) {
+  if (!PRESETS[presetId]) return;
+  currentPreset = presetId;
+  
+  document.querySelectorAll(".preset-option").forEach((o) => {
+    const isActive = o.dataset.preset === presetId;
+    o.classList.toggle("active", isActive);
+    
+    // Update lock icon
+    const lockIcon = o.querySelector(".lock-icon");
+    if (lockIcon) {
+      lockIcon.className = userPresetLocked ? "fas fa-lock lock-icon" : "fas fa-unlock lock-icon";
+    }
+  });
+  
+  updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
+}
+
+function updatePresetInfo(taskLabel, presetId, source) {
+  const el = document.getElementById("presetInfo");
+  if (!el) return;
+
+  const presetNames = {
+    default: "Standard",
+    chatgpt: "ChatGPT",
+    claude: "Claude",
+    detailed: "Detailed"
+  };
+
+  const nicePreset = presetNames[presetId] || presetId;
+  const srcLabel = source === "manual" ? "manual" : "auto";
+  const lockIcon = userPresetLocked ? "🔒" : "🔓";
+
+  el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel}) ${lockIcon}`;
+}
+
+function setTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+  
+  // Update theme switcher buttons
+  document.querySelectorAll(".theme-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  
+  if (theme === "light") document.getElementById("themeLight").classList.add("active");
+  else if (theme === "dark") document.getElementById("themeDark").classList.add("active");
+  else document.getElementById("themeAuto").classList.add("active");
+  
+  document.getElementById("themeSelect").value = theme;
+}
+
+// ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
@@ -194,7 +370,13 @@ function initializeApp() {
   loadUsageCount();
   setupEventListeners();
   initializeUI();
+  setCurrentPreset(currentPreset);
+  updatePresetInfo("General", currentPreset, "auto");
   document.getElementById("requirement").focus();
+  
+  // Set initial theme
+  const theme = localStorage.getItem("theme") || "light";
+  setTheme(theme);
 }
 
 function loadSettings() {
@@ -214,45 +396,60 @@ function loadSettings() {
 function loadTemplates() {
   const savedTemplates = localStorage.getItem("promptTemplates");
   if (savedTemplates) {
-    templates = JSON.parse(savedTemplates);
+    try {
+      templates = JSON.parse(savedTemplates);
+    } catch (e) {
+      console.error("Error loading templates:", e);
+      templates = [...DEFAULT_TEMPLATES];
+    }
   } else {
-    templates = DEFAULT_TEMPLATES;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
+    templates = [...DEFAULT_TEMPLATES];
   }
+  
+  // Ensure default templates exist
+  DEFAULT_TEMPLATES.forEach(defaultTemplate => {
+    if (!templates.some(t => t.id === defaultTemplate.id)) {
+      templates.push(defaultTemplate);
+    }
+  });
+  
+  localStorage.setItem("promptTemplates", JSON.stringify(templates));
+  updateTemplateCount();
 }
 
 function loadUsageCount() {
   const savedUsage = localStorage.getItem("promptCrafterUsage");
   if (savedUsage) {
     usageCount = parseInt(savedUsage, 10);
-    document.getElementById(
-      "usageCount"
-    ).textContent = `${usageCount} prompts generated`;
+    document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
   }
 }
 
+function updateTemplateCount() {
+  const count = templates.length;
+  document.getElementById("templateCount").textContent = count;
+}
+
+// ===== EVENT LISTENERS =====
 function setupEventListeners() {
+  // Theme switcher
+  document.getElementById("themeLight").addEventListener("click", () => setTheme("light"));
+  document.getElementById("themeDark").addEventListener("click", () => setTheme("dark"));
+  document.getElementById("themeAuto").addEventListener("click", () => setTheme("auto"));
+  
   // Settings
   document.getElementById("settingsBtn").addEventListener("click", () => {
     document.getElementById("settingsModal").style.display = "flex";
   });
 
-  document
-    .getElementById("closeSettingsBtn")
-    .addEventListener("click", () => {
-      document.getElementById("settingsModal").style.display = "none";
-    });
+  document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+    document.getElementById("settingsModal").style.display = "none";
+  });
 
-  document
-    .getElementById("saveSettingsBtn")
-    .addEventListener("click", saveSettings);
+  document.getElementById("saveSettingsBtn").addEventListener("click", saveSettings);
 
   document.getElementById("clearDataBtn").addEventListener("click", () => {
-    if (
-      confirm(
-        "Are you sure you want to clear all data? This will delete all templates, history, and settings."
-      )
-    ) {
+    if (confirm("Are you sure you want to clear all data? This will delete all templates, history, and settings except your API key.")) {
       clearAllData();
     }
   });
@@ -267,7 +464,19 @@ function setupEventListeners() {
 
   // Requirement input
   const requirementEl = document.getElementById("requirement");
-  requirementEl.addEventListener("input", handleRequirementInput);
+  let inputTimeout;
+  requirementEl.addEventListener("input", () => {
+    clearTimeout(inputTimeout);
+    inputTimeout = setTimeout(handleRequirementInput, 300);
+  });
+
+  // Clear input button
+  document.getElementById("clearInputBtn").addEventListener("click", () => {
+    requirementEl.value = "";
+    requirementEl.focus();
+    handleRequirementInput();
+    showNotification("Input cleared");
+  });
 
   // Auto-convert toggle
   document.getElementById("autoConvert").addEventListener("change", (e) => {
@@ -282,15 +491,18 @@ function setupEventListeners() {
   // Preset selection
   document.querySelectorAll(".preset-option").forEach((option) => {
     option.addEventListener("click", () => {
-      document
-        .querySelectorAll(".preset-option")
-        .forEach((o) => o.classList.remove("active"));
-      option.classList.add("active");
-      currentPreset = option.dataset.preset;
-      if (requirementEl.value.trim() && isConverted) {
+      const presetId = option.dataset.preset;
+      userPresetLocked = true;
+      lastPresetSource = "manual";
+      setCurrentPreset(presetId);
+
+      if (document.getElementById("requirement").value.trim() && isConverted) {
         isConverted = false;
         generatePrompt();
+      } else {
+        updatePresetInfo(lastTaskLabel, currentPreset, "manual");
       }
+      showNotification(`Preset set to ${presetId.charAt(0).toUpperCase() + presetId.slice(1)}`);
     });
   });
 
@@ -306,71 +518,94 @@ function setupEventListeners() {
     });
   });
 
-  // Convert button
-  document
-    .getElementById("convertBtn")
-    .addEventListener("click", generatePrompt);
-
-  // Copy button
-  document.getElementById("copyBtn").addEventListener("click", async () => {
-    if (!document.getElementById("output").value) await generatePrompt();
-    await copyToClipboard();
-    showNotification("Prompt copied to clipboard!");
+  // Refresh examples button
+  document.getElementById("refreshExamplesBtn").addEventListener("click", () => {
+    const examples = [
+      "Write a professional email to stakeholders about the quarterly report",
+      "Create a React component for a user dashboard with charts",
+      "Analyze customer feedback data to identify improvement areas",
+      "Write a LinkedIn post about AI productivity tools",
+      "Design a meal plan for weight loss with 1500 calories",
+      "Create a project proposal for a mobile app development"
+    ];
+    
+    const randomExample = examples[Math.floor(Math.random() * examples.length)];
+    requirementEl.value = randomExample;
+    requirementEl.focus();
+    showNotification("New example loaded");
   });
 
+  // Convert button
+  document.getElementById("convertBtn").addEventListener("click", generatePrompt);
+
   // AI Tools
-  document
-    .getElementById("chatgptBtn")
-    .addEventListener("click", () =>
-      openAITool("ChatGPT", "https://chat.openai.com/")
-    );
-  document
-    .getElementById("claudeBtn")
-    .addEventListener("click", () =>
-      openAITool("Claude", "https://claude.ai/new")
-    );
-  document
-    .getElementById("geminiBtn")
-    .addEventListener("click", () =>
-      openAITool("Gemini", "https://gemini.google.com/app")
-    );
-  document
-    .getElementById("perplexityBtn")
-    .addEventListener("click", () =>
-      openAITool("Perplexity", "https://www.perplexity.ai/")
-    );
-  document
-    .getElementById("deepseekBtn")
-    .addEventListener("click", () =>
-      openAITool("DeepSeek", "https://chat.deepseek.com/")
-    );
+  document.getElementById('chatgptBtn').addEventListener('click', () => openAITool('ChatGPT', 'https://chat.openai.com/'));
+  document.getElementById('claudeBtn').addEventListener('click', () => openAITool('Claude', 'https://claude.ai/new'));
+  document.getElementById('geminiBtn').addEventListener('click', () => openAITool('Gemini', 'https://gemini.google.com/app'));
+  document.getElementById('copilotBtn').addEventListener('click', () => openAITool('Copilot', 'https://copilot.microsoft.com/'));
+  document.getElementById('grokBtn').addEventListener('click', () => openAITool('Grok', 'https://x.ai/'));
+  document.getElementById('perplexityBtn').addEventListener('click', () => openAITool('Perplexity', 'https://www.perplexity.ai/'));
+  document.getElementById('deepseekBtn').addEventListener('click', () => openAITool('DeepSeek', 'https://chat.deepseek.com/'));
 
   // Export
   document.getElementById("exportBtn").addEventListener("click", exportPrompt);
 
+  // Rate prompt
+  document.getElementById("ratePromptBtn").addEventListener("click", () => {
+    if (!document.getElementById("output").value) {
+      showNotification("Generate a prompt first to rate it");
+      return;
+    }
+    document.getElementById("ratingModal").style.display = "flex";
+  });
+
   // History
-  document
-    .getElementById("toggleHistoryBtn")
-    .addEventListener("click", toggleHistory);
-  document
-    .getElementById("clearHistoryBtn")
-    .addEventListener("click", clearHistory);
+  document.getElementById("toggleHistoryBtn").addEventListener("click", toggleHistory);
+  document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
 
   // Template functionality
   setupTemplateListeners();
+  
+  // Import/Export data
+  document.getElementById("exportDataBtn").addEventListener("click", exportAllData);
+  document.getElementById("importDataBtn").addEventListener("click", () => {
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", importData);
+  
+  // Close rating modal
+  document.getElementById("closeRatingBtn").addEventListener("click", () => {
+    document.getElementById("ratingModal").style.display = "none";
+  });
+  
+  // Rating stars
+  document.querySelectorAll(".rating-stars i").forEach(star => {
+    star.addEventListener("click", function() {
+      const rating = parseInt(this.dataset.rating);
+      document.querySelectorAll(".rating-stars i").forEach((s, idx) => {
+        s.classList.toggle("active", idx < rating);
+      });
+    });
+  });
+  
+  // Submit rating
+  document.getElementById("submitRatingBtn").addEventListener("click", submitRating);
 }
 
 function initializeUI() {
   updateStats("");
   loadHistory();
+  loadCategories();
+  loadTemplatesToUI();
 }
 
-// Core Functions
+// ===== CORE FUNCTIONS =====
 function handleRequirementInput() {
   const requirementEl = document.getElementById("requirement");
   const convertBtn = document.getElementById("convertBtn");
+  const text = requirementEl.value;
 
-  if (isConverted && requirementEl.value.trim() !== lastConvertedText) {
+  if (isConverted && text.trim() !== lastConvertedText) {
     isConverted = false;
     convertBtn.disabled = false;
     document.getElementById("convertedBadge").style.display = "none";
@@ -378,10 +613,26 @@ function handleRequirementInput() {
     clearAutoConvertTimer();
   }
 
+  // Auto-detect role + preset if user hasn't locked one
+  const { role, preset, label } = getRoleAndPreset(text);
+  lastRole = role;
+  lastTaskLabel = label;
+
+  if (!userPresetLocked && preset && preset !== currentPreset) {
+    lastPresetSource = "auto";
+    setCurrentPreset(preset);
+  } else {
+    updatePresetInfo(
+      lastTaskLabel,
+      currentPreset,
+      userPresetLocked ? "manual" : "auto"
+    );
+  }
+
   if (autoConvertEnabled) {
     resetAutoConvertTimer();
   }
-  updateStats(requirementEl.value);
+  updateStats(text);
 }
 
 function resetAutoConvertTimer() {
@@ -390,16 +641,12 @@ function resetAutoConvertTimer() {
   const requirement = document.getElementById("requirement").value.trim();
   if (autoConvertEnabled && requirement && !isConverted) {
     autoConvertCountdown = autoConvertDelay;
-    document.getElementById(
-      "timerValue"
-    ).textContent = `${autoConvertCountdown}s`;
+    document.getElementById("timerValue").textContent = `${autoConvertCountdown}s`;
     document.getElementById("timerDisplay").style.display = "inline-flex";
 
     countdownInterval = setInterval(() => {
       autoConvertCountdown--;
-      document.getElementById(
-        "timerValue"
-      ).textContent = `${autoConvertCountdown}s`;
+      document.getElementById("timerValue").textContent = `${autoConvertCountdown}s`;
 
       if (autoConvertCountdown <= 0) {
         clearInterval(countdownInterval);
@@ -411,8 +658,7 @@ function resetAutoConvertTimer() {
     }, 1000);
 
     autoConvertTimer = setTimeout(() => {
-      const currentRequirement =
-        document.getElementById("requirement").value.trim();
+      const currentRequirement = document.getElementById("requirement").value.trim();
       if (currentRequirement && currentRequirement !== lastConvertedText) {
         generatePrompt();
       }
@@ -426,48 +672,16 @@ function clearAutoConvertTimer() {
   document.getElementById("timerDisplay").style.display = "none";
 }
 
-function getAppropriateRole(text) {
-  const lowerText = text.toLowerCase();
-  if (/email|mail|send.*to|message.*to/i.test(lowerText))
-    return "expert email writer";
-  if (/write|create|draft|compose|content|blog|article/i.test(lowerText))
-    return "expert content writer";
-  if (/analyze|evaluate|review|assess|research|market/i.test(lowerText))
-    return "expert analyst";
-  if (/code|program|script|develop|software|function|python|javascript/i.test(
-    lowerText
-  ))
-    return "expert developer";
-  if (/design|ui|ux|layout|graphic|visual|wireframe/i.test(lowerText))
-    return "expert designer";
-  if (/business|strategy|plan|proposal|marketing|sales/i.test(lowerText))
-    return "expert business consultant";
-  if (/translate|language|localize|interpret/i.test(lowerText))
-    return "expert translator";
-  if (/math|calculate|solve|equation|formula|statistics/i.test(lowerText))
-    return "expert mathematician";
-  if (/teach|explain|educate|tutor|lesson|guide/i.test(lowerText))
-    return "expert educator";
-  if (/recipe|cook|food|meal|ingredient/i.test(lowerText))
-    return "expert chef";
-  if (/workout|exercise|fitness|gym|train/i.test(lowerText))
-    return "expert fitness trainer";
-  return "expert assistant";
-}
-
 function updateStats(text) {
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lineCount = text.split("\n").length;
 
-  document.getElementById(
-    "charCount"
-  ).textContent = `${charCount} characters`;
+  document.getElementById("charCount").textContent = `${charCount} chars`;
   document.getElementById("wordCount").textContent = `${wordCount} words`;
   document.getElementById("lineCount").textContent = `${lineCount} lines`;
 }
 
-// Clean up any bad output from the finetuned model
 function sanitizePrompt(text) {
   if (!text) return "";
   let cleaned = text;
@@ -476,8 +690,7 @@ function sanitizePrompt(text) {
   cleaned = cleaned.replace(/^```[^\n]*\n?/g, "");
   cleaned = cleaned.replace(/```$/g, "");
 
-  const forbiddenLineRegex =
-    /(prompt generator|generate a prompt|convert .*requirement .*prompt|rewrite .*prompt|rewrite .*requirement)/i;
+  const forbiddenLineRegex = /(prompt generator|generate a prompt|convert .*requirement .*prompt|rewrite .*prompt|rewrite .*requirement)/i;
 
   cleaned = cleaned
     .split("\n")
@@ -489,12 +702,9 @@ function sanitizePrompt(text) {
     })
     .join("\n");
 
-  // Soft replacements if anything slipped inside a line
+  // Soft replacements
   cleaned = cleaned.replace(/prompt generator/gi, "assistant");
-  cleaned = cleaned.replace(
-    /generate a prompt/gi,
-    "perform the task and return the final answer"
-  );
+  cleaned = cleaned.replace(/generate a prompt/gi, "perform the task");
 
   return cleaned.trim();
 }
@@ -510,19 +720,32 @@ async function generatePrompt() {
     return "";
   }
 
+  // Smart auto-preset
+  const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
+  lastRole = role;
+  lastTaskLabel = label;
+
+  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+    lastPresetSource = "auto";
+    setCurrentPreset(autoPreset);
+  } else {
+    updatePresetInfo(
+      lastTaskLabel,
+      currentPreset,
+      userPresetLocked ? "manual" : "auto"
+    );
+  }
+
   // Track usage
   usageCount++;
   localStorage.setItem("promptCrafterUsage", usageCount);
-  document.getElementById(
-    "usageCount"
-  ).textContent = `${usageCount} prompts generated`;
+  document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
 
   const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
 
   // Show converting state
   convertBtn.disabled = true;
-  convertBtn.innerHTML =
-    '<i class="fas fa-spinner fa-spin"></i> Converting...';
+  convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
   clearAutoConvertTimer();
 
   let generatedPrompt;
@@ -533,12 +756,9 @@ async function generatePrompt() {
       generatedPrompt = localFormatter(raw);
     } else {
       // Use API
-      const role = getAppropriateRole(raw);
-
       const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
 
-      const system = `
-You write structured task instructions for AI models.
+      const system = `You write structured task instructions for AI models.
 
 Using the TEMPLATE below, replace [ROLE] with an appropriate expert role (for example: "${role}")
 and [REQUIREMENT] with the user's requirement. Return ONLY the completed template and nothing else.
@@ -547,9 +767,8 @@ TEMPLATE:
 ${templateSkeleton}
 
 Important:
-- The template you return must tell the AI to directly perform the task and return the final result.
-- Do NOT mention prompts, prompt generation, or rewriting instructions in your output.
-`.trim();
+- The template must tell the AI to directly perform the task and return the final result.
+- Do NOT mention prompts, prompt generation, or rewriting instructions.`;
 
       const userMessage = `User requirement: "${raw}"
 
@@ -574,9 +793,19 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
       if (response.ok) {
         const data = await response.json();
-        generatedPrompt =
-          data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
+        generatedPrompt = data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
       } else {
+        const errorText = await response.text();
+        console.error("API Error:", response.status, errorText);
+        
+        if (response.status === 401) {
+          showNotification("Invalid API key. Using local template.");
+        } else if (response.status === 429) {
+          showNotification("Rate limit exceeded. Using local template.");
+        } else {
+          showNotification("API error. Using local template.");
+        }
+        
         generatedPrompt = localFormatter(raw);
       }
     }
@@ -622,7 +851,21 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
 function localFormatter(raw) {
   const clean = (raw || "").trim() || "[No requirement provided]";
-  const role = getAppropriateRole(clean);
+  const { role, preset: autoPreset, label } = getRoleAndPreset(clean);
+
+  lastRole = role;
+  lastTaskLabel = label;
+
+  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+    lastPresetSource = "auto";
+    setCurrentPreset(autoPreset);
+  } else {
+    updatePresetInfo(
+      lastTaskLabel,
+      currentPreset,
+      userPresetLocked ? "manual" : "auto"
+    );
+  }
 
   const template = PRESETS[currentPreset];
   return template ? template(role, clean) : PRESETS["default"](role, clean);
@@ -670,9 +913,7 @@ async function openAITool(platform, url) {
   try {
     window.open(url, "_blank");
   } catch (err) {
-    showNotification(
-      `${platform} blocked by popup blocker. Please allow popups.`
-    );
+    showNotification(`${platform} blocked by popup blocker. Please allow popups.`);
   }
 }
 
@@ -696,7 +937,7 @@ function exportPrompt() {
   showNotification("Prompt exported as .txt file");
 }
 
-// Settings Functions
+// ===== SETTINGS FUNCTIONS =====
 function saveSettings() {
   const apiKey = document.getElementById("apiKeyInput").value.trim();
   const delay = document.getElementById("autoConvertDelay").value;
@@ -704,7 +945,8 @@ function saveSettings() {
 
   localStorage.setItem("OPENAI_API_KEY", apiKey);
   localStorage.setItem("autoConvertDelay", delay);
-  localStorage.setItem("theme", theme);
+  
+  setTheme(theme);
 
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
@@ -714,19 +956,12 @@ function saveSettings() {
 }
 
 function clearAllData() {
-  localStorage.removeItem("promptTemplates");
-  localStorage.removeItem("promptHistory");
-  localStorage.removeItem("promptCrafterUsage");
-
-  // Keep settings
   const apiKey = localStorage.getItem("OPENAI_API_KEY");
-  const delay = localStorage.getItem("autoConvertDelay");
   const theme = localStorage.getItem("theme");
 
   localStorage.clear();
 
   if (apiKey) localStorage.setItem("OPENAI_API_KEY", apiKey);
-  if (delay) localStorage.setItem("autoConvertDelay", delay);
   if (theme) localStorage.setItem("theme", theme);
 
   // Reset state
@@ -734,6 +969,8 @@ function clearAllData() {
   templates = [...DEFAULT_TEMPLATES];
   isConverted = false;
   lastConvertedText = "";
+  userPresetLocked = false;
+  currentPreset = "default";
 
   // Reset UI
   document.getElementById("requirement").value = "";
@@ -750,30 +987,85 @@ function clearAllData() {
 
   // Save default templates
   localStorage.setItem("promptTemplates", JSON.stringify(templates));
+  loadTemplatesToUI();
+  updateTemplateCount();
 
   document.getElementById("settingsModal").style.display = "none";
   showNotification("All data cleared successfully!");
 }
 
-// History Functions
+// ===== DATA IMPORT/EXPORT =====
+function exportAllData() {
+  const data = {
+    templates: templates,
+    usageCount: usageCount,
+    version: "4.0",
+    exportDate: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `promptcrafter-backup-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showNotification("Data exported successfully");
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      if (confirm("This will replace your current templates and usage count. Continue?")) {
+        if (data.templates) {
+          templates = data.templates;
+          localStorage.setItem("promptTemplates", JSON.stringify(templates));
+          loadTemplatesToUI();
+          updateTemplateCount();
+        }
+        
+        if (data.usageCount) {
+          usageCount = data.usageCount;
+          localStorage.setItem("promptCrafterUsage", usageCount.toString());
+          document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
+        }
+        
+        showNotification("Data imported successfully");
+      }
+    } catch (error) {
+      showNotification("Error importing data. Invalid file format.");
+      console.error("Import error:", error);
+    }
+    event.target.value = ""; // Clear file input
+  };
+  reader.readAsText(file);
+}
+
+// ===== HISTORY FUNCTIONS =====
 function saveToHistory(requirement, prompt) {
   const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
   const item = {
     id: Date.now(),
-    requirement:
-      requirement.substring(0, 100) +
-      (requirement.length > 100 ? "..." : ""),
+    requirement: requirement.substring(0, 100) + (requirement.length > 100 ? "..." : ""),
     prompt: prompt,
-    timestamp: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
-    }),
+    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     date: new Date().toLocaleDateString(),
-    fullRequirement: requirement
+    fullRequirement: requirement,
+    rating: null,
+    ratingComment: null
   };
 
   history.unshift(item);
-  if (history.length > 15) history.pop();
+  if (history.length > 20) history.pop();
 
   localStorage.setItem("promptHistory", JSON.stringify(history));
   localStorage.setItem(`fullReq_${item.id}`, requirement);
@@ -786,8 +1078,13 @@ function loadHistory() {
   historyList.innerHTML = "";
 
   if (history.length === 0) {
-    historyList.innerHTML =
-      '<div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">No history yet</div>';
+    historyList.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-history"></i>
+        <p>No history yet</p>
+        <p style="font-size: 12px; opacity: 0.7;">Generate some prompts to see them here</p>
+      </div>
+    `;
     return;
   }
 
@@ -795,18 +1092,27 @@ function loadHistory() {
     const div = document.createElement("div");
     div.className = "history-item";
     div.innerHTML = `
-      <div style="flex: 1; min-width: 0;">
-        <div style="font-weight:500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.requirement}</div>
-        <div style="font-size:11px;color:var(--muted)">${item.date} ${item.timestamp}</div>
+      <div class="history-content">
+        <div class="history-requirement">${item.requirement}</div>
+        <div class="history-meta">
+          <span>${item.date} ${item.timestamp}</span>
+          ${item.rating ? `<span><i class="fas fa-star" style="color: var(--warning);"></i> ${item.rating}/5</span>` : ''}
+        </div>
       </div>
-      <button class="btn small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
+      <div class="history-actions">
+        <button class="btn-icon" onclick="event.stopPropagation();useHistoryItem('${item.id}')" title="Use this prompt">
+          <i class="fas fa-play"></i>
+        </button>
+        <button class="btn-icon" onclick="event.stopPropagation();deleteHistoryItem('${item.id}')" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     `;
     div.addEventListener("click", (e) => {
       if (!e.target.closest("button")) {
         const requirementEl = document.getElementById("requirement");
         const outputEl = document.getElementById("output");
-        requirementEl.value =
-          localStorage.getItem(`fullReq_${item.id}`) || item.requirement;
+        requirementEl.value = localStorage.getItem(`fullReq_${item.id}`) || item.requirement;
         outputEl.value = item.prompt;
         updateStats(item.prompt);
         isConverted = true;
@@ -822,8 +1128,12 @@ function loadHistory() {
 
 function toggleHistory() {
   const panel = document.getElementById("historyPanel");
+  const btn = document.getElementById("toggleHistoryBtn");
   const isVisible = panel.style.display === "block";
+  
   panel.style.display = isVisible ? "none" : "block";
+  btn.innerHTML = isVisible ? '<i class="fas fa-history"></i> History' : '<i class="fas fa-times"></i> Close';
+  
   if (!isVisible) loadHistory();
 }
 
@@ -835,33 +1145,42 @@ function clearHistory() {
   }
 }
 
-// Template Functions
+function deleteHistoryItem(id) {
+  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
+  const filtered = history.filter(item => item.id != id);
+  localStorage.setItem("promptHistory", JSON.stringify(filtered));
+  loadHistory();
+  showNotification("History item deleted");
+}
+
+// ===== TEMPLATE FUNCTIONS =====
 function setupTemplateListeners() {
   // Toggle templates panel
   document.getElementById("toggleTemplatesBtn").addEventListener("click", () => {
     const panel = document.getElementById("templatesPanel");
     const btn = document.getElementById("toggleTemplatesBtn");
-
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      btn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
+    const isVisible = panel.style.display === "block";
+    
+    panel.style.display = isVisible ? "none" : "block";
+    btn.innerHTML = isVisible ? '<i class="fas fa-eye"></i> Show' : '<i class="fas fa-eye-slash"></i> Hide';
+    
+    if (!isVisible) {
       loadCategories();
       loadTemplatesToUI();
-    } else {
-      panel.style.display = "none";
-      btn.innerHTML = '<i class="fas fa-eye"></i> Show';
     }
   });
 
   // Template search
-  document
-    .getElementById("templateSearch")
-    .addEventListener("input", function () {
-      const activeCategory =
-        document.querySelector(".template-category.active")?.dataset.category ||
-        "all";
-      filterTemplatesUI(activeCategory, this.value);
-    });
+  document.getElementById("templateSearch").addEventListener("input", function() {
+    const activeCategory = document.querySelector(".template-category.active")?.dataset.category || "all";
+    filterTemplatesUI(activeCategory, this.value);
+  });
+
+  document.getElementById("clearSearchBtn").addEventListener("click", () => {
+    document.getElementById("templateSearch").value = "";
+    const activeCategory = document.querySelector(".template-category.active")?.dataset.category || "all";
+    filterTemplatesUI(activeCategory, "");
+  });
 
   // New template
   document.getElementById("newTemplateBtn").addEventListener("click", () => {
@@ -869,55 +1188,62 @@ function setupTemplateListeners() {
     document.getElementById("modalTitle").textContent = "New Template";
     document.getElementById("templateName").value = "";
     document.getElementById("templateDescription").value = "";
-    document.getElementById("templateContent").value =
-      document.getElementById("output").value || "";
+    document.getElementById("templateContent").value = "";
     document.getElementById("templateCategory").value = "communication";
-    document.getElementById("templateExample").value =
-      document.getElementById("requirement").value || "";
+    document.getElementById("templateExample").value = "";
     document.getElementById("templateModal").style.display = "flex";
   });
 
   // Save as template
-  document
-    .getElementById("saveAsTemplateBtn")
-    .addEventListener("click", () => {
-      if (!document.getElementById("output").value.trim()) {
-        showNotification(
-          "Generate a prompt first before saving as template"
-        );
-        return;
-      }
+  document.getElementById("saveAsTemplateBtn").addEventListener("click", () => {
+    if (!document.getElementById("output").value.trim()) {
+      showNotification("Generate a prompt first before saving as template");
+      return;
+    }
 
-      editingTemplateId = null;
-      document.getElementById("modalTitle").textContent = "Save as Template";
-      document.getElementById("templateName").value = `Prompt ${new Date().toLocaleDateString()}`;
-      document.getElementById("templateDescription").value =
-        "Custom prompt template";
-      document.getElementById("templateContent").value =
-        document.getElementById("output").value;
-      document.getElementById("templateCategory").value = "other";
-      document.getElementById("templateExample").value =
-        document.getElementById("requirement").value || "";
-      document.getElementById("templateModal").style.display = "flex";
-    });
+    editingTemplateId = null;
+    document.getElementById("modalTitle").textContent = "Save as Template";
+    document.getElementById("templateName").value = `Custom Template ${new Date().toLocaleDateString()}`;
+    document.getElementById("templateDescription").value = "Custom prompt template";
+    document.getElementById("templateContent").value = document.getElementById("output").value;
+    document.getElementById("templateCategory").value = "other";
+    document.getElementById("templateExample").value = document.getElementById("requirement").value || "";
+    document.getElementById("templateModal").style.display = "flex";
+  });
+
+  // Use current prompt in template
+  document.getElementById("useCurrentPromptBtn").addEventListener("click", () => {
+    if (document.getElementById("output").value.trim()) {
+      document.getElementById("templateContent").value = document.getElementById("output").value;
+      showNotification("Current prompt added to template");
+    } else {
+      showNotification("No prompt to use. Generate one first.");
+    }
+  });
 
   // Save template
-  document
-    .getElementById("saveTemplateBtn")
-    .addEventListener("click", saveTemplate);
+  document.getElementById("saveTemplateBtn").addEventListener("click", saveTemplate);
 
   // Close template modal
-  document
-    .getElementById("closeTemplateBtn")
-    .addEventListener("click", () => {
-      document.getElementById("templateModal").style.display = "none";
-    });
+  document.getElementById("closeTemplateBtn").addEventListener("click", () => {
+    document.getElementById("templateModal").style.display = "none";
+  });
 
-  document
-    .getElementById("cancelTemplateBtn")
-    .addEventListener("click", () => {
-      document.getElementById("templateModal").style.display = "none";
-    });
+  document.getElementById("cancelTemplateBtn").addEventListener("click", () => {
+    document.getElementById("templateModal").style.display = "none";
+  });
+
+  // Create first template button
+  document.getElementById("createFirstTemplateBtn").addEventListener("click", () => {
+    editingTemplateId = null;
+    document.getElementById("modalTitle").textContent = "New Template";
+    document.getElementById("templateName").value = "My First Template";
+    document.getElementById("templateDescription").value = "Custom prompt template for my needs";
+    document.getElementById("templateContent").value = "";
+    document.getElementById("templateCategory").value = "other";
+    document.getElementById("templateExample").value = "";
+    document.getElementById("templateModal").style.display = "flex";
+  });
 }
 
 function loadCategories() {
@@ -976,33 +1302,28 @@ function loadTemplatesToUI(filterCategory = "all", searchQuery = "") {
   filtered.forEach((template) => {
     const category = TEMPLATE_CATEGORIES[template.category];
     const card = document.createElement("div");
-    card.className = "template-card";
+    card.className = "template-card-item";
     card.innerHTML = `
-      <div class="template-icon" style="background:${category.color}">
+      <div class="template-icon" style="background:${category.gradient}">
         <i class="fas ${category.icon}"></i>
       </div>
       <div class="template-title">${template.name}</div>
       <div class="template-desc">${template.description}</div>
       <div class="template-meta">
-        <span><i class="fas fa-download"></i> Used ${
-          template.usageCount || 0
-        } times</span>
-        <span class="tag"><i class="fas fa-tag"></i> ${category.name}</span>
+        <span><i class="fas fa-download"></i> Used ${template.usageCount || 0} times</span>
+        <span class="badge" style="background:${category.color}20;color:${category.color}">${category.name}</span>
       </div>
       <div class="template-actions">
-        <button class="btn small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
+        <button class="btn btn-sm" style="background:${category.color}" onclick="useTemplate('${template.id}')">
           <i class="fas fa-play"></i> Use
         </button>
-        <button class="btn small" style="background:#64748b" onclick="editTemplate('${template.id}')">
+        <button class="btn btn-sm" style="background:var(--secondary)" onclick="editTemplate('${template.id}')">
           <i class="fas fa-edit"></i>
         </button>
-        ${
-          !template.isDefault
-            ? `<button class="btn small" style="background:#ef4444" onclick="deleteTemplate('${template.id}')">
+        ${!template.isDefault ? `
+        <button class="btn btn-sm" style="background:var(--danger)" onclick="deleteTemplate('${template.id}')">
           <i class="fas fa-trash"></i>
-        </button>`
-            : ""
-        }
+        </button>` : ''}
       </div>
     `;
     grid.appendChild(card);
@@ -1013,9 +1334,7 @@ function filterTemplatesUI(category, searchQuery = "") {
   document.querySelectorAll(".template-category").forEach((cat) => {
     cat.classList.remove("active");
   });
-  document
-    .querySelector(`.template-category[data-category="${category}"]`)
-    .classList.add("active");
+  document.querySelector(`.template-category[data-category="${category}"]`).classList.add("active");
 
   const currentSearch = searchQuery || document.getElementById("templateSearch").value;
   loadTemplatesToUI(category, currentSearch);
@@ -1023,15 +1342,30 @@ function filterTemplatesUI(category, searchQuery = "") {
 
 function saveTemplate() {
   const name = document.getElementById("templateName").value.trim();
-  const description = document
-    .getElementById("templateDescription")
-    .value.trim();
+  const description = document.getElementById("templateDescription").value.trim();
   const content = document.getElementById("templateContent").value.trim();
   const category = document.getElementById("templateCategory").value;
   const example = document.getElementById("templateExample").value.trim();
 
-  if (!name || !content) {
-    showNotification("Name and content are required");
+  if (!name) {
+    showNotification("Template name is required");
+    document.getElementById("templateName").focus();
+    return;
+  }
+
+  if (!content) {
+    showNotification("Prompt content cannot be empty");
+    document.getElementById("templateContent").focus();
+    return;
+  }
+
+  // Check for duplicate names (excluding current editing)
+  const existing = templates.find(t => 
+    t.name.toLowerCase() === name.toLowerCase() && 
+    t.id !== editingTemplateId
+  );
+
+  if (existing && !confirm(`Template "${name}" already exists. Overwrite?`)) {
     return;
   }
 
@@ -1066,11 +1400,37 @@ function saveTemplate() {
 
   localStorage.setItem("promptTemplates", JSON.stringify(templates));
   loadTemplatesToUI();
+  updateTemplateCount();
   document.getElementById("templateModal").style.display = "none";
   showNotification(`Template "${name}" saved`);
 }
 
-// Utility Functions
+// ===== RATING FUNCTIONS =====
+function submitRating() {
+  const rating = document.querySelectorAll(".rating-stars i.active").length;
+  const comment = document.getElementById("ratingComment").value.trim();
+  
+  if (rating === 0) {
+    showNotification("Please select a rating");
+    return;
+  }
+
+  // Save rating to current prompt in history
+  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
+  if (history.length > 0) {
+    history[0].rating = rating;
+    history[0].ratingComment = comment;
+    localStorage.setItem("promptHistory", JSON.stringify(history));
+  }
+
+  document.getElementById("ratingModal").style.display = "none";
+  document.getElementById("ratingComment").value = "";
+  document.querySelectorAll(".rating-stars i").forEach(s => s.classList.remove("active"));
+  
+  showNotification(`Thank you! Rated ${rating}/5 stars`);
+}
+
+// ===== UTILITY FUNCTIONS =====
 function showNotification(message) {
   const notification = document.getElementById("notification");
   document.getElementById("notificationText").textContent = message;
@@ -1080,27 +1440,29 @@ function showNotification(message) {
   }, 3000);
 }
 
-// Make functions globally available
+// ===== GLOBAL FUNCTIONS =====
 window.clearHistory = clearHistory;
-window.useTemplate = function (id) {
+window.deleteHistoryItem = deleteHistoryItem;
+
+window.useTemplate = function(id) {
   const template = templates.find((t) => t.id === id);
   if (template) {
     // Update usage count
     template.usageCount = (template.usageCount || 0) + 1;
     localStorage.setItem("promptTemplates", JSON.stringify(templates));
 
-    // Fill requirement with example
-    document.getElementById("requirement").value = template.example || "";
+    // Fill requirement with example if available, otherwise use name
+    const requirementEl = document.getElementById("requirement");
+    requirementEl.value = template.example || `Use the "${template.name}" template`;
 
     // Generate prompt from template content
-    document.getElementById("output").value = template.content;
+    const outputEl = document.getElementById("output");
+    outputEl.value = template.content;
     updateStats(template.content);
 
     // Update state
     isConverted = true;
-    lastConvertedText = document
-      .getElementById("requirement")
-      .value.trim();
+    lastConvertedText = requirementEl.value.trim();
     document.getElementById("convertBtn").disabled = true;
     document.getElementById("convertedBadge").style.display = "inline-flex";
 
@@ -1108,37 +1470,49 @@ window.useTemplate = function (id) {
   }
 };
 
-window.editTemplate = function (id) {
+window.editTemplate = function(id) {
   const template = templates.find((t) => t.id === id);
   if (template) {
     editingTemplateId = id;
     document.getElementById("modalTitle").textContent = "Edit Template";
     document.getElementById("templateName").value = template.name;
-    document.getElementById("templateDescription").value =
-      template.description;
+    document.getElementById("templateDescription").value = template.description;
     document.getElementById("templateContent").value = template.content;
     document.getElementById("templateCategory").value = template.category;
     document.getElementById("templateExample").value = template.example || "";
-
     document.getElementById("templateModal").style.display = "flex";
   }
 };
 
-window.deleteTemplate = function (id) {
-  if (confirm("Are you sure you want to delete this template?")) {
-    templates = templates.filter((t) => t.id !== id || t.isDefault);
+window.deleteTemplate = function(id) {
+  const template = templates.find(t => t.id === id);
+  if (!template) return;
+  
+  if (template.isDefault) {
+    showNotification("Default templates cannot be deleted");
+    return;
+  }
+  
+  if (confirm(`Are you sure you want to delete "${template.name}"?`)) {
+    templates = templates.filter((t) => t.id !== id);
     localStorage.setItem("promptTemplates", JSON.stringify(templates));
     loadTemplatesToUI();
+    updateTemplateCount();
     showNotification("Template deleted");
   }
 };
 
-window.useHistoryItem = function (id) {
+window.useHistoryItem = function(id) {
   const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
   const item = history.find((h) => h.id == id);
   if (item) {
-    document.getElementById("requirement").value =
-      localStorage.getItem(`fullReq_${id}`) || item.requirement;
-    generatePrompt();
+    document.getElementById("requirement").value = localStorage.getItem(`fullReq_${id}`) || item.requirement;
+    document.getElementById("output").value = item.prompt;
+    updateStats(item.prompt);
+    isConverted = true;
+    lastConvertedText = document.getElementById("requirement").value.trim();
+    document.getElementById("convertBtn").disabled = true;
+    document.getElementById("convertedBadge").style.display = "inline-flex";
+    showNotification("Prompt loaded from history");
   }
 };
