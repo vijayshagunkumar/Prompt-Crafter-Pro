@@ -14,7 +14,7 @@ let countdownInterval;
 let editingTemplateId = null;
 let templates = [];
 
-// Template categories
+// Template categories (updated colors to match new theme)
 const TEMPLATE_CATEGORIES = {
   'communication': { name: 'Communication', icon: 'fa-envelope', color: '#3b82f6' },
   'coding': { name: 'Coding', icon: 'fa-code', color: '#10b981' },
@@ -23,10 +23,10 @@ const TEMPLATE_CATEGORIES = {
   'business': { name: 'Business', icon: 'fa-briefcase', color: '#ef4444' },
   'creative': { name: 'Creative', icon: 'fa-palette', color: '#ec4899' },
   'education': { name: 'Education', icon: 'fa-graduation-cap', color: '#06b6d4' },
-  'other': { name: 'Other', icon: 'fa-th', color: '#6b7280' }
+  'other': { name: 'Other', icon: 'fa-th', color: '#64748b' }
 };
 
-// Default templates
+// Default templates (same as before)
 const DEFAULT_TEMPLATES = [
   {
     id: '1',
@@ -98,7 +98,7 @@ Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
   }
 ];
 
-// Preset templates
+// Preset templates (same as before)
 const PRESETS = {
   'default': (role, requirement) => `# Role
 You are an ${role} skilled in performing the task described.
@@ -212,6 +212,21 @@ function loadSettings() {
   
   autoConvertDelay = parseInt(delay);
   autoConvertCountdown = autoConvertDelay;
+  
+  // Apply theme
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  const html = document.documentElement;
+  
+  if (theme === 'auto') {
+    // Check system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  } else {
+    html.setAttribute('data-theme', theme);
+  }
 }
 
 function loadTemplates() {
@@ -256,6 +271,12 @@ function setupEventListeners() {
   delaySlider.addEventListener('input', () => {
     delayValue.textContent = `Current: ${delaySlider.value} seconds`;
     autoConvertDelay = parseInt(delaySlider.value);
+  });
+  
+  // Theme selection
+  document.getElementById('themeSelect').addEventListener('change', (e) => {
+    const theme = e.target.value;
+    applyTheme(theme);
   });
   
   // Requirement input
@@ -356,7 +377,7 @@ function resetAutoConvertTimer() {
   if (autoConvertEnabled && requirement && !isConverted) {
     autoConvertCountdown = autoConvertDelay;
     document.getElementById('timerValue').textContent = `${autoConvertCountdown}s`;
-    document.getElementById('timerDisplay').style.display = 'inline-flex';
+    document.getElementById('timerDisplay').style.display = 'flex';
     
     countdownInterval = setInterval(() => {
       autoConvertCountdown--;
@@ -407,7 +428,7 @@ function updateStats(text) {
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lineCount = text.split('\n').length;
   
-  document.getElementById('charCount').textContent = `${charCount} characters`;
+  document.getElementById('charCount').textContent = `${charCount} chars`;
   document.getElementById('wordCount').textContent = `${wordCount} words`;
   document.getElementById('lineCount').textContent = `${lineCount} lines`;
 }
@@ -492,7 +513,7 @@ Generate prompt in the ${currentPreset} format.`;
     isConverted = true;
     lastConvertedText = raw;
     convertBtn.disabled = true;
-    document.getElementById('convertedBadge').style.display = 'inline-flex';
+    document.getElementById('convertedBadge').style.display = 'flex';
     
     showNotification('Prompt generated successfully');
     
@@ -515,7 +536,7 @@ Generate prompt in the ${currentPreset} format.`;
     isConverted = true;
     lastConvertedText = raw;
     convertBtn.disabled = true;
-    document.getElementById('convertedBadge').style.display = 'inline-flex';
+    document.getElementById('convertedBadge').style.display = 'flex';
     
     return generatedPrompt;
   } finally {
@@ -611,6 +632,9 @@ function saveSettings() {
   autoConvertDelay = parseInt(delay);
   autoConvertCountdown = autoConvertDelay;
   
+  // Apply theme
+  applyTheme(theme);
+  
   document.getElementById('settingsModal').style.display = 'none';
   showNotification('Settings saved successfully!');
 }
@@ -653,6 +677,9 @@ function clearAllData() {
   // Save default templates
   localStorage.setItem('promptTemplates', JSON.stringify(templates));
   
+  // Apply theme
+  applyTheme(theme || 'light');
+  
   document.getElementById('settingsModal').style.display = 'none';
   showNotification('All data cleared successfully!');
 }
@@ -683,7 +710,7 @@ function loadHistory() {
   historyList.innerHTML = '';
   
   if (history.length === 0) {
-    historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">No history yet</div>';
+    historyList.innerHTML = '<div class="empty-history">No history yet</div>';
     return;
   }
   
@@ -693,9 +720,9 @@ function loadHistory() {
     div.innerHTML = `
       <div style="flex: 1; min-width: 0;">
         <div style="font-weight:500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.requirement}</div>
-        <div style="font-size:11px;color:var(--muted)">${item.date} ${item.timestamp}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${item.date} ${item.timestamp}</div>
       </div>
-      <button class="btn small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
+      <button class="btn btn-small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
     `;
     div.addEventListener('click', (e) => {
       if (!e.target.closest('button')) {
@@ -707,7 +734,7 @@ function loadHistory() {
         isConverted = true;
         lastConvertedText = requirementEl.value.trim();
         document.getElementById('convertBtn').disabled = true;
-        document.getElementById('convertedBadge').style.display = 'inline-flex';
+        document.getElementById('convertedBadge').style.display = 'flex';
         showNotification('Prompt loaded from history');
       }
     });
@@ -860,16 +887,16 @@ function loadTemplatesToUI(filterCategory = 'all', searchQuery = '') {
       <div class="template-desc">${template.description}</div>
       <div class="template-meta">
         <span><i class="fas fa-download"></i> Used ${template.usageCount || 0} times</span>
-        <span class="tag"><i class="fas fa-tag"></i> ${category.name}</span>
+        <span style="color:${category.color}"><i class="fas fa-tag"></i> ${category.name}</span>
       </div>
       <div class="template-actions">
-        <button class="btn small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
+        <button class="btn btn-small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
           <i class="fas fa-play"></i> Use
         </button>
-        <button class="btn small" style="background:#64748b" onclick="editTemplate('${template.id}')">
+        <button class="btn btn-small btn-secondary" onclick="editTemplate('${template.id}')">
           <i class="fas fa-edit"></i>
         </button>
-        ${!template.isDefault ? `<button class="btn small" style="background:#ef4444" onclick="deleteTemplate('${template.id}')">
+        ${!template.isDefault ? `<button class="btn btn-small btn-danger" onclick="deleteTemplate('${template.id}')">
           <i class="fas fa-trash"></i>
         </button>` : ''}
       </div>
@@ -965,7 +992,7 @@ window.useTemplate = function(id) {
     isConverted = true;
     lastConvertedText = document.getElementById('requirement').value.trim();
     document.getElementById('convertBtn').disabled = true;
-    document.getElementById('convertedBadge').style.display = 'inline-flex';
+    document.getElementById('convertedBadge').style.display = 'flex';
     
     showNotification(`Using "${template.name}" template`);
   }
@@ -1003,3 +1030,11 @@ window.useHistoryItem = function(id) {
     generatePrompt();
   }
 };
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'auto') {
+    applyTheme('auto');
+  }
+});
