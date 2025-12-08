@@ -419,32 +419,28 @@ function setupEventListeners() {
     showNotification("Prompt copied to clipboard!");
   });
 
-  // AI Tools
-  document
-    .getElementById("chatgptBtn")
-    .addEventListener("click", () =>
-      openAITool("ChatGPT", "https://chat.openai.com/")
-    );
-  document
-    .getElementById("claudeBtn")
-    .addEventListener("click", () =>
-      openAITool("Claude", "https://claude.ai/new")
-    );
-  document
-    .getElementById("geminiBtn")
-    .addEventListener("click", () =>
-      openAITool("Gemini", "https://gemini.google.com/app")
-    );
-  document
-    .getElementById("perplexityBtn")
-    .addEventListener("click", () =>
-      openAITool("Perplexity", "https://www.perplexity.ai/")
-    );
-  document
-    .getElementById("deepseekBtn")
-    .addEventListener("click", () =>
-      openAITool("DeepSeek", "https://chat.deepseek.com/")
-    );
+ // AI Tools
+document.getElementById('chatgptBtn')
+  .addEventListener('click', () => openAITool('ChatGPT', 'https://chat.openai.com/'));
+
+document.getElementById('claudeBtn')
+  .addEventListener('click', () => openAITool('Claude', 'https://claude.ai/new'));
+
+document.getElementById('geminiBtn')
+  .addEventListener('click', () => openAITool('Gemini', 'https://gemini.google.com/app'));
+
+document.getElementById('perplexityBtn')
+  .addEventListener('click', () => openAITool('Perplexity', 'https://www.perplexity.ai/'));
+
+document.getElementById('deepseekBtn')
+  .addEventListener('click', () => openAITool('DeepSeek', 'https://chat.deepseek.com/'));
+
+// NEW: Copilot & Grok
+document.getElementById('copilotBtn')
+  .addEventListener('click', () => openAITool('Copilot', 'https://copilot.microsoft.com/'));
+
+document.getElementById('grokBtn')
+  .addEventListener('click', () => openAITool('Grok', 'https://x.ai/'));
 
   // Export
   document.getElementById("exportBtn").addEventListener("click", exportPrompt);
