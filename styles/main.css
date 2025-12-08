@@ -1,4 +1,4 @@
-/* styles/main.css – Layout & components */
+/* main.css – layout & components */
 
 *,
 *::before,
@@ -24,36 +24,36 @@ body {
 /* PAGE LAYOUT */
 .page {
   min-height: 100vh;
-  max-width: 1320px;       /* was 1200 – looks bigger on laptops now */
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 20px 24px 24px; /* a bit more breathing room on desktop */
+  padding: 8px 20px 18px; /* less top padding to remove empty space */
   display: flex;
   flex-direction: column;
 }
 
 /* HERO */
 .hero {
-  padding: 4px 0 10px;     /* reduced top space */
+  padding: 0 0 8px;
 }
 
 .hero-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
 }
 
+/* BRAND + LOGO */
 .hero-brand {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 
-/* NEW LOGO */
 .hero-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
   background: var(--gradient-brand);
   display: flex;
   align-items: center;
@@ -61,55 +61,73 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-.hero-logo-mark {
+.hero-logo-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.hero-logo-main {
   font-family: 'Poppins', system-ui, sans-serif;
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: #fff;
+}
+
+.hero-logo-sub {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.92);
 }
 
 .hero-title-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-/* brand row: PromptCraft + tagline */
 .brand-row {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .brand-name {
   font-family: 'Poppins', system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--text-primary);
 }
 
-.brand-tagline {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-}
-
-.hero-badge {
+/* Tagline pill – highlighted */
+.brand-tagline-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.12);
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+.brand-tagline-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.brand-tagline-text {
   font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .hero-title {
@@ -130,17 +148,17 @@ body {
 .hero-subtitle {
   font-size: 13px;
   color: var(--text-secondary);
-  max-width: 640px;
+  max-width: 520px;
 }
 
-/* bump hero size a bit on large screens */
+/* desktop scaling */
 @media (min-width: 1280px) {
   .hero-title {
     font-size: 32px;
   }
 
   .brand-name {
-    font-size: 18px;
+    font-size: 19px;
   }
 }
 
@@ -148,7 +166,7 @@ body {
 .settings-btn {
   border-radius: 999px;
   border: 1px solid var(--panel-border);
-  padding: 8px 14px;
+  padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
   background: var(--bg-primary);
@@ -168,19 +186,19 @@ body {
 .settings-btn:hover {
   border-color: var(--primary);
   color: var(--primary);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
 }
 
 /* WORKFLOW GRID */
 .workflow {
-  margin-top: 10px;
+  margin-top: 6px;
   flex: 1;
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 /* STEP CARDS */
@@ -189,17 +207,17 @@ body {
   border-radius: 26px;
   border: 1px solid var(--panel-border);
   box-shadow: var(--shadow-card);
-  padding: 18px 18px 16px;
+  padding: 16px 16px 14px;
   display: flex;
   flex-direction: column;
-  min-height: 360px; /* taller on desktop so content doesn’t look tiny */
+  min-height: 320px; /* reduced so whole UI fits on laptops */
 }
 
 .step-header {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .step-pill {
@@ -216,6 +234,13 @@ body {
   flex-shrink: 0;
 }
 
+.step-header-main {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  gap: 8px;
+}
+
 .step-header h2 {
   font-family: 'Poppins', system-ui, sans-serif;
   font-size: 16px;
@@ -226,13 +251,6 @@ body {
 .step-subtitle {
   font-size: 12px;
   color: var(--text-secondary);
-}
-
-.step-header-main {
-  display: flex;
-  justify-content: space-between;
-  flex: 1;
-  gap: 8px;
 }
 
 .step-meta {
@@ -268,7 +286,7 @@ body {
 
 .chip {
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.6);
   background: var(--bg-secondary);
   padding: 4px 9px;
   font-size: 11px;
@@ -290,12 +308,12 @@ body {
   background: #e0edff;
 }
 
-/* AUTO-CONVERT ROW */
+/* AUTO-CONVERT */
 .auto-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 6px 0 8px;
+  margin: 4px 0 8px;
 }
 
 .toggle-switch {
@@ -358,9 +376,9 @@ body {
   color: var(--text-secondary);
 }
 
-/* FIELDS */
+/* INPUTS & TEXTAREAS */
 .field-block {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .textarea-idea,
@@ -377,7 +395,7 @@ select {
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
-  padding: 10px 11px;
+  padding: 9px 10px;
   outline: none;
   transition: var(--transition-fast);
 }
@@ -386,13 +404,11 @@ textarea {
   resize: vertical;
 }
 
-/* main textareas larger on desktop */
 .textarea-idea {
   resize: none;
-  min-height: 190px;
+  min-height: 170px;
 }
 
-/* 2nd card output: fill the card height & use Inter (no mono font) */
 .field-block-output {
   flex: 1;
   margin-bottom: 6px;
@@ -402,9 +418,9 @@ textarea {
 .output-textarea {
   flex: 1;
   resize: none;
-  min-height: 0; /* allow flex to control height */
+  min-height: 0;
   line-height: 1.5;
-  font-family: 'Inter', system-ui, sans-serif; /* change from monospace to Inter */
+  font-family: 'Inter', system-ui, sans-serif; /* Inter instead of monospace */
   font-size: 13px;
 }
 
@@ -423,11 +439,11 @@ select:focus {
   box-shadow: var(--input-shadow-focus);
 }
 
-/* Buttons */
+/* BUTTONS */
 .btn-primary {
   border-radius: 999px;
   border: none;
-  padding: 10px 18px;
+  padding: 9px 16px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -457,25 +473,6 @@ select:focus {
   width: 100%;
 }
 
-.btn-secondary {
-  border-radius: 999px;
-  border: none;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  background: #0f172a;
-  color: #e5e7eb;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: var(--transition-fast);
-}
-
-.btn-secondary:hover {
-  background: #020617;
-}
-
 .btn-ghost-small {
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
@@ -488,6 +485,10 @@ select:focus {
   gap: 6px;
   cursor: pointer;
   transition: var(--transition-fast);
+}
+
+.btn-ghost-small i {
+  font-size: 11px;
 }
 
 .btn-ghost-small:hover {
@@ -505,15 +506,14 @@ select:focus {
   background: rgba(239, 68, 68, 0.06);
 }
 
-/* Step 1 footer */
+/* STEP 1 FOOTER */
 .step-footer {
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-top: 4px;
 }
 
+/* TEMPLATE TOGGLE */
 .template-toggle {
+  margin-top: 8px;
   border-radius: 999px;
   border: 1px dashed var(--border-subtle);
   background: var(--bg-secondary);
@@ -526,20 +526,16 @@ select:focus {
   color: var(--text-secondary);
 }
 
-.template-toggle i {
-  font-size: 11px;
-}
-
 .template-toggle-state {
   font-weight: 500;
 }
 
-/* Templates panel */
+/* TEMPLATES PANEL */
 .templates-panel {
-  margin-top: 10px;
+  margin-top: 8px;
   border-radius: 16px;
   border: 1px dashed var(--border-subtle);
-  padding: 10px 10px 9px;
+  padding: 9px 10px 8px;
   background: var(--bg-secondary);
 }
 
@@ -557,6 +553,10 @@ select:focus {
   font-size: 11px;
 }
 
+.templates-title {
+  font-weight: 500;
+}
+
 .templates-sub {
   color: var(--text-muted);
 }
@@ -568,7 +568,7 @@ select:focus {
 
 .input-search {
   font-size: 12px;
-  padding: 7px 9px;
+  padding: 6px 9px;
   margin-bottom: 6px;
 }
 
@@ -657,37 +657,60 @@ select:focus {
   opacity: 0.5;
 }
 
-/* STEP 2 – Output footer */
+/* STEP 2 – output footer */
 .output-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
 }
 
+/* Hide stats row (word count etc.) */
 .stats-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--text-muted);
+  display: none;
 }
 
+/* PRESET SELECTOR – make them look like real buttons */
 .preset-selector {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin-bottom: 4px;
 }
 
 .preset-option {
-  font-size: 11px;
-  padding: 4px 9px;
+  flex: 1;
+  min-width: 0;
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
   background: #ffffff;
+  padding: 5px 8px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   cursor: pointer;
   color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+
+.preset-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-icon i {
+  font-size: 10px;
+}
+
+.preset-label {
+  white-space: nowrap;
 }
 
 .preset-option.active {
@@ -696,20 +719,25 @@ select:focus {
   color: var(--primary);
 }
 
-.output-actions {
-  margin-top: 8px;
-  display: flex;
-  gap: 8px;
+.preset-option:hover {
+  border-color: var(--primary);
 }
 
-/* HISTORY PANEL */
+/* Preset info */
+.preset-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* HISTORY */
 .history-panel {
-  margin-top: 8px;
+  margin-top: 6px;
   border-radius: 12px;
   border: 1px dashed var(--border-subtle);
   padding: 8px 10px;
   background: var(--bg-secondary);
-  max-height: 170px;
+  max-height: 160px;
   overflow-y: auto;
 }
 
@@ -742,7 +770,7 @@ select:focus {
   color: var(--text-muted);
 }
 
-/* STEP 3 – Launch panel */
+/* STEP 3 – LAUNCH PANEL */
 .launch-list {
   margin-top: 4px;
   display: flex;
@@ -755,7 +783,7 @@ select:focus {
   border: none;
   outline: none;
   border-radius: 18px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -773,8 +801,8 @@ select:focus {
 }
 
 .launch-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   display: flex;
   align-items: center;
@@ -800,7 +828,7 @@ select:focus {
   color: var(--text-muted);
 }
 
-/* Color variants for launch buttons */
+/* Color variants */
 .launch-chatgpt {
   background: #e0f3ec;
   border: 1px solid rgba(116, 170, 156, 0.45);
@@ -830,7 +858,7 @@ select:focus {
   border: 1px solid rgba(5, 8, 22, 0.45);
 }
 
-/* Disabled state until prompt is generated */
+/* Disabled state */
 .launch-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -838,17 +866,34 @@ select:focus {
   transform: none;
 }
 
-/* Launch hint */
+/* Launch hint – highlighted bar at bottom of card */
 .launch-hint {
   margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
   font-size: 11px;
-  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--text-secondary);
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+}
+
+.launch-hint i {
+  color: var(--primary);
+}
+
+.launch-hint-active {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* FOOTER */
 .footer {
-  margin-top: 16px;
-  padding-top: 10px;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid rgba(226, 232, 240, 0.9);
   display: flex;
   align-items: center;
@@ -958,7 +1003,7 @@ select:focus {
   margin-top: 8px;
 }
 
-/* NOTIFICATION */
+/* NOTIFICATION TOAST */
 .notification {
   position: fixed;
   bottom: 16px;
@@ -979,27 +1024,27 @@ select:focus {
 @media (max-width: 1024px) {
   .page {
     max-width: 100%;
-    padding: 16px 16px 18px;
+    padding: 12px 14px 16px;
   }
 
   .cards-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
   }
 
   .step-card {
-    min-height: 320px;
+    min-height: 310px;
   }
 }
 
 @media (max-width: 768px) {
   .page {
-    padding: 12px 12px 16px;
+    padding: 10px 10px 14px;
   }
 
   .hero-top {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .cards-grid {
