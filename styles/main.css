@@ -915,3 +915,22 @@ textarea.output {
 .btn-grok:hover {
   background: #111827;
 }
+
+
+/* --- Dark mode readability fixes --- */
+.textarea-idea,
+.output-textarea,
+textarea,
+input,
+select {
+  color: var(--text-primary);          /* light text in dark mode */
+  background-color: var(--input-bg);   /* use themed input background */
+  border-color: var(--input-border);
+  caret-color: var(--text-primary);
+}
+
+.textarea-idea::placeholder,
+.output-textarea::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);            /* softer but still visible */
+}
