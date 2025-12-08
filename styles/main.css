@@ -8,7 +8,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -17,53 +18,84 @@ body {
   background: var(--bg-body);
   color: var(--text-primary);
   line-height: 1.6;
+  font-size: 14px;
 }
 
 /* PAGE LAYOUT */
 .page {
   min-height: 100vh;
-  max-width: 1200px;
+  max-width: 1320px;       /* was 1200 – looks bigger on laptops now */
   margin: 0 auto;
-  padding: 16px 16px 20px;
+  padding: 20px 24px 24px; /* a bit more breathing room on desktop */
   display: flex;
   flex-direction: column;
 }
 
 /* HERO */
 .hero {
-  padding: 8px 0 12px;
+  padding: 4px 0 10px;     /* reduced top space */
 }
 
 .hero-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
 }
 
 .hero-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
+/* NEW LOGO */
 .hero-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-lg);
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
   background: var(--gradient-brand);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
   box-shadow: var(--shadow-card);
-  font-size: 20px;
+}
+
+.hero-logo-mark {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff;
 }
 
 .hero-title-block {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* brand row: PromptCraft + tagline */
+.brand-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-name {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.brand-tagline {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
 }
 
 .hero-badge {
@@ -82,7 +114,7 @@ body {
 
 .hero-title {
   font-family: 'Poppins', system-ui, sans-serif;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -98,7 +130,18 @@ body {
 .hero-subtitle {
   font-size: 13px;
   color: var(--text-secondary);
-  max-width: 620px;
+  max-width: 640px;
+}
+
+/* bump hero size a bit on large screens */
+@media (min-width: 1280px) {
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .brand-name {
+    font-size: 18px;
+  }
 }
 
 /* SETTINGS BUTTON */
@@ -130,14 +173,14 @@ body {
 
 /* WORKFLOW GRID */
 .workflow {
-  margin-top: 12px;
+  margin-top: 10px;
   flex: 1;
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 20px;
 }
 
 /* STEP CARDS */
@@ -149,7 +192,7 @@ body {
   padding: 18px 18px 16px;
   display: flex;
   flex-direction: column;
-  min-height: 320px;
+  min-height: 360px; /* taller on desktop so content doesn’t look tiny */
 }
 
 .step-header {
@@ -209,6 +252,7 @@ body {
   align-items: center;
   gap: 5px;
 }
+
 .meta-pill.success {
   background: rgba(16, 185, 129, 0.12);
   color: var(--success);
@@ -342,16 +386,26 @@ textarea {
   resize: vertical;
 }
 
-.textarea-idea,
-.output-textarea {
+/* main textareas larger on desktop */
+.textarea-idea {
   resize: none;
-  min-height: 160px;
+  min-height: 190px;
+}
+
+/* 2nd card output: fill the card height & use Inter (no mono font) */
+.field-block-output {
+  flex: 1;
+  margin-bottom: 6px;
+  display: flex;
 }
 
 .output-textarea {
-  font-family: "SFMono-Regular","Menlo","Monaco",monospace;
-  font-size: 12px;
+  flex: 1;
+  resize: none;
+  min-height: 0; /* allow flex to control height */
   line-height: 1.5;
+  font-family: 'Inter', system-ui, sans-serif; /* change from monospace to Inter */
+  font-size: 13px;
 }
 
 textarea::placeholder,
@@ -604,10 +658,6 @@ select:focus {
 }
 
 /* STEP 2 – Output footer */
-.field-block-output {
-  flex: 1;
-}
-
 .output-footer {
   display: flex;
   justify-content: space-between;
@@ -927,12 +977,18 @@ select:focus {
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
+  .page {
+    max-width: 100%;
+    padding: 16px 16px 18px;
+  }
+
   .cards-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
 
   .step-card {
-    min-height: 280px;
+    min-height: 320px;
   }
 }
 
