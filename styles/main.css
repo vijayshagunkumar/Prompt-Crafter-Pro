@@ -179,6 +179,37 @@
   --gradient-primary: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
 }
 
+/* Auto Theme (System Preference) */
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+    --primary-light: #a5b4fc;
+    --secondary: #94a3b8;
+    --accent: #a78bfa;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-light: #64748b;
+    
+    --border: #475569;
+    --border-light: #334155;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  }
+}
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;
@@ -259,6 +290,11 @@ h1 {
 
 .logo:hover {
   transform: rotate(5deg) scale(1.05);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
 }
 
 .header-actions {
@@ -489,6 +525,7 @@ textarea#output {
   background: var(--bg-secondary);
   color: var(--text-secondary);
   border: 1px solid var(--border);
+  cursor: pointer;
 }
 
 .btn-icon:hover {
@@ -921,7 +958,7 @@ textarea#output {
   color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
-  transition: var(--transition;
+  transition: var(--transition);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1379,4 +1416,8 @@ textarea#output {
   background: var(--bg-secondary);
   border-radius: 20px;
   border: 1px solid var(--border);
+}
+
+.ai-icon {
+  font-size: 20px;
 }
