@@ -98,7 +98,7 @@ Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
   }
 ];
 
-// Preset templates
+// Preset templates (ALL of these tell the target AI to DO the task, not generate prompts)
 const PRESETS = {
   'default': (role, requirement) => `# Role
 You are an ${role} skilled in performing the task described.
@@ -185,18 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
-  // Load all data
   loadSettings();
   loadTemplates();
   loadUsageCount();
-  
-  // Setup event listeners
   setupEventListeners();
-  
-  // Initialize UI components
   initializeUI();
-  
-  // Focus on input
   document.getElementById('requirement').focus();
 }
 
@@ -412,23 +405,23 @@ function updateStats(text) {
   document.getElementById('lineCount').textContent = `${lineCount} lines`;
 }
 
-// NEW: sanitiser to remove "prompt generator" style phrasing
+// SANITISER: remove any "prompt generator / rewrite / convert to prompt" junk from the final text
 function sanitizePrompt(text) {
   if (!text) return '';
   let cleaned = text;
 
-  // Remove leading/trailing markdown fences if model adds them
+  // Strip code fences if model accidentally adds them
   cleaned = cleaned.replace(/^```[^\n]*\n?/g, '');
   cleaned = cleaned.replace(/```$/g, '');
 
-  // Drop lines that explicitly talk about prompt generation instead of doing the task
-  const forbiddenLineRegex = /(prompt generator|generate a prompt|rewrite.*prompt|convert.*requirement.*prompt)/i;
+  const forbiddenLineRegex = /(prompt generator|generate a prompt|rewrite .*requirement|convert .*requirement .*prompt|rewrite .*prompt)/i;
+
   cleaned = cleaned
     .split('\n')
     .filter(line => !forbiddenLineRegex.test(line))
     .join('\n');
 
-  // Soft replace remaining phrases if they appear inside lines
+  // Soft replace leftover phrases inside lines
   cleaned = cleaned.replace(/prompt generator/gi, 'assistant');
   cleaned = cleaned.replace(/generate a prompt/gi, 'perform the task and return the final answer');
 
@@ -462,31 +455,31 @@ async function generatePrompt() {
   
   try {
     if (!apiKey) {
-      // Use local formatter
+      // Local formatter: just use the preset template directly
       generatedPrompt = localFormatter(raw);
       generatedPrompt = sanitizePrompt(generatedPrompt);
     } else {
-      // Use API in PROMPT-GENERATOR MODE, but without telling it "you are a prompt generator"
+      // Use API: tell FT model to fill ROLE + REQUIREMENT into the preset template
       const role = getAppropriateRole(raw);
       const templateWithPlaceholders = PRESETS[currentPreset]('[ROLE]', '[REQUIREMENT]');
 
       const system = `
-You take a user's natural-language requirement and turn it into a single, well-structured instruction
-for another AI assistant that will perform the task and return the final answer.
+You transform the user's requirement into a single, well-structured instruction
+that an AI assistant can directly execute to perform the task and return the final answer.
 
 Use exactly this template:
 
 ${templateWithPlaceholders}
 
 Rules:
-- Replace [ROLE] with this exact role: ${role}
+- Replace [ROLE] with this exact expert role: ${role}
 - Replace [REQUIREMENT] with the user's requirement text.
 - Do NOT change any other wording in the template.
 - Do NOT mention "prompt", "prompt generator", or "prompt engineering".
-- Do NOT describe yourself or the assistant as a prompt generator.
+- Do NOT tell the AI to rewrite, convert, or generate prompts.
 - Do NOT talk about templates, system messages, or instructions.
-- Do NOT wrap the output in markdown code fences.
-- Output ONLY the final instruction text that tells the assistant to perform the task and return the final answer.
+- Do NOT wrap the output in code fences.
+- Output ONLY the final instruction text that tells the AI to perform the task and return the final answer.
       `.trim();
 
       const userMessage = raw;
@@ -522,7 +515,6 @@ Rules:
     updateStats(generatedPrompt);
     saveToHistory(raw, generatedPrompt);
     
-    // Update state
     isConverted = true;
     lastConvertedText = raw;
     convertBtn.disabled = true;
@@ -530,7 +522,6 @@ Rules:
     
     showNotification('Prompt generated successfully');
     
-    // Reset auto-convert timer if text hasn't changed
     if (autoConvertEnabled) {
       resetAutoConvertTimer();
     }
@@ -546,7 +537,6 @@ Rules:
     saveToHistory(raw, generatedPrompt);
     showNotification('Generated with local template');
     
-    // Still mark as converted
     isConverted = true;
     lastConvertedText = raw;
     convertBtn.disabled = true;
@@ -562,7 +552,6 @@ Rules:
 function localFormatter(raw) {
   const clean = (raw || '').trim() || '[No requirement provided]';
   const role = getAppropriateRole(clean);
-  
   const template = PRESETS[currentPreset];
   return template ? template(role, clean) : PRESETS['default'](role, clean);
 }
@@ -578,7 +567,6 @@ async function copyToClipboard() {
     await navigator.clipboard.writeText(outputEl.value);
     return true;
   } catch (err) {
-    // Fallback
     const textArea = document.createElement('textarea');
     textArea.value = outputEl.value;
     document.body.appendChild(textArea);
@@ -655,7 +643,6 @@ function clearAllData() {
   localStorage.removeItem('promptHistory');
   localStorage.removeItem('promptCrafterUsage');
   
-  // Keep settings
   const apiKey = localStorage.getItem('OPENAI_API_KEY');
   const delay = localStorage.getItem('autoConvertDelay');
   const theme = localStorage.getItem('theme');
@@ -666,13 +653,11 @@ function clearAllData() {
   if (delay) localStorage.setItem('autoConvertDelay', delay);
   if (theme) localStorage.setItem('theme', theme);
   
-  // Reset state
   usageCount = 0;
   templates = [...DEFAULT_TEMPLATES];
   isConverted = false;
   lastConvertedText = '';
   
-  // Reset UI
   document.getElementById('requirement').value = '';
   document.getElementById('output').value = '';
   document.getElementById('usageCount').textContent = '0 prompts generated';
@@ -680,12 +665,10 @@ function clearAllData() {
   document.getElementById('templatesGrid').innerHTML = '';
   updateStats('');
   
-  // Clear badges
   document.getElementById('convertedBadge').style.display = 'none';
   document.getElementById('timerDisplay').style.display = 'none';
   document.getElementById('convertBtn').disabled = false;
   
-  // Save default templates
   localStorage.setItem('promptTemplates', JSON.stringify(templates));
   
   document.getElementById('settingsModal').style.display = 'none';
@@ -767,7 +750,6 @@ function clearHistory() {
 
 // Template Functions
 function setupTemplateListeners() {
-  // Toggle templates panel
   document.getElementById('toggleTemplatesBtn').addEventListener('click', () => {
     const panel = document.getElementById('templatesPanel');
     const btn = document.getElementById('toggleTemplatesBtn');
@@ -783,13 +765,11 @@ function setupTemplateListeners() {
     }
   });
   
-  // Template search
   document.getElementById('templateSearch').addEventListener('input', function() {
     const activeCategory = document.querySelector('.template-category.active')?.dataset.category || 'all';
     filterTemplatesUI(activeCategory, this.value);
   });
   
-  // New template
   document.getElementById('newTemplateBtn').addEventListener('click', () => {
     editingTemplateId = null;
     document.getElementById('modalTitle').textContent = 'New Template';
@@ -801,7 +781,6 @@ function setupTemplateListeners() {
     document.getElementById('templateModal').style.display = 'flex';
   });
   
-  // Save as template
   document.getElementById('saveAsTemplateBtn').addEventListener('click', () => {
     if (!document.getElementById('output').value.trim()) {
       showNotification('Generate a prompt first before saving as template');
@@ -818,10 +797,8 @@ function setupTemplateListeners() {
     document.getElementById('templateModal').style.display = 'flex';
   });
   
-  // Save template
   document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
   
-  // Close template modal
   document.getElementById('closeTemplateBtn').addEventListener('click', () => {
     document.getElementById('templateModal').style.display = 'none';
   });
@@ -835,7 +812,6 @@ function loadCategories() {
   const container = document.getElementById('templateCategories');
   container.innerHTML = '';
   
-  // All category
   const allCat = document.createElement('div');
   allCat.className = 'template-category active';
   allCat.dataset.category = 'all';
@@ -843,7 +819,6 @@ function loadCategories() {
   allCat.addEventListener('click', () => filterTemplatesUI('all'));
   container.appendChild(allCat);
   
-  // Other categories
   Object.keys(TEMPLATE_CATEGORIES).forEach(id => {
     const cat = TEMPLATE_CATEGORIES[id];
     const catEl = document.createElement('div');
@@ -936,7 +911,6 @@ function saveTemplate() {
   }
   
   if (editingTemplateId) {
-    // Update existing template
     const index = templates.findIndex(t => t.id === editingTemplateId);
     if (index !== -1) {
       templates[index] = {
@@ -949,7 +923,6 @@ function saveTemplate() {
       };
     }
   } else {
-    // Add new template
     const newTemplate = {
       id: Date.now().toString(),
       name,
@@ -966,6 +939,7 @@ function saveTemplate() {
   
   localStorage.setItem('promptTemplates', JSON.stringify(templates));
   loadTemplatesToUI();
+  document.getElementById('templateModal').style.display = 'flex';
   document.getElementById('templateModal').style.display = 'none';
   showNotification(`Template "${name}" saved`);
 }
@@ -985,22 +959,18 @@ window.clearHistory = clearHistory;
 window.useTemplate = function(id) {
   const template = templates.find(t => t.id === id);
   if (template) {
-    // Update usage count
     template.usageCount = (template.usageCount || 0) + 1;
     localStorage.setItem('promptTemplates', JSON.stringify(templates));
     
-    // Fill requirement with example
     document.getElementById('requirement').value = template.example || '';
     
-    // Generate prompt from template content
     document.getElementById('output').value = template.content;
     updateStats(template.content);
     
-    // Update state
     isConverted = true;
     lastConvertedText = document.getElementById('requirement').value.trim();
     document.getElementById('convertBtn').disabled = true;
-    document.getElementById('convertedBadge').display = 'inline-flex';
+    document.getElementById('convertedBadge').style.display = 'inline-flex';
     
     showNotification(`Using "${template.name}" template`);
   }
