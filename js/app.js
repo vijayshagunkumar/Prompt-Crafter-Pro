@@ -1,6 +1,6 @@
 // ===== APPLICATION STATE =====
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-3.5-turbo"; // Using standard model for compatibility
+const OPENAI_MODEL = "gpt-3.5-turbo";
 
 let currentPreset = "default";
 let userPresetLocked = false;
@@ -313,12 +313,6 @@ function setCurrentPreset(presetId) {
   document.querySelectorAll(".preset-option").forEach((o) => {
     const isActive = o.dataset.preset === presetId;
     o.classList.toggle("active", isActive);
-    
-    // Update lock icon
-    const lockIcon = o.querySelector(".lock-icon");
-    if (lockIcon) {
-      lockIcon.className = userPresetLocked ? "fas fa-lock lock-icon" : "fas fa-unlock lock-icon";
-    }
   });
   
   updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
@@ -337,9 +331,8 @@ function updatePresetInfo(taskLabel, presetId, source) {
 
   const nicePreset = presetNames[presetId] || presetId;
   const srcLabel = source === "manual" ? "manual" : "auto";
-  const lockIcon = userPresetLocked ? "🔒" : "🔓";
 
-  el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel}) ${lockIcon}`;
+  el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel})`;
 }
 
 function setTheme(theme) {
@@ -352,11 +345,29 @@ function setTheme(theme) {
     btn.classList.remove("active");
   });
   
-  if (theme === "light") document.getElementById("themeLight").classList.add("active");
-  else if (theme === "dark") document.getElementById("themeDark").classList.add("active");
-  else document.getElementById("themeAuto").classList.add("active");
+  if (theme === "light") {
+    document.getElementById("themeLight").classList.add("active");
+  } else if (theme === "dark") {
+    document.getElementById("themeDark").classList.add("active");
+  } else if (theme === "auto") {
+    document.getElementById("themeAuto").classList.add("active");
+  }
   
   document.getElementById("themeSelect").value = theme;
+}
+
+function updateTemplateCount() {
+  const count = templates.length;
+  document.getElementById("templateCount").textContent = count;
+}
+
+function showNotification(message) {
+  const notification = document.getElementById("notification");
+  document.getElementById("notificationText").textContent = message;
+  notification.style.display = "flex";
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 3000);
 }
 
 // ===== INITIALIZATION =====
@@ -372,11 +383,12 @@ function initializeApp() {
   initializeUI();
   setCurrentPreset(currentPreset);
   updatePresetInfo("General", currentPreset, "auto");
-  document.getElementById("requirement").focus();
   
   // Set initial theme
   const theme = localStorage.getItem("theme") || "light";
   setTheme(theme);
+  
+  document.getElementById("requirement").focus();
 }
 
 function loadSettings() {
@@ -423,11 +435,6 @@ function loadUsageCount() {
     usageCount = parseInt(savedUsage, 10);
     document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
   }
-}
-
-function updateTemplateCount() {
-  const count = templates.length;
-  document.getElementById("templateCount").textContent = count;
 }
 
 // ===== EVENT LISTENERS =====
@@ -565,13 +572,6 @@ function setupEventListeners() {
 
   // Template functionality
   setupTemplateListeners();
-  
-  // Import/Export data
-  document.getElementById("exportDataBtn").addEventListener("click", exportAllData);
-  document.getElementById("importDataBtn").addEventListener("click", () => {
-    document.getElementById("importFile").click();
-  });
-  document.getElementById("importFile").addEventListener("change", importData);
   
   // Close rating modal
   document.getElementById("closeRatingBtn").addEventListener("click", () => {
@@ -994,62 +994,6 @@ function clearAllData() {
   showNotification("All data cleared successfully!");
 }
 
-// ===== DATA IMPORT/EXPORT =====
-function exportAllData() {
-  const data = {
-    templates: templates,
-    usageCount: usageCount,
-    version: "4.0",
-    exportDate: new Date().toISOString()
-  };
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `promptcrafter-backup-${Date.now()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  showNotification("Data exported successfully");
-}
-
-function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      
-      if (confirm("This will replace your current templates and usage count. Continue?")) {
-        if (data.templates) {
-          templates = data.templates;
-          localStorage.setItem("promptTemplates", JSON.stringify(templates));
-          loadTemplatesToUI();
-          updateTemplateCount();
-        }
-        
-        if (data.usageCount) {
-          usageCount = data.usageCount;
-          localStorage.setItem("promptCrafterUsage", usageCount.toString());
-          document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
-        }
-        
-        showNotification("Data imported successfully");
-      }
-    } catch (error) {
-      showNotification("Error importing data. Invalid file format.");
-      console.error("Import error:", error);
-    }
-    event.target.value = ""; // Clear file input
-  };
-  reader.readAsText(file);
-}
-
 // ===== HISTORY FUNCTIONS =====
 function saveToHistory(requirement, prompt) {
   const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
@@ -1428,16 +1372,6 @@ function submitRating() {
   document.querySelectorAll(".rating-stars i").forEach(s => s.classList.remove("active"));
   
   showNotification(`Thank you! Rated ${rating}/5 stars`);
-}
-
-// ===== UTILITY FUNCTIONS =====
-function showNotification(message) {
-  const notification = document.getElementById("notification");
-  document.getElementById("notificationText").textContent = message;
-  notification.style.display = "flex";
-  setTimeout(() => {
-    notification.style.display = "none";
-  }, 3000);
 }
 
 // ===== GLOBAL FUNCTIONS =====
