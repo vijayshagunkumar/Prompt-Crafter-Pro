@@ -10,746 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Embedded CSS -->
-  <style>
-    /* ===== RESET & BASE STYLES ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      /* Default Light Theme */
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --primary-light: #818cf8;
-      --secondary: #64748b;
-      --accent: #8b5cf6;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --info: #3b82f6;
-      
-      --bg-primary: #ffffff;
-      --bg-secondary: #f8fafc;
-      --bg-tertiary: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-input: #ffffff;
-      
-      --text-primary: #1e293b;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --text-light: #94a3b8;
-      
-      --border: #e2e8f0;
-      --border-light: #f1f5f9;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      
-      --radius: 12px;
-      --radius-sm: 8px;
-      --radius-lg: 16px;
-      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      
-      /* AI Tool Colors - Official Brand Colors */
-      --chatgpt: #10a37f;
-      --claude: #d4a574;
-      --gemini: #4285f4;
-      --copilot: #0078d4;
-      --grok: #000000;
-      --perplexity: #8c4dff;
-      --deepseek: #0d9488;
-      
-      /* Gradients */
-      --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    }
-
-    /* Theme: Dark */
-    [data-theme="dark"] {
-      --primary: #818cf8;
-      --primary-dark: #6366f1;
-      --primary-light: #a5b4fc;
-      --secondary: #94a3b8;
-      --accent: #a78bfa;
-      --success: #34d399;
-      --warning: #fbbf24;
-      --danger: #f87171;
-      
-      --bg-primary: #0f172a;
-      --bg-secondary: #1e293b;
-      --bg-tertiary: #334155;
-      --bg-card: #1e293b;
-      --bg-input: #334155;
-      
-      --text-primary: #f1f5f9;
-      --text-secondary: #cbd5e1;
-      --text-muted: #94a3b8;
-      --text-light: #64748b;
-      
-      --border: #475569;
-      --border-light: #334155;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Theme: Ocean Blue */
-    [data-theme="blue"] {
-      --primary: #3b82f6;
-      --primary-dark: #2563eb;
-      --primary-light: #60a5fa;
-      --secondary: #64748b;
-      --accent: #0ea5e9;
-      
-      --bg-primary: #f0f9ff;
-      --bg-secondary: #e0f2fe;
-      --bg-tertiary: #bae6fd;
-      --bg-card: #ffffff;
-      --bg-input: #ffffff;
-      
-      --text-primary: #0c4a6e;
-      --text-secondary: #0369a1;
-      --text-muted: #0ea5e9;
-      --text-light: #7dd3fc;
-      
-      --border: #bae6fd;
-      --border-light: #e0f2fe;
-      --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
-    }
-
-    /* Theme: Royal Purple */
-    [data-theme="purple"] {
-      --primary: #8b5cf6;
-      --primary-dark: #7c3aed;
-      --primary-light: #a78bfa;
-      --secondary: #a78bfa;
-      --accent: #c084fc;
-      
-      --bg-primary: #faf5ff;
-      --bg-secondary: #f3e8ff;
-      --bg-tertiary: #e9d5ff;
-      --bg-card: #ffffff;
-      --bg-input: #ffffff;
-      
-      --text-primary: #5b21b6;
-      --text-secondary: #7c3aed;
-      --text-muted: #a78bfa;
-      --text-light: #c4b5fd;
-      
-      --border: #e9d5ff;
-      --border-light: #f3e8ff;
-      --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%);
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      min-height: 100vh;
-      transition: var(--transition);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 24px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    /* ===== HEADER ===== */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .logo {
-      width: 56px;
-      height: 56px;
-      background: var(--gradient-primary);
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 24px;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-    }
-
-    h1 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 32px;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .theme-switcher {
-      display: flex;
-      gap: 4px;
-      background: var(--bg-secondary);
-      padding: 4px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-    }
-
-    .theme-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-    }
-
-    .theme-btn:hover {
-      background: var(--bg-tertiary);
-      color: var(--text-primary);
-    }
-
-    .theme-btn.active {
-      background: var(--primary);
-      color: white;
-    }
-
-    .settings-btn {
-      background: var(--bg-secondary);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      font-weight: 500;
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .settings-btn:hover {
-      background: var(--bg-tertiary);
-      border-color: var(--primary-light);
-      color: var(--primary);
-    }
-
-    /* ===== MAIN LAYOUT ===== */
-    .main-content {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-      flex: 1;
-    }
-
-    @media (min-width: 1024px) {
-      .main-content {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .left-column, .right-column {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    /* ===== CARDS ===== */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow);
-      transition: var(--transition);
-    }
-
-    .card:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-
-    .input-card {
-      border-top: 4px solid var(--primary);
-    }
-
-    .output-card {
-      border-top: 4px solid var(--accent);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .card-title i {
-      color: var(--primary);
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-icon {
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-sm);
-      background: var(--bg-secondary);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      cursor: pointer;
-    }
-
-    .btn-icon:hover {
-      background: var(--bg-tertiary);
-      color: var(--text-primary);
-    }
-
-    /* ===== INPUT & TEXTAREAS ===== */
-    textarea, input, select {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      background: var(--bg-input);
-      color: var(--text-primary);
-      transition: var(--transition);
-      resize: vertical;
-    }
-
-    textarea:focus, input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-
-    textarea {
-      min-height: 120px;
-      line-height: 1.5;
-    }
-
-    textarea#output {
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      margin-bottom: 20px;
-      flex: 1;
-      min-height: 300px;
-    }
-
-    /* ===== BUTTONS ===== */
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: var(--radius-sm);
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 14px;
-      cursor: pointer;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
-    }
-
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    }
-
-    .btn-primary {
-      background: var(--gradient-primary);
-    }
-
-    .btn-convert {
-      width: 100%;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 600;
-      margin-top: 16px;
-    }
-
-    .btn-secondary {
-      background: var(--secondary);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-    }
-
-    /* ===== AI TOOL BUTTONS ===== */
-    .ai-tools-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin: 20px 0;
-    }
-
-    .ai-tool-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 12px 8px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg-card);
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: var(--transition);
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .ai-tool-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-
-    /* AI Tool Specific Colors */
-    .btn-chatgpt {
-      background: var(--chatgpt);
-      color: white;
-      border-color: var(--chatgpt);
-    }
-
-    .btn-claude {
-      background: var(--claude);
-      color: #1f2933;
-      border-color: var(--claude);
-    }
-
-    .btn-gemini {
-      background: var(--gemini);
-      color: white;
-      border-color: var(--gemini);
-    }
-
-    .btn-copilot {
-      background: var(--copilot);
-      color: white;
-      border-color: var(--copilot);
-    }
-
-    .btn-grok {
-      background: var(--grok);
-      color: white;
-      border-color: var(--grok);
-    }
-
-    .btn-perplexity {
-      background: var(--perplexity);
-      color: white;
-      border-color: var(--perplexity);
-    }
-
-    .btn-deepseek {
-      background: var(--deepseek);
-      color: white;
-      border-color: var(--deepseek);
-    }
-
-    /* ===== PRESET SELECTOR ===== */
-    .preset-selector {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .preset-option {
-      padding: 16px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: center;
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .preset-option:hover {
-      border-color: var(--primary-light);
-      background: var(--bg-secondary);
-      transform: translateY(-2px);
-    }
-
-    .preset-option.active {
-      border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.1);
-      color: var(--primary);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-    }
-
-    /* ===== MODALS ===== */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-content {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow-xl);
-    }
-
-    .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 20px;
-    }
-
-    .close-modal {
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: var(--text-muted);
-      cursor: pointer;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-sm);
-      transition: var(--transition);
-    }
-
-    .close-modal:hover {
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-    }
-
-    .modal-body {
-      padding: 24px;
-    }
-
-    .form-group {
-      margin-bottom: 24px;
-    }
-
-    .form-label {
-      display: block;
-      font-weight: 500;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .form-hint {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 32px;
-    }
-
-    /* ===== EXAMPLES ===== */
-    .examples-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-    }
-
-    .example-btn {
-      padding: 16px 12px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text-secondary);
-      font-size: 13px;
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 80px;
-    }
-
-    .example-btn:hover {
-      background: var(--bg-tertiary);
-      border-color: var(--primary-light);
-      color: var(--primary);
-      transform: translateY(-2px);
-    }
-
-    /* ===== FOOTER ===== */
-    .footer {
-      margin-top: auto;
-      padding-top: 24px;
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border);
-    }
-
-    .footer-content {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .footer-stats, .footer-credits {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .divider {
-      color: var(--border);
-    }
-
-    /* ===== NOTIFICATION ===== */
-    .notification {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--success);
-      color: white;
-      padding: 16px 24px;
-      border-radius: var(--radius);
-      display: none;
-      align-items: center;
-      gap: 12px;
-      box-shadow: var(--shadow-xl);
-      z-index: 1001;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .container {
-        padding: 16px;
-      }
-      
-      .header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-      }
-      
-      .header-actions {
-        justify-content: space-between;
-      }
-      
-      .main-content {
-        grid-template-columns: 1fr;
-      }
-      
-      .preset-selector,
-      .ai-tools-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .preset-selector,
-      .ai-tools-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles/main.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 </head>
 
 <body>
@@ -773,6 +38,9 @@
           </button>
           <button class="theme-btn" id="themeDark" title="Dark Theme">
             <i class="fas fa-moon"></i>
+          </button>
+          <button class="theme-btn" id="themeAuto" title="Auto Theme">
+            <i class="fas fa-adjust"></i>
           </button>
         </div>
         <button class="settings-btn" id="settingsBtn">
@@ -814,8 +82,11 @@
             <select id="themeSelect">
               <option value="light">Light</option>
               <option value="dark">Dark</option>
+              <option value="auto">Auto (System)</option>
               <option value="blue">Ocean Blue</option>
               <option value="purple">Royal Purple</option>
+              <option value="green">Forest Green</option>
+              <option value="slate">Slate Gray</option>
             </select>
           </div>
           
@@ -840,6 +111,14 @@
           <div class="card-header">
             <div class="card-title">
               <i class="fas fa-edit"></i> Your Requirement
+              <div class="status-badges">
+                <span id="convertedBadge" class="badge badge-success" style="display:none">
+                  <i class="fas fa-check-circle"></i> Converted
+                </span>
+                <span id="timerDisplay" class="badge badge-warning" style="display:none">
+                  <i class="fas fa-clock"></i> <span id="timerValue">60s</span>
+                </span>
+              </div>
             </div>
             <div class="card-actions">
               <button class="btn-icon" id="clearInputBtn" title="Clear">
@@ -848,19 +127,20 @@
             </div>
           </div>
           
-          <div style="margin-bottom: 20px;">
-            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-              <input type="checkbox" id="autoConvert" checked style="width: auto;">
-              <span>Auto-convert as I type</span>
+          <div class="auto-convert-toggle">
+            <label class="toggle">
+              <input type="checkbox" id="autoConvert" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Auto-convert as I type</span>
             </label>
           </div>
           
           <textarea id="requirement" placeholder="Type your requirement here...&#10;Example: 'Write a professional email to my manager about project updates'"></textarea>
           
-          <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: var(--text-muted);">
-            <span id="charCount">0 chars</span>
-            <span id="wordCount">0 words</span>
-            <span id="lineCount">0 lines</span>
+          <div class="stats-row">
+            <span class="stat-item" id="charCount">0 chars</span>
+            <span class="stat-item" id="wordCount">0 words</span>
+            <span class="stat-item" id="lineCount">0 lines</span>
           </div>
           
           <button id="convertBtn" class="btn btn-primary btn-convert">
@@ -868,26 +148,50 @@
           </button>
         </div>
 
-        <!-- Examples -->
-        <div class="card">
+        <!-- Template Library -->
+        <div class="card template-card">
           <div class="card-header">
             <div class="card-title">
-              <i class="fas fa-bolt"></i> Quick Examples
+              <i class="fas fa-layer-group"></i> Template Library
+              <span class="badge" id="templateCount">0</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-icon" id="newTemplateBtn" title="New Template">
+                <i class="fas fa-plus"></i>
+              </button>
+              <button class="btn-icon" id="saveAsTemplateBtn" title="Save as Template">
+                <i class="fas fa-save"></i>
+              </button>
+              <button class="btn-icon" id="toggleTemplatesBtn" title="Show/Hide">
+                <i class="fas fa-eye"></i>
+              </button>
             </div>
           </div>
-          <div class="examples-grid">
-            <button class="example-btn" data-example="Write a professional email to my team about the deadline extension">
-              <i class="fas fa-envelope"></i> Email
-            </button>
-            <button class="example-btn" data-example="Create a Python function to calculate Fibonacci sequence">
-              <i class="fas fa-code"></i> Code
-            </button>
-            <button class="example-btn" data-example="Analyze the market trends for electric vehicles in 2024">
-              <i class="fas fa-chart-line"></i> Analysis
-            </button>
-            <button class="example-btn" data-example="Write a blog post about the benefits of meditation">
-              <i class="fas fa-blog"></i> Blog
-            </button>
+          
+          <div id="templatesPanel">
+            <div class="search-container">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" id="templateSearch" placeholder="Search templates...">
+              <button class="btn-icon" id="clearSearchBtn" title="Clear search">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="template-categories" id="templateCategories">
+              <!-- Categories populated by JS -->
+            </div>
+            
+            <div class="templates-grid" id="templatesGrid">
+              <!-- Templates populated by JS -->
+            </div>
+            
+            <div id="emptyTemplates" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>No templates found</p>
+              <button class="btn btn-secondary btn-sm" id="createFirstTemplateBtn">
+                <i class="fas fa-plus"></i> Create First Template
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -900,8 +204,10 @@
             <div class="card-title">
               <i class="fas fa-code"></i> Generated Prompt
             </div>
-            <div style="font-size: 12px; color: var(--text-muted);" id="presetInfo">
-              General • Standard (auto)
+            <div class="card-actions">
+              <div class="preset-info" id="presetInfo">
+                General • Standard (auto)
+              </div>
             </div>
           </div>
           
@@ -922,37 +228,94 @@
           
           <textarea id="output" readonly placeholder="Your formatted prompt will appear here..."></textarea>
           
-          <!-- AI Tools -->
-          <div class="ai-tools-grid">
-            <button class="ai-tool-btn btn-chatgpt" id="chatgptBtn">
-              <i class="fas fa-comment-dots"></i> ChatGPT
+          <!-- AI Tools Bar -->
+          <div class="ai-tools-section">
+            <div class="section-title">Open with AI Tool</div>
+            <div class="ai-tools-grid">
+              <button class="ai-tool-btn btn-chatgpt" id="chatgptBtn" title="ChatGPT">
+                <span class="ai-icon">🤖</span>
+                <span>ChatGPT</span>
+              </button>
+              <button class="ai-tool-btn btn-claude" id="claudeBtn" title="Claude">
+                <span class="ai-icon">🧠</span>
+                <span>Claude</span>
+              </button>
+              <button class="ai-tool-btn btn-gemini" id="geminiBtn" title="Gemini">
+                <span class="ai-icon">✨</span>
+                <span>Gemini</span>
+              </button>
+              <button class="ai-tool-btn btn-copilot" id="copilotBtn" title="Copilot">
+                <span class="ai-icon">🛡️</span>
+                <span>Copilot</span>
+              </button>
+              <button class="ai-tool-btn btn-grok" id="grokBtn" title="Grok">
+                <span class="ai-icon">⚡</span>
+                <span>Grok</span>
+              </button>
+              <button class="ai-tool-btn btn-perplexity" id="perplexityBtn" title="Perplexity">
+                <span class="ai-icon">❓</span>
+                <span>Perplexity</span>
+              </button>
+              <button class="ai-tool-btn btn-deepseek" id="deepseekBtn" title="DeepSeek">
+                <span class="ai-icon">🔍</span>
+                <span>DeepSeek</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="action-buttons">
+            <button class="btn btn-secondary" id="exportBtn">
+              <i class="fas fa-download"></i> Export
             </button>
-            <button class="ai-tool-btn btn-claude" id="claudeBtn">
-              <i class="fas fa-robot"></i> Claude
+            <button class="btn btn-secondary" id="toggleHistoryBtn">
+              <i class="fas fa-history"></i> History
             </button>
-            <button class="ai-tool-btn btn-gemini" id="geminiBtn">
-              <i class="fas fa-sparkles"></i> Gemini
-            </button>
-            <button class="ai-tool-btn btn-copilot" id="copilotBtn">
-              <i class="fas fa-cloud"></i> Copilot
-            </button>
-            <button class="ai-tool-btn btn-grok" id="grokBtn">
-              <i class="fas fa-bolt"></i> Grok
-            </button>
-            <button class="ai-tool-btn btn-perplexity" id="perplexityBtn">
-              <i class="fas fa-question-circle"></i> Perplexity
-            </button>
-            <button class="ai-tool-btn btn-deepseek" id="deepseekBtn">
-              <i class="fas fa-magnifying-glass"></i> DeepSeek
+            <button class="btn btn-secondary" id="ratePromptBtn" title="Rate this prompt">
+              <i class="fas fa-star"></i> Rate
             </button>
           </div>
           
-          <div style="display: flex; gap: 12px; margin-top: 20px;">
-            <button class="btn btn-secondary" id="exportBtn" style="flex: 1;">
-              <i class="fas fa-download"></i> Export
+          <div class="history-panel" id="historyPanel" style="display:none">
+            <div class="history-header">
+              <span>Recent Prompts</span>
+              <button class="btn btn-danger btn-sm" id="clearHistoryBtn">
+                <i class="fas fa-trash"></i> Clear
+              </button>
+            </div>
+            <div id="historyList"></div>
+          </div>
+        </div>
+        
+        <!-- Quick Examples -->
+        <div class="card examples-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-bolt"></i> Quick Examples
+            </div>
+            <div class="card-actions">
+              <button class="btn-icon" id="refreshExamplesBtn" title="New Examples">
+                <i class="fas fa-redo"></i>
+              </button>
+            </div>
+          </div>
+          <div class="examples-grid">
+            <button class="example-btn" data-example="Write a professional email to my team about the deadline extension">
+              <i class="fas fa-envelope"></i> Email
             </button>
-            <button class="btn btn-secondary" id="toggleHistoryBtn" style="flex: 1;">
-              <i class="fas fa-history"></i> History
+            <button class="example-btn" data-example="Create a Python function to calculate Fibonacci sequence">
+              <i class="fas fa-code"></i> Code
+            </button>
+            <button class="example-btn" data-example="Analyze the market trends for electric vehicles in 2024">
+              <i class="fas fa-chart-line"></i> Analysis
+            </button>
+            <button class="example-btn" data-example="Write a blog post about the benefits of meditation">
+              <i class="fas fa-blog"></i> Blog
+            </button>
+            <button class="example-btn" data-example="Design a workout plan for beginners">
+              <i class="fas fa-dumbbell"></i> Workout
+            </button>
+            <button class="example-btn" data-example="Create a business proposal for a new startup">
+              <i class="fas fa-briefcase"></i> Business
             </button>
           </div>
         </div>
@@ -966,12 +329,101 @@
           <span><i class="fas fa-bolt"></i> <span id="usageCount">0</span> prompts generated</span>
           <span class="divider">•</span>
           <span><i class="fas fa-shield-alt"></i> Local & Secure</span>
+          <span class="divider">•</span>
+          <span><i class="fas fa-code"></i> v4.0</span>
         </div>
         <div class="footer-credits">
           <span>PromptCrafter Pro • Made with <i class="fas fa-heart"></i> for AI enthusiasts</span>
         </div>
       </div>
     </footer>
+  </div>
+
+  <!-- Template Modal -->
+  <div class="modal" id="templateModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle"><i class="fas fa-layer-group"></i> New Template</h2>
+        <button class="close-modal" id="closeTemplateBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Template Name</label>
+            <input type="text" id="templateName" placeholder="e.g., Professional Email Template">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="templateCategory">
+              <option value="communication">Communication</option>
+              <option value="coding">Coding</option>
+              <option value="writing">Writing</option>
+              <option value="analysis">Analysis</option>
+              <option value="business">Business</option>
+              <option value="creative">Creative</option>
+              <option value="education">Education</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="templateDescription" rows="2" placeholder="Describe what this template is for..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Prompt Content</label>
+          <div class="textarea-header">
+            <span>Template Content</span>
+            <button type="button" class="btn-icon" id="useCurrentPromptBtn" title="Use current prompt">
+              <i class="fas fa-paste"></i> Use Current
+            </button>
+          </div>
+          <textarea id="templateContent" rows="8" placeholder="Paste your prompt template here..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Example Usage</label>
+          <textarea id="templateExample" rows="3" placeholder="Show an example of how to use this template..."></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button class="btn btn-secondary" id="cancelTemplateBtn">
+            Cancel
+          </button>
+          <button class="btn" id="saveTemplateBtn">
+            <i class="fas fa-save"></i> Save Template
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Modal -->
+  <div class="modal" id="ratingModal">
+    <div class="modal-content small">
+      <div class="modal-header">
+        <h2><i class="fas fa-star"></i> Rate Prompt</h2>
+        <button class="close-modal" id="closeRatingBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="rating-stars">
+          <i class="fas fa-star" data-rating="1"></i>
+          <i class="fas fa-star" data-rating="2"></i>
+          <i class="fas fa-star" data-rating="3"></i>
+          <i class="fas fa-star" data-rating="4"></i>
+          <i class="fas fa-star" data-rating="5"></i>
+        </div>
+        <textarea id="ratingComment" placeholder="Optional feedback..."></textarea>
+        <div class="form-actions">
+          <button class="btn" id="submitRatingBtn">
+            <i class="fas fa-check"></i> Submit Rating
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Notification -->
@@ -981,500 +433,6 @@
   </div>
 
   <!-- JavaScript -->
-  <script>
-    // ===== APPLICATION STATE =====
-    const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-    const OPENAI_MODEL = "gpt-3.5-turbo";
-
-    let currentPreset = "default";
-    let userPresetLocked = false;
-    let lastPresetSource = "auto";
-    let lastTaskLabel = "General";
-    let lastRole = "expert assistant";
-
-    let autoConvertEnabled = true;
-    let autoConvertDelay = 60;
-    let usageCount = 0;
-    let lastConvertedText = "";
-    let isConverted = false;
-    let autoConvertTimer;
-    let autoConvertCountdown = 60;
-    let countdownInterval;
-    let currentTheme = "light";
-
-    // Preset templates
-    const PRESETS = {
-      default: (role, requirement) =>
-        `# Role\nYou are an ${role}.\n\n# Objective\n${requirement}\n\n# Instructions\n1. Perform the task directly\n2. Provide the final result\n3. Do not talk about prompts\n\n# Notes\nBe clear and professional.`,
-
-      claude: (role, requirement) =>
-        `# Role\nYou are an ${role}.\n\n# Task\n${requirement}\n\n# Response Format\n- Direct answer only\n- No explanations\n- No meta-commentary\n\nBe helpful and accurate.`,
-
-      chatgpt: (role, requirement) =>
-        `You are an ${role}. Your task:\n\n${requirement}\n\nRespond with the completed result only. Do not add any commentary or explanations about the prompt.`,
-
-      detailed: (role, requirement) =>
-        `# Role\nYou are an ${role} with extensive expertise.\n\n# Objective\n${requirement}\n\n# Context\n- Provide detailed analysis\n- Include examples if helpful\n- Structure your response clearly\n\n# Instructions\n1. Analyze the requirement thoroughly\n2. Break down complex aspects\n3. Provide comprehensive answer\n4. Use headings and bullet points\n\n# Output Format\nProfessional, structured, and complete.`
-    };
-
-    // ===== HELPER FUNCTIONS =====
-    function getRoleAndPreset(text) {
-      const lower = (text || "").toLowerCase();
-      let role = "expert assistant";
-      let preset = "default";
-      let label = "General";
-
-      if (/email|mail|send.*to|message.*to/i.test(lower)) {
-        role = "expert email writer";
-        preset = "default";
-        label = "Email";
-      } else if (/code|program|script|develop|python|javascript/i.test(lower)) {
-        role = "expert developer";
-        preset = "chatgpt";
-        label = "Code";
-      } else if (/analyze|analysis|market|research|report/i.test(lower)) {
-        role = "expert analyst";
-        preset = "detailed";
-        label = "Analysis";
-      } else if (/blog|article|story|content|writing/i.test(lower)) {
-        role = "expert content writer";
-        preset = "default";
-        label = "Writing";
-      }
-
-      return { role, preset, label };
-    }
-
-    function setCurrentPreset(presetId) {
-      if (!PRESETS[presetId]) return;
-      currentPreset = presetId;
-      
-      document.querySelectorAll(".preset-option").forEach((o) => {
-        o.classList.toggle("active", o.dataset.preset === presetId);
-      });
-      
-      updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
-    }
-
-    function updatePresetInfo(taskLabel, presetId, source) {
-      const el = document.getElementById("presetInfo");
-      if (!el) return;
-
-      const presetNames = {
-        default: "Standard",
-        chatgpt: "ChatGPT",
-        claude: "Claude",
-        detailed: "Detailed"
-      };
-
-      const nicePreset = presetNames[presetId] || presetId;
-      el.textContent = `${taskLabel} • ${nicePreset} (${source})`;
-    }
-
-    function setTheme(theme) {
-      currentTheme = theme;
-      document.documentElement.setAttribute("data-theme", theme);
-      localStorage.setItem("theme", theme);
-      document.getElementById("themeSelect").value = theme;
-      
-      // Update theme switcher buttons
-      document.querySelectorAll(".theme-btn").forEach(btn => {
-        btn.classList.remove("active");
-      });
-      
-      if (theme === "light") {
-        document.getElementById("themeLight").classList.add("active");
-      } else if (theme === "dark") {
-        document.getElementById("themeDark").classList.add("active");
-      }
-    }
-
-    function showNotification(message) {
-      const notification = document.getElementById("notification");
-      document.getElementById("notificationText").textContent = message;
-      notification.style.display = "flex";
-      setTimeout(() => {
-        notification.style.display = "none";
-      }, 3000);
-    }
-
-    // ===== INITIALIZATION =====
-    document.addEventListener("DOMContentLoaded", () => {
-      initializeApp();
-    });
-
-    function initializeApp() {
-      loadSettings();
-      loadUsageCount();
-      setupEventListeners();
-      setCurrentPreset(currentPreset);
-      updatePresetInfo("General", currentPreset, "auto");
-      
-      // Set initial theme
-      const theme = localStorage.getItem("theme") || "light";
-      setTheme(theme);
-      
-      document.getElementById("requirement").focus();
-    }
-
-    function loadSettings() {
-      const apiKey = localStorage.getItem("OPENAI_API_KEY") || "";
-      const delay = localStorage.getItem("autoConvertDelay") || "60";
-      const theme = localStorage.getItem("theme") || "light";
-
-      document.getElementById("apiKeyInput").value = apiKey;
-      document.getElementById("autoConvertDelay").value = delay;
-      document.getElementById("themeSelect").value = theme;
-      document.getElementById("delayValue").textContent = `Current: ${delay} seconds`;
-
-      autoConvertDelay = parseInt(delay, 10);
-      autoConvertCountdown = autoConvertDelay;
-    }
-
-    function loadUsageCount() {
-      const savedUsage = localStorage.getItem("promptCrafterUsage");
-      if (savedUsage) {
-        usageCount = parseInt(savedUsage, 10);
-        document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
-      }
-    }
-
-    // ===== EVENT LISTENERS =====
-    function setupEventListeners() {
-      // Theme switcher
-      document.getElementById("themeLight").addEventListener("click", () => setTheme("light"));
-      document.getElementById("themeDark").addEventListener("click", () => setTheme("dark"));
-      
-      // Settings
-      document.getElementById("settingsBtn").addEventListener("click", () => {
-        document.getElementById("settingsModal").style.display = "flex";
-      });
-
-      document.getElementById("closeSettingsBtn").addEventListener("click", () => {
-        document.getElementById("settingsModal").style.display = "none";
-      });
-
-      document.getElementById("saveSettingsBtn").addEventListener("click", saveSettings);
-
-      document.getElementById("clearDataBtn").addEventListener("click", () => {
-        if (confirm("Clear all data?")) {
-          clearAllData();
-        }
-      });
-
-      // Auto-convert delay
-      const delaySlider = document.getElementById("autoConvertDelay");
-      delaySlider.addEventListener("input", () => {
-        document.getElementById("delayValue").textContent = `Current: ${delaySlider.value} seconds`;
-        autoConvertDelay = parseInt(delaySlider.value, 10);
-      });
-
-      // Requirement input
-      const requirementEl = document.getElementById("requirement");
-      let inputTimeout;
-      requirementEl.addEventListener("input", () => {
-        clearTimeout(inputTimeout);
-        updateStats(requirementEl.value);
-        
-        // Auto-detect role
-        const { role, preset, label } = getRoleAndPreset(requirementEl.value);
-        lastRole = role;
-        lastTaskLabel = label;
-
-        if (!userPresetLocked && preset && preset !== currentPreset) {
-          lastPresetSource = "auto";
-          setCurrentPreset(preset);
-        }
-
-        if (autoConvertEnabled && requirementEl.value.trim() && requirementEl.value.trim() !== lastConvertedText) {
-          resetAutoConvertTimer();
-        }
-      });
-
-      // Clear input
-      document.getElementById("clearInputBtn").addEventListener("click", () => {
-        requirementEl.value = "";
-        requirementEl.focus();
-        updateStats("");
-        showNotification("Input cleared");
-      });
-
-      // Auto-convert toggle
-      document.getElementById("autoConvert").addEventListener("change", (e) => {
-        autoConvertEnabled = e.target.checked;
-        if (!autoConvertEnabled) {
-          clearAutoConvertTimer();
-        }
-      });
-
-      // Preset selection
-      document.querySelectorAll(".preset-option").forEach((option) => {
-        option.addEventListener("click", () => {
-          const presetId = option.dataset.preset;
-          userPresetLocked = true;
-          lastPresetSource = "manual";
-          setCurrentPreset(presetId);
-          showNotification(`Preset: ${presetId}`);
-        });
-      });
-
-      // Examples
-      document.querySelectorAll(".example-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          requirementEl.value = btn.dataset.example;
-          requirementEl.focus();
-          updateStats(requirementEl.value);
-          generatePrompt();
-        });
-      });
-
-      // Convert button
-      document.getElementById("convertBtn").addEventListener("click", generatePrompt);
-
-      // AI Tools
-      document.getElementById('chatgptBtn').addEventListener('click', () => openAITool('ChatGPT'));
-      document.getElementById('claudeBtn').addEventListener('click', () => openAITool('Claude'));
-      document.getElementById('geminiBtn').addEventListener('click', () => openAITool('Gemini'));
-      document.getElementById('copilotBtn').addEventListener('click', () => openAITool('Copilot'));
-      document.getElementById('grokBtn').addEventListener('click', () => openAITool('Grok'));
-      document.getElementById('perplexityBtn').addEventListener('click', () => openAITool('Perplexity'));
-      document.getElementById('deepseekBtn').addEventListener('click', () => openAITool('DeepSeek'));
-
-      // Export
-      document.getElementById("exportBtn").addEventListener("click", exportPrompt);
-
-      // History button (placeholder)
-      document.getElementById("toggleHistoryBtn").addEventListener("click", () => {
-        showNotification("History feature coming soon!");
-      });
-    }
-
-    // ===== CORE FUNCTIONS =====
-    function updateStats(text) {
-      const charCount = text.length;
-      const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-      const lineCount = text.split("\n").length;
-
-      document.getElementById("charCount").textContent = `${charCount} chars`;
-      document.getElementById("wordCount").textContent = `${wordCount} words`;
-      document.getElementById("lineCount").textContent = `${lineCount} lines`;
-    }
-
-    function resetAutoConvertTimer() {
-      clearAutoConvertTimer();
-
-      const requirement = document.getElementById("requirement").value.trim();
-      if (autoConvertEnabled && requirement && !isConverted) {
-        autoConvertCountdown = autoConvertDelay;
-
-        autoConvertTimer = setTimeout(() => {
-          const currentRequirement = document.getElementById("requirement").value.trim();
-          if (currentRequirement && currentRequirement !== lastConvertedText) {
-            generatePrompt();
-          }
-        }, autoConvertDelay * 1000);
-      }
-    }
-
-    function clearAutoConvertTimer() {
-      clearTimeout(autoConvertTimer);
-      clearInterval(countdownInterval);
-    }
-
-    async function generatePrompt() {
-      const requirementEl = document.getElementById("requirement");
-      const outputEl = document.getElementById("output");
-      const convertBtn = document.getElementById("convertBtn");
-      const raw = requirementEl.value.trim();
-
-      if (!raw) {
-        showNotification("Please enter a requirement first");
-        return;
-      }
-
-      // Auto-detect
-      const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
-      lastRole = role;
-      lastTaskLabel = label;
-
-      if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-        lastPresetSource = "auto";
-        setCurrentPreset(autoPreset);
-      } else {
-        updatePresetInfo(lastTaskLabel, currentPreset, userPresetLocked ? "manual" : "auto");
-      }
-
-      // Track usage
-      usageCount++;
-      localStorage.setItem("promptCrafterUsage", usageCount);
-      document.getElementById("usageCount").textContent = `${usageCount} prompts generated`;
-
-      const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
-
-      // Show loading
-      convertBtn.disabled = true;
-      convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
-      clearAutoConvertTimer();
-
-      let generatedPrompt;
-
-      try {
-        if (!apiKey) {
-          // Use local formatter
-          generatedPrompt = localFormatter(raw);
-        } else {
-          // Use API
-          const system = `You write structured task instructions for AI models.
-Create a prompt for an ${role} to complete this task: "${raw}"
-Return ONLY the completed prompt template.`;
-
-          const response = await fetch(OPENAI_API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + apiKey
-            },
-            body: JSON.stringify({
-              model: OPENAI_MODEL,
-              messages: [
-                { role: "system", content: system },
-                { role: "user", content: `Create a prompt for: ${raw}` }
-              ],
-              temperature: 0.1,
-              max_tokens: 500
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            generatedPrompt = data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
-          } else {
-            generatedPrompt = localFormatter(raw);
-          }
-        }
-
-        // Clean up output
-        generatedPrompt = generatedPrompt.replace(/prompt generator|generate a prompt/gi, "assistant");
-
-        outputEl.value = generatedPrompt;
-        updateStats(generatedPrompt);
-
-        // Update state
-        isConverted = true;
-        lastConvertedText = raw;
-        convertBtn.disabled = true;
-
-        showNotification("Prompt generated!");
-
-      } catch (err) {
-        console.error("Error:", err);
-        generatedPrompt = localFormatter(raw);
-        outputEl.value = generatedPrompt;
-        updateStats(generatedPrompt);
-        showNotification("Generated with local template");
-      } finally {
-        convertBtn.disabled = true;
-        convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
-      }
-    }
-
-    function localFormatter(raw) {
-      const clean = (raw || "").trim() || "[No requirement provided]";
-      const { role } = getRoleAndPreset(clean);
-      const template = PRESETS[currentPreset];
-      return template ? template(role, clean) : PRESETS["default"](role, clean);
-    }
-
-    async function openAITool(platform) {
-      const outputEl = document.getElementById("output");
-      if (!outputEl.value) {
-        showNotification("Generate a prompt first");
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(outputEl.value);
-        
-        const urls = {
-          'ChatGPT': 'https://chat.openai.com/',
-          'Claude': 'https://claude.ai/new',
-          'Gemini': 'https://gemini.google.com/app',
-          'Copilot': 'https://copilot.microsoft.com/',
-          'Grok': 'https://x.ai/',
-          'Perplexity': 'https://www.perplexity.ai/',
-          'DeepSeek': 'https://chat.deepseek.com/'
-        };
-        
-        showNotification(`Copied! Opening ${platform}...`);
-        setTimeout(() => {
-          window.open(urls[platform], '_blank');
-        }, 500);
-        
-      } catch (err) {
-        showNotification("Failed to copy. Please copy manually.");
-      }
-    }
-
-    function exportPrompt() {
-      const outputEl = document.getElementById("output");
-      if (!outputEl.value) {
-        showNotification("Generate a prompt first");
-        return;
-      }
-
-      const blob = new Blob([outputEl.value], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `prompt-${Date.now()}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      showNotification("Prompt exported!");
-    }
-
-    function saveSettings() {
-      const apiKey = document.getElementById("apiKeyInput").value.trim();
-      const delay = document.getElementById("autoConvertDelay").value;
-      const theme = document.getElementById("themeSelect").value;
-
-      localStorage.setItem("OPENAI_API_KEY", apiKey);
-      localStorage.setItem("autoConvertDelay", delay);
-      
-      setTheme(theme);
-      autoConvertDelay = parseInt(delay, 10);
-
-      document.getElementById("settingsModal").style.display = "none";
-      showNotification("Settings saved!");
-    }
-
-    function clearAllData() {
-      const apiKey = localStorage.getItem("OPENAI_API_KEY");
-      const theme = localStorage.getItem("theme");
-
-      localStorage.clear();
-
-      if (apiKey) localStorage.setItem("OPENAI_API_KEY", apiKey);
-      if (theme) localStorage.setItem("theme", theme);
-
-      usageCount = 0;
-      isConverted = false;
-      lastConvertedText = "";
-      userPresetLocked = false;
-      currentPreset = "default";
-
-      document.getElementById("requirement").value = "";
-      document.getElementById("output").value = "";
-      document.getElementById("usageCount").textContent = "0 prompts generated";
-      updateStats("");
-
-      document.getElementById("convertBtn").disabled = false;
-      document.getElementById("settingsModal").style.display = "none";
-      
-      showNotification("All data cleared!");
-    }
-  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>
