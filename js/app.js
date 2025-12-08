@@ -28,12 +28,12 @@ let historyItems = [];
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
   coding:        { name: "Coding",        icon: "fa-code",     color: "#10b981" },
-  writing:       { name: "Writing",      icon: "fa-pen",      color: "#8b5cf6" },
-  analysis:      { name: "Analysis",     icon: "fa-chart-bar",color: "#f59e0b" },
-  business:      { name: "Business",     icon: "fa-briefcase",color: "#ef4444" },
-  creative:      { name: "Creative",     icon: "fa-palette",  color: "#ec4899" },
-  education:     { name: "Education",    icon: "fa-graduation-cap", color: "#06b6d4" },
-  other:         { name: "Other",        icon: "fa-th",       color: "#6b7280" }
+  writing:       { name: "Writing",       icon: "fa-pen",      color: "#8b5cf6" },
+  analysis:      { name: "Analysis",      icon: "fa-chart-bar",color: "#f59e0b" },
+  business:      { name: "Business",      icon: "fa-briefcase",color: "#ef4444" },
+  creative:      { name: "Creative",      icon: "fa-palette",  color: "#ec4899" },
+  education:     { name: "Education",     icon: "fa-graduation-cap", color: "#06b6d4" },
+  other:         { name: "Other",         icon: "fa-th",       color: "#6b7280" }
 };
 
 // Default templates (simple examples)
@@ -400,7 +400,7 @@ function loadTemplatesToUI(category = "all", searchQuery = "") {
         ${(template.description || "").substring(0, 120)}${(template.description || "").length > 120 ? "..." : ""}
       </div>
       <div class="template-actions">
-        <button class="btn btn-small" style="background:${categoryMeta.color}" onclick="useTemplate('${template.id}')">
+        <button class="btn btn-small" style="background:${categoryMeta.color}; color:#fff" onclick="useTemplate('${template.id}')">
           <i class="fas fa-play"></i> Use
         </button>
         <button class="btn btn-small btn-secondary" onclick="editTemplate('${template.id}')">
@@ -481,7 +481,7 @@ function editTemplate(id) {
   if (!template) return;
 
   editingTemplateId = id;
-  document.getElementById("modalTitle").textContent = "Edit Template";
+  document.getElementById("modalTitle").innerHTML = '<i class="fas fa-layer-group"></i> Edit Template';
   document.getElementById("templateName").value = template.name;
   document.getElementById("templateDescription").value = template.description || "";
   document.getElementById("templateContent").value = template.content || "";
@@ -718,7 +718,7 @@ function setupTemplateListeners() {
   // New template
   document.getElementById("newTemplateBtn").addEventListener("click", () => {
     editingTemplateId = null;
-    document.getElementById("modalTitle").textContent = "New Template";
+    document.getElementById("modalTitle").innerHTML = '<i class="fas fa-layer-group"></i> New Template';
     document.getElementById("templateName").value = "";
     document.getElementById("templateDescription").value = "";
     document.getElementById("templateContent").value =
@@ -741,7 +741,7 @@ function setupTemplateListeners() {
       }
 
       editingTemplateId = null;
-      document.getElementById("modalTitle").textContent = "Save as Template";
+      document.getElementById("modalTitle").innerHTML = '<i class="fas fa-layer-group"></i> Save as Template';
       document.getElementById("templateName").value = `Prompt ${new Date().toLocaleDateString()}`;
       document.getElementById("templateDescription").value =
         "Custom prompt template";
@@ -940,7 +940,7 @@ async function generatePrompt() {
   // Show converting state
   convertBtn.disabled = true;
   convertBtn.innerHTML =
-    '<i class="fas fa-spinner fa-spin"></i> Converting...';
+    '<i class="fas fa-spinner fa-spin"></i> Enhancing...';
   clearAutoConvertTimer();
 
   let generatedPrompt;
@@ -1006,7 +1006,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
     // Update state
     isConverted = true;
     lastConvertedText = raw;
-    convertBtn.disabled = true;
+    convertBtn.disabled = false;
     document.getElementById("convertedBadge").style.display = "inline-flex";
 
     showNotification("Prompt generated successfully");
@@ -1026,13 +1026,12 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
     isConverted = true;
     lastConvertedText = raw;
-    convertBtn.disabled = true;
+    convertBtn.disabled = false;
     document.getElementById("convertedBadge").style.display = "inline-flex";
 
     return generatedPrompt;
   } finally {
-    convertBtn.disabled = false;
-    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
+    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Enhance Prompt';
   }
 }
 
@@ -1132,5 +1131,5 @@ function showNotification(message) {
   notification.style.display = "flex";
   setTimeout(() => {
     notification.style.display = "none";
-  }, 3000);
+  }, 2600);
 }
