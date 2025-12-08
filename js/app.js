@@ -456,24 +456,45 @@ async function generatePrompt() {
   convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
   clearAutoConvertTimer();
 
-  let generatedPrompt;
+  let generatedText;
   
   try {
     if (!apiKey) {
-      // Use local formatter
-      generatedPrompt = localFormatter(raw);
+      // No API key → fall back to local formatter (still creates a “smart” instruction)
+      generatedText = localFormatter(raw);
     } else {
-      // Use API
+      // *** NEW BEHAVIOUR: perform the task directly, NOT generate a prompt ***
       const role = getAppropriateRole(raw);
-      const system = `You are a prompt generator. Convert the user's requirement into this EXACT format:
-      
-${PRESETS[currentPreset]('[ROLE]', '[REQUIREMENT]')}
 
-Replace [ROLE] with appropriate role and [REQUIREMENT] with user's text.`;
+      // Style hint based on preset (optional, but keeps your presets useful)
+      let styleHint = '';
+      switch (currentPreset) {
+        case 'chatgpt':
+          styleHint = 'Use a clear, conversational style suitable for ChatGPT-style responses.';
+          break;
+        case 'claude':
+          styleHint = 'Use a thoughtful, well-structured style with clear sections when helpful.';
+          break;
+        case 'detailed':
+          styleHint = 'Provide a detailed, step-by-step response with strong structure.';
+          break;
+        default:
+          styleHint = 'Use a clear, professional, and concise style.';
+      }
 
-      const userMessage = `Requirement: "${raw}"
-      
-Generate prompt in the ${currentPreset} format.`;
+      const system = `You are an ${role}. Perform the user's task directly and output the final result.
+
+Rules:
+- Do NOT generate or rewrite prompts.
+- Do NOT describe your process or talk about "this prompt".
+- Do NOT wrap your entire answer in markdown code fences.
+- Provide only the completed answer (email, code, analysis, etc.) in a clear, professional format.
+- If the request is ambiguous, make reasonable assumptions and proceed.
+
+${styleHint}`;
+
+      // User message is now JUST the requirement
+      const userMessage = raw;
 
       const response = await fetch(OPENAI_API_URL, {
         method: "POST",
@@ -487,27 +508,28 @@ Generate prompt in the ${currentPreset} format.`;
             { role: "system", content: system },
             { role: "user", content: userMessage }
           ],
-          temperature: 0.1,
-          max_tokens: 500
+          temperature: 0.3,
+          max_tokens: 1000
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        generatedPrompt = data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
+        generatedText = data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
       } else {
-        generatedPrompt = localFormatter(raw);
+        generatedText = localFormatter(raw);
       }
 
-      // Cleanup
-      generatedPrompt = generatedPrompt.replace(/^```[^\n]*\n?/g, '');
-      generatedPrompt = generatedPrompt.replace(/```$/g, '');
-      generatedPrompt = generatedPrompt.trim();
+      // Safety: strip accidental code fences
+      generatedText = generatedText.replace(/^```[^\n]*\n?/g, '');
+      generatedText = generatedText.replace(/```$/g, '');
+      generatedText = generatedText.trim();
     }
 
-    outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
-    saveToHistory(raw, generatedPrompt);
+    // Write to UI
+    outputEl.value = generatedText;
+    updateStats(generatedText);
+    saveToHistory(raw, generatedText);
     
     // Update state
     isConverted = true;
@@ -515,36 +537,34 @@ Generate prompt in the ${currentPreset} format.`;
     convertBtn.disabled = true;
     document.getElementById('convertedBadge').style.display = 'flex';
     
-    showNotification('Prompt generated successfully');
+    showNotification('Response generated successfully');
     
     // Reset auto-convert timer if text hasn't changed
     if (autoConvertEnabled) {
       resetAutoConvertTimer();
     }
     
-    return generatedPrompt;
+    return generatedText;
 
   } catch (err) {
     console.error('Generation error:', err);
-    generatedPrompt = localFormatter(raw);
-    outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
-    saveToHistory(raw, generatedPrompt);
-    showNotification('Generated with local template');
+    generatedText = localFormatter(raw);
+    outputEl.value = generatedText;
+    updateStats(generatedText);
+    saveToHistory(raw, generatedText);
+    showNotification('Generated using local template (no API call)');
     
-    // Still mark as converted
     isConverted = true;
     lastConvertedText = raw;
     convertBtn.disabled = true;
     document.getElementById('convertedBadge').style.display = 'flex';
     
-    return generatedPrompt;
+    return generatedText;
   } finally {
     convertBtn.disabled = true;
     convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
   }
 }
-
 function localFormatter(raw) {
   const clean = (raw || '').trim() || '[No requirement provided]';
   const role = getAppropriateRole(clean);
