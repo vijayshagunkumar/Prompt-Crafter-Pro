@@ -1,20 +1,109 @@
+/* styles/variables.css - Updated Professional Theme */
 :root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --brand: #4f46e5;
-  --brand-2: #22c55e;
-  --brand-3: #0284c7;
-  --brand-4: #7c3aed;
-  --brand-5: #f97316;
-  --brand-6: #10b981;
-  --ring: rgba(79, 70, 229, .15);
-  --border: #e2e8f0;
-  --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+  /* Professional Color Palette */
+  --primary: #2563eb;               /* Professional blue - primary brand */
+  --primary-dark: #1d4ed8;          /* Darker blue for hover states */
+  --primary-light: #3b82f6;         /* Lighter blue for accents */
+  --secondary: #64748b;             /* Muted slate for secondary elements */
+  --accent: #8b5cf6;                /* Vibrant purple for highlights */
+  --success: #10b981;               /* Green for success states */
+  --warning: #f59e0b;               /* Amber for warnings */
+  --danger: #ef4444;                /* Red for errors/destructive actions */
+  
+  /* Neutral Backgrounds */
+  --bg-primary: #ffffff;            /* Main background */
+  --bg-secondary: #f8fafc;          /* Secondary background (cards, etc.) */
+  --bg-tertiary: #f1f5f9;           /* Tertiary background (hover states) */
+  --bg-card: #ffffff;               /* Card background */
+  --bg-input: #ffffff;              /* Input background */
+  
+  /* Text Colors */
+  --text-primary: #1e293b;          /* Primary text - high contrast */
+  --text-secondary: #475569;        /* Secondary text */
+  --text-muted: #64748b;            /* Muted text (hints, labels) */
+  --text-light: #94a3b8;            /* Very light text (disabled) */
+  
+  /* Borders & Shadows */
+  --border: #e2e8f0;                /* Default border color */
+  --border-light: #f1f5f9;          /* Light border (dividers) */
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  
+  /* UI Elements */
+  --radius: 12px;                   /* Default border radius */
+  --radius-sm: 8px;                 /* Small radius (buttons, inputs) */
+  --radius-lg: 16px;                /* Large radius (modals) */
+  --transition: all 0.2s ease;      /* Default transition */
+  
+  /* Brand Gradient */
+  --gradient: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+  
+  /* AI Tool Colors (for specific buttons) */
+  --chatgpt: #10a37f;              /* ChatGPT green */
+  --claude: #d4a574;               /* Claude brown */
+  --gemini: #4285f4;               /* Google blue */
+  --perplexity: #8c4dff;           /* Perplexity purple */
+  --deepseek: #0d9488;             /* DeepSeek teal */
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #60a5fa;
+  --secondary: #94a3b8;
+  --accent: #a78bfa;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --bg-input: #334155;
+  
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  
+  --border: #475569;
+  --border-light: #334155;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Auto Theme (System Preference) */
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    /* Same as dark theme above */
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --primary-light: #60a5fa;
+    --secondary: #94a3b8;
+    --accent: #a78bfa;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-light: #64748b;
+    
+    --border: #475569;
+    --border-light: #334155;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  }
 }
