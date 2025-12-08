@@ -1,53 +1,86 @@
-/* styles/variables.css - Updated Professional Theme */
+/* styles/variables.css - Design Tokens for Prompt Crafter Pro */
+
 :root {
-  /* Professional Color Palette */
-  --primary: #2563eb;               /* Professional blue - primary brand */
-  --primary-dark: #1d4ed8;          /* Darker blue for hover states */
-  --primary-light: #3b82f6;         /* Lighter blue for accents */
-  --secondary: #64748b;             /* Muted slate for secondary elements */
-  --accent: #8b5cf6;                /* Vibrant purple for highlights */
-  --success: #10b981;               /* Green for success states */
-  --warning: #f59e0b;               /* Amber for warnings */
-  --danger: #ef4444;                /* Red for errors/destructive actions */
-  
-  /* Neutral Backgrounds */
-  --bg-primary: #ffffff;            /* Main background */
-  --bg-secondary: #f8fafc;          /* Secondary background (cards, etc.) */
-  --bg-tertiary: #f1f5f9;           /* Tertiary background (hover states) */
-  --bg-card: #ffffff;               /* Card background */
-  --bg-input: #ffffff;              /* Input background */
-  
-  /* Text Colors */
-  --text-primary: #1e293b;          /* Primary text - high contrast */
-  --text-secondary: #475569;        /* Secondary text */
-  --text-muted: #64748b;            /* Muted text (hints, labels) */
-  --text-light: #94a3b8;            /* Very light text (disabled) */
-  
-  /* Borders & Shadows */
-  --border: #e2e8f0;                /* Default border color */
-  --border-light: #f1f5f9;          /* Light border (dividers) */
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  
-  /* UI Elements */
-  --radius: 12px;                   /* Default border radius */
-  --radius-sm: 8px;                 /* Small radius (buttons, inputs) */
-  --radius-lg: 16px;                /* Large radius (modals) */
-  --transition: all 0.2s ease;      /* Default transition */
-  
-  /* Brand Gradient */
-  --gradient: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
-  
-  /* AI Tool Colors (for specific buttons) - real brand-inspired */
-  --chatgpt: #74AA9C;               /* ChatGPT Green */
-  --chatgpt-purple: #AB68FF;        /* ChatGPT Pro Purple (optional) */
-  --claude: #DE7356;                /* Claude terra cotta */
-  --gemini: #4796E3;                /* Gemini Blue */
-  --perplexity: #20808D;           /* Perplexity teal */
-  --deepseek: #0D28F3;              /* DeepSeek Blue */
-  --copilot: #199FD7;               /* Microsoft Copilot Blue */
-  --grok: #050816;                  /* Grok near-black */
+  /* Brand & Primary Colors */
+  --primary: #2563eb;               /* Primary blue */
+  --primary-dark: #1d4ed8;          /* Darker blue (hover) */
+  --primary-light: #3b82f6;         /* Lighter accent */
+
+  --secondary: #64748b;             /* Muted slate */
+  --accent: #8b5cf6;                /* Purple accent */
+
+  /* Status Colors */
+  --success: #10b981;               /* Green */
+  --warning: #f59e0b;               /* Amber */
+  --danger:  #ef4444;               /* Red */
+
+  /* Backgrounds */
+  --bg-body: #f4f6fb;               /* App shell background */
+  --bg-primary: #ffffff;            /* Main panels / cards */
+  --bg-soft: #f8fafc;               /* Soft surface */
+  --bg-soft-strong: #eef2ff;        /* Highlighted soft surface */
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-on-primary: #ffffff;
+
+  /* Borders & Dividers */
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-soft:
+    0 18px 45px rgba(15, 23, 42, 0.06),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-card:
+    0 14px 35px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-elevated:
+    0 22px 55px rgba(15, 23, 42, 0.14);
+
+  /* Transitions */
+  --transition-fast: 0.16s ease-out;
+  --transition: 0.22s ease;
+
+  /* Gradient */
+  --gradient-brand: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+  --gradient-soft: radial-gradient(circle at top, #e0ecff 0, #f4f6fb 45%, #ffffff 100%);
+
+  /* Hero */
+  --hero-bg: radial-gradient(circle at top left, #dbeafe 0, #eff6ff 40%, #ffffff 100%);
+
+  /* Panel */
+  --panel-border: rgba(148, 163, 184, 0.35);
+  --panel-bg: #ffffff;
+
+  /* Inputs */
+  --input-bg: #ffffff;
+  --input-border: #e2e8f0;
+  --input-border-focus: #2563eb;
+  --input-shadow-focus: 0 0 0 1px rgba(37, 99, 235, 0.12);
+
+  /* Notification */
+  --toast-bg: #0f172a;
+  --toast-text: #f9fafb;
+
+  /* AI Tool Brand Colors */
+  --chatgpt: #74aa9c;      /* ChatGPT green */
+  --claude: #de7356;       /* Claude terra cotta */
+  --gemini: #4796e3;       /* Gemini blue */
+  --perplexity: #20808d;   /* Perplexity teal */
+  --deepseek: #0d28f3;     /* DeepSeek blue */
+  --copilot: #199fd7;      /* Microsoft Copilot blue */
+  --grok: #050816;         /* Grok near-black */
 }
 
 /* Dark Theme */
@@ -55,57 +88,81 @@
   --primary: #3b82f6;
   --primary-dark: #2563eb;
   --primary-light: #60a5fa;
+
   --secondary: #94a3b8;
   --accent: #a78bfa;
+
   --success: #34d399;
   --warning: #fbbf24;
-  --danger: #f87171;
-  
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-card: #1e293b;
-  --bg-input: #334155;
-  
-  --text-primary: #f1f5f9;
+  --danger:  #f87171;
+
+  --bg-body: #020617;
+  --bg-primary: #020617;
+  --bg-soft: #020617;
+  --bg-soft-strong: #020617;
+
+  --text-primary: #e5e7eb;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
-  
-  --border: #475569;
-  --border-light: #334155;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --text-muted: #64748b;
+  --text-on-primary: #f9fafb;
+
+  --border-subtle: #1f2937;
+  --border-strong: #374151;
+
+  --panel-bg: #020617;
+  --panel-border: rgba(15, 23, 42, 0.9);
+
+  --input-bg: #020617;
+  --input-border: #111827;
+  --input-border-focus: #60a5fa;
+  --input-shadow-focus: 0 0 0 1px rgba(96, 165, 250, 0.35);
+
+  --hero-bg: radial-gradient(circle at top left, #020617 0, #020617 40%, #020617 100%);
+  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+
+  --toast-bg: #020617;
+  --toast-text: #f9fafb;
 }
 
-/* Auto Theme (System Preference) */
+/* Auto Theme (system) */
 @media (prefers-color-scheme: dark) {
   [data-theme="auto"] {
     --primary: #3b82f6;
     --primary-dark: #2563eb;
     --primary-light: #60a5fa;
+
     --secondary: #94a3b8;
     --accent: #a78bfa;
+
     --success: #34d399;
     --warning: #fbbf24;
-    --danger: #f87171;
-    
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-card: #1e293b;
-    --bg-input: #334155;
-    
-    --text-primary: #f1f5f9;
+    --danger:  #f87171;
+
+    --bg-body: #020617;
+    --bg-primary: #020617;
+    --bg-soft: #020617;
+    --bg-soft-strong: #020617;
+
+    --text-primary: #e5e7eb;
     --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-light: #64748b;
-    
-    --border: #475569;
-    --border-light: #334155;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --text-muted: #64748b;
+    --text-on-primary: #f9fafb;
+
+    --border-subtle: #1f2937;
+    --border-strong: #374151;
+
+    --panel-bg: #020617;
+    --panel-border: rgba(15, 23, 42, 0.9);
+
+    --input-bg: #020617;
+    --input-border: #111827;
+    --input-border-focus: #60a5fa;
+    --input-shadow-focus: 0 0 0 1px rgba(96, 165, 250, 0.35);
+
+    --hero-bg: radial-gradient(circle at top left, #020617 0, #020617 40%, #020617 100%);
+    --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+
+    --toast-bg: #020617;
+    --toast-text: #f9fafb;
   }
 }
