@@ -444,11 +444,27 @@ async function generatePrompt() {
     } else {
       // Use API
       const role = getAppropriateRole(raw);
-      const system = `You are a prompt generator. Convert the user's requirement into this EXACT format:
-      
+const system = `You are a Prompt-Crafter engine.
+
+Your ONLY job:
+Convert the user's requirement into a clean, structured prompt that an AI can directly execute.
+
+CRITICAL RULES:
+- NEVER tell the AI to rewrite or convert anything.
+- NEVER use the phrase "you are a prompt generator".
+- ALWAYS produce a final action-oriented task prompt.
+- The output must tell the AI to PERFORM the task directly.
+
+Use this exact template, replacing the placeholders:
+
 ${PRESETS[currentPreset]('[ROLE]', '[REQUIREMENT]')}
 
-Replace [ROLE] with appropriate role and [REQUIREMENT] with user's text.`;
+Replace [ROLE] with the correct expert role.
+Replace [REQUIREMENT] with the user's input text.
+
+Do NOT add meta instructions like “rewrite”, “convert”, or “generate a prompt”.
+Produce a final executable prompt ready for ChatGPT, Claude, Gemini, or DeepSeek.`;
+
 
       const userMessage = `Requirement: "${raw}"
       
