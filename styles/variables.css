@@ -85,43 +85,20 @@
 
 /* Dark Theme */
 [data-theme="dark"] {
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --primary-light: #60a5fa;
-
-  --secondary: #94a3b8;
-  --accent: #a78bfa;
-
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger:  #f87171;
-
   --bg-body: #020617;
   --bg-primary: #020617;
   --bg-soft: #020617;
   --bg-soft-strong: #020617;
 
-  --text-primary: #e5e7eb;
-  --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
-  --text-on-primary: #f9fafb;
-
-  --border-subtle: #1f2937;
-  --border-strong: #374151;
-
   --panel-bg: #020617;
   --panel-border: rgba(15, 23, 42, 0.9);
 
+  --text-primary: #e5e7eb;     /* main text – almost white */
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+
   --input-bg: #020617;
   --input-border: #111827;
-  --input-border-focus: #60a5fa;
-  --input-shadow-focus: 0 0 0 1px rgba(96, 165, 250, 0.35);
-
-  --hero-bg: radial-gradient(circle at top left, #020617 0, #020617 40%, #020617 100%);
-  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-
-  --toast-bg: #020617;
-  --toast-text: #f9fafb;
 }
 
 /* Auto Theme (system) */
