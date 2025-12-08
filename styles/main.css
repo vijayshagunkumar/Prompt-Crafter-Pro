@@ -856,3 +856,44 @@ textarea::placeholder {
 .launch-btn:disabled .launch-icon {
   background: rgba(255, 255, 255, 0.6);
 }
+
+/* Reduce top padding and let the three step cards grow */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* If you have a top hero/header wrapper, flatten it a bit */
+.header, .hero-heading {
+  margin-bottom: 16px;
+}
+
+/* Main layout (3 cards) */
+.main-content {
+  align-items: stretch;
+}
+
+/* Step panels: let them fill vertical space more */
+.step-card, .card {
+  min-height: 260px;          /* bump card size */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Textareas should grow nicely on tall screens */
+.textarea-idea,
+.output-textarea {
+  flex: 1;
+  min-height: 180px;
+}
+
+/* Mobile: stack neatly */
+@media (max-width: 900px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .step-card, .card {
+    min-height: auto;
+  }
+}
