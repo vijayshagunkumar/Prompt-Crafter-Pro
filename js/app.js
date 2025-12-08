@@ -3,6 +3,7 @@ const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_MODEL = "ft:gpt-3.5-turbo-1106:personal::CkAjxivm";
 
 let currentPreset = "default";
+let userPresetLocked = false; // NEW: when user clicks a preset, we stop auto-switching
 let autoConvertEnabled = true;
 let autoConvertDelay = 60;
 let usageCount = 0;
@@ -183,6 +184,74 @@ ${requirement}
 - Include examples or explanations only if they help the user apply the result.`
 };
 
+// -------- Helper: set preset + sync UI ----------
+function setCurrentPreset(presetId) {
+  if (!PRESETS[presetId]) return;
+  currentPreset = presetId;
+  document
+    .querySelectorAll(".preset-option")
+    .forEach((o) => {
+      o.classList.toggle("active", o.dataset.preset === presetId);
+    });
+}
+
+// -------- Helper: classify role + BEST preset ----------
+function getRoleAndPreset(text) {
+  const lower = (text || "").toLowerCase();
+  let role = "expert assistant";
+  let preset = "default";
+
+  if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
+    role = "expert email writer";
+    preset = "default";
+  } else if (
+    /code|program|script|develop|software|function|python|javascript|typescript|java|c#|sql|api|bug fix|refactor/i.test(
+      lower
+    )
+  ) {
+    role = "expert developer";
+    preset = "chatgpt";
+  } else if (
+    /analyze|analysis|market|research|evaluate|assessment|review|trend|report|insight|metrics/i.test(
+      lower
+    )
+  ) {
+    role = "expert analyst";
+    preset = "detailed";
+  } else if (
+    /blog|article|story|linkedin post|caption|copywriting|content/i.test(lower)
+  ) {
+    role = "expert content writer";
+    preset = "default";
+  } else if (
+    /workout|exercise|fitness|gym|diet|meal plan|training plan/i.test(lower)
+  ) {
+    role = "expert fitness trainer";
+    preset = "detailed";
+  } else if (
+    /strategy|business plan|roadmap|pitch deck|proposal|go[- ]to[- ]market|g2m/i.test(
+      lower
+    )
+  ) {
+    role = "expert business consultant";
+    preset = "detailed";
+  } else if (
+    /teach|explain|lesson|tutorial|guide|training material|curriculum/i.test(
+      lower
+    )
+  ) {
+    role = "expert educator";
+    preset = "detailed";
+  }
+
+  return { role, preset };
+}
+
+// Backwards compatible helper
+function getAppropriateRole(text) {
+  return getRoleAndPreset(text).role;
+}
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
@@ -194,6 +263,7 @@ function initializeApp() {
   loadUsageCount();
   setupEventListeners();
   initializeUI();
+  setCurrentPreset(currentPreset); // sync UI with default
   document.getElementById("requirement").focus();
 }
 
@@ -279,14 +349,12 @@ function setupEventListeners() {
     }
   });
 
-  // Preset selection
+  // Preset selection (manual override)
   document.querySelectorAll(".preset-option").forEach((option) => {
     option.addEventListener("click", () => {
-      document
-        .querySelectorAll(".preset-option")
-        .forEach((o) => o.classList.remove("active"));
-      option.classList.add("active");
-      currentPreset = option.dataset.preset;
+      const presetId = option.dataset.preset;
+      userPresetLocked = true; // once user picks, don't auto-switch
+      setCurrentPreset(presetId);
       if (requirementEl.value.trim() && isConverted) {
         isConverted = false;
         generatePrompt();
@@ -378,6 +446,14 @@ function handleRequirementInput() {
     clearAutoConvertTimer();
   }
 
+  // If user hasn't clicked a preset, auto-select best preset based on text
+  if (!userPresetLocked) {
+    const { preset } = getRoleAndPreset(requirementEl.value);
+    if (preset && preset !== currentPreset) {
+      setCurrentPreset(preset);
+    }
+  }
+
   if (autoConvertEnabled) {
     resetAutoConvertTimer();
   }
@@ -424,35 +500,6 @@ function clearAutoConvertTimer() {
   clearTimeout(autoConvertTimer);
   clearInterval(countdownInterval);
   document.getElementById("timerDisplay").style.display = "none";
-}
-
-function getAppropriateRole(text) {
-  const lowerText = text.toLowerCase();
-  if (/email|mail|send.*to|message.*to/i.test(lowerText))
-    return "expert email writer";
-  if (/write|create|draft|compose|content|blog|article/i.test(lowerText))
-    return "expert content writer";
-  if (/analyze|evaluate|review|assess|research|market/i.test(lowerText))
-    return "expert analyst";
-  if (/code|program|script|develop|software|function|python|javascript/i.test(
-    lowerText
-  ))
-    return "expert developer";
-  if (/design|ui|ux|layout|graphic|visual|wireframe/i.test(lowerText))
-    return "expert designer";
-  if (/business|strategy|plan|proposal|marketing|sales/i.test(lowerText))
-    return "expert business consultant";
-  if (/translate|language|localize|interpret/i.test(lowerText))
-    return "expert translator";
-  if (/math|calculate|solve|equation|formula|statistics/i.test(lowerText))
-    return "expert mathematician";
-  if (/teach|explain|educate|tutor|lesson|guide/i.test(lowerText))
-    return "expert educator";
-  if (/recipe|cook|food|meal|ingredient/i.test(lowerText))
-    return "expert chef";
-  if (/workout|exercise|fitness|gym|train/i.test(lowerText))
-    return "expert fitness trainer";
-  return "expert assistant";
 }
 
 function updateStats(text) {
@@ -510,6 +557,12 @@ async function generatePrompt() {
     return "";
   }
 
+  // Smart auto-preset (only if user didn't lock)
+  const { role, preset: autoPreset } = getRoleAndPreset(raw);
+  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+    setCurrentPreset(autoPreset);
+  }
+
   // Track usage
   usageCount++;
   localStorage.setItem("promptCrafterUsage", usageCount);
@@ -532,9 +585,7 @@ async function generatePrompt() {
       // Use local formatter
       generatedPrompt = localFormatter(raw);
     } else {
-      // Use API
-      const role = getAppropriateRole(raw);
-
+      // Use API with template filling
       const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
 
       const system = `
@@ -622,7 +673,11 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
 function localFormatter(raw) {
   const clean = (raw || "").trim() || "[No requirement provided]";
-  const role = getAppropriateRole(clean);
+  const { role, preset: autoPreset } = getRoleAndPreset(clean);
+
+  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+    setCurrentPreset(autoPreset);
+  }
 
   const template = PRESETS[currentPreset];
   return template ? template(role, clean) : PRESETS["default"](role, clean);
@@ -1017,7 +1072,8 @@ function filterTemplatesUI(category, searchQuery = "") {
     .querySelector(`.template-category[data-category="${category}"]`)
     .classList.add("active");
 
-  const currentSearch = searchQuery || document.getElementById("templateSearch").value;
+  const currentSearch =
+    searchQuery || document.getElementById("templateSearch").value;
   loadTemplatesToUI(category, currentSearch);
 }
 
