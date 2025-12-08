@@ -260,6 +260,7 @@ function initializeApp() {
   updatePresetInfo("General", currentPreset, "auto");
   const req = document.getElementById("requirement");
   if (req) req.focus();
+    setLaunchButtonsEnabled(false);   // launch disabled until we have a prompt
 }
 
 // ----- Settings -----
@@ -810,7 +811,11 @@ function handleRequirementInput() {
     resetAutoConvertTimer();
   }
   updateStats(text);
+
+  // NEW: as soon as user types, disable launch buttons
+  setLaunchButtonsEnabled(false);
 }
+
 
 function resetAutoConvertTimer() {
   clearAutoConvertTimer();
