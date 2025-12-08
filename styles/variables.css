@@ -49,31 +49,20 @@
 
 /* Dark Theme */
 [data-theme="dark"] {
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --primary-light: #60a5fa;
-  --secondary: #94a3b8;
-  --accent: #a78bfa;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-card: #1e293b;
-  --bg-input: #334155;
-  
-  --text-primary: #f1f5f9;
+  --bg-body: #020617;
+  --bg-primary: #020617;
+  --bg-soft: #020617;
+  --bg-soft-strong: #020617;
+
+  --panel-bg: #020617;
+  --panel-border: rgba(15, 23, 42, 0.9);
+
+  --text-primary: #e5e7eb;     /* main text – almost white */
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
-  
-  --border: #475569;
-  --border-light: #334155;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --text-muted: #64748b;
+
+  --input-bg: #020617;
+  --input-border: #111827;
 }
 
 /* Auto Theme (System Preference) */
