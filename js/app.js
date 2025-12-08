@@ -99,85 +99,85 @@ Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
 ];
 
 // Preset templates
+// Preset templates – markdown with Role / Objective / Context / Instructions / Notes
 const PRESETS = {
   'default': (role, requirement) => `# Role
-You are an ${role} skilled in performing the task described.
+You are an ${role} who will directly perform the user's task.
 
 # Objective
 ${requirement}
 
 # Context
-(Add relevant background information or constraints here)
+(Add relevant background information or constraints here, if needed.)
 
 # Instructions
-1. Understand the requirement deeply
-2. Break the problem into logical parts
-3. Maintain accuracy and professionalism
-4. Provide the final answer directly
+1. Perform the task described in the Objective.
+2. Focus on delivering the final result (email, analysis, code, etc.).
+3. Do **not** talk about prompts, prompt generation, or instructions.
+4. Do **not** rewrite or summarize the task itself.
+5. Return the completed output in one response.
 
 # Notes
-- Do not rewrite or restate the task
-- Do not generate explanations about what you are going to do
-- Do not generate another set of instructions
-- Respond only with the completed output`,
-  
-  'claude': (role, requirement) => `Human: You are an ${role}. Please perform the following task directly without any preamble or explanation.
+- Use a clear, professional tone.
+- Structure the answer with headings or bullet points when helpful.
+- Include examples only if they improve clarity.`,
 
-Task: ${requirement}
+  'claude': (role, requirement) => `# Role
+You are an ${role}.
 
-Context: Provide any relevant background or constraints.
+# Objective
+Perform the following task and return the final result:
 
-Instructions:
-1. Understand the task completely
-2. Execute it precisely
-3. Deliver the final result
-
-Important: Do not rewrite the task. Do not explain your process. Just perform it and provide the output.
-
-Assistant: I'll perform this task directly.`,
-  
-  'chatgpt': (role, requirement) => `System: You are an ${role}. The user will give you a task. Perform it directly without any meta-commentary.
-
-User: ${requirement}
-
-System reminder: 
-- Perform the task exactly as requested
-- No explanations or rewrites
-- Output only the completed result
-- Maintain professional quality`,
-  
-  'detailed': (role, requirement) => `# Expert Role Assignment
-You are now assuming the role of: ${role}
-
-# Primary Task Objective
 ${requirement}
 
-# Operational Context & Constraints
-- Timeframe: [SPECIFY IF RELEVANT]
-- Resources: [MENTION AVAILABLE RESOURCES]
-- Constraints: [LIST ANY LIMITATIONS]
-- Quality Standards: [SPECIFY EXPECTED QUALITY]
+# Instructions
+- Do not explain your process unless explicitly asked.
+- Do not rephrase or restate the Objective.
+- Respond only with the completed result, not with a description of the task.
 
-# Detailed Step-by-Step Instructions
-1. **Analysis Phase**: Analyze the requirement thoroughly
-2. **Planning Phase**: Break down into logical components
-3. **Execution Phase**: Implement each component systematically
-4. **Quality Check**: Review for accuracy and completeness
-5. **Final Delivery**: Present the final output appropriately
+# Notes
+Keep the answer clear and well-structured.`,
+  
+  'chatgpt': (role, requirement) => `# Role
+You are an ${role}.
 
-# Formatting Requirements
-- Structure: [SPECIFY STRUCTURE IF NEEDED]
-- Length: [MENTION DESIRED LENGTH]
-- Style: [SPECIFY WRITING STYLE]
-- Technical Level: [MENTION TECHNICAL DEPTH]
+# Objective
+Carry out the following task for the user and return the finished output:
 
-# Additional Notes
-- Include examples where relevant
-- Add explanations only if explicitly requested
-- Maintain consistent formatting
-- Ensure factual accuracy
-- Consider practical applicability`
+${requirement}
+
+# Instructions
+- Start directly with the answer.
+- Do not include meta-commentary or a restatement of the request.
+- Do not talk about prompts or instructions.
+- Output only the final result.
+
+# Notes
+Maintain professional quality and clarity in your response.`,
+  
+  'detailed': (role, requirement) => `# Role
+You are an ${role}.
+
+# Objective
+Execute the following task end-to-end and provide the final output:
+
+${requirement}
+
+# Context
+- Add any important background, constraints, or assumptions here if needed.
+
+# Instructions
+1. Analyze the task carefully.
+2. Break the solution into clear, logical sections where useful.
+3. Ensure correctness, structure, and readability.
+4. Do **not** generate instructions or "prompts" for another AI.
+5. Do **not** rewrite or summarize the task; just solve it.
+
+# Notes
+- Use headings, bullet points, or numbered lists as appropriate.
+- Include examples or explanations only if they help the user apply the result.`
 };
+
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
@@ -574,6 +574,34 @@ async function copyToClipboard() {
       return false;
     }
   }
+}
+function sanitizePrompt(text) {
+  if (!text) return '';
+  let cleaned = text;
+
+  // Remove leading/trailing code fences if they exist
+  cleaned = cleaned.replace(/^```[^\n]*\n?/g, '');
+  cleaned = cleaned.replace(/```$/g, '');
+
+  const forbiddenLineRegex =
+    /(prompt generator|generate a prompt|rewrite .*requirement|convert .*requirement .*prompt|rewrite .*prompt)/i;
+
+  cleaned = cleaned
+    .split('\n')
+    .filter(line => {
+      const trimmed = line.trim();
+      // drop lines that are just code fences like ``` or ```markdown
+      if (/^```/.test(trimmed)) return false;
+      if (forbiddenLineRegex.test(trimmed)) return false;
+      return true;
+    })
+    .join('\n');
+
+  // Soft replace leftover phrases inside lines
+  cleaned = cleaned.replace(/prompt generator/gi, 'assistant');
+  cleaned = cleaned.replace(/generate a prompt/gi, 'perform the task and return the final answer');
+
+  return cleaned.trim();
 }
 
 async function openAITool(platform, url) {
