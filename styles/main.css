@@ -859,3 +859,59 @@ textarea.output {
 .fa-spinner {
   animation: spin 1s linear infinite;
 }
+/* Brand-specific AI tool buttons */
+.btn-chatgpt {
+  background: #10a37f;
+  color: #ffffff;
+}
+.btn-chatgpt:hover {
+  background: #0b7a5c;
+}
+
+.btn-claude {
+  background: #f59e0b;
+  color: #1f2933;
+}
+.btn-claude:hover {
+  background: #d97706;
+}
+
+.btn-gemini {
+  background: #1a73e8;
+  color: #ffffff;
+}
+.btn-gemini:hover {
+  background: #1557b1;
+}
+
+.btn-perplexity {
+  background: #111827;
+  color: #e5e7eb;
+}
+.btn-perplexity:hover {
+  background: #020617;
+}
+
+.btn-deepseek {
+  background: #0f766e;
+  color: #e0f2f1;
+}
+.btn-deepseek:hover {
+  background: #115e59;
+}
+
+.btn-copilot {
+  background: #0ea5e9; /* Copilot-style cyan/blue */
+  color: #f9fafb;
+}
+.btn-copilot:hover {
+  background: #0284c7;
+}
+
+.btn-grok {
+  background: #000000; /* Grok / xAI dark look */
+  color: #f9fafb;
+}
+.btn-grok:hover {
+  background: #111827;
+}
