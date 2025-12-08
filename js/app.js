@@ -1133,3 +1133,9 @@ function showNotification(message) {
     notification.style.display = "none";
   }, 2600);
 }
+function setLaunchButtonsEnabled(enabled) {
+  const buttons = document.querySelectorAll(".launch-btn");
+  buttons.forEach((btn) => {
+    btn.disabled = !enabled;
+  });
+}
