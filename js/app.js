@@ -99,85 +99,61 @@ Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
 ];
 
 // Preset templates (ALL of these tell the target AI to DO the task, not generate prompts)
+// Preset templates – execution-focused
 const PRESETS = {
-  'default': (role, requirement) => `# Role
-You are an ${role} skilled in performing the task described.
+  // Simple, works well across ChatGPT / Claude / Gemini / DeepSeek
+  'default': (role, requirement) => `
+You are an ${role}.
 
-# Objective
+Directly perform the following task now and return the final result (not a description of the task):
+
 ${requirement}
 
-# Context
-(Add relevant background information or constraints here)
+Response rules:
+- Start immediately with the answer, not with phrases like "Instruction", "Task", or a restatement of the request.
+- Do NOT talk about prompts, instructions, or what you are going to do.
+- Do NOT rewrite or summarize the task.
+- Provide the full, final output in one response.
+`.trim(),
 
-# Instructions
-1. Understand the requirement deeply
-2. Break the problem into logical parts
-3. Maintain accuracy and professionalism
-4. Provide the final answer directly
+  'claude': (role, requirement) => `
+You are an ${role}. Perform this task directly:
 
-# Notes
-- Do not rewrite or restate the task
-- Do not generate explanations about what you are going to do
-- Do not generate another set of instructions
-- Respond only with the completed output`,
-  
-  'claude': (role, requirement) => `Human: You are an ${role}. Please perform the following task directly without any preamble or explanation.
-
-Task: ${requirement}
-
-Context: Provide any relevant background or constraints.
-
-Instructions:
-1. Understand the task completely
-2. Execute it precisely
-3. Deliver the final result
-
-Important: Do not rewrite the task. Do not explain your process. Just perform it and provide the output.
-
-Assistant: I'll perform this task directly.`,
-  
-  'chatgpt': (role, requirement) => `System: You are an ${role}. The user will give you a task. Perform it directly without any meta-commentary.
-
-User: ${requirement}
-
-System reminder: 
-- Perform the task exactly as requested
-- No explanations or rewrites
-- Output only the completed result
-- Maintain professional quality`,
-  
-  'detailed': (role, requirement) => `# Expert Role Assignment
-You are now assuming the role of: ${role}
-
-# Primary Task Objective
 ${requirement}
 
-# Operational Context & Constraints
-- Timeframe: [SPECIFY IF RELEVANT]
-- Resources: [MENTION AVAILABLE RESOURCES]
-- Constraints: [LIST ANY LIMITATIONS]
-- Quality Standards: [SPECIFY EXPECTED QUALITY]
+Guidelines:
+- Do not explain your process unless explicitly asked.
+- Do not rephrase the instructions.
+- Your response should be only the completed result.
+`.trim(),
 
-# Detailed Step-by-Step Instructions
-1. **Analysis Phase**: Analyze the requirement thoroughly
-2. **Planning Phase**: Break down into logical components
-3. **Execution Phase**: Implement each component systematically
-4. **Quality Check**: Review for accuracy and completeness
-5. **Final Delivery**: Present the final output appropriately
+  'chatgpt': (role, requirement) => `
+You are an ${role}. The user needs you to perform this task now:
 
-# Formatting Requirements
-- Structure: [SPECIFY STRUCTURE IF NEEDED]
-- Length: [MENTION DESIRED LENGTH]
-- Style: [SPECIFY WRITING STYLE]
-- Technical Level: [MENTION TECHNICAL DEPTH]
+${requirement}
 
-# Additional Notes
-- Include examples where relevant
-- Add explanations only if explicitly requested
-- Maintain consistent formatting
-- Ensure factual accuracy
-- Consider practical applicability`
+Important:
+- Respond only with the finished result.
+- Do not include meta-commentary, prompt text, or a restatement of the request.
+- Start directly with the answer.
+`.trim(),
+
+  'detailed': (role, requirement) => `
+You are an ${role}. Your job is to carry out the following task end-to-end and return the finished output:
+
+${requirement}
+
+When you respond:
+- Analyze the task carefully.
+- Organize your answer into clear sections if helpful.
+- Focus on correctness, structure, and readability.
+- Do NOT describe the task, generate instructions, or talk about prompts.
+- Start your answer with the actual content (analysis, email, code, etc.), not with an explanation.
+
+Return only the final result.
+`.trim()
 };
+
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
