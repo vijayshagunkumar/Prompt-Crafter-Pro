@@ -14,7 +14,7 @@ let countdownInterval;
 let editingTemplateId = null;
 let templates = [];
 
-// Template categories (updated colors to match new theme)
+// Template categories
 const TEMPLATE_CATEGORIES = {
   'communication': { name: 'Communication', icon: 'fa-envelope', color: '#3b82f6' },
   'coding': { name: 'Coding', icon: 'fa-code', color: '#10b981' },
@@ -23,10 +23,10 @@ const TEMPLATE_CATEGORIES = {
   'business': { name: 'Business', icon: 'fa-briefcase', color: '#ef4444' },
   'creative': { name: 'Creative', icon: 'fa-palette', color: '#ec4899' },
   'education': { name: 'Education', icon: 'fa-graduation-cap', color: '#06b6d4' },
-  'other': { name: 'Other', icon: 'fa-th', color: '#64748b' }
+  'other': { name: 'Other', icon: 'fa-th', color: '#6b7280' }
 };
 
-// Default templates (same as before)
+// Default templates
 const DEFAULT_TEMPLATES = [
   {
     id: '1',
@@ -98,7 +98,7 @@ Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
   }
 ];
 
-// Preset templates (same as before)
+// Preset templates
 const PRESETS = {
   'default': (role, requirement) => `# Role
 You are an ${role} skilled in performing the task described.
@@ -212,21 +212,6 @@ function loadSettings() {
   
   autoConvertDelay = parseInt(delay);
   autoConvertCountdown = autoConvertDelay;
-  
-  // Apply theme
-  applyTheme(theme);
-}
-
-function applyTheme(theme) {
-  const html = document.documentElement;
-  
-  if (theme === 'auto') {
-    // Check system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-  } else {
-    html.setAttribute('data-theme', theme);
-  }
 }
 
 function loadTemplates() {
@@ -271,12 +256,6 @@ function setupEventListeners() {
   delaySlider.addEventListener('input', () => {
     delayValue.textContent = `Current: ${delaySlider.value} seconds`;
     autoConvertDelay = parseInt(delaySlider.value);
-  });
-  
-  // Theme selection
-  document.getElementById('themeSelect').addEventListener('change', (e) => {
-    const theme = e.target.value;
-    applyTheme(theme);
   });
   
   // Requirement input
@@ -377,7 +356,7 @@ function resetAutoConvertTimer() {
   if (autoConvertEnabled && requirement && !isConverted) {
     autoConvertCountdown = autoConvertDelay;
     document.getElementById('timerValue').textContent = `${autoConvertCountdown}s`;
-    document.getElementById('timerDisplay').style.display = 'flex';
+    document.getElementById('timerDisplay').style.display = 'inline-flex';
     
     countdownInterval = setInterval(() => {
       autoConvertCountdown--;
@@ -428,9 +407,32 @@ function updateStats(text) {
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lineCount = text.split('\n').length;
   
-  document.getElementById('charCount').textContent = `${charCount} chars`;
+  document.getElementById('charCount').textContent = `${charCount} characters`;
   document.getElementById('wordCount').textContent = `${wordCount} words`;
   document.getElementById('lineCount').textContent = `${lineCount} lines`;
+}
+
+// NEW: sanitiser to remove "prompt generator" style phrasing
+function sanitizePrompt(text) {
+  if (!text) return '';
+  let cleaned = text;
+
+  // Remove leading/trailing markdown fences if model adds them
+  cleaned = cleaned.replace(/^```[^\n]*\n?/g, '');
+  cleaned = cleaned.replace(/```$/g, '');
+
+  // Drop lines that explicitly talk about prompt generation instead of doing the task
+  const forbiddenLineRegex = /(prompt generator|generate a prompt|rewrite.*prompt|convert.*requirement.*prompt)/i;
+  cleaned = cleaned
+    .split('\n')
+    .filter(line => !forbiddenLineRegex.test(line))
+    .join('\n');
+
+  // Soft replace remaining phrases if they appear inside lines
+  cleaned = cleaned.replace(/prompt generator/gi, 'assistant');
+  cleaned = cleaned.replace(/generate a prompt/gi, 'perform the task and return the final answer');
+
+  return cleaned.trim();
 }
 
 async function generatePrompt() {
@@ -462,18 +464,32 @@ async function generatePrompt() {
     if (!apiKey) {
       // Use local formatter
       generatedPrompt = localFormatter(raw);
+      generatedPrompt = sanitizePrompt(generatedPrompt);
     } else {
-      // Use API
+      // Use API in PROMPT-GENERATOR MODE, but without telling it "you are a prompt generator"
       const role = getAppropriateRole(raw);
-      const system = `You are a prompt generator. Convert the user's requirement into this EXACT format:
-      
-${PRESETS[currentPreset]('[ROLE]', '[REQUIREMENT]')}
+      const templateWithPlaceholders = PRESETS[currentPreset]('[ROLE]', '[REQUIREMENT]');
 
-Replace [ROLE] with appropriate role and [REQUIREMENT] with user's text.`;
+      const system = `
+You take a user's natural-language requirement and turn it into a single, well-structured instruction
+for another AI assistant that will perform the task and return the final answer.
 
-      const userMessage = `Requirement: "${raw}"
-      
-Generate prompt in the ${currentPreset} format.`;
+Use exactly this template:
+
+${templateWithPlaceholders}
+
+Rules:
+- Replace [ROLE] with this exact role: ${role}
+- Replace [REQUIREMENT] with the user's requirement text.
+- Do NOT change any other wording in the template.
+- Do NOT mention "prompt", "prompt generator", or "prompt engineering".
+- Do NOT describe yourself or the assistant as a prompt generator.
+- Do NOT talk about templates, system messages, or instructions.
+- Do NOT wrap the output in markdown code fences.
+- Output ONLY the final instruction text that tells the assistant to perform the task and return the final answer.
+      `.trim();
+
+      const userMessage = raw;
 
       const response = await fetch(OPENAI_API_URL, {
         method: "POST",
@@ -499,10 +515,7 @@ Generate prompt in the ${currentPreset} format.`;
         generatedPrompt = localFormatter(raw);
       }
 
-      // Cleanup
-      generatedPrompt = generatedPrompt.replace(/^```[^\n]*\n?/g, '');
-      generatedPrompt = generatedPrompt.replace(/```$/g, '');
-      generatedPrompt = generatedPrompt.trim();
+      generatedPrompt = sanitizePrompt(generatedPrompt);
     }
 
     outputEl.value = generatedPrompt;
@@ -527,6 +540,7 @@ Generate prompt in the ${currentPreset} format.`;
   } catch (err) {
     console.error('Generation error:', err);
     generatedPrompt = localFormatter(raw);
+    generatedPrompt = sanitizePrompt(generatedPrompt);
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
     saveToHistory(raw, generatedPrompt);
@@ -543,6 +557,14 @@ Generate prompt in the ${currentPreset} format.`;
     convertBtn.disabled = true;
     convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
   }
+}
+
+function localFormatter(raw) {
+  const clean = (raw || '').trim() || '[No requirement provided]';
+  const role = getAppropriateRole(clean);
+  
+  const template = PRESETS[currentPreset];
+  return template ? template(role, clean) : PRESETS['default'](role, clean);
 }
 
 async function copyToClipboard() {
@@ -624,9 +646,6 @@ function saveSettings() {
   autoConvertDelay = parseInt(delay);
   autoConvertCountdown = autoConvertDelay;
   
-  // Apply theme
-  applyTheme(theme);
-  
   document.getElementById('settingsModal').style.display = 'none';
   showNotification('Settings saved successfully!');
 }
@@ -669,9 +688,6 @@ function clearAllData() {
   // Save default templates
   localStorage.setItem('promptTemplates', JSON.stringify(templates));
   
-  // Apply theme
-  applyTheme(theme || 'light');
-  
   document.getElementById('settingsModal').style.display = 'none';
   showNotification('All data cleared successfully!');
 }
@@ -702,7 +718,7 @@ function loadHistory() {
   historyList.innerHTML = '';
   
   if (history.length === 0) {
-    historyList.innerHTML = '<div class="empty-history">No history yet</div>';
+    historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">No history yet</div>';
     return;
   }
   
@@ -712,9 +728,9 @@ function loadHistory() {
     div.innerHTML = `
       <div style="flex: 1; min-width: 0;">
         <div style="font-weight:500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.requirement}</div>
-        <div style="font-size:11px;color:var(--text-muted)">${item.date} ${item.timestamp}</div>
+        <div style="font-size:11px;color:var(--muted)">${item.date} ${item.timestamp}</div>
       </div>
-      <button class="btn btn-small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
+      <button class="btn small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
     `;
     div.addEventListener('click', (e) => {
       if (!e.target.closest('button')) {
@@ -726,7 +742,7 @@ function loadHistory() {
         isConverted = true;
         lastConvertedText = requirementEl.value.trim();
         document.getElementById('convertBtn').disabled = true;
-        document.getElementById('convertedBadge').style.display = 'flex';
+        document.getElementById('convertedBadge').style.display = 'inline-flex';
         showNotification('Prompt loaded from history');
       }
     });
@@ -879,16 +895,16 @@ function loadTemplatesToUI(filterCategory = 'all', searchQuery = '') {
       <div class="template-desc">${template.description}</div>
       <div class="template-meta">
         <span><i class="fas fa-download"></i> Used ${template.usageCount || 0} times</span>
-        <span style="color:${category.color}"><i class="fas fa-tag"></i> ${category.name}</span>
+        <span class="tag"><i class="fas fa-tag"></i> ${category.name}</span>
       </div>
       <div class="template-actions">
-        <button class="btn btn-small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
+        <button class="btn small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
           <i class="fas fa-play"></i> Use
         </button>
-        <button class="btn btn-small btn-secondary" onclick="editTemplate('${template.id}')">
+        <button class="btn small" style="background:#64748b" onclick="editTemplate('${template.id}')">
           <i class="fas fa-edit"></i>
         </button>
-        ${!template.isDefault ? `<button class="btn btn-small btn-danger" onclick="deleteTemplate('${template.id}')">
+        ${!template.isDefault ? `<button class="btn small" style="background:#ef4444" onclick="deleteTemplate('${template.id}')">
           <i class="fas fa-trash"></i>
         </button>` : ''}
       </div>
@@ -984,7 +1000,7 @@ window.useTemplate = function(id) {
     isConverted = true;
     lastConvertedText = document.getElementById('requirement').value.trim();
     document.getElementById('convertBtn').disabled = true;
-    document.getElementById('convertedBadge').style.display = 'flex';
+    document.getElementById('convertedBadge').display = 'inline-flex';
     
     showNotification(`Using "${template.name}" template`);
   }
@@ -1022,11 +1038,3 @@ window.useHistoryItem = function(id) {
     generatePrompt();
   }
 };
-
-// Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-  const theme = localStorage.getItem('theme');
-  if (theme === 'auto') {
-    applyTheme('auto');
-  }
-});
