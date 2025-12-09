@@ -215,3 +215,19 @@
     font-size: 11px;
   }
 }
+/* ===========================================
+   Theme selector readability tweaks
+   =========================================== */
+
+.theme-label {
+  font-size: 14px;
+}
+
+.theme-sample {
+  font-size: 13px;
+}
+
+/* Tooltip text slightly larger */
+.theme-sample::after {
+  font-size: 12px;
+}
