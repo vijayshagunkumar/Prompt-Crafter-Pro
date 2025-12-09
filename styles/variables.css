@@ -1,98 +1,166 @@
-/* styles/variables.css - Updated Professional Theme */
+/* styles/variables.css – Theme tokens for Prompt Crafter Pro */
+
+/* -------- LIGHT THEME (DEFAULT) -------- */
 :root {
-  /* Professional Color Palette */
-  --primary: #2563eb;               /* Professional blue - primary brand */
-  --primary-dark: #1d4ed8;          /* Darker blue for hover states */
-  --primary-light: #3b82f6;         /* Lighter blue for accents */
-  --secondary: #64748b;             /* Muted slate for secondary elements */
-  --accent: #8b5cf6;                /* Vibrant purple for highlights */
-  --success: #10b981;               /* Green for success states */
-  --warning: #f59e0b;               /* Amber for warnings */
-  --danger: #ef4444;                /* Red for errors/destructive actions */
-  
-  /* Neutral Backgrounds */
-  --bg-primary: #ffffff;            /* Main background */
-  --bg-secondary: #f8fafc;          /* Secondary background (cards, etc.) */
-  --bg-tertiary: #f1f5f9;           /* Tertiary background (hover states) */
-  --bg-card: #ffffff;               /* Card background */
-  --bg-input: #ffffff;              /* Input background */
-  
-  /* Text Colors */
-  --text-primary: #1e293b;          /* Primary text - high contrast */
-  --text-secondary: #475569;        /* Secondary text */
-  --text-muted: #64748b;            /* Muted text (hints, labels) */
-  --text-light: #94a3b8;            /* Very light text (disabled) */
-  
-  /* Borders & Shadows */
-  --border: #e2e8f0;                /* Default border color */
-  --border-light: #f1f5f9;          /* Light border (dividers) */
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  
-  /* UI Elements */
-  --radius: 12px;                   /* Default border radius */
-  --radius-sm: 8px;                 /* Small radius (buttons, inputs) */
-  --radius-lg: 16px;                /* Large radius (modals) */
-  --transition: all 0.2s ease;      /* Default transition */
-  
-  /* Brand Gradient */
-  --gradient: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
-  
-  /* AI Tool Colors (for specific buttons) */
-  --chatgpt: #10a37f;              /* ChatGPT green */
-  --claude: #d4a574;               /* Claude brown */
-  --gemini: #4285f4;               /* Google blue */
-  --perplexity: #8c4dff;           /* Perplexity purple */
-  --deepseek: #0d9488;             /* DeepSeek teal */
+  /* Brand / Primary palette */
+  --primary:       #2563eb;
+  --primary-dark:  #1d4ed8;
+  --primary-light: #3b82f6;
+  --secondary:     #64748b;
+  --accent:        #8b5cf6;
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger:  #ef4444;
+
+  /* Backgrounds */
+  --bg-body:       #f5f7fb;
+  --bg-primary:    #ffffff;
+  --bg-secondary:  #f8fafc;
+  --bg-tertiary:   #eef2ff;
+
+  /* Panels / cards */
+  --panel-bg:      #ffffff;
+  --panel-border:  #e2e8f0;
+
+  /* Soft surfaces */
+  --bg-soft:        #f3f4f6;
+  --bg-soft-strong: #e5e7eb;
+
+  /* Inputs */
+  --input-bg:             #ffffff;
+  --input-border:         #e2e8f0;
+  --input-border-focus:   #2563eb;
+  --input-shadow-focus:   0 0 0 2px rgba(37, 99, 235, 0.15);
+
+  /* Text */
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #6b7280;
+  --text-light:     #94a3b8;
+  --text-on-primary:#ffffff;
+
+  /* Borders / dividers */
+  --border-subtle: #e2e8f0;
+
+  /* Shadows */
+  --shadow-soft:     0 4px 10px rgba(15, 23, 42, 0.08);
+  --shadow-card:     0 10px 22px rgba(15, 23, 42, 0.08);
+  --shadow-elevated: 0 16px 40px rgba(15, 23, 42, 0.16);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* Transitions */
+  --transition-fast: all 0.18s ease-out;
+
+  /* Brand gradient */
+  --gradient-brand: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+
+  /* Toast */
+  --toast-bg:   #111827;
+  --toast-text: #f9fafb;
+
+  /* Tool colors */
+  --chatgpt:        #74AA9C;
+  --chatgpt-purple: #AB68FF;
+  --claude:         #DE7356;
+  --gemini:         #4796E3;
+  --perplexity:     #20808D;
+  --deepseek:       #0D28F3;
+  --copilot:        #199FD7;
+  --grok:           #050816;
 }
 
-/* Dark Theme */
+/* -------- DARK THEME (MANUAL) -------- */
 [data-theme="dark"] {
-  --bg-body: #020617;
-  --bg-primary: #020617;
-  --bg-soft: #020617;
+  --primary:       #3b82f6;
+  --primary-dark:  #2563eb;
+  --primary-light: #60a5fa;
+  --secondary:     #94a3b8;
+  --accent:        #a78bfa;
+
+  --success: #22c55e;
+  --warning: #fbbf24;
+  --danger:  #f97373;
+
+  --bg-body:     #020617;
+  --bg-primary:  #020617;
+  --bg-secondary:#020617;
+  --bg-tertiary: #020617;
+
+  --panel-bg:     #020617;
+  --panel-border: #111827;
+
+  --bg-soft:        #020617;
   --bg-soft-strong: #020617;
 
-  --panel-bg: #020617;
-  --panel-border: rgba(15, 23, 42, 0.9);
+  --input-bg:           #020617;
+  --input-border:       #111827;
+  --input-border-focus: #3b82f6;
+  --input-shadow-focus: 0 0 0 2px rgba(59, 130, 246, 0.35);
 
-  --text-primary: #e5e7eb;     /* main text – almost white */
+  --text-primary:   #e5e7eb;
   --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
+  --text-muted:     #64748b;
+  --text-light:     #475569;
+  --text-on-primary:#f9fafb;
 
-  --input-bg: #020617;
-  --input-border: #111827;
+  --border-subtle: #111827;
+
+  --shadow-soft:     0 4px 14px rgba(0, 0, 0, 0.6);
+  --shadow-card:     0 10px 24px rgba(0, 0, 0, 0.6);
+  --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.85);
+
+  --toast-bg:   #0b1120;
+  --toast-text: #f9fafb;
 }
 
-/* Auto Theme (System Preference) */
+/* -------- AUTO THEME (SYSTEM) -------- */
 @media (prefers-color-scheme: dark) {
   [data-theme="auto"] {
-    /* Same as dark theme above */
-    --primary: #3b82f6;
-    --primary-dark: #2563eb;
+    --primary:       #3b82f6;
+    --primary-dark:  #2563eb;
     --primary-light: #60a5fa;
-    --secondary: #94a3b8;
-    --accent: #a78bfa;
-    --success: #34d399;
+    --secondary:     #94a3b8;
+    --accent:        #a78bfa;
+
+    --success: #22c55e;
     --warning: #fbbf24;
-    --danger: #f87171;
-    
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-card: #1e293b;
-    --bg-input: #334155;
-    
-    --text-primary: #f1f5f9;
+    --danger:  #f97373;
+
+    --bg-body:     #020617;
+    --bg-primary:  #020617;
+    --bg-secondary:#020617;
+    --bg-tertiary: #020617;
+
+    --panel-bg:     #020617;
+    --panel-border: #111827;
+
+    --bg-soft:        #020617;
+    --bg-soft-strong: #020617;
+
+    --input-bg:           #020617;
+    --input-border:       #111827;
+    --input-border-focus: #3b82f6;
+    --input-shadow-focus: 0 0 0 2px rgba(59, 130, 246, 0.35);
+
+    --text-primary:   #e5e7eb;
     --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-light: #64748b;
-    
-    --border: #475569;
-    --border-light: #334155;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --text-muted:     #64748b;
+    --text-light:     #475569;
+    --text-on-primary:#f9fafb;
+
+    --border-subtle: #111827;
+
+    --shadow-soft:     0 4px 14px rgba(0, 0, 0, 0.6);
+    --shadow-card:     0 10px 24px rgba(0, 0, 0, 0.6);
+    --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.85);
+
+    --toast-bg:   #0b1120;
+    --toast-text: #f9fafb;
   }
 }
