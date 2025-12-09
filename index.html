@@ -52,20 +52,10 @@
           </div>
         </div>
 
-        <!-- Theme Selector -->
+        <!-- Theme Selector - Only Icons -->
         <div class="theme-selector-container">
           <div class="theme-selector">
-            <label for="appThemeSelect">
-              <i class="fas fa-palette"></i> Theme:
-            </label>
-            <select id="appThemeSelect" class="theme-select-dropdown">
-              <option value="sunset-glow">Sunset Glow</option>
-              <option value="aurora-magic">Aurora Magic</option>
-              <option value="serenity-bliss">Serenity Bliss</option>
-              <option value="cyberpunk-neon">Cyberpunk Neon</option>
-              <option value="ocean-deep">Ocean Deep</option>
-              <option value="auto">Auto (System)</option>
-            </select>
+            <span class="theme-label"><i class="fas fa-palette"></i> Theme:</span>
             <div class="theme-demo">
               <div class="theme-sample sunset-glow active" data-theme="sunset-glow" title="Sunset Glow">S</div>
               <div class="theme-sample aurora-magic" data-theme="aurora-magic" title="Aurora Magic">A</div>
@@ -243,10 +233,10 @@
           <div class="output-footer">
             <div class="output-footer-left"></div>
             <div class="output-actions">
-              <button class="btn-ghost-small" id="exportBtn">
+              <button class="btn-ghost-small export-btn" id="exportBtn">
                 <i class="fas fa-file-export"></i> Export
               </button>
-              <button class="btn-ghost-small" id="toggleHistoryBtn">
+              <button class="btn-ghost-small history-btn" id="toggleHistoryBtn">
                 <i class="fas fa-clock-rotate-left"></i> History
               </button>
             </div>
@@ -290,7 +280,9 @@
             </button>
 
             <button class="launch-btn launch-claude" id="claudeBtn" disabled>
-              <div class="launch-icon">A</div>
+              <div class="launch-icon">
+                <i class="fas fa-robot"></i>
+              </div>
               <div class="launch-text">
                 <span class="launch-name">Claude</span>
                 <span class="launch-sub">claude.ai</span>
