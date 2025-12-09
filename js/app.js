@@ -24,6 +24,10 @@ let editingTemplateId = null;
 let templates = [];
 let historyItems = [];
 
+// Voice input (Speech Recognition)
+let recognition = null;
+let isListening = false;
+
 // Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
@@ -268,6 +272,104 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
 
+// ----- Voice Input (Speech Recognition) -----
+function initVoice() {
+  const voiceRow = document.getElementById("voiceRow");
+  const voiceBtn = document.getElementById("voiceBtn");
+  const voiceStatus = document.getElementById("voiceStatus");
+  const voiceDot = document.getElementById("voiceDot");
+  const voiceBtnLabel = document.getElementById("voiceBtnLabel");
+
+  if (!voiceRow || !voiceBtn || !voiceStatus || !voiceDot || !voiceBtnLabel) {
+    return;
+  }
+
+  const hasSupport =
+    "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+
+  if (!hasSupport) {
+    voiceStatus.textContent = "Voice input is not supported in this browser.";
+    voiceBtn.disabled = true;
+    return;
+  }
+
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  recognition = new SpeechRecognition();
+  recognition.lang = "en-IN";          // change to "en-US" if you prefer
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    voiceDot.classList.add("active");
+    voiceStatus.textContent = "Listening… speak now.";
+    voiceBtnLabel.textContent = "Stop";
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    voiceDot.classList.remove("active");
+    voiceStatus.textContent = "Click mic and start speaking.";
+    voiceBtnLabel.textContent = "Start";
+  };
+
+  recognition.onerror = (event) => {
+    isListening = false;
+    voiceDot.classList.remove("active");
+    voiceBtnLabel.textContent = "Start";
+
+    if (event.error === "not-allowed") {
+      voiceStatus.textContent = "Mic access blocked. Check browser permissions.";
+    } else if (event.error === "no-speech") {
+      voiceStatus.textContent = "No speech detected. Try again.";
+    } else {
+      voiceStatus.textContent = "Voice error – try again.";
+      if (typeof showNotification === "function") {
+        showNotification("Voice error: " + event.error);
+      }
+    }
+  };
+
+  recognition.onresult = (event) => {
+    let transcript = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+
+    const reqEl = document.getElementById("requirement");
+    if (!reqEl) return;
+
+    const existing = reqEl.value.trim();
+    reqEl.value = (existing ? existing + " " : "") + transcript.trim();
+
+    // Reuse existing logic for stats / auto-convert / state
+    handleRequirementInput();
+  };
+
+  voiceBtn.addEventListener("click", toggleVoiceInput);
+}
+
+function toggleVoiceInput() {
+  if (!recognition) {
+    if (typeof showNotification === "function") {
+      showNotification("Voice input not available.");
+    }
+    return;
+  }
+
+  try {
+    if (!isListening) {
+      recognition.start();
+    } else {
+      recognition.stop();
+    }
+  } catch (e) {
+    console.error("Speech recognition error:", e);
+  }
+}
+
 function initializeApp() {
   loadSettings();
   loadTemplates();
@@ -283,6 +385,9 @@ function initializeApp() {
 
   // Initially all AI tool buttons are disabled until a prompt is generated
   setLaunchButtonsEnabled(false);
+
+  // Initialize voice input controls
+  initVoice();
 }
 
 // ----- Settings -----
@@ -643,568 +748,387 @@ function setupEventListeners() {
     });
   }
 
-  // Requirement input
-  const requirementEl = document.getElementById("requirement");
-  requirementEl.addEventListener("input", handleRequirementInput);
-
-  // Auto-convert toggle
-  document.getElementById("autoConvert").addEventListener("change", (e) => {
-    autoConvertEnabled = e.target.checked;
-    if (!autoConvertEnabled) {
-      clearAutoConvertTimer();
-    } else if (requirementEl.value.trim() && !isConverted) {
-      resetAutoConvertTimer();
-    }
-  });
-
-  // Preset selection (manual override)
-  document.querySelectorAll(".preset-option").forEach((option) => {
-    option.addEventListener("click", () => {
-      const presetId = option.dataset.preset;
-      userPresetLocked = true;
-      lastPresetSource = "manual";
-      setCurrentPreset(presetId);
-
-      if (document.getElementById("requirement").value.trim() && isConverted) {
-        isConverted = false;
-        generatePrompt();
-      } else {
-        updatePresetInfo(lastTaskLabel, currentPreset, "manual");
-      }
-    });
-  });
-
-  // Examples
-  document.querySelectorAll(".example-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      requirementEl.value = btn.dataset.example;
-      requirementEl.focus();
-      isConverted = false;
-      document.getElementById("convertBtn").disabled = false;
-      document.getElementById("convertedBadge").style.display = "none";
-      setLaunchButtonsEnabled(false);
-      generatePrompt();
-    });
-  });
-
-  // Convert button
-  document
-    .getElementById("convertBtn")
-    .addEventListener("click", generatePrompt);
-
-  // AI Tools (copy + open)
-  document
-    .getElementById("chatgptBtn")
-    .addEventListener("click", () =>
-      openAITool("ChatGPT", "https://chat.openai.com/")
-    );
-
-  document.getElementById("claudeBtn").addEventListener("click", () =>
-    openAITool("Claude", "https://claude.ai/new")
-  );
-
-  document.getElementById("geminiBtn").addEventListener("click", () =>
-    openAITool("Gemini", "https://gemini.google.com/app")
-  );
-
-  document.getElementById("perplexityBtn").addEventListener("click", () =>
-    openAITool("Perplexity", "https://www.perplexity.ai/")
-  );
-
-  document.getElementById("deepseekBtn").addEventListener("click", () =>
-    openAITool("DeepSeek", "https://chat.deepseek.com/")
-  );
-
-  document.getElementById("copilotBtn").addEventListener("click", () =>
-    openAITool("Copilot", "https://copilot.microsoft.com/")
-  );
-
-  document.getElementById("grokBtn").addEventListener("click", () =>
-    openAITool("Grok", "https://x.ai/")
-  );
-
-  // Export
-  document.getElementById("exportBtn").addEventListener("click", exportPrompt);
-
-  // History toggle + clear
-  document
-    .getElementById("toggleHistoryBtn")
-    .addEventListener("click", () => {
-      const panel = document.getElementById("historyPanel");
-      if (!panel) return;
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
-    });
-
-  document
-    .getElementById("clearHistoryBtn")
-    .addEventListener("click", clearHistory);
-
-  // Template listeners
-  setupTemplateListeners();
-}
-
-// Template listeners (UI)
-function setupTemplateListeners() {
   // Toggle templates panel
-  document.getElementById("toggleTemplatesBtn").addEventListener("click", () => {
-    const panel = document.getElementById("templatesPanel");
-    const btn = document.getElementById("toggleTemplatesBtn");
-    const stateSpan = btn.querySelector(".template-toggle-state");
+  const toggleTemplatesBtn = document.getElementById("toggleTemplatesBtn");
+  if (toggleTemplatesBtn) {
+    toggleTemplatesBtn.addEventListener("click", () => {
+      const panel = document.getElementById("templatesPanel");
+      if (!panel) return;
+      const isHidden = panel.style.display === "none" || panel.style.display === "";
+      panel.style.display = isHidden ? "block" : "none";
+      const state = document.querySelector(".template-toggle-state");
+      if (state) state.textContent = isHidden ? "Visible" : "Hidden";
+    });
+  }
 
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      if (stateSpan) stateSpan.textContent = "Hide";
-      loadCategories();
-      loadTemplatesToUI();
-    } else {
-      panel.style.display = "none";
-      if (stateSpan) stateSpan.textContent = "Show";
-    }
-  });
+  // Template modal buttons
+  const addTemplateBtn = document.getElementById("addTemplateBtn");
+  if (addTemplateBtn) {
+    addTemplateBtn.addEventListener("click", () => openTemplateModal());
+  }
+
+  const closeTemplateModalBtn = document.getElementById("closeTemplateModalBtn");
+  if (closeTemplateModalBtn) {
+    closeTemplateModalBtn.addEventListener("click", closeTemplateModal);
+  }
+
+  const cancelTemplateBtn = document.getElementById("cancelTemplateBtn");
+  if (cancelTemplateBtn) {
+    cancelTemplateBtn.addEventListener("click", closeTemplateModal);
+  }
+
+  const saveTemplateBtn = document.getElementById("saveTemplateBtn");
+  if (saveTemplateBtn) {
+    saveTemplateBtn.addEventListener("click", saveTemplate);
+  }
 
   // Template search
-  document
-    .getElementById("templateSearch")
-    .addEventListener("input", function () {
-      const activeCategory =
-        document.querySelector(".template-category.active")?.dataset.category ||
-        "all";
-      filterTemplatesUI(activeCategory, this.value);
+  const templateSearch = document.getElementById("templateSearch");
+  if (templateSearch) {
+    templateSearch.addEventListener("input", () => {
+      const categoryBtn = document.querySelector(".template-category.active");
+      const category = categoryBtn ? categoryBtn.dataset.category : "all";
+      filterTemplatesUI(category, templateSearch.value);
     });
+  }
 
-  // New template
-  document.getElementById("newTemplateBtn").addEventListener("click", () => {
-    editingTemplateId = null;
-    document.getElementById("templateName").value = "";
-    document.getElementById("templateDescription").value = "";
-    document.getElementById("templateContent").value =
-      document.getElementById("output").value || "";
-    document.getElementById("templateCategory").value = "communication";
-    document.getElementById("templateExample").value =
-      document.getElementById("requirement").value || "";
-    document.getElementById("templateModal").style.display = "flex";
-  });
+  // Requirement input
+  const requirementInput = document.getElementById("requirement");
+  if (requirementInput) {
+    requirementInput.addEventListener("input", handleRequirementInput);
+  }
 
-  // Optional: save-as-template button (if you add it later)
-  const saveAsTemplateBtn = document.getElementById("saveAsTemplateBtn");
-  if (saveAsTemplateBtn) {
-    saveAsTemplateBtn.addEventListener("click", () => {
-      if (!document.getElementById("output").value.trim()) {
-        showNotification("Generate a prompt first before saving as template");
+  const autoConvertToggle = document.getElementById("autoConvert");
+  if (autoConvertToggle) {
+    autoConvertToggle.addEventListener("change", (e) => {
+      autoConvertEnabled = e.target.checked;
+      if (!autoConvertEnabled) {
+        clearAutoConvertTimer();
+      } else {
+        scheduleAutoConvert();
+      }
+    });
+  }
+
+  // Generate button
+  const generateBtn = document.getElementById("generateBtn");
+  if (generateBtn) {
+    generateBtn.addEventListener("click", () => {
+      const text = requirementInput.value.trim();
+      if (!text) {
+        showNotification("Please enter your requirement first.");
         return;
       }
-
-      editingTemplateId = null;
-      document.getElementById("templateName").value = `Prompt ${new Date().toLocaleDateString()}`;
-      document.getElementById("templateDescription").value =
-        "Custom prompt template";
-      document.getElementById("templateContent").value =
-        document.getElementById("output").value;
-      document.getElementById("templateCategory").value = "other";
-      document.getElementById("templateExample").value =
-        document.getElementById("requirement").value || "";
-      document.getElementById("templateModal").style.display = "flex";
+      convertRequirementToPrompt(text, true);
     });
   }
 
-  // Save template
-  document
-    .getElementById("saveTemplateBtn")
-    .addEventListener("click", saveTemplate);
+  // Copy output
+  const copyBtn = document.getElementById("copyBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const output = document.getElementById("output");
+      if (!output.value.trim()) {
+        showNotification("No prompt to copy yet.");
+        return;
+      }
+      copyToClipboard(output.value.trim());
+      showNotification("Prompt copied to clipboard.");
+    });
+  }
 
-  // Close template modal
-  document.getElementById("closeTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
+  // History
+  const historyBtn = document.getElementById("historyBtn");
+  if (historyBtn) {
+    historyBtn.addEventListener("click", () => {
+      const panel = document.getElementById("historyPanel");
+      if (!panel) return;
+      const isHidden = panel.style.display === "none" || panel.style.display === "";
+      panel.style.display = isHidden ? "block" : "none";
+    });
+  }
+
+  const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", clearHistory);
+  }
+
+  // Export
+  const exportBtn = document.getElementById("exportBtn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      const output = document.getElementById("output");
+      if (!output.value.trim()) {
+        showNotification("No prompt to export yet.");
+        return;
+      }
+      exportPrompt(output.value.trim());
+    });
+  }
+
+  // Preset options
+  document.querySelectorAll(".preset-option").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const preset = btn.dataset.preset;
+      userPresetLocked = true;
+      lastPresetSource = "manual";
+      setCurrentPreset(preset);
+      const requirementText = requirementInput.value.trim();
+      if (requirementText) {
+        convertRequirementToPrompt(requirementText, false);
+      }
+    });
   });
 
-  document.getElementById("cancelTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
+  // AI Tools
+  const toolButtons = document.querySelectorAll(".ai-tool-btn");
+  toolButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      const url = btn.dataset.url;
+      const outputText = document.getElementById("output").value.trim();
+      if (!outputText) {
+        showNotification("No prompt to copy yet.");
+        return;
+      }
+      copyToClipboard(outputText);
+      showNotification("Prompt copied. Opening AI tool in a new tab...");
+      window.open(url, "_blank", "noopener");
+    });
   });
 }
 
-// Make template functions globally available (for onclick)
-window.clearHistory = clearHistory;
-window.useTemplate = function (id) {
-  const template = templates.find((t) => t.id === id);
-  if (template) {
-    // Update usage count
-    template.usageCount = (template.usageCount || 0) + 1;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-
-    // Fill requirement with example
-    document.getElementById("requirement").value = template.example || "";
-
-    // Load template content into output
-    document.getElementById("output").value = template.content;
-    updateStats(template.content);
-    showNotification("Template loaded into prompt");
-  }
-};
-window.editTemplate = editTemplate;
-window.deleteTemplate = deleteTemplate;
-
-// ----- Usage Count -----
-function loadUsageCount() {
-  const savedUsage = localStorage.getItem("promptCrafterUsage");
-  if (savedUsage) {
-    usageCount = parseInt(savedUsage, 10);
-  }
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+// ----- Template Modal Helpers -----
+function openTemplateModal() {
+  editingTemplateId = null;
+  document.getElementById("templateName").value = "";
+  document.getElementById("templateDescription").value = "";
+  document.getElementById("templateContent").value = "";
+  document.getElementById("templateCategory").value = "communication";
+  document.getElementById("templateExample").value = "";
+  const modal = document.getElementById("templateModal");
+  if (modal) modal.style.display = "flex";
 }
 
-// ----- Auto-convert -----
+function closeTemplateModal() {
+  const modal = document.getElementById("templateModal");
+  if (modal) modal.style.display = "none";
+}
+
+// ----- Requirement Handling -----
 function handleRequirementInput() {
-  const text = document.getElementById("requirement").value;
-  isConverted = false;
-  document.getElementById("convertedBadge").style.display = "none";
-  document.getElementById("convertBtn").disabled = !text.trim();
+  const input = document.getElementById("requirement");
+  if (!input) return;
+  const text = input.value || "";
 
-  // When user starts editing, lock AI tools until next conversion
-  setLaunchButtonsEnabled(false);
+  updateStats(text);
+
+  const { role, preset, label } = getRoleAndPreset(text);
+  lastRole = role;
+  lastTaskLabel = label;
+
+  if (!userPresetLocked) {
+    lastPresetSource = "auto";
+    setCurrentPreset(preset);
+  }
 
   if (autoConvertEnabled) {
-    resetAutoConvertTimer();
+    scheduleAutoConvert();
+  } else {
+    clearAutoConvertTimer();
   }
-  updateStats(text);
 }
 
-function resetAutoConvertTimer() {
+function updateStats(text) {
+  const chars = text.length;
+  const words = text.trim()
+    ? text
+        .trim()
+        .split(/\s+/)
+        .length
+    : 0;
+
+  const cc = document.getElementById("charCount");
+  const wc = document.getElementById("wordCount");
+  if (cc) cc.textContent = chars;
+  if (wc) wc.textContent = words;
+}
+
+// Auto-convert timer helpers
+function scheduleAutoConvert() {
   clearAutoConvertTimer();
+  if (!autoConvertEnabled) return;
 
-  const requirement = document.getElementById("requirement").value.trim();
-  if (autoConvertEnabled && requirement && !isConverted) {
-    autoConvertCountdown = autoConvertDelay;
-    const timerValue = document.getElementById("timerValue");
-    const timerDisplay = document.getElementById("timerDisplay");
-    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-    if (timerDisplay) timerDisplay.style.display = "inline-flex";
+  autoConvertCountdown = autoConvertDelay;
+  const timerDisplay = document.getElementById("timerDisplay");
+  const timerValue = document.getElementById("timerValue");
 
-    countdownInterval = setInterval(() => {
-      autoConvertCountdown--;
-      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-
-      if (autoConvertCountdown <= 0) {
-        clearInterval(countdownInterval);
-        if (timerDisplay) timerDisplay.style.display = "none";
-        if (requirement && requirement !== lastConvertedText) {
-          generatePrompt();
-        }
-      }
-    }, 1000);
-
-    autoConvertTimer = setTimeout(() => {
-      const currentRequirement =
-        document.getElementById("requirement").value.trim();
-      if (currentRequirement && currentRequirement !== lastConvertedText) {
-        generatePrompt();
-      }
-    }, autoConvertDelay * 1000);
+  if (timerDisplay && timerValue) {
+    timerDisplay.style.display = "inline-flex";
+    timerValue.textContent = `${autoConvertCountdown}s`;
   }
+
+  countdownInterval = setInterval(() => {
+    autoConvertCountdown--;
+    if (timerValue) {
+      timerValue.textContent = `${autoConvertCountdown}s`;
+    }
+    if (autoConvertCountdown <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+
+  autoConvertTimer = setTimeout(() => {
+    const input = document.getElementById("requirement");
+    if (input && input.value.trim()) {
+      convertRequirementToPrompt(input.value.trim(), false);
+    }
+    if (timerDisplay) timerDisplay.style.display = "none";
+  }, autoConvertDelay * 1000);
 }
 
 function clearAutoConvertTimer() {
-  clearTimeout(autoConvertTimer);
-  clearInterval(countdownInterval);
+  if (autoConvertTimer) {
+    clearTimeout(autoConvertTimer);
+    autoConvertTimer = null;
+  }
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
   const timerDisplay = document.getElementById("timerDisplay");
   if (timerDisplay) timerDisplay.style.display = "none";
 }
 
-// ----- Stats (still used internally, but hidden in UI) -----
-function updateStats(text) {
-  const charCount = text.length;
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lineCount = text.split("\n").length;
+// ----- Conversion Logic -----
+async function convertRequirementToPrompt(requirement, trackUsage = false) {
+  const output = document.getElementById("output");
+  if (!output) return;
 
-  document.getElementById(
-    "charCount"
-  ).textContent = `${charCount} characters`;
-  document.getElementById("wordCount").textContent = `${wordCount} words`;
-  document.getElementById("lineCount").textContent = `${lineCount} lines`;
-}
-
-// Clean up any bad output from the finetuned model
-function sanitizePrompt(text) {
-  if (!text) return "";
-  let cleaned = text;
-
-  // Strip code fences if present
-  cleaned = cleaned.replace(/^```[^\n]*\n?/g, "");
-  cleaned = cleaned.replace(/```$/g, "");
-
-  const forbiddenLineRegex =
-    /(prompt generator|generate a prompt|convert .*requirement .*prompt|rewrite .*prompt|rewrite .*requirement)/i;
-
-  cleaned = cleaned
-    .split("\n")
-    .filter((line) => {
-      const trimmed = line.trim();
-      if (/^```/.test(trimmed)) return false;
-      if (forbiddenLineRegex.test(trimmed)) return false;
-      return true;
-    })
-    .join("\n");
-
-  // Soft replacements if anything slipped inside a line
-  cleaned = cleaned.replace(/prompt generator/gi, "assistant");
-  cleaned = cleaned.replace(
-    /generate a prompt/gi,
-    "perform the task and return the final answer"
-  );
-
-  return cleaned.trim();
-}
-
-// ----- Generation -----
-async function generatePrompt() {
-  const requirementEl = document.getElementById("requirement");
-  const outputEl = document.getElementById("output");
-  const convertBtn = document.getElementById("convertBtn");
-  const raw = requirementEl.value.trim();
-
-  if (!raw) {
-    showNotification("Please enter a requirement first");
-    return "";
-  }
-
-  // Smart auto-preset (only if user didn't lock)
-  const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
-  lastRole = role;
-  lastTaskLabel = label;
-
-  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-    lastPresetSource = "auto";
-    setCurrentPreset(autoPreset);
-  } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
-  }
-
-  // Track usage
-  usageCount++;
-  localStorage.setItem("promptCrafterUsage", usageCount);
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
-
-  const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
-
-  // Show converting state
-  convertBtn.disabled = true;
-  convertBtn.innerHTML =
-    '<i class="fas fa-spinner fa-spin"></i> Converting...';
-  clearAutoConvertTimer();
-
-  let generatedPrompt;
-
-  try {
-    if (!apiKey) {
-      // Use local formatter
-      generatedPrompt = localFormatter(raw);
-    } else {
-      // Use API with template filling
-      const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
-
-      const system = `
-You write structured task instructions for AI models.
-
-Using the TEMPLATE below, replace [ROLE] with an appropriate expert role (for example: "${role}")
-and [REQUIREMENT] with the user's requirement. Return ONLY the completed template and nothing else.
-
-TEMPLATE:
-${templateSkeleton}
-
-Important:
-- The template you return must tell the AI to directly perform the task and return the final result.
-- Do NOT mention prompts, prompt generation, or rewriting instructions in your output.
-`.trim();
-
-      const userMessage = `User requirement: "${raw}"
-
-Fill the template accordingly in the current preset format ("${currentPreset}") and return only the filled template.`;
-
-      const response = await fetch(OPENAI_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + apiKey
-        },
-        body: JSON.stringify({
-          model: OPENAI_MODEL,
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: userMessage }
-          ],
-          temperature: 0.1,
-          max_tokens: 700
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        generatedPrompt =
-          data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
-      } else {
-        generatedPrompt = localFormatter(raw);
-      }
-    }
-
-    generatedPrompt = sanitizePrompt(generatedPrompt);
-
-    outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
-    saveToHistory(raw, generatedPrompt);
-
-    // Update state
-    isConverted = true;
-    lastConvertedText = raw;
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    // Enable AI tool buttons now that we have a prompt
-    setLaunchButtonsEnabled(true);
-
-    showNotification("Prompt generated successfully");
-
-    if (autoConvertEnabled) {
-      resetAutoConvertTimer();
-    }
-
-    return generatedPrompt;
-  } catch (err) {
-    console.error("Generation error:", err);
-    generatedPrompt = sanitizePrompt(localFormatter(raw));
-    outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
-    saveToHistory(raw, generatedPrompt);
-    showNotification("Generated with local template");
-
-    isConverted = true;
-    lastConvertedText = raw;
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    // Even if API failed, we have a prompt from local formatter
-    setLaunchButtonsEnabled(true);
-
-    return generatedPrompt;
-  } finally {
-    convertBtn.disabled = false;
-    convertBtn.innerHTML =
-      '<i class="fas fa-wand-magic-sparkles"></i> Enhance Prompt';
-  }
-}
-
-function localFormatter(raw) {
-  const clean = (raw || "").trim() || "[No requirement provided]";
-  const { role, preset: autoPreset, label } = getRoleAndPreset(clean);
-
-  lastRole = role;
-  lastTaskLabel = label;
-
-  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-    lastPresetSource = "auto";
-    setCurrentPreset(autoPreset);
-  } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
-  }
-
-  const template = PRESETS[currentPreset];
-  return template ? template(role, clean) : PRESETS["default"](role, clean);
-}
-
-// ----- Clipboard & AI Tool Integration -----
-async function copyToClipboard() {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value) {
-    showNotification("No prompt to copy. Generate one first.");
-    return false;
-  }
-
-  try {
-    await navigator.clipboard.writeText(outputEl.value);
-    return true;
-  } catch (err) {
-    // Fallback
-    const textArea = document.createElement("textarea");
-    textArea.value = outputEl.value;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      return true;
-    } catch (err2) {
-      document.body.removeChild(textArea);
-      showNotification("Failed to copy. Please copy manually.");
-      return false;
-    }
-  }
-}
-
-async function openAITool(platform, url) {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value || !isConverted) {
-    await generatePrompt();
-  }
-
-  const copied = await copyToClipboard();
-  if (!copied) return;
-
-  // Highlight launch hint for ~4.5 seconds
-  const hint = document.getElementById("launchHint");
-  if (hint) {
-    hint.textContent =
-      "Prompt is copied automatically when you click a tool.";
-    hint.classList.add("launch-hint-active");
-    setTimeout(() => {
-      hint.classList.remove("launch-hint-active");
-    }, 4500);
-  }
-
-  showNotification(`Opening ${platform}...`);
-
-  try {
-    window.open(url, "_blank");
-  } catch (err) {
-    showNotification(
-      `${platform} was blocked by your popup blocker. Please allow pop-ups and try again.`
-    );
-  }
-}
-
-// ----- Export -----
-function exportPrompt() {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value) {
-    showNotification("Generate a prompt first");
+  if (!requirement.trim()) {
+    showNotification("Please enter your requirement first.");
     return;
   }
 
-  const blob = new Blob([outputEl.value], {
-    type: "text/plain;charset=utf-8"
-  });
+  const { role, preset, label } = getRoleAndPreset(requirement);
+  lastRole = role;
+  lastTaskLabel = label;
+
+  if (!userPresetLocked) {
+    lastPresetSource = "auto";
+    setCurrentPreset(preset);
+  }
+
+  const templateFn = PRESETS[currentPreset] || PRESETS.default;
+  const structuredPrompt = templateFn(role, requirement);
+
+  output.value = structuredPrompt;
+  updateStats(structuredPrompt);
+  lastConvertedText = structuredPrompt;
+  isConverted = true;
+
+  setLaunchButtonsEnabled(true);
+
+  saveToHistory(requirement, structuredPrompt);
+
+  if (trackUsage) {
+    incrementUsageCount();
+  }
+}
+
+// Usage tracking
+function loadUsageCount() {
+  const saved = localStorage.getItem("usageCount");
+  usageCount = saved ? parseInt(saved, 10) : 0;
+}
+
+function incrementUsageCount() {
+  usageCount += 1;
+  localStorage.setItem("usageCount", usageCount.toString());
+}
+
+// ----- OpenAI Integration (Optional in-app convert) -----
+async function callOpenAI(prompt) {
+  const apiKey = (localStorage.getItem("OPENAI_API_KEY") || "").trim();
+  if (!apiKey) {
+    showNotification("Add your OpenAI API key in Settings to use in-app conversion.");
+    return null;
+  }
+
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a helpful assistant that refines and improves user prompts for AI tools."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.4
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("OpenAI error:", errText);
+      showNotification("OpenAI API error. Check console for details.");
+      return null;
+    }
+
+    const data = await response.json();
+    const content =
+      data.choices?.[0]?.message?.content?.trim() || null;
+    return content;
+  } catch (error) {
+    console.error("Error calling OpenAI:", error);
+    showNotification("Network error while calling OpenAI.");
+    return null;
+  }
+}
+
+// ----- Utilities -----
+function copyToClipboard(text) {
+  if (!navigator.clipboard) {
+    const temp = document.createElement("textarea");
+    temp.value = text;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand("copy");
+    document.body.removeChild(temp);
+    return;
+  }
+  navigator.clipboard.writeText(text);
+}
+
+function exportPrompt(prompt) {
+  const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = "prompt.txt";
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showNotification("Prompt exported as prompt.txt");
 }
 
-// ----- Notification -----
 function showNotification(message) {
-  const notification = document.getElementById("notification");
-  document.getElementById("notificationText").textContent = message;
-  notification.style.display = "flex";
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
   setTimeout(() => {
-    notification.style.display = "none";
-  }, 3000);
+    toast.classList.remove("show");
+  }, 2000);
 }
