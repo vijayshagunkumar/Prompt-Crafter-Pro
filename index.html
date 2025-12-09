@@ -16,15 +16,19 @@
   <!-- Styles -->
   <link rel="stylesheet" href="styles/variables.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/themes.css">
 </head>
 
 <body>
+  <!-- Theme particles effect -->
+  <div class="particles" id="particles"></div>
+  
   <div class="page">
     <!-- HERO / HEADER -->
     <header class="hero">
       <div class="hero-top">
         <div class="hero-brand">
-          <!-- Logo (your .ico inside a soft card) -->
+          <!-- Logo -->
           <div class="hero-logo">
             <img src="assets/IconLogo.ico" alt="PromptCraft Logo" />
           </div>
@@ -48,6 +52,31 @@
           </div>
         </div>
 
+        <!-- Theme Selector -->
+        <div class="theme-selector-container">
+          <div class="theme-selector">
+            <label for="appThemeSelect">
+              <i class="fas fa-palette"></i> Theme:
+            </label>
+            <select id="appThemeSelect" class="theme-select-dropdown">
+              <option value="sunset-glow">Sunset Glow</option>
+              <option value="aurora-magic">Aurora Magic</option>
+              <option value="serenity-bliss">Serenity Bliss</option>
+              <option value="cyberpunk-neon">Cyberpunk Neon</option>
+              <option value="ocean-deep">Ocean Deep</option>
+              <option value="auto">Auto (System)</option>
+            </select>
+            <div class="theme-demo">
+              <div class="theme-sample sunset-glow active" data-theme="sunset-glow" title="Sunset Glow">S</div>
+              <div class="theme-sample aurora-magic" data-theme="aurora-magic" title="Aurora Magic">A</div>
+              <div class="theme-sample serenity-bliss" data-theme="serenity-bliss" title="Serenity Bliss">S</div>
+              <div class="theme-sample cyberpunk-neon" data-theme="cyberpunk-neon" title="Cyberpunk Neon">C</div>
+              <div class="theme-sample ocean-deep" data-theme="ocean-deep" title="Ocean Deep">O</div>
+              <div class="theme-sample auto" data-theme="auto" title="Auto Theme">A</div>
+            </div>
+          </div>
+        </div>
+
         <button class="settings-btn" id="settingsBtn">
           <i class="fas fa-cog"></i>
           Settings
@@ -65,27 +94,25 @@
             <div class="step-header-main">
               <div>
                 <h2>Your Idea</h2>
-               
               </div>
             </div>
           </div>
 
           <!-- Quick chips -->
           <div class="chip-row">
-  <button class="chip example-btn" data-example="Write a professional email to my team about the deadline extension">
-    <i class="fas fa-envelope"></i> Email
-  </button>
-  <button class="chip example-btn" data-example="Create a Python function to calculate Fibonacci sequence">
-    <i class="fas fa-code"></i> Code
-  </button>
-  <button class="chip example-btn" data-example="Analyze the market trends for electric vehicles in 2024">
-    <i class="fas fa-chart-line"></i> Analysis
-  </button>
-  <button class="chip example-btn" data-example="Design a workout plan for beginners">
-    <i class="fas fa-dumbbell"></i> Workout
-  </button>
-</div>
-
+            <button class="chip example-btn" data-example="Write a professional email to my team about the deadline extension">
+              <i class="fas fa-envelope"></i> Email
+            </button>
+            <button class="chip example-btn" data-example="Create a Python function to calculate Fibonacci sequence">
+              <i class="fas fa-code"></i> Code
+            </button>
+            <button class="chip example-btn" data-example="Analyze the market trends for electric vehicles in 2024">
+              <i class="fas fa-chart-line"></i> Analysis
+            </button>
+            <button class="chip example-btn" data-example="Design a workout plan for beginners">
+              <i class="fas fa-dumbbell"></i> Workout
+            </button>
+          </div>
 
           <!-- Auto-convert -->
           <div class="auto-row">
@@ -163,7 +190,7 @@
             <div class="step-header-main">
               <div>
                 <h2>Optimized Prompt</h2>
-                </div>
+              </div>
               <div class="step-meta">
                 <span class="meta-pill success" id="convertedBadge" style="display:none;">
                   <i class="fas fa-check-circle"></i> Converted
@@ -371,17 +398,6 @@
           <div id="delayValue" class="form-hint">Current: 60 seconds</div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="themeSelect">
-            <i class="fas fa-palette"></i> Theme
-          </label>
-          <select id="themeSelect" class="input-text">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="auto">Auto (System)</option>
-          </select>
-        </div>
-
         <div class="modal-actions">
           <button class="btn-ghost-small danger" id="clearDataBtn">
             <i class="fas fa-trash"></i> Clear all data
@@ -454,5 +470,6 @@
 
   <!-- SCRIPT -->
   <script src="js/app.js"></script>
+  <script src="js/theme.js"></script>
 </body>
 </html>
