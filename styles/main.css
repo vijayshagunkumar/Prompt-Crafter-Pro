@@ -1193,3 +1193,80 @@ textarea::placeholder {
     margin: 10px;
   }
 }
+/* ===========================================
+   Readability + Dark Theme Adjustments
+   (PromptCraft by Rups – overrides)
+   =========================================== */
+
+/* 1. Slightly larger base font everywhere */
+body {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* 2. Inputs & textareas – easier to read */
+.textarea-idea,
+.output-textarea,
+.input-text,
+.input-search,
+textarea,
+input,
+select {
+  font-size: 14px;
+}
+
+/* 3. Core labels / subtitles */
+.hero-subtitle,
+.settings-btn,
+.step-subtitle,
+.toggle-switch,
+.templates-title,
+.launch-sub,
+.footer {
+  font-size: 13px;
+}
+
+/* 4. Small UI text bumped up from 10–11px → 12px */
+.brand-tagline-label,
+.brand-tagline-text,
+.meta-pill,
+.timer-badge,
+.templates-header-left,
+.templates-sub,
+.template-category,
+.template-card,
+.template-card-meta,
+.template-card-description,
+.btn-ghost-small,
+.btn-ghost-small i,
+.empty-state,
+.voice-status {
+  font-size: 12px;
+}
+
+/* Voice indicator dot a bit larger */
+.voice-status i {
+  font-size: 10px;
+}
+
+/* 5. Make template cards/categories readable on dark themes
+   (Aurora / Ocean Deep / Cyberpunk) by using the themed panel color
+   instead of hard-coded white. */
+[data-app-theme="aurora-magic"] .chip,
+[data-app-theme="aurora-magic"] .template-category,
+[data-app-theme="aurora-magic"] .template-card,
+[data-app-theme="ocean-deep"] .chip,
+[data-app-theme="ocean-deep"] .template-category,
+[data-app-theme="ocean-deep"] .template-card,
+[data-app-theme="cyberpunk-neon"] .chip,
+[data-app-theme="cyberpunk-neon"] .template-category,
+[data-app-theme="cyberpunk-neon"] .template-card {
+  background: var(--panel-bg);
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+}
+
+/* Keep the “active” pill looking highlighted */
+[data-app-theme] .template-category.active {
+  color: var(--primary);
+}
