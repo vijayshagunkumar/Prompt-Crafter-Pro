@@ -1,13 +1,9 @@
-// PromptCraft – app.js
-
-// API Configuration
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-// Use your fine-tuned model or a base model here
-const OPENAI_MODEL = "gpt-3.5-turbo";
-
 // Application State
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = "ft:gpt-3.5-turbo-1106:personal::CkAjxivm";
+
 let currentPreset = "default";
-let userPresetLocked = false;       // when user clicks a preset, stop auto-switching
+let userPresetLocked = false;       // when user clicks a preset, we stop auto-switching
 let lastPresetSource = "auto";      // 'auto' or 'manual'
 let lastTaskLabel = "General";      // Email / Code / Analysis / Blog / etc.
 let lastRole = "expert assistant";  // from classifier
@@ -22,27 +18,27 @@ let autoConvertCountdown = 60;
 let countdownInterval;
 let editingTemplateId = null;
 let templates = [];
-let historyItems = [];
 
-// Template categories for Template Library
+// Template categories
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
-  coding:        { name: "Coding",        icon: "fa-code",     color: "#10b981" },
-  writing:       { name: "Writing",       icon: "fa-pen",      color: "#8b5cf6" },
-  analysis:      { name: "Analysis",      icon: "fa-chart-bar",color: "#f59e0b" },
-  business:      { name: "Business",      icon: "fa-briefcase",color: "#ef4444" },
-  creative:      { name: "Creative",      icon: "fa-palette",  color: "#ec4899" },
-  education:     { name: "Education",     icon: "fa-graduation-cap", color: "#06b6d4" },
-  other:         { name: "Other",         icon: "fa-th",       color: "#6b7280" }
+  coding: { name: "Coding", icon: "fa-code", color: "#10b981" },
+  writing: { name: "Writing", icon: "fa-pen", color: "#8b5cf6" },
+  analysis: { name: "Analysis", icon: "fa-chart-bar", color: "#f59e0b" },
+  business: { name: "Business", icon: "fa-briefcase", color: "#ef4444" },
+  creative: { name: "Creative", icon: "fa-palette", color: "#ec4899" },
+  education: { name: "Education", icon: "fa-graduation-cap", color: "#06b6d4" },
+  other: { name: "Other", icon: "fa-th", color: "#6b7280" }
 };
 
-// Default templates (simple examples)
+// Default templates
 const DEFAULT_TEMPLATES = [
   {
     id: "1",
     name: "Professional Email",
     description: "Write clear, professional emails for business communication",
     category: "communication",
+    tags: ["email", "professional", "business"],
     content: `# Role
 You are an expert business communicator skilled in writing professional emails.
 
@@ -67,9 +63,44 @@ Write a professional email about [TOPIC] to [RECIPIENT]
 - Use proper email formatting
 - Include subject line
 - Check for tone appropriateness`,
-    example: "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
+    example:
+      "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
     usageCount: 5,
     createdAt: Date.now() - 86400000,
+    isDefault: true
+  },
+  {
+    id: "2",
+    name: "Code Review Request",
+    description: "Request code reviews from team members effectively",
+    category: "coding",
+    tags: ["code", "review", "team"],
+    content: `# Role
+You are an experienced software developer who needs code review.
+
+# Objective
+Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
+
+# Context
+- PR/MR Link: [LINK]
+- Changes: [BRIEF_DESCRIPTION]
+- Testing: [WHAT_WAS_TESTED]
+
+# Instructions
+1. Mention specific files/lines to review
+2. Explain the change briefly
+3. Mention any concerns or trade-offs
+4. Specify what kind of feedback you need
+5. Provide context if needed
+
+# Notes
+- Be specific about what to review
+- Mention deadlines if any
+- Thank the reviewer in advance`,
+    example:
+      "Request code review for the new user authentication system from the backend team.",
+    usageCount: 3,
+    createdAt: Date.now() - 172800000,
     isDefault: true
   }
 ];
@@ -89,7 +120,7 @@ ${requirement}
 # Instructions
 1. Perform the task described in the Objective.
 2. Focus on delivering the final result (email, analysis, code, etc.).
-3. Do **not** talk about prompts, prompt generation, or rewriting instructions.
+3. Do **not** talk about prompts, prompt generation, or instructions.
 4. Do **not** rewrite or summarize the task itself.
 5. Return the completed output in one response.
 
@@ -157,7 +188,7 @@ ${requirement}
 - Include examples or explanations only if they help the user apply the result.`
 };
 
-// -------- Helper: classify role + best preset + label ----------
+// -------- Helper: classify role + BEST preset + label ----------
 function getRoleAndPreset(text) {
   const lower = (text || "").toLowerCase();
   let role = "expert assistant";
@@ -217,6 +248,11 @@ function getRoleAndPreset(text) {
   return { role, preset, label };
 }
 
+// Backwards compatible helper
+function getAppropriateRole(text) {
+  return getRoleAndPreset(text).role;
+}
+
 // -------- Helper: set preset + sync UI & badge ----------
 function setCurrentPreset(presetId) {
   if (!PRESETS[presetId]) return;
@@ -244,25 +280,6 @@ function updatePresetInfo(taskLabel, presetId, source) {
   el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel})`;
 }
 
-/**
- * Enable / disable all AI launch buttons (Step 3)
- */
-function setLaunchButtonsEnabled(enabled) {
-  const ids = [
-    "chatgptBtn",
-    "claudeBtn",
-    "geminiBtn",
-    "perplexityBtn",
-    "deepseekBtn",
-    "copilotBtn",
-    "grokBtn"
-  ];
-  ids.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = !enabled;
-  });
-}
-
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
@@ -272,73 +289,27 @@ function initializeApp() {
   loadSettings();
   loadTemplates();
   loadUsageCount();
-  loadHistory();
   setupEventListeners();
   initializeUI();
   setCurrentPreset(currentPreset);
   updatePresetInfo("General", currentPreset, "auto");
-
-  const req = document.getElementById("requirement");
-  if (req) req.focus();
-
-  // Initially all AI tool buttons are disabled until a prompt is generated
-  setLaunchButtonsEnabled(false);
+  document.getElementById("requirement").focus();
 }
 
-// ----- Settings -----
 function loadSettings() {
   const apiKey = localStorage.getItem("OPENAI_API_KEY") || "";
   const delay = localStorage.getItem("autoConvertDelay") || "60";
   const theme = localStorage.getItem("theme") || "light";
 
-  const apiKeyInput = document.getElementById("apiKeyInput");
-  const autoDelayInput = document.getElementById("autoConvertDelay");
-  const themeSelect = document.getElementById("themeSelect");
-  const delayValue = document.getElementById("delayValue");
-
-  if (apiKeyInput) apiKeyInput.value = apiKey;
-  if (autoDelayInput) autoDelayInput.value = delay;
-  if (themeSelect) themeSelect.value = theme;
-  if (delayValue) delayValue.textContent = `Current: ${delay} seconds`;
+  document.getElementById("apiKeyInput").value = apiKey;
+  document.getElementById("autoConvertDelay").value = delay;
+  document.getElementById("themeSelect").value = theme;
+  document.getElementById("delayValue").textContent = `Current: ${delay} seconds`;
 
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
-
-  applyTheme(theme);
 }
 
-function applyTheme(theme) {
-  const html = document.documentElement;
-  html.setAttribute("data-theme", theme);
-}
-
-function saveSettings() {
-  const apiKey = (document.getElementById("apiKeyInput").value || "").trim();
-  const delay = document.getElementById("autoConvertDelay").value || "60";
-  const theme = document.getElementById("themeSelect").value || "light";
-
-  localStorage.setItem("OPENAI_API_KEY", apiKey);
-  localStorage.setItem("autoConvertDelay", delay);
-  localStorage.setItem("theme", theme);
-
-  autoConvertDelay = parseInt(delay, 10);
-  autoConvertCountdown = autoConvertDelay;
-  applyTheme(theme);
-
-  showNotification("Settings saved");
-  const modal = document.getElementById("settingsModal");
-  if (modal) modal.style.display = "none";
-}
-
-function clearAllData() {
-  localStorage.clear();
-  showNotification("All data cleared. Reloading...");
-  setTimeout(() => {
-    window.location.reload();
-  }, 800);
-}
-
-// ----- Templates -----
 function loadTemplates() {
   const savedTemplates = localStorage.getItem("promptTemplates");
   if (savedTemplates) {
@@ -349,275 +320,27 @@ function loadTemplates() {
   }
 }
 
-function loadCategories() {
-  const container = document.getElementById("templateCategories");
-  if (!container) return;
-  container.innerHTML = "";
-
-  // All category
-  const allCat = document.createElement("div");
-  allCat.className = "template-category active";
-  allCat.dataset.category = "all";
-  allCat.innerHTML = '<i class="fas fa-th"></i> All';
-  allCat.addEventListener("click", () => filterTemplatesUI("all"));
-  container.appendChild(allCat);
-
-  Object.entries(TEMPLATE_CATEGORIES).forEach(([key, value]) => {
-    const div = document.createElement("div");
-    div.className = "template-category";
-    div.dataset.category = key;
-    div.innerHTML = `<i class="fas ${value.icon}"></i> ${value.name}`;
-    div.addEventListener("click", () => filterTemplatesUI(key));
-    container.appendChild(div);
-  });
-}
-
-function loadTemplatesToUI(category = "all", searchQuery = "") {
-  const grid = document.getElementById("templatesGrid");
-  const empty = document.getElementById("emptyTemplates");
-  if (!grid || !empty) return;
-
-  grid.innerHTML = "";
-
-  let filtered = templates.slice();
-
-  if (category !== "all") {
-    filtered = filtered.filter((t) => t.category === category);
+function loadUsageCount() {
+  const savedUsage = localStorage.getItem("promptCrafterUsage");
+  if (savedUsage) {
+    usageCount = parseInt(savedUsage, 10);
+    document.getElementById(
+      "usageCount"
+    ).textContent = `${usageCount} prompts generated`;
   }
-
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        (t.description || "").toLowerCase().includes(q)
-    );
-  }
-
-  if (!filtered.length) {
-    empty.style.display = "block";
-    return;
-  }
-
-  empty.style.display = "none";
-
-  filtered.forEach((template) => {
-    const card = document.createElement("div");
-    card.className = "template-card";
-
-    const categoryMeta = TEMPLATE_CATEGORIES[template.category] || {
-      name: "Other",
-      color: "#6b7280"
-    };
-
-    card.innerHTML = `
-      <div class="template-card-header">
-        <div class="template-card-title">${template.name}</div>
-        <span class="template-card-meta" style="color:${categoryMeta.color}">
-          <i class="fas ${categoryMeta.icon}"></i> ${categoryMeta.name}
-        </span>
-      </div>
-      <div class="template-card-meta">
-        Used ${template.usageCount || 0} times
-      </div>
-      <div class="template-card-description">
-        ${(template.description || "").substring(0, 120)}${
-          (template.description || "").length > 120 ? "..." : ""
-        }
-      </div>
-      <div class="template-actions">
-        <button class="btn-ghost-small" style="border-color:${categoryMeta.color};color:${categoryMeta.color}" onclick="useTemplate('${template.id}')">
-          <i class="fas fa-play"></i> Use
-        </button>
-        <button class="btn-ghost-small" onclick="editTemplate('${template.id}')">
-          <i class="fas fa-edit"></i>
-        </button>
-        ${
-          !template.isDefault
-            ? `<button class="btn-ghost-small danger" onclick="deleteTemplate('${template.id}')">
-                 <i class="fas fa-trash"></i>
-               </button>`
-            : ""
-        }
-      </div>
-    `;
-    grid.appendChild(card);
-  });
 }
 
-function filterTemplatesUI(category, searchQuery = "") {
-  document.querySelectorAll(".template-category").forEach((cat) => {
-    cat.classList.remove("active");
-  });
-  const active = document.querySelector(
-    `.template-category[data-category="${category}"]`
-  );
-  if (active) active.classList.add("active");
-
-  const currentSearch =
-    searchQuery || document.getElementById("templateSearch").value;
-  loadTemplatesToUI(category, currentSearch);
-}
-
-function saveTemplate() {
-  const name = document.getElementById("templateName").value.trim();
-  const description = document
-    .getElementById("templateDescription")
-    .value.trim();
-  const content = document.getElementById("templateContent").value.trim();
-  const category = document.getElementById("templateCategory").value;
-  const example = document.getElementById("templateExample").value.trim();
-
-  if (!name || !content) {
-    showNotification("Name and content are required");
-    return;
-  }
-
-  if (editingTemplateId) {
-    const index = templates.findIndex((t) => t.id === editingTemplateId);
-    if (index !== -1) {
-      templates[index] = {
-        ...templates[index],
-        name,
-        description,
-        content,
-        category,
-        example
-      };
-    }
-  } else {
-    const newTemplate = {
-      id: Date.now().toString(),
-      name,
-      description,
-      content,
-      category,
-      example,
-      usageCount: 0,
-      createdAt: Date.now(),
-      isDefault: false
-    };
-    templates.push(newTemplate);
-  }
-
-  localStorage.setItem("promptTemplates", JSON.stringify(templates));
-  loadTemplatesToUI();
-  const modal = document.getElementById("templateModal");
-  if (modal) modal.style.display = "none";
-  showNotification(`Template "${name}" saved`);
-}
-
-function editTemplate(id) {
-  const template = templates.find((t) => t.id === id);
-  if (!template) return;
-
-  editingTemplateId = id;
-  document.getElementById("templateName").value = template.name;
-  document.getElementById("templateDescription").value =
-    template.description || "";
-  document.getElementById("templateContent").value = template.content || "";
-  document.getElementById("templateCategory").value =
-    template.category || "other";
-  document.getElementById("templateExample").value = template.example || "";
-
-  const modal = document.getElementById("templateModal");
-  if (modal) modal.style.display = "flex";
-}
-
-function deleteTemplate(id) {
-  const template = templates.find((t) => t.id === id);
-  if (!template) return;
-
-  if (!confirm(`Delete template "${template.name}"?`)) return;
-
-  templates = templates.filter((t) => t.id !== id);
-  localStorage.setItem("promptTemplates", JSON.stringify(templates));
-  loadTemplatesToUI();
-  showNotification("Template deleted");
-}
-
-// ----- History -----
-function loadHistory() {
-  const saved = localStorage.getItem("promptHistory");
-  if (saved) {
-    historyItems = JSON.parse(saved);
-  } else {
-    historyItems = [];
-  }
-  renderHistory();
-}
-
-function saveToHistory(requirement, prompt) {
-  const item = {
-    id: Date.now(),
-    requirement,
-    prompt,
-    createdAt: new Date().toISOString()
-  };
-  historyItems.unshift(item);
-  historyItems = historyItems.slice(0, 20);
-  localStorage.setItem("promptHistory", JSON.stringify(historyItems));
-  renderHistory();
-}
-
-function renderHistory() {
-  const list = document.getElementById("historyList");
-  if (!list) return;
-  list.innerHTML = "";
-
-  if (!historyItems.length) {
-    list.innerHTML = `<div class="history-item-meta">No history yet.</div>`;
-    return;
-  }
-
-  historyItems.forEach((item) => {
-    const div = document.createElement("div");
-    div.className = "history-item";
-    div.innerHTML = `
-      <div class="history-item-title">${(item.requirement || "").slice(
-        0,
-        80
-      )}${item.requirement.length > 80 ? "..." : ""}</div>
-      <div class="history-item-meta">${new Date(
-        item.createdAt
-      ).toLocaleString()}</div>
-    `;
-    div.addEventListener("click", () => {
-      document.getElementById("requirement").value = item.requirement;
-      document.getElementById("output").value = item.prompt;
-      updateStats(item.prompt);
-      showNotification("Loaded from history");
-    });
-    list.appendChild(div);
-  });
-}
-
-function clearHistory() {
-  if (!confirm("Clear all history?")) return;
-  historyItems = [];
-  localStorage.removeItem("promptHistory");
-  renderHistory();
-  showNotification("History cleared");
-}
-
-// ----- UI Init -----
-function initializeUI() {
-  const templatesPanel = document.getElementById("templatesPanel");
-  if (templatesPanel) templatesPanel.style.display = "none";
-  const historyPanel = document.getElementById("historyPanel");
-  if (historyPanel) historyPanel.style.display = "none";
-}
-
-// ----- Event Listeners -----
 function setupEventListeners() {
   // Settings
   document.getElementById("settingsBtn").addEventListener("click", () => {
     document.getElementById("settingsModal").style.display = "flex";
   });
 
-  document.getElementById("closeSettingsBtn").addEventListener("click", () => {
-    document.getElementById("settingsModal").style.display = "none";
-  });
+  document
+    .getElementById("closeSettingsBtn")
+    .addEventListener("click", () => {
+      document.getElementById("settingsModal").style.display = "none";
+    });
 
   document
     .getElementById("saveSettingsBtn")
@@ -636,12 +359,10 @@ function setupEventListeners() {
   // Auto-convert delay slider
   const delaySlider = document.getElementById("autoConvertDelay");
   const delayValue = document.getElementById("delayValue");
-  if (delaySlider && delayValue) {
-    delaySlider.addEventListener("input", () => {
-      delayValue.textContent = `Current: ${delaySlider.value} seconds`;
-      autoConvertDelay = parseInt(delaySlider.value, 10);
-    });
-  }
+  delaySlider.addEventListener("input", () => {
+    delayValue.textContent = `Current: ${delaySlider.value} seconds`;
+    autoConvertDelay = parseInt(delaySlider.value, 10);
+  });
 
   // Requirement input
   const requirementEl = document.getElementById("requirement");
@@ -682,7 +403,6 @@ function setupEventListeners() {
       isConverted = false;
       document.getElementById("convertBtn").disabled = false;
       document.getElementById("convertedBadge").style.display = "none";
-      setLaunchButtonsEnabled(false);
       generatePrompt();
     });
   });
@@ -692,177 +412,85 @@ function setupEventListeners() {
     .getElementById("convertBtn")
     .addEventListener("click", generatePrompt);
 
-  // AI Tools (copy + open)
-  document
-    .getElementById("chatgptBtn")
-    .addEventListener("click", () =>
-      openAITool("ChatGPT", "https://chat.openai.com/")
-    );
+  // Copy button
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    if (!document.getElementById("output").value) await generatePrompt();
+    await copyToClipboard();
+    showNotification("Prompt copied to clipboard!");
+  });
 
-  document.getElementById("claudeBtn").addEventListener("click", () =>
-    openAITool("Claude", "https://claude.ai/new")
-  );
+ // AI Tools
+document.getElementById('chatgptBtn')
+  .addEventListener('click', () => openAITool('ChatGPT', 'https://chat.openai.com/'));
 
-  document.getElementById("geminiBtn").addEventListener("click", () =>
-    openAITool("Gemini", "https://gemini.google.com/app")
-  );
+document.getElementById('claudeBtn')
+  .addEventListener('click', () => openAITool('Claude', 'https://claude.ai/new'));
 
-  document.getElementById("perplexityBtn").addEventListener("click", () =>
-    openAITool("Perplexity", "https://www.perplexity.ai/")
-  );
+document.getElementById('geminiBtn')
+  .addEventListener('click', () => openAITool('Gemini', 'https://gemini.google.com/app'));
 
-  document.getElementById("deepseekBtn").addEventListener("click", () =>
-    openAITool("DeepSeek", "https://chat.deepseek.com/")
-  );
+document.getElementById('perplexityBtn')
+  .addEventListener('click', () => openAITool('Perplexity', 'https://www.perplexity.ai/'));
 
-  document.getElementById("copilotBtn").addEventListener("click", () =>
-    openAITool("Copilot", "https://copilot.microsoft.com/")
-  );
+document.getElementById('deepseekBtn')
+  .addEventListener('click', () => openAITool('DeepSeek', 'https://chat.deepseek.com/'));
 
-  document.getElementById("grokBtn").addEventListener("click", () =>
-    openAITool("Grok", "https://x.ai/")
-  );
+// NEW: Copilot & Grok
+document.getElementById('copilotBtn')
+  .addEventListener('click', () => openAITool('Copilot', 'https://copilot.microsoft.com/'));
+
+document.getElementById('grokBtn')
+  .addEventListener('click', () => openAITool('Grok', 'https://x.ai/'));
 
   // Export
   document.getElementById("exportBtn").addEventListener("click", exportPrompt);
 
-  // History toggle + clear
+  // History
   document
     .getElementById("toggleHistoryBtn")
-    .addEventListener("click", () => {
-      const panel = document.getElementById("historyPanel");
-      if (!panel) return;
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
-    });
-
+    .addEventListener("click", toggleHistory);
   document
     .getElementById("clearHistoryBtn")
     .addEventListener("click", clearHistory);
 
-  // Template listeners
+  // Template functionality
   setupTemplateListeners();
 }
 
-// Template listeners (UI)
-function setupTemplateListeners() {
-  // Toggle templates panel
-  document.getElementById("toggleTemplatesBtn").addEventListener("click", () => {
-    const panel = document.getElementById("templatesPanel");
-    const btn = document.getElementById("toggleTemplatesBtn");
-    const stateSpan = btn.querySelector(".template-toggle-state");
-
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      if (stateSpan) stateSpan.textContent = "Hide";
-      loadCategories();
-      loadTemplatesToUI();
-    } else {
-      panel.style.display = "none";
-      if (stateSpan) stateSpan.textContent = "Show";
-    }
-  });
-
-  // Template search
-  document
-    .getElementById("templateSearch")
-    .addEventListener("input", function () {
-      const activeCategory =
-        document.querySelector(".template-category.active")?.dataset.category ||
-        "all";
-      filterTemplatesUI(activeCategory, this.value);
-    });
-
-  // New template
-  document.getElementById("newTemplateBtn").addEventListener("click", () => {
-    editingTemplateId = null;
-    document.getElementById("templateName").value = "";
-    document.getElementById("templateDescription").value = "";
-    document.getElementById("templateContent").value =
-      document.getElementById("output").value || "";
-    document.getElementById("templateCategory").value = "communication";
-    document.getElementById("templateExample").value =
-      document.getElementById("requirement").value || "";
-    document.getElementById("templateModal").style.display = "flex";
-  });
-
-  // Optional: save-as-template button (if you add it later)
-  const saveAsTemplateBtn = document.getElementById("saveAsTemplateBtn");
-  if (saveAsTemplateBtn) {
-    saveAsTemplateBtn.addEventListener("click", () => {
-      if (!document.getElementById("output").value.trim()) {
-        showNotification("Generate a prompt first before saving as template");
-        return;
-      }
-
-      editingTemplateId = null;
-      document.getElementById("templateName").value = `Prompt ${new Date().toLocaleDateString()}`;
-      document.getElementById("templateDescription").value =
-        "Custom prompt template";
-      document.getElementById("templateContent").value =
-        document.getElementById("output").value;
-      document.getElementById("templateCategory").value = "other";
-      document.getElementById("templateExample").value =
-        document.getElementById("requirement").value || "";
-      document.getElementById("templateModal").style.display = "flex";
-    });
-  }
-
-  // Save template
-  document
-    .getElementById("saveTemplateBtn")
-    .addEventListener("click", saveTemplate);
-
-  // Close template modal
-  document.getElementById("closeTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
-  });
-
-  document.getElementById("cancelTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
-  });
+function initializeUI() {
+  updateStats("");
+  loadHistory();
 }
 
-// Make template functions globally available (for onclick)
-window.clearHistory = clearHistory;
-window.useTemplate = function (id) {
-  const template = templates.find((t) => t.id === id);
-  if (template) {
-    // Update usage count
-    template.usageCount = (template.usageCount || 0) + 1;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-
-    // Fill requirement with example
-    document.getElementById("requirement").value = template.example || "";
-
-    // Load template content into output
-    document.getElementById("output").value = template.content;
-    updateStats(template.content);
-    showNotification("Template loaded into prompt");
-  }
-};
-window.editTemplate = editTemplate;
-window.deleteTemplate = deleteTemplate;
-
-// ----- Usage Count -----
-function loadUsageCount() {
-  const savedUsage = localStorage.getItem("promptCrafterUsage");
-  if (savedUsage) {
-    usageCount = parseInt(savedUsage, 10);
-  }
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
-}
-
-// ----- Auto-convert -----
+// Core Functions
 function handleRequirementInput() {
-  const text = document.getElementById("requirement").value;
-  isConverted = false;
-  document.getElementById("convertedBadge").style.display = "none";
-  document.getElementById("convertBtn").disabled = !text.trim();
+  const requirementEl = document.getElementById("requirement");
+  const convertBtn = document.getElementById("convertBtn");
+  const text = requirementEl.value;
 
-  // When user starts editing, lock AI tools until next conversion
-  setLaunchButtonsEnabled(false);
+  if (isConverted && text.trim() !== lastConvertedText) {
+    isConverted = false;
+    convertBtn.disabled = false;
+    document.getElementById("convertedBadge").style.display = "none";
+    document.getElementById("timerDisplay").style.display = "none";
+    clearAutoConvertTimer();
+  }
+
+  // Auto-detect role + preset if user hasn't locked one
+  const { role, preset, label } = getRoleAndPreset(text);
+  lastRole = role;
+  lastTaskLabel = label;
+
+  if (!userPresetLocked && preset && preset !== currentPreset) {
+    lastPresetSource = "auto";
+    setCurrentPreset(preset);
+  } else {
+    updatePresetInfo(
+      lastTaskLabel,
+      currentPreset,
+      userPresetLocked ? "manual" : "auto"
+    );
+  }
 
   if (autoConvertEnabled) {
     resetAutoConvertTimer();
@@ -876,18 +504,20 @@ function resetAutoConvertTimer() {
   const requirement = document.getElementById("requirement").value.trim();
   if (autoConvertEnabled && requirement && !isConverted) {
     autoConvertCountdown = autoConvertDelay;
-    const timerValue = document.getElementById("timerValue");
-    const timerDisplay = document.getElementById("timerDisplay");
-    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-    if (timerDisplay) timerDisplay.style.display = "inline-flex";
+    document.getElementById(
+      "timerValue"
+    ).textContent = `${autoConvertCountdown}s`;
+    document.getElementById("timerDisplay").style.display = "inline-flex";
 
     countdownInterval = setInterval(() => {
       autoConvertCountdown--;
-      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
+      document.getElementById(
+        "timerValue"
+      ).textContent = `${autoConvertCountdown}s`;
 
       if (autoConvertCountdown <= 0) {
         clearInterval(countdownInterval);
-        if (timerDisplay) timerDisplay.style.display = "none";
+        document.getElementById("timerDisplay").style.display = "none";
         if (requirement && requirement !== lastConvertedText) {
           generatePrompt();
         }
@@ -907,11 +537,9 @@ function resetAutoConvertTimer() {
 function clearAutoConvertTimer() {
   clearTimeout(autoConvertTimer);
   clearInterval(countdownInterval);
-  const timerDisplay = document.getElementById("timerDisplay");
-  if (timerDisplay) timerDisplay.style.display = "none";
+  document.getElementById("timerDisplay").style.display = "none";
 }
 
-// ----- Stats (still used internally, but hidden in UI) -----
 function updateStats(text) {
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -956,7 +584,6 @@ function sanitizePrompt(text) {
   return cleaned.trim();
 }
 
-// ----- Generation -----
 async function generatePrompt() {
   const requirementEl = document.getElementById("requirement");
   const outputEl = document.getElementById("output");
@@ -989,7 +616,7 @@ async function generatePrompt() {
   localStorage.setItem("promptCrafterUsage", usageCount);
   document.getElementById(
     "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+  ).textContent = `${usageCount} prompts generated`;
 
   const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
 
@@ -1062,10 +689,8 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
     // Update state
     isConverted = true;
     lastConvertedText = raw;
+    convertBtn.disabled = true;
     document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    // Enable AI tool buttons now that we have a prompt
-    setLaunchButtonsEnabled(true);
 
     showNotification("Prompt generated successfully");
 
@@ -1084,16 +709,13 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
     isConverted = true;
     lastConvertedText = raw;
+    convertBtn.disabled = true;
     document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    // Even if API failed, we have a prompt from local formatter
-    setLaunchButtonsEnabled(true);
 
     return generatedPrompt;
   } finally {
-    convertBtn.disabled = false;
-    convertBtn.innerHTML =
-      '<i class="fas fa-wand-magic-sparkles"></i> Enhance Prompt';
+    convertBtn.disabled = true;
+    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
   }
 }
 
@@ -1119,7 +741,6 @@ function localFormatter(raw) {
   return template ? template(role, clean) : PRESETS["default"](role, clean);
 }
 
-// ----- Clipboard & AI Tool Integration -----
 async function copyToClipboard() {
   const outputEl = document.getElementById("output");
   if (!outputEl.value) {
@@ -1157,29 +778,17 @@ async function openAITool(platform, url) {
   const copied = await copyToClipboard();
   if (!copied) return;
 
-  // Highlight launch hint for ~4.5 seconds
-  const hint = document.getElementById("launchHint");
-  if (hint) {
-    hint.textContent =
-      "Prompt is copied automatically when you click a tool.";
-    hint.classList.add("launch-hint-active");
-    setTimeout(() => {
-      hint.classList.remove("launch-hint-active");
-    }, 4500);
-  }
-
-  showNotification(`Opening ${platform}...`);
+  showNotification(`Prompt copied! Opening ${platform}...`);
 
   try {
     window.open(url, "_blank");
   } catch (err) {
     showNotification(
-      `${platform} was blocked by your popup blocker. Please allow pop-ups and try again.`
+      `${platform} blocked by popup blocker. Please allow popups.`
     );
   }
 }
 
-// ----- Export -----
 function exportPrompt() {
   const outputEl = document.getElementById("output");
   if (!outputEl.value) {
@@ -1187,19 +796,395 @@ function exportPrompt() {
     return;
   }
 
-  const blob = new Blob([outputEl.value], {
-    type: "text/plain;charset=utf-8"
-  });
+  const blob = new Blob([outputEl.value], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "prompt.txt";
+  a.download = `prompt-${Date.now()}.txt`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showNotification("Prompt exported as prompt.txt");
+
+  showNotification("Prompt exported as .txt file");
 }
 
-// ----- Notification -----
+// Settings Functions
+function saveSettings() {
+  const apiKey = document.getElementById("apiKeyInput").value.trim();
+  const delay = document.getElementById("autoConvertDelay").value;
+  const theme = document.getElementById("themeSelect").value;
+
+  localStorage.setItem("OPENAI_API_KEY", apiKey);
+  localStorage.setItem("autoConvertDelay", delay);
+  localStorage.setItem("theme", theme);
+
+  autoConvertDelay = parseInt(delay, 10);
+  autoConvertCountdown = autoConvertDelay;
+
+  document.getElementById("settingsModal").style.display = "none";
+  showNotification("Settings saved successfully!");
+}
+
+function clearAllData() {
+  localStorage.removeItem("promptTemplates");
+  localStorage.removeItem("promptHistory");
+  localStorage.removeItem("promptCrafterUsage");
+
+  // Keep settings
+  const apiKey = localStorage.getItem("OPENAI_API_KEY");
+  const delay = localStorage.getItem("autoConvertDelay");
+  const theme = localStorage.getItem("theme");
+
+  localStorage.clear();
+
+  if (apiKey) localStorage.setItem("OPENAI_API_KEY", apiKey);
+  if (delay) localStorage.setItem("autoConvertDelay", delay);
+  if (theme) localStorage.setItem("theme", theme);
+
+  // Reset state
+  usageCount = 0;
+  templates = [...DEFAULT_TEMPLATES];
+  isConverted = false;
+  lastConvertedText = "";
+
+  // Reset UI
+  document.getElementById("requirement").value = "";
+  document.getElementById("output").value = "";
+  document.getElementById("usageCount").textContent = "0 prompts generated";
+  document.getElementById("historyList").innerHTML = "";
+  document.getElementById("templatesGrid").innerHTML = "";
+  updateStats("");
+
+  // Clear badges
+  document.getElementById("convertedBadge").style.display = "none";
+  document.getElementById("timerDisplay").style.display = "none";
+  document.getElementById("convertBtn").disabled = false;
+
+  // Save default templates
+  localStorage.setItem("promptTemplates", JSON.stringify(templates));
+
+  document.getElementById("settingsModal").style.display = "none";
+  showNotification("All data cleared successfully!");
+}
+
+// History Functions
+function saveToHistory(requirement, prompt) {
+  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
+  const item = {
+    id: Date.now(),
+    requirement:
+      requirement.substring(0, 100) +
+      (requirement.length > 100 ? "..." : ""),
+    prompt: prompt,
+    timestamp: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    date: new Date().toLocaleDateString(),
+    fullRequirement: requirement
+  };
+
+  history.unshift(item);
+  if (history.length > 15) history.pop();
+
+  localStorage.setItem("promptHistory", JSON.stringify(history));
+  localStorage.setItem(`fullReq_${item.id}`, requirement);
+  loadHistory();
+}
+
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
+  const historyList = document.getElementById("historyList");
+  historyList.innerHTML = "";
+
+  if (history.length === 0) {
+    historyList.innerHTML =
+      '<div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">No history yet</div>';
+    return;
+  }
+
+  history.forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-weight:500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.requirement}</div>
+        <div style="font-size:11px;color:var(--muted)">${item.date} ${item.timestamp}</div>
+      </div>
+      <button class="btn small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
+    `;
+    div.addEventListener("click", (e) => {
+      if (!e.target.closest("button")) {
+        const requirementEl = document.getElementById("requirement");
+        const outputEl = document.getElementById("output");
+        requirementEl.value =
+          localStorage.getItem(`fullReq_${item.id}`) || item.requirement;
+        outputEl.value = item.prompt;
+        updateStats(item.prompt);
+        isConverted = true;
+        lastConvertedText = requirementEl.value.trim();
+        document.getElementById("convertBtn").disabled = true;
+        document.getElementById("convertedBadge").style.display = "inline-flex";
+        showNotification("Prompt loaded from history");
+      }
+    });
+    historyList.appendChild(div);
+  });
+}
+
+function toggleHistory() {
+  const panel = document.getElementById("historyPanel");
+  const isVisible = panel.style.display === "block";
+  panel.style.display = isVisible ? "none" : "block";
+  if (!isVisible) loadHistory();
+}
+
+function clearHistory() {
+  if (confirm("Are you sure you want to clear all history?")) {
+    localStorage.removeItem("promptHistory");
+    loadHistory();
+    showNotification("History cleared");
+  }
+}
+
+// Template Functions
+function setupTemplateListeners() {
+  // Toggle templates panel
+  document.getElementById("toggleTemplatesBtn").addEventListener("click", () => {
+    const panel = document.getElementById("templatesPanel");
+    const btn = document.getElementById("toggleTemplatesBtn");
+
+    if (panel.style.display === "none") {
+      panel.style.display = "block";
+      btn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
+      loadCategories();
+      loadTemplatesToUI();
+    } else {
+      panel.style.display = "none";
+      btn.innerHTML = '<i class="fas fa-eye"></i> Show';
+    }
+  });
+
+  // Template search
+  document
+    .getElementById("templateSearch")
+    .addEventListener("input", function () {
+      const activeCategory =
+        document.querySelector(".template-category.active")?.dataset.category ||
+        "all";
+      filterTemplatesUI(activeCategory, this.value);
+    });
+
+  // New template
+  document.getElementById("newTemplateBtn").addEventListener("click", () => {
+    editingTemplateId = null;
+    document.getElementById("modalTitle").textContent = "New Template";
+    document.getElementById("templateName").value = "";
+    document.getElementById("templateDescription").value = "";
+    document.getElementById("templateContent").value =
+      document.getElementById("output").value || "";
+    document.getElementById("templateCategory").value = "communication";
+    document.getElementById("templateExample").value =
+      document.getElementById("requirement").value || "";
+    document.getElementById("templateModal").style.display = "flex";
+  });
+
+  // Save as template
+  document
+    .getElementById("saveAsTemplateBtn")
+    .addEventListener("click", () => {
+      if (!document.getElementById("output").value.trim()) {
+        showNotification(
+          "Generate a prompt first before saving as template"
+        );
+        return;
+      }
+
+      editingTemplateId = null;
+      document.getElementById("modalTitle").textContent = "Save as Template";
+      document.getElementById("templateName").value = `Prompt ${new Date().toLocaleDateString()}`;
+      document.getElementById("templateDescription").value =
+        "Custom prompt template";
+      document.getElementById("templateContent").value =
+        document.getElementById("output").value;
+      document.getElementById("templateCategory").value = "other";
+      document.getElementById("templateExample").value =
+        document.getElementById("requirement").value || "";
+      document.getElementById("templateModal").style.display = "flex";
+    });
+
+  // Save template
+  document
+    .getElementById("saveTemplateBtn")
+    .addEventListener("click", saveTemplate);
+
+  // Close template modal
+  document
+    .getElementById("closeTemplateBtn")
+    .addEventListener("click", () => {
+      document.getElementById("templateModal").style.display = "none";
+    });
+
+  document
+    .getElementById("cancelTemplateBtn")
+    .addEventListener("click", () => {
+      document.getElementById("templateModal").style.display = "none";
+    });
+}
+
+function loadCategories() {
+  const container = document.getElementById("templateCategories");
+  container.innerHTML = "";
+
+  // All category
+  const allCat = document.createElement("div");
+  allCat.className = "template-category active";
+  allCat.dataset.category = "all";
+  allCat.innerHTML = '<i class="fas fa-th"></i> All';
+  allCat.addEventListener("click", () => filterTemplatesUI("all"));
+  container.appendChild(allCat);
+
+  // Other categories
+  Object.keys(TEMPLATE_CATEGORIES).forEach((id) => {
+    const cat = TEMPLATE_CATEGORIES[id];
+    const catEl = document.createElement("div");
+    catEl.className = "template-category";
+    catEl.dataset.category = id;
+    catEl.innerHTML = `<i class="fas ${cat.icon}"></i> ${cat.name}`;
+    catEl.addEventListener("click", () => filterTemplatesUI(id));
+    container.appendChild(catEl);
+  });
+}
+
+function loadTemplatesToUI(filterCategory = "all", searchQuery = "") {
+  const grid = document.getElementById("templatesGrid");
+  const empty = document.getElementById("emptyTemplates");
+
+  grid.innerHTML = "";
+
+  let filtered = templates;
+
+  if (filterCategory !== "all") {
+    filtered = filtered.filter((t) => t.category === filterCategory);
+  }
+
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (t) =>
+        t.name.toLowerCase().includes(query) ||
+        t.description.toLowerCase().includes(query) ||
+        (t.tags && t.tags.some((tag) => tag.toLowerCase().includes(query)))
+    );
+  }
+
+  if (filtered.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  filtered.forEach((template) => {
+    const category = TEMPLATE_CATEGORIES[template.category];
+    const card = document.createElement("div");
+    card.className = "template-card";
+    card.innerHTML = `
+      <div class="template-icon" style="background:${category.color}">
+        <i class="fas ${category.icon}"></i>
+      </div>
+      <div class="template-title">${template.name}</div>
+      <div class="template-desc">${template.description}</div>
+      <div class="template-meta">
+        <span><i class="fas fa-download"></i> Used ${
+          template.usageCount || 0
+        } times</span>
+        <span class="tag"><i class="fas fa-tag"></i> ${category.name}</span>
+      </div>
+      <div class="template-actions">
+        <button class="btn small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
+          <i class="fas fa-play"></i> Use
+        </button>
+        <button class="btn small" style="background:#64748b" onclick="editTemplate('${template.id}')">
+          <i class="fas fa-edit"></i>
+        </button>
+        ${
+          !template.isDefault
+            ? `<button class="btn small" style="background:#ef4444" onclick="deleteTemplate('${template.id}')">
+          <i class="fas fa-trash"></i>
+        </button>`
+            : ""
+        }
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filterTemplatesUI(category, searchQuery = "") {
+  document.querySelectorAll(".template-category").forEach((cat) => {
+    cat.classList.remove("active");
+  });
+  document
+    .querySelector(`.template-category[data-category="${category}"]`)
+    .classList.add("active");
+
+  const currentSearch =
+    searchQuery || document.getElementById("templateSearch").value;
+  loadTemplatesToUI(category, currentSearch);
+}
+
+function saveTemplate() {
+  const name = document.getElementById("templateName").value.trim();
+  const description = document
+    .getElementById("templateDescription")
+    .value.trim();
+  const content = document.getElementById("templateContent").value.trim();
+  const category = document.getElementById("templateCategory").value;
+  const example = document.getElementById("templateExample").value.trim();
+
+  if (!name || !content) {
+    showNotification("Name and content are required");
+    return;
+  }
+
+  if (editingTemplateId) {
+    // Update existing template
+    const index = templates.findIndex((t) => t.id === editingTemplateId);
+    if (index !== -1) {
+      templates[index] = {
+        ...templates[index],
+        name,
+        description,
+        content,
+        category,
+        example
+      };
+    }
+  } else {
+    // Add new template
+    const newTemplate = {
+      id: Date.now().toString(),
+      name,
+      description,
+      content,
+      category,
+      example,
+      usageCount: 0,
+      createdAt: Date.now(),
+      isDefault: false
+    };
+    templates.push(newTemplate);
+  }
+
+  localStorage.setItem("promptTemplates", JSON.stringify(templates));
+  loadTemplatesToUI();
+  document.getElementById("templateModal").style.display = "none";
+  showNotification(`Template "${name}" saved`);
+}
+
+// Utility Functions
 function showNotification(message) {
   const notification = document.getElementById("notification");
   document.getElementById("notificationText").textContent = message;
@@ -1208,3 +1193,66 @@ function showNotification(message) {
     notification.style.display = "none";
   }, 3000);
 }
+
+// Make functions globally available
+window.clearHistory = clearHistory;
+window.useTemplate = function (id) {
+  const template = templates.find((t) => t.id === id);
+  if (template) {
+    // Update usage count
+    template.usageCount = (template.usageCount || 0) + 1;
+    localStorage.setItem("promptTemplates", JSON.stringify(templates));
+
+    // Fill requirement with example
+    document.getElementById("requirement").value = template.example || "";
+
+    // Generate prompt from template content
+    document.getElementById("output").value = template.content;
+    updateStats(template.content);
+
+    // Update state
+    isConverted = true;
+    lastConvertedText = document
+      .getElementById("requirement")
+      .value.trim();
+    document.getElementById("convertBtn").disabled = true;
+    document.getElementById("convertedBadge").style.display = "inline-flex";
+
+    showNotification(`Using "${template.name}" template`);
+  }
+};
+
+window.editTemplate = function (id) {
+  const template = templates.find((t) => t.id === id);
+  if (template) {
+    editingTemplateId = id;
+    document.getElementById("modalTitle").textContent = "Edit Template";
+    document.getElementById("templateName").value = template.name;
+    document.getElementById("templateDescription").value =
+      template.description;
+    document.getElementById("templateContent").value = template.content;
+    document.getElementById("templateCategory").value = template.category;
+    document.getElementById("templateExample").value = template.example || "";
+
+    document.getElementById("templateModal").style.display = "flex";
+  }
+};
+
+window.deleteTemplate = function (id) {
+  if (confirm("Are you sure you want to delete this template?")) {
+    templates = templates.filter((t) => t.id !== id || t.isDefault);
+    localStorage.setItem("promptTemplates", JSON.stringify(templates));
+    loadTemplatesToUI();
+    showNotification("Template deleted");
+  }
+};
+
+window.useHistoryItem = function (id) {
+  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
+  const item = history.find((h) => h.id == id);
+  if (item) {
+    document.getElementById("requirement").value =
+      localStorage.getItem(`fullReq_${id}`) || item.requirement;
+    generatePrompt();
+  }
+};
