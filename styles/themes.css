@@ -4,23 +4,24 @@
 .theme-selector-container {
   flex: 1;
   margin: 0 16px;
-  max-width: 400px;
+  max-width: 350px;
 }
 
 .theme-selector {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: var(--panel-bg);
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid var(--panel-border);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
 }
 
-.theme-selector label {
-  font-size: 12px;
-  font-weight: 500;
+.theme-label {
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -28,65 +29,80 @@
   white-space: nowrap;
 }
 
-.theme-selector label i {
+.theme-label i {
   color: var(--primary);
-}
-
-.theme-select-dropdown {
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 12px;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 12px;
-  padding-right: 28px;
-  min-width: 120px;
 }
 
 .theme-demo {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .theme-sample {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: bold;
-  font-size: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .theme-sample:hover {
-  transform: scale(1.1);
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  z-index: 2;
 }
 
 .theme-sample.active {
   border-color: white;
-  box-shadow: 0 0 0 2px var(--primary-color), 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 3px var(--primary-color), 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: scale(1.15);
+  animation: pulse 2s infinite;
 }
 
-.theme-sample.sunset-glow { background: linear-gradient(135deg, #FF6B6B, #FFA726); }
-.theme-sample.aurora-magic { background: linear-gradient(135deg, #00D4AA, #667EEA, #8B5CF6); }
-.theme-sample.serenity-bliss { background: linear-gradient(135deg, #7C3AED, #60A5FA); }
-.theme-sample.cyberpunk-neon { background: linear-gradient(135deg, #FF00FF, #00FFFF); }
-.theme-sample.ocean-deep { background: linear-gradient(135deg, #2563EB, #06B6D4); }
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 3px var(--primary-color), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 5px var(--primary-color), 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--primary-color), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.theme-sample.sunset-glow { 
+  background: linear-gradient(135deg, #FF6B6B, #FFA726); 
+  border: 2px solid rgba(255, 107, 107, 0.3);
+}
+.theme-sample.aurora-magic { 
+  background: linear-gradient(135deg, #00D4AA, #667EEA, #8B5CF6); 
+  border: 2px solid rgba(0, 212, 170, 0.3);
+}
+.theme-sample.serenity-bliss { 
+  background: linear-gradient(135deg, #7C3AED, #60A5FA); 
+  border: 2px solid rgba(124, 58, 237, 0.3);
+}
+.theme-sample.cyberpunk-neon { 
+  background: linear-gradient(135deg, #FF00FF, #00FFFF); 
+  border: 2px solid rgba(255, 0, 255, 0.3);
+}
+.theme-sample.ocean-deep { 
+  background: linear-gradient(135deg, #2563EB, #06B6D4); 
+  border: 2px solid rgba(37, 99, 235, 0.3);
+}
 .theme-sample.auto { 
   background: linear-gradient(135deg, #666, #999);
+  border: 2px solid rgba(100, 100, 100, 0.3);
   position: relative;
 }
 
@@ -100,6 +116,34 @@
   background: linear-gradient(135deg, #7C3AED 50%, #0F172A 50%);
   opacity: 0.7;
   border-radius: inherit;
+}
+
+/* Tooltip for theme samples */
+.theme-sample::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-soft);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.theme-sample:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
 }
 
 /* Particles effect */
@@ -137,102 +181,6 @@
   animation: themeChange 0.4s ease;
 }
 
-/* Theme Definitions */
-:root {
-  /* Default Sunset Glow Theme */
-  --primary-color: #FF6B6B;
-  --secondary-color: #FFA726;
-  --accent-color: #FF8A65;
-  --gradient-primary: linear-gradient(135deg, #FF6B6B, #FFA726);
-  --primary-rgb: 255, 107, 107;
-}
-
-/* 1. Sunset Glow Theme (Default) */
-[data-app-theme="sunset-glow"] {
-  --primary: #FF6B6B;
-  --primary-dark: #e55a5a;
-  --primary-light: #FF8A65;
-  --secondary: #FFA726;
-  --accent: #FF8A65;
-  --gradient-brand: linear-gradient(135deg, #FF6B6B, #FFA726);
-  --primary-color: #FF6B6B;
-  --secondary-color: #FFA726;
-  --accent-color: #FF8A65;
-  --gradient-primary: linear-gradient(135deg, #FF6B6B, #FFA726);
-  --primary-rgb: 255, 107, 107;
-}
-
-/* 2. Aurora Magic Theme */
-[data-app-theme="aurora-magic"] {
-  --primary: #00D4AA;
-  --primary-dark: #00b896;
-  --primary-light: #667EEA;
-  --secondary: #667EEA;
-  --accent: #8B5CF6;
-  --gradient-brand: linear-gradient(135deg, #00D4AA, #667EEA, #8B5CF6);
-  --primary-color: #00D4AA;
-  --secondary-color: #667EEA;
-  --accent-color: #8B5CF6;
-  --gradient-primary: linear-gradient(135deg, #00D4AA, #667EEA, #8B5CF6);
-  --primary-rgb: 0, 212, 170;
-}
-
-/* 3. Serenity Bliss Theme */
-[data-app-theme="serenity-bliss"] {
-  --primary: #7C3AED;
-  --primary-dark: #6d28d9;
-  --primary-light: #60A5FA;
-  --secondary: #60A5FA;
-  --accent: #8B5CF6;
-  --gradient-brand: linear-gradient(135deg, #7C3AED, #60A5FA);
-  --primary-color: #7C3AED;
-  --secondary-color: #60A5FA;
-  --accent-color: #8B5CF6;
-  --gradient-primary: linear-gradient(135deg, #7C3AED, #60A5FA);
-  --primary-rgb: 124, 58, 237;
-}
-
-/* 4. Cyberpunk Neon Theme */
-[data-app-theme="cyberpunk-neon"] {
-  --primary: #FF00FF;
-  --primary-dark: #e600e6;
-  --primary-light: #00FFFF;
-  --secondary: #00FFFF;
-  --accent: #FFFF00;
-  --gradient-brand: linear-gradient(135deg, #FF00FF, #00FFFF);
-  --primary-color: #FF00FF;
-  --secondary-color: #00FFFF;
-  --accent-color: #FFFF00;
-  --gradient-primary: linear-gradient(135deg, #FF00FF, #00FFFF);
-  --primary-rgb: 255, 0, 255;
-  
-  /* Cyberpunk specific enhancements */
-  --shadow-card: 0 10px 30px rgba(255, 0, 255, 0.15),
-                  0 0 40px rgba(0, 255, 255, 0.08);
-  --shadow-elevated: 0 20px 50px rgba(255, 0, 255, 0.2),
-                     0 0 60px rgba(0, 255, 255, 0.12);
-}
-
-/* 5. Ocean Deep Theme */
-[data-app-theme="ocean-deep"] {
-  --primary: #2563EB;
-  --primary-dark: #1d4ed8;
-  --primary-light: #06B6D4;
-  --secondary: #06B6D4;
-  --accent: #3B82F6;
-  --gradient-brand: linear-gradient(135deg, #2563EB, #06B6D4);
-  --primary-color: #2563EB;
-  --secondary-color: #06B6D4;
-  --accent-color: #3B82F6;
-  --gradient-primary: linear-gradient(135deg, #2563EB, #06B6D4);
-  --primary-rgb: 37, 99, 235;
-}
-
-/* Auto Theme */
-[data-app-theme="auto"] {
-  /* System preference handled by JS */
-}
-
 /* Responsive theme selector */
 @media (max-width: 1024px) {
   .theme-selector-container {
@@ -243,26 +191,27 @@
   }
   
   .theme-selector {
-    justify-content: space-between;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .theme-label {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
   }
 }
 
 @media (max-width: 768px) {
   .theme-selector {
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
   
-  .theme-select-dropdown {
-    min-width: 140px;
+  .theme-sample {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
   }
-}
-
-/* Update logo size */
-.hero-logo img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.2);
 }
