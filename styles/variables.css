@@ -1,50 +1,346 @@
 /* CSS RESET */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* THEME VARIABLES - LIGHT THEME */
+/* THEME VARIABLES - LIGHT THEME (DEFAULT) */
 :root {
+  /* Colors */
   --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #3b82f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #06b6d4;
+  
+  /* Backgrounds */
   --bg-body: #f5f7fb;
-  --panel-bg: #ffffff;
-  --panel-border: #e2e8f0;
+  --bg-panel: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f8fafc;
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  
+  /* Text Colors */
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --shadow-card: 0 10px 25px rgba(0,0,0,0.1);
+  --text-muted: #64748b;
+  --text-light: #f1f5f9;
+  --text-dark: #0f172a;
+  
+  /* Borders & Shadows */
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-dark: #cbd5e1;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Gradients */
   --gradient-brand: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --gradient-dark: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  
+  /* Z-index layers */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-tooltip: 70;
+  --z-toast: 80;
+  --z-max: 999;
+  
+  /* Template category colors (matching your app.js) */
+  --category-communication: #3b82f6;
+  --category-coding: #10b981;
+  --category-writing: #8b5cf6;
+  --category-analysis: #f59e0b;
+  --category-business: #ef4444;
+  --category-creative: #ec4899;
+  --category-education: #06b6d4;
+  --category-other: #6b7280;
+  
+  /* AI Tool colors */
+  --tool-chatgpt: #74AA9C;
+  --tool-claude: #DE7356;
+  --tool-gemini: #4796E3;
+  --tool-perplexity: #9D4EDD;
+  --tool-deepseek: #06b6d4;
+  --tool-copilot: #2563eb;
+  --tool-grok: #ec4899;
 }
 
 /* DARK THEME */
 [data-theme="dark"] {
   --primary: #60a5fa;
+  --primary-dark: #3b82f6;
+  --primary-light: #93c5fd;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #22d3ee;
+  
   --bg-body: #0f172a;
-  --panel-bg: #1e293b;
-  --panel-border: #334155;
+  --bg-panel: #1e293b;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+  --bg-input: #334155;
+  --bg-modal: #1e293b;
+  
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
-  --shadow-card: 0 10px 25px rgba(0,0,0,0.3);
+  --text-muted: #94a3b8;
+  --text-light: #f8fafc;
+  --text-dark: #0f172a;
+  
+  --border-color: #334155;
+  --border-light: #475569;
+  --border-dark: #1e293b;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.3);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  
   --gradient-brand: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  --gradient-primary: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+  --gradient-success: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --gradient-warning: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --gradient-danger: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  --gradient-dark: linear-gradient(135deg, #475569 0%, #334155 100%);
+  
+  --category-communication: #60a5fa;
+  --category-coding: #34d399;
+  --category-writing: #a78bfa;
+  --category-analysis: #fbbf24;
+  --category-business: #f87171;
+  --category-creative: #f472b6;
+  --category-education: #22d3ee;
+  --category-other: #94a3b8;
 }
 
 /* SUNSET THEME */
 [data-theme="sunset"] {
   --primary: #f59e0b;
+  --primary-dark: #d97706;
+  --primary-light: #fbbf24;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #06b6d4;
+  
   --bg-body: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-  --panel-bg: #ffffff;
-  --panel-border: #fbbf24;
+  --bg-panel: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #fffbeb;
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  
   --text-primary: #7c2d12;
   --text-secondary: #9a3412;
+  --text-muted: #b45309;
+  --text-light: #fef3c7;
+  --text-dark: #451a03;
+  
+  --border-color: #fbbf24;
+  --border-light: #fde68a;
+  --border-dark: #d97706;
+  --shadow-sm: 0 1px 2px rgba(245, 158, 11, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(245, 158, 11, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(245, 158, 11, 0.1);
   --shadow-card: 0 10px 25px rgba(245, 158, 11, 0.2);
+  --shadow-modal: 0 20px 25px -5px rgba(245, 158, 11, 0.1), 0 10px 10px -5px rgba(245, 158, 11, 0.04);
+  
   --gradient-brand: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+  --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --gradient-dark: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  
+  --category-communication: #3b82f6;
+  --category-coding: #10b981;
+  --category-writing: #8b5cf6;
+  --category-analysis: #f59e0b;
+  --category-business: #ef4444;
+  --category-creative: #ec4899;
+  --category-education: #06b6d4;
+  --category-other: #6b7280;
+  
+  --tool-chatgpt: #7c2d12;
+  --tool-claude: #9a3412;
+  --tool-gemini: #b45309;
+  --tool-perplexity: #c2410c;
+  --tool-deepseek: #d97706;
+  --tool-copilot: #f59e0b;
+  --tool-grok: #ea580c;
 }
 
 /* NEON THEME */
 [data-theme="neon"] {
   --primary: #06b6d4;
+  --primary-dark: #0891b2;
+  --primary-light: #22d3ee;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #06b6d4;
+  
   --bg-body: #0f172a;
-  --panel-bg: #1e1b4b;
-  --panel-border: #06b6d4;
+  --bg-panel: #1e1b4b;
+  --bg-card: #1e1b4b;
+  --bg-hover: #312e81;
+  --bg-input: #312e81;
+  --bg-modal: #1e1b4b;
+  
   --text-primary: #e0e7ff;
   --text-secondary: #c7d2fe;
+  --text-muted: #a5b4fc;
+  --text-light: #f8fafc;
+  --text-dark: #0f172a;
+  
+  --border-color: #06b6d4;
+  --border-light: #22d3ee;
+  --border-dark: #0891b2;
+  --shadow-sm: 0 1px 2px rgba(6, 182, 212, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(6, 182, 212, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(6, 182, 212, 0.1);
   --shadow-card: 0 10px 25px rgba(6, 182, 212, 0.3);
+  --shadow-modal: 0 20px 25px -5px rgba(6, 182, 212, 0.2), 0 10px 10px -5px rgba(6, 182, 212, 0.1);
+  
   --gradient-brand: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  --gradient-primary: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --gradient-dark: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  
+  --category-communication: #3b82f6;
+  --category-coding: #10b981;
+  --category-writing: #8b5cf6;
+  --category-analysis: #f59e0b;
+  --category-business: #ef4444;
+  --category-creative: #ec4899;
+  --category-education: #06b6d4;
+  --category-other: #6b7280;
+  
+  --tool-chatgpt: #06b6d4;
+  --tool-claude: #8b5cf6;
+  --tool-gemini: #3b82f6;
+  --tool-perplexity: #a78bfa;
+  --tool-deepseek: #22d3ee;
+  --tool-copilot: #06b6d4;
+  --tool-grok: #ec4899;
+}
+
+/* UTILITY VARIABLES */
+:root {
+  /* Widths */
+  --width-xs: 20rem;
+  --width-sm: 24rem;
+  --width-md: 28rem;
+  --width-lg: 32rem;
+  --width-xl: 36rem;
+  --width-2xl: 42rem;
+  --width-3xl: 48rem;
+  --width-4xl: 56rem;
+  --width-5xl: 64rem;
+  --width-6xl: 72rem;
+  --width-7xl: 80rem;
+  
+  /* Heights */
+  --height-header: 4rem;
+  --height-footer: 3rem;
+  --height-input: 2.5rem;
+  --height-button: 2.5rem;
+  --height-card: auto;
+  
+  /* Opacity */
+  --opacity-disabled: 0.5;
+  --opacity-hover: 0.8;
+  --opacity-active: 0.9;
+  --opacity-focus: 0.75;
+  
+  /* Animation */
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 250ms;
+  --animation-duration-slow: 350ms;
+  --animation-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Layout */
+  --container-padding: 1rem;
+  --container-max-width: 1400px;
+  --grid-gap: 1.5rem;
+  --grid-columns: repeat(auto-fit, minmax(300px, 1fr));
+  
+  /* Scrollbar */
+  --scrollbar-width: 8px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(156, 163, 175, 0.5);
+  --scrollbar-thumb-hover: rgba(156, 163, 175, 0.7);
+  
+  /* Backdrop */
+  --backdrop-blur: 8px;
+  --backdrop-brightness: 0.8;
+}
+
+/* DARK THEME SCROLLBAR */
+[data-theme="dark"] {
+  --scrollbar-thumb: rgba(75, 85, 99, 0.5);
+  --scrollbar-thumb-hover: rgba(75, 85, 99, 0.7);
+}
+
+/* RESPONSIVE BREAKPOINTS */
+@media (max-width: 640px) {
+  :root {
+    --container-padding: 0.75rem;
+    --grid-gap: 1rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root {
+    --container-padding: 1rem;
+    --grid-gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  :root {
+    --container-padding: 1.5rem;
+    --grid-gap: 1.5rem;
+  }
 }
