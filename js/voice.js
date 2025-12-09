@@ -1,4 +1,4 @@
-// voice.js - Voice Input and Output Features for PromptCraft
+// voice.js - Voice Input and Output Features for PromptCraft (FIXED VERSION)
 
 // Voice Recognition State
 let voiceRecognition = null;
@@ -58,7 +58,7 @@ function checkVoiceSupport() {
   }
 }
 
-// Setup Voice Input (Speech-to-Text)
+// Setup Voice Input (Speech-to-Text) - FIXED
 function setupVoiceInput() {
   const voiceInputBtn = document.getElementById('voiceInputBtn');
   if (!voiceInputBtn) return;
@@ -68,6 +68,7 @@ function setupVoiceInput() {
   
   if (!SpeechRecognition) {
     voiceInputBtn.disabled = true;
+    voiceInputBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
     return;
   }
   
@@ -81,6 +82,8 @@ function setupVoiceInput() {
   voiceRecognition.onstart = function() {
     isListening = true;
     voiceInputBtn.classList.add('recording');
+    voiceInputBtn.innerHTML = '<i class="fas fa-stop"></i>'; // CHANGE TO STOP ICON
+    voiceInputBtn.title = 'Click to stop recording';
     showVoiceStatus('voiceInputStatus', true);
     console.log('Voice recognition started');
   };
@@ -144,7 +147,7 @@ function setupVoiceInput() {
   voiceInputBtn.addEventListener('click', toggleVoiceInput);
 }
 
-// Toggle voice input on/off
+// Toggle voice input on/off - FIXED
 function toggleVoiceInput() {
   if (isListening) {
     stopVoiceInput();
@@ -153,7 +156,7 @@ function toggleVoiceInput() {
   }
 }
 
-// Start voice input
+// Start voice input - FIXED
 function startVoiceInput() {
   if (!voiceRecognition) return;
   
@@ -162,7 +165,7 @@ function startVoiceInput() {
     voiceRecognition.start();
     
     if (typeof showNotification === 'function') {
-      showNotification('Listening... Speak now');
+      showNotification('Listening... Speak now (click microphone to stop)');
     }
   } catch (error) {
     console.error('Error starting voice recognition:', error);
@@ -172,7 +175,7 @@ function startVoiceInput() {
   }
 }
 
-// Stop voice input
+// Stop voice input - FIXED
 function stopVoiceInput() {
   if (!voiceRecognition || !isListening) return;
   
@@ -180,6 +183,8 @@ function stopVoiceInput() {
   const voiceInputBtn = document.getElementById('voiceInputBtn');
   if (voiceInputBtn) {
     voiceInputBtn.classList.remove('recording');
+    voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>'; // CHANGE BACK TO MIC ICON
+    voiceInputBtn.title = 'Voice Input';
   }
   showVoiceStatus('voiceInputStatus', false);
   
@@ -188,16 +193,31 @@ function stopVoiceInput() {
   } catch (error) {
     console.error('Error stopping voice recognition:', error);
   }
+  
+  if (typeof showNotification === 'function') {
+    showNotification('Voice recording stopped');
+  }
 }
 
-// Setup Voice Output (Text-to-Speech)
+// Setup Voice Output (Text-to-Speech) - FIXED
 function setupVoiceOutput() {
   const voiceOutputBtn = document.getElementById('voiceOutputBtn');
   const outputTextarea = document.getElementById('output');
   
   if (!voiceOutputBtn || !outputTextarea) return;
   
-  // Show button when there's content
+  // Initial check for content
+  if (outputTextarea.value.trim()) {
+    voiceOutputBtn.style.display = 'flex';
+  } else {
+    voiceOutputBtn.style.display = 'none';
+    stopVoiceOutput();
+  }
+  
+  // Button click handler
+  voiceOutputBtn.addEventListener('click', toggleVoiceOutput);
+  
+  // Listen for content changes in output
   const observer = new MutationObserver(() => {
     if (outputTextarea.value.trim()) {
       voiceOutputBtn.style.display = 'flex';
@@ -223,12 +243,9 @@ function setupVoiceOutput() {
       stopVoiceOutput();
     }
   });
-  
-  // Button click handler
-  voiceOutputBtn.addEventListener('click', toggleVoiceOutput);
 }
 
-// Toggle voice output on/off
+// Toggle voice output on/off - FIXED
 function toggleVoiceOutput() {
   if (isSpeaking) {
     stopVoiceOutput();
@@ -237,7 +254,7 @@ function toggleVoiceOutput() {
   }
 }
 
-// Start voice output (read the prompt aloud)
+// Start voice output (read the prompt aloud) - FIXED
 function startVoiceOutput() {
   const outputTextarea = document.getElementById('output');
   const voiceOutputBtn = document.getElementById('voiceOutputBtn');
@@ -279,7 +296,8 @@ function startVoiceOutput() {
   currentUtterance.onstart = function() {
     isSpeaking = true;
     voiceOutputBtn.classList.add('speaking');
-    voiceOutputBtn.innerHTML = '<i class="fas fa-stop"></i>';
+    voiceOutputBtn.innerHTML = '<i class="fas fa-stop"></i>'; // CHANGE TO STOP ICON
+    voiceOutputBtn.title = 'Stop reading';
     showVoiceStatus('voiceOutputStatus', true);
   };
   
@@ -299,11 +317,11 @@ function startVoiceOutput() {
   voiceSynthesis.speak(currentUtterance);
   
   if (typeof showNotification === 'function') {
-    showNotification('Reading prompt aloud...');
+    showNotification('Reading prompt aloud... (click speaker to stop)');
   }
 }
 
-// Stop voice output
+// Stop voice output - FIXED
 function stopVoiceOutput() {
   const voiceOutputBtn = document.getElementById('voiceOutputBtn');
   
@@ -311,7 +329,8 @@ function stopVoiceOutput() {
   
   if (voiceOutputBtn) {
     voiceOutputBtn.classList.remove('speaking');
-    voiceOutputBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    voiceOutputBtn.innerHTML = '<i class="fas fa-volume-up"></i>'; // CHANGE BACK TO SPEAKER ICON
+    voiceOutputBtn.title = 'Read Aloud';
   }
   
   showVoiceStatus('voiceOutputStatus', false);
@@ -321,6 +340,10 @@ function stopVoiceOutput() {
   }
   
   currentUtterance = null;
+  
+  if (typeof showNotification === 'function') {
+    showNotification('Reading stopped');
+  }
 }
 
 // Show/hide voice status indicator
