@@ -1048,3 +1048,126 @@ select:focus {
     align-items: flex-start;
   }
 }
+
+/* --- STEP 1: Idea chips – more visible, button-like --- */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  border-radius: 999px;
+  border: 1.5px solid var(--border-subtle);
+  background: #ffffff;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.chip i {
+  font-size: 12px;
+}
+
+/* subtle color accent per chip */
+.chip:nth-child(1) {  /* Email */
+  border-color: var(--primary);
+}
+
+.chip:nth-child(2) {  /* Code */
+  border-color: var(--accent);
+}
+
+.chip:nth-child(3) {  /* Analysis */
+  border-color: var(--warning);
+}
+
+.chip:nth-child(4) {  /* Workout */
+  border-color: var(--success);
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+  background: rgba(37, 99, 235, 0.03);
+  color: var(--primary);
+}
+
+/* --- STEP 2: Preset buttons – clearer & distinct --- */
+.preset-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+}
+
+.preset-option {
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: #ffffff;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.preset-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* different accent per preset */
+.preset-option:nth-child(1) { /* Standard */
+  border-color: var(--primary);
+}
+
+.preset-option:nth-child(2) { /* ChatGPT */
+  border-color: var(--chatgpt);
+}
+
+.preset-option:nth-child(3) { /* Claude */
+  border-color: var(--claude);
+}
+
+.preset-option:nth-child(4) { /* Detailed */
+  border-color: var(--accent);
+}
+
+.preset-option:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+/* active preset (JS already toggles .active) */
+.preset-option.active {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: var(--primary);
+  color: var(--primary);
+}
