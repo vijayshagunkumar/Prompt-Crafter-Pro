@@ -2,7 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const htmlElement = document.documentElement;
-    const themeSelect = document.getElementById('appThemeSelect');
     const themeSamples = document.querySelectorAll('.theme-sample');
     const particlesContainer = document.getElementById('particles');
     
@@ -106,11 +105,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const theme = themes.find(t => t.id === themeId);
         if (!theme) return;
         
-        // Update dropdown
-        if (themeSelect) {
-            themeSelect.value = themeId;
-        }
-        
         // Update active samples
         themeSamples.forEach(sample => {
             sample.classList.remove('active');
@@ -124,19 +118,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (logoImg) {
             logoImg.style.boxShadow = `0 6px 16px rgba(var(--primary-rgb), 0.2)`;
         }
+        
+        // Update theme label
+        const themeLabel = document.querySelector('.theme-label');
+        if (themeLabel) {
+            themeLabel.innerHTML = `<i class="fas fa-palette"></i> ${theme.name}:`;
+        }
     }
     
     // Initialize theme
     const initialTheme = getSavedTheme();
     setTheme(initialTheme, false);
     createParticles();
-    
-    // Event Listeners
-    if (themeSelect) {
-        themeSelect.addEventListener('change', function() {
-            setTheme(this.value);
-        });
-    }
     
     // Theme sample clicks
     themeSamples.forEach(sample => {
