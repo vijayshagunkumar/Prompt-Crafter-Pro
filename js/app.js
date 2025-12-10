@@ -1299,11 +1299,19 @@ function updateStats(text) {
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lineCount = text.split("\n").length;
 
-  document.getElementById(
-    "charCount"
-  ).textContent = `${charCount} characters`;
-  document.getElementById("wordCount").textContent = `${wordCount} words`;
-  document.getElementById("lineCount").textContent = `${lineCount} lines`;
+  // SAFE VERSION - only update if elements exist
+  try {
+    const charEl = document.getElementById("charCount");
+    const wordEl = document.getElementById("wordCount");
+    const lineEl = document.getElementById("lineCount");
+    
+    if (charEl) charEl.textContent = `${charCount} characters`;
+    if (wordEl) wordEl.textContent = `${wordCount} words`;
+    if (lineEl) lineEl.textContent = `${lineCount} lines`;
+  } catch (error) {
+    // Ignore if elements don't exist
+    console.log("Stats elements not found - ignoring");
+  }
 }
 
 function updateOutputStats() {
@@ -1312,15 +1320,19 @@ function updateOutputStats() {
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lineCount = text.split("\n").length;
 
-  document.getElementById(
-    "outputCharCount"
-  ).textContent = `${charCount} characters`;
-  document.getElementById(
-    "outputWordCount"
-  ).textContent = `${wordCount} words`;
-  document.getElementById(
-    "outputLineCount"
-  ).textContent = `${lineCount} lines`;
+  // SAFE VERSION - only update if elements exist
+  try {
+    const charEl = document.getElementById("outputCharCount");
+    const wordEl = document.getElementById("outputWordCount");
+    const lineEl = document.getElementById("outputLineCount");
+    
+    if (charEl) charEl.textContent = `${charCount} characters`;
+    if (wordEl) wordEl.textContent = `${wordCount} words`;
+    if (lineEl) lineEl.textContent = `${lineCount} lines`;
+  } catch (error) {
+    // Ignore if elements don't exist
+    console.log("Output stats elements not found - ignoring");
+  }
 }
 
 // Clean up output
