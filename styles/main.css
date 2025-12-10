@@ -2157,3 +2157,139 @@ textarea::placeholder {
     transition: min-height 0.4s ease, height 0.4s ease;
 }
 
+/* ===========================================
+   FIX: KEEP ENHANCE PROMPT & TEMPLATE POSITIONED CORRECTLY
+   =========================================== */
+
+/* Keep Card 1 structure intact when enlarged */
+.step-card:nth-child(1) {
+    min-height: 600px !important;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make the main content area expandable */
+.step-card:nth-child(1) .field-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make the textarea grow to fill available space */
+.step-card:nth-child(1) .textarea-idea {
+    min-height: 350px !important;
+    height: 380px;
+    flex: 1;
+}
+
+/* Position ENHANCE PROMPT and TEMPLATE at the bottom */
+.step-card:nth-child(1) .template-section {
+    margin-top: auto; /* Push to bottom of card */
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--panel-bg);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+/* Style for ENHANCE PROMPT button */
+.step-card:nth-child(1) .btn-primary {
+    width: 100%;
+    margin-bottom: 12px;
+    order: 1; /* Ensure it comes first */
+}
+
+/* Style for TEMPLATE toggle */
+.step-card:nth-child(1) .template-toggle {
+    order: 2; /* Ensure it comes second */
+}
+
+/* Ensure the buttons don't overlap with textarea content */
+.step-card:nth-child(1) .textarea-buttons {
+    bottom: 60px; /* Move up to avoid overlap with bottom buttons */
+    z-index: 5;
+}
+
+/* Make sure the bottom section has proper spacing */
+.step-card:nth-child(1) .template-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* When template panel is open, adjust spacing */
+.step-card:nth-child(1) .templates-panel {
+    margin-top: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Ensure chip row and auto-convert don't push content down too much */
+.step-card:nth-child(1) .chip-row {
+    margin-bottom: 16px;
+}
+
+.step-card:nth-child(1) .auto-row {
+    margin: 16px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .step-card:nth-child(1) {
+        min-height: 550px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea {
+        min-height: 300px !important;
+        height: 320px;
+    }
+    
+    .step-card:nth-child(1) .textarea-buttons {
+        bottom: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .step-card:nth-child(1) {
+        min-height: 500px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea {
+        min-height: 250px !important;
+        height: 270px;
+    }
+    
+    .step-card:nth-child(1) .textarea-buttons {
+        bottom: 45px;
+    }
+    
+    .step-card:nth-child(1) .template-section {
+        padding-top: 12px;
+    }
+}
+
+/* Hover effects for bottom buttons */
+.step-card:nth-child(1) .btn-primary:hover,
+.step-card:nth-child(1) .template-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 94, 0, 0.3);
+}
+
+/* Animation for template panel opening */
+.step-card:nth-child(1) .templates-panel {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
