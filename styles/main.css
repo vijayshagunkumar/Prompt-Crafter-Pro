@@ -253,7 +253,8 @@ body {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  min-height: 560px;
+  height: auto;
+  min-height: auto;
   position: relative;
   overflow: hidden;
 }
@@ -562,6 +563,251 @@ body {
   text-shadow: 0 0 5px var(--secondary);
 }
 
+/* ===========================================
+   RESIZABLE TEXT AREAS - CYBERPUNK STYLE
+   =========================================== */
+
+/* Enable vertical resizing for both textareas */
+.textarea-idea,
+.output-textarea {
+  resize: vertical !important;
+  min-height: 140px;
+  max-height: 800px;
+  transition: height 0.3s ease;
+  position: relative;
+}
+
+/* Remove the default resize handle styling */
+.textarea-idea::-webkit-resizer,
+.output-textarea::-webkit-resizer {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+/* Custom cyberpunk resize handle */
+.textarea-idea::after,
+.output-textarea::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, 
+    transparent 50%, 
+    var(--primary) 50%, 
+    var(--primary) 60%, 
+    transparent 60%,
+    transparent 70%, 
+    var(--secondary) 70%, 
+    var(--secondary) 80%, 
+    transparent 80%);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Hover effect for resize handle */
+.textarea-idea:hover::after,
+.output-textarea:hover::after {
+  opacity: 1;
+  animation: pulse-cyber 2s infinite;
+}
+
+@keyframes pulse-cyber {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Resize indicator text */
+.resize-indicator {
+  position: absolute;
+  bottom: 6px;
+  right: 28px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(10, 14, 23, 0.8);
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.textarea-wrapper:hover .resize-indicator {
+  opacity: 0.7;
+}
+
+/* Remove fixed heights from cards and make them flexible */
+.step-card {
+  min-height: auto !important;
+  height: auto;
+  transition: height 0.3s ease;
+}
+
+/* Adjust field blocks for flexible layout */
+.field-block,
+.field-block-output {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Expand/Collapse Buttons */
+.expand-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 94, 0, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.expand-btn:hover {
+  border-color: var(--primary);
+  background: rgba(255, 94, 0, 0.2);
+  box-shadow: 0 0 10px rgba(255, 94, 0, 0.4);
+  transform: scale(1.1);
+}
+
+.expand-btn.expanded {
+  background: rgba(0, 243, 255, 0.2);
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.expand-btn.expanded:hover {
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+/* Size info display */
+.size-info {
+  position: absolute;
+  top: 12px;
+  right: 50px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(10, 14, 23, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: none;
+}
+
+/* Expanded mode styling */
+.textarea-expanded {
+  position: fixed !important;
+  top: 50px !important;
+  left: 50px !important;
+  right: 50px !important;
+  bottom: 50px !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 1000 !important;
+  background: var(--panel-bg) !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 
+    0 0 40px rgba(255, 94, 0, 0.5),
+    0 0 80px rgba(0, 243, 255, 0.3) !important;
+  resize: none !important;
+  max-height: none !important;
+  min-height: auto !important;
+  font-size: 16px !important;
+  padding: 20px !important;
+}
+
+.textarea-expanded + .expand-btn {
+  position: fixed;
+  top: 60px;
+  right: 60px;
+  z-index: 1001;
+  background: rgba(255, 94, 0, 0.3);
+}
+
+/* Full-screen overlay for expanded mode */
+.expand-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  display: none;
+}
+
+/* Improve textarea padding for resize buttons */
+.textarea-idea {
+  padding: 12px 12px 40px 12px !important;
+}
+
+.output-textarea {
+  padding: 12px 12px 40px 12px !important;
+}
+
+/* Adjust textarea-buttons position to avoid resize handle */
+.textarea-buttons {
+  bottom: 8px;
+  left: 12px;
+  right: 40px;
+}
+
+/* For Step 3 card, adjust launch list to be scrollable if needed */
+.step-card:nth-child(3) .launch-list {
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar for launch list */
+.launch-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.launch-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.launch-list::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* Animation for size change */
+@keyframes size-change {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.size-changing {
+  animation: size-change 0.3s ease;
+}
+
 /* INPUTS & TEXTAREAS */
 .field-block {
   margin-bottom: 16px;
@@ -585,7 +831,6 @@ body {
 .textarea-idea {
   resize: none;
   min-height: 140px;
-  padding: 12px 60px 12px 60px; /* Equal padding for left/right buttons */
 }
 
 .field-block-output {
@@ -1083,7 +1328,6 @@ textarea::placeholder {
   font-family: 'Courier New', monospace;
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
-  /* REMOVED BLUR EFFECTS FOR SHARP TEXT */
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -1094,7 +1338,6 @@ textarea::placeholder {
     0 0 20px rgba(255, 94, 0, 0.4),
     inset 0 0 15px rgba(0, 0, 0, 0.4);
   border-color: var(--primary);
-  /* KEEP TEXT SHARP ON HOVER */
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -1111,7 +1354,6 @@ textarea::placeholder {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid;
   transition: all 0.3s ease;
-  /* ENSURE ICON TEXT IS SHARP */
   text-shadow: none;
   filter: none;
 }
@@ -1121,7 +1363,6 @@ textarea::placeholder {
   flex-direction: column;
   align-items: flex-start;
   flex: 1;
-  /* ENSURE TEXT IS CRISP */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1133,7 +1374,6 @@ textarea::placeholder {
   margin-bottom: 2px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  /* ENSURE TEXT IS SHARP */
   text-shadow: none;
   filter: none;
 }
@@ -1141,7 +1381,6 @@ textarea::placeholder {
 .launch-sub {
   font-size: 12px;
   color: var(--text-muted);
-  /* ENSURE TEXT IS SHARP */
   text-shadow: none;
   filter: none;
 }
@@ -1222,7 +1461,6 @@ textarea::placeholder {
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
-  /* KEEP TEXT READABLE WHEN DISABLED */
   color: var(--text-secondary) !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -1433,6 +1671,32 @@ textarea::placeholder {
 .notification i {
   color: var(--success);
   text-shadow: 0 0 5px var(--success);
+}
+
+/* Responsive adjustments for resize features */
+@media (max-width: 768px) {
+  .textarea-expanded {
+    top: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    bottom: 20px !important;
+  }
+  
+  .expand-btn {
+    top: 8px;
+    right: 8px;
+  }
+  
+  .size-info {
+    top: 8px;
+    right: 46px;
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+  
+  .resize-indicator {
+    display: none; /* Hide on mobile for cleaner UI */
+  }
 }
 
 /* RESPONSIVE */
@@ -1713,33 +1977,4 @@ textarea::placeholder {
   .step-card:nth-child(3) .launch-btn {
     padding: 8px 12px;
   }
-}
-
-/* Allow full manual resizing for user textareas */
-.requirement-input textarea,
-#optimizedPromptTextarea {
-    resize: both !important;
-    overflow: auto;
-}
-
-/* Allow full manual resizing for both textareas */
-.textarea-idea,
-.output-textarea {
-    resize: both !important;
-    overflow: auto !important;
-}
-
-/* Make textarea resizable - FIX OVERLAY BLOCKING */
-.textarea-buttons {
-    pointer-events: none !important;
-}
-.textarea-buttons * {
-    pointer-events: auto !important;
-}
-
-/* Allow full manual resizing for both textareas */
-.textarea-idea,
-.output-textarea {
-    resize: both !important;
-    overflow: auto !important;
 }
