@@ -240,6 +240,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
+  align-items: stretch;
 }
 
 /* STEP CARDS - CYBERPUNK STYLE */
@@ -254,7 +255,6 @@ body {
   display: flex;
   flex-direction: column;
   height: auto;
-  min-height: auto;
   position: relative;
   overflow: hidden;
 }
@@ -2031,471 +2031,61 @@ textarea::placeholder {
   margin-bottom: 10px !important;
   line-height: 1.3 !important;
 }
-/* ===========================================
-   FINAL FIX: MAKE CARD 1 & CARD 2 LARGER
-   =========================================== */
-
-/* MAIN CARD HEIGHT INCREASE */
-.step-card {
-    min-height: 500px !important;
-    height: auto;
-}
-
-/* SPECIFICALLY TARGET CARD 1 & 2 FOR EXTRA HEIGHT */
-.step-card:nth-child(1),
-.step-card:nth-child(2) {
-    min-height: 600px !important;
-}
-
-/* MAKE TEXTAREAS MUCH TALLER */
-.step-card:nth-child(1) .textarea-idea,
-.step-card:nth-child(2) .output-textarea {
-    min-height: 350px !important;
-    height: 380px;
-    flex: 1;
-}
-
-/* ENSURE TEXTAREA CONTAINERS EXPAND */
-.step-card:nth-child(1) .field-block,
-.step-card:nth-child(2) .field-block-output {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 400px;
-}
-
-/* ALLOW MORE EXPANSION */
-.textarea-idea,
-.output-textarea {
-    max-height: 700px !important;
-}
-
-/* ADJUST BUTTON POSITIONS FOR TALLER TEXTAREAS */
-.step-card:nth-child(1) .textarea-buttons,
-.step-card:nth-child(2) .textarea-buttons {
-    bottom: 20px;
-    left: 16px;
-    right: 16px;
-}
-
-/* INCREASE SPACING BETWEEN ELEMENTS IN TALLER CARDS */
-.step-card:nth-child(1) .chip-row,
-.step-card:nth-child(2) .stats-row {
-    margin-bottom: 24px;
-}
-
-.step-card:nth-child(1) .auto-row {
-    margin: 24px 0;
-}
-
-/* MAKE TEMPLATE/HISTORY PANELS TALLER */
-.step-card:nth-child(1) .template-section,
-.step-card:nth-child(2) .history-panel {
-    margin-top: 24px;
-    flex: 1;
-    min-height: 150px;
-}
-
-/* OUTPUT FOOTER SPACING */
-.step-card:nth-child(2) .output-footer {
-    margin-top: 24px;
-    padding-top: 18px;
-}
-
-/* KEEP CARD 3 REASONABLE HEIGHT */
-.step-card:nth-child(3) {
-    min-height: 500px !important;
-}
-
-/* RESPONSIVE ADJUSTMENTS */
-@media (max-width: 1024px) {
-    .step-card:nth-child(1),
-    .step-card:nth-child(2) {
-        min-height: 550px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea,
-    .step-card:nth-child(2) .output-textarea {
-        min-height: 300px !important;
-        height: 320px;
-    }
-}
-
-@media (max-width: 768px) {
-    .step-card:nth-child(1),
-    .step-card:nth-child(2) {
-        min-height: 500px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea,
-    .step-card:nth-child(2) .output-textarea {
-        min-height: 250px !important;
-        height: 280px;
-    }
-}
-
-@media (max-width: 480px) {
-    .step-card:nth-child(1),
-    .step-card:nth-child(2) {
-        min-height: 450px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea,
-    .step-card:nth-child(2) .output-textarea {
-        min-height: 220px !important;
-        height: 250px;
-    }
-}
-
-/* SMOOTH TRANSITIONS */
-.step-card {
-    transition: min-height 0.4s ease, height 0.4s ease;
-}
-
-.step-card:nth-child(1) .textarea-idea,
-.step-card:nth-child(2) .output-textarea {
-    transition: min-height 0.4s ease, height 0.4s ease;
-}
 
 /* ===========================================
-   FIX: KEEP ENHANCE PROMPT & TEMPLATE POSITIONED CORRECTLY
+   FINAL SIMPLE FIX: MAKE CARDS 1 & 2 BIGGER
    =========================================== */
 
-/* Keep Card 1 structure intact when enlarged */
+/* Clear ALL previous height settings first */
+.cards-grid {
+    align-items: stretch !important;
+}
+
+/* Card 1: Make it bigger */
 .step-card:nth-child(1) {
-    min-height: 600px !important;
-    height: auto;
-    display: flex;
-    flex-direction: column;
+    min-height: 650px !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* Make the main content area expandable */
-.step-card:nth-child(1) .field-block {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Make the textarea grow to fill available space */
-.step-card:nth-child(1) .textarea-idea {
-    min-height: 350px !important;
-    height: 380px;
-    flex: 1;
-}
-
-/* Position ENHANCE PROMPT and TEMPLATE at the bottom */
-.step-card:nth-child(1) .template-section {
-    margin-top: auto; /* Push to bottom of card */
-    padding-top: 16px;
-    border-top: 1px solid var(--border-subtle);
-    background: var(--panel-bg);
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-}
-
-/* Style for ENHANCE PROMPT button */
-.step-card:nth-child(1) .btn-primary {
-    width: 100%;
-    margin-bottom: 12px;
-    order: 1; /* Ensure it comes first */
-}
-
-/* Style for TEMPLATE toggle */
-.step-card:nth-child(1) .template-toggle {
-    order: 2; /* Ensure it comes second */
-}
-
-/* Ensure the buttons don't overlap with textarea content */
-.step-card:nth-child(1) .textarea-buttons {
-    bottom: 60px; /* Move up to avoid overlap with bottom buttons */
-    z-index: 5;
-}
-
-/* Make sure the bottom section has proper spacing */
-.step-card:nth-child(1) .template-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-/* When template panel is open, adjust spacing */
-.step-card:nth-child(1) .templates-panel {
-    margin-top: 12px;
-    max-height: 250px;
-    overflow-y: auto;
-}
-
-/* Ensure chip row and auto-convert don't push content down too much */
-.step-card:nth-child(1) .chip-row {
-    margin-bottom: 16px;
-}
-
-.step-card:nth-child(1) .auto-row {
-    margin: 16px 0;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .step-card:nth-child(1) {
-        min-height: 550px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea {
-        min-height: 300px !important;
-        height: 320px;
-    }
-    
-    .step-card:nth-child(1) .textarea-buttons {
-        bottom: 50px;
-    }
-}
-
-@media (max-width: 480px) {
-    .step-card:nth-child(1) {
-        min-height: 500px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea {
-        min-height: 250px !important;
-        height: 270px;
-    }
-    
-    .step-card:nth-child(1) .textarea-buttons {
-        bottom: 45px;
-    }
-    
-    .step-card:nth-child(1) .template-section {
-        padding-top: 12px;
-    }
-}
-
-/* Hover effects for bottom buttons */
-.step-card:nth-child(1) .btn-primary:hover,
-.step-card:nth-child(1) .template-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 94, 0, 0.3);
-}
-
-/* Animation for template panel opening */
-.step-card:nth-child(1) .templates-panel {
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===========================================
-   FIX: PREVENT CONTENT OVERFLOW IN CARD 1
-   =========================================== */
-
-/* Reset card 1 to proper flex layout */
-.step-card:nth-child(1) {
-    min-height: 600px !important;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden !important; /* Prevent overflow */
-}
-
-/* Make the content area scrollable if needed */
-.step-card:nth-child(1) > *:not(.template-section) {
-    flex-shrink: 0; /* Don't shrink content */
-}
-
-/* Textarea container should grow but not overflow */
-.step-card:nth-child(1) .field-block {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Important for flex children */
-    position: relative;
-}
-
-/* Textarea should be scrollable, not fixed height */
-.step-card:nth-child(1) .textarea-idea {
-    min-height: 250px !important;
-    height: auto !important; /* Auto height instead of fixed */
-    flex: 1;
-    resize: vertical;
-    max-height: 400px; /* Limit max height */
-    overflow-y: auto; /* Scroll if content is too tall */
-}
-
-/* FIX: Move voice/clear buttons INSIDE the textarea, not overlapping */
-.step-card:nth-child(1) .textarea-buttons {
-    position: absolute;
-    bottom: 10px; /* Move up from bottom */
-    left: 12px;
-    right: 12px;
-    z-index: 2;
-    background: transparent;
-}
-
-/* FIX: Bottom section (ENHANCE PROMPT & TEMPLATE) */
-.step-card:nth-child(1) .template-section {
-    margin-top: auto; /* Push to bottom */
-    padding: 16px 0 0 0;
-    border-top: 1px solid var(--border-subtle);
-    flex-shrink: 0; /* Don't shrink */
-    background: var(--panel-bg);
-    position: relative;
-    z-index: 10;
-}
-
-/* FIX: ENHANCE PROMPT button */
-.step-card:nth-child(1) .btn-primary {
-    width: 100%;
-    margin-bottom: 12px;
-    order: 1;
-    flex-shrink: 0; /* Don't shrink */
-}
-
-/* FIX: TEMPLATE toggle */
-.step-card:nth-child(1) .template-toggle {
-    order: 2;
-    flex-shrink: 0; /* Don't shrink */
-}
-
-/* FIX: Adjust chip row and auto-convert spacing */
-.step-card:nth-child(1) .chip-row {
-    margin-bottom: 16px;
-    flex-shrink: 0;
-}
-
-.step-card:nth-child(1) .auto-row {
-    margin: 16px 0;
-    flex-shrink: 0;
-}
-
-/* FIX: Ensure step-header doesn't push content */
-.step-card:nth-child(1) .step-header {
-    flex-shrink: 0;
-    margin-bottom: 16px;
-}
-
-/* FIX: Custom scrollbar for textarea */
-.step-card:nth-child(1) .textarea-idea::-webkit-scrollbar {
-    width: 6px;
-}
-
-.step-card:nth-child(1) .textarea-idea::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-}
-
-.step-card:nth-child(1) .textarea-idea::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 3px;
-}
-
-/* FIX: Responsive adjustments */
-@media (max-width: 768px) {
-    .step-card:nth-child(1) {
-        min-height: 550px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea {
-        min-height: 200px !important;
-        max-height: 350px;
-    }
-    
-    /* Adjust button position for mobile */
-    .step-card:nth-child(1) .textarea-buttons {
-        bottom: 8px;
-        left: 8px;
-        right: 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .step-card:nth-child(1) {
-        min-height: 500px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea {
-        min-height: 180px !important;
-        max-height: 300px;
-    }
-}
-
-/* FIX: Ensure card has proper internal padding */
-.step-card:nth-child(1) {
-    padding: 24px !important;
-}
-
-/* FIX: Make sure template panel doesn't overflow */
-.step-card:nth-child(1) .templates-panel {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-top: 12px;
-}
-/* ===========================================
-   SIMPLE FIX: JUST MAKE CARD 1 & CARD 2 TALLER
-   =========================================== */
-
-/* Make Card 1 taller */
-.step-card:nth-child(1) {
-    min-height: 580px !important;
-}
-
-/* Make Card 2 taller */
-.step-card:nth-child(2) {
-    min-height: 580px !important;
-}
-
-/* Make textareas in both cards taller */
-.step-card:nth-child(1) .textarea-idea,
-.step-card:nth-child(2) .output-textarea {
-    min-height: 280px !important;
-    height: 300px;
-}
-
-/* That's it - don't change anything else! */
-
-/* ===========================================
-   STRONG OVERRIDE: INCREASE CARD SIZES
-   =========================================== */
-
-/* REMOVE ALL HEIGHT CONSTRAINTS FIRST */
-.step-card {
-    height: auto !important;
-    min-height: auto !important;
-}
-
-/* FORCE CARD 1 & 2 TO BE TALLER */
-.step-card:nth-child(1),
+/* Card 2: Make it bigger */
 .step-card:nth-child(2) {
     min-height: 650px !important;
-    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* FORCE TEXTAREAS TO BE TALLER */
-#ideaInput,
-#optimizedPrompt {
-    min-height: 350px !important;
-    height: 380px !important;
-}
-
-/* If using classes instead of IDs */
-.step-card:nth-child(1) textarea,
-.step-card:nth-child(2) textarea {
-    min-height: 350px !important;
-    height: 380px !important;
-}
-
-/* FORCE CARD 3 TO BE SMALLER */
+/* Card 3: Keep normal size */
 .step-card:nth-child(3) {
-    min-height: 500px !important;
-    height: auto !important;
+    min-height: 550px !important;
+}
+
+/* Make textareas taller to fill space */
+.step-card:nth-child(1) .textarea-idea {
+    min-height: 400px !important;
+    flex: 1 !important;
+}
+
+.step-card:nth-child(2) .output-textarea {
+    min-height: 400px !important;
+    flex: 1 !important;
+}
+
+/* Ensure bottom buttons stay at bottom */
+.step-card:nth-child(1) .template-section {
+    margin-top: auto !important;
+    padding-top: 20px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .step-card:nth-child(1),
+    .step-card:nth-child(2) {
+        min-height: 550px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea,
+    .step-card:nth-child(2) .output-textarea {
+        min-height: 300px !important;
+    }
 }
