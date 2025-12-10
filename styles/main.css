@@ -101,9 +101,9 @@ body {
   flex-direction: column;
 }
 
-/* HERO SECTION */
+/* HERO SECTION - UPDATED: More compact header */
 .hero {
-  padding: 0 0 20px;
+  padding: 0 0 16px;
 }
 
 .hero-top {
@@ -145,10 +145,12 @@ body {
   gap: 8px;
 }
 
+/* UPDATED: Brand row on same line */
 .brand-row {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .brand-name {
@@ -159,20 +161,22 @@ body {
   color: var(--primary);
   text-transform: uppercase;
   text-shadow: 0 0 10px rgba(255, 94, 0, 0.5);
+  white-space: nowrap;
 }
 
 .brand-tagline-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: rgba(255, 94, 0, 0.1);
   border: 1px solid rgba(255, 94, 0, 0.3);
+  white-space: nowrap;
 }
 
 .brand-tagline-label {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 600;
@@ -181,7 +185,7 @@ body {
 }
 
 .brand-tagline-text {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -204,7 +208,7 @@ body {
 }
 
 .hero-subtitle {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-secondary);
   max-width: 520px;
   line-height: 1.5;
@@ -242,7 +246,7 @@ body {
 
 /* WORKFLOW GRID */
 .workflow {
-  margin-top: 24px;
+  margin-top: 20px;
   flex: 1;
 }
 
@@ -263,7 +267,7 @@ body {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  min-height: 600px;
+  min-height: 560px;
   position: relative;
   overflow: hidden;
 }
@@ -288,7 +292,7 @@ body {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .step-pill {
@@ -466,18 +470,25 @@ body {
   text-shadow: 0 0 5px rgba(255, 94, 0, 0.3);
 }
 
-/* VOICE INPUT/OUTPUT */
+/* VOICE INPUT/OUTPUT & CLEAR BUTTON */
 .textarea-wrapper {
   position: relative;
   width: 100%;
   display: flex;
 }
 
-.voice-input-btn,
-.voice-output-btn {
+.textarea-buttons {
   position: absolute;
   bottom: 12px;
   right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.voice-input-btn,
+.clear-input-btn,
+.voice-output-btn {
   width: 40px;
   height: 40px;
   border-radius: 4px;
@@ -493,12 +504,25 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
+.clear-input-btn {
+  border-color: var(--danger);
+  background: rgba(255, 68, 68, 0.1);
+  color: var(--danger);
+}
+
 .voice-input-btn:hover,
 .voice-output-btn:hover {
   border-color: var(--secondary);
   color: var(--secondary);
   background: rgba(0, 243, 255, 0.1);
   box-shadow: 0 0 15px var(--secondary);
+}
+
+.clear-input-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(255, 68, 68, 0.2);
+  box-shadow: 0 0 15px var(--danger);
 }
 
 .voice-input-btn.recording,
@@ -558,7 +582,7 @@ body {
 .textarea-idea {
   resize: none;
   min-height: 140px;
-  padding-right: 60px;
+  padding-right: 110px; /* More space for 2 buttons */
 }
 
 .field-block-output {
@@ -686,9 +710,9 @@ textarea::placeholder {
   box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
 }
 
-/* TEMPLATES */
+/* TEMPLATES - UPDATED: Shortened with eye icon */
 .template-section {
-  margin: 16px 0;
+  margin: 16px 0 0 0;
 }
 
 .template-toggle {
@@ -701,12 +725,28 @@ textarea::placeholder {
   color: var(--primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   cursor: pointer;
   transition: var(--transition-fast);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: 'Courier New', monospace;
+}
+
+.template-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.template-toggle-eye {
+  color: var(--secondary);
+  font-size: 14px;
+  transition: var(--transition-fast);
+}
+
+.template-toggle:hover .template-toggle-eye {
+  color: var(--primary);
 }
 
 .template-toggle:hover {
@@ -716,7 +756,7 @@ textarea::placeholder {
 }
 
 .templates-panel {
-  margin-top: 16px;
+  margin-top: 12px;
   border-radius: 4px;
   border: 1px solid var(--border-subtle);
   padding: 16px;
@@ -1204,7 +1244,7 @@ textarea::placeholder {
 
 /* FOOTER */
 .footer {
-  margin-top: 24px;
+  margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--bg-secondary);
   display: flex;
