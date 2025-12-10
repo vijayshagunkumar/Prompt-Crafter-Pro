@@ -2440,3 +2440,25 @@ textarea::placeholder {
     overflow-y: auto;
     margin-top: 12px;
 }
+/* ===========================================
+   SIMPLE FIX: JUST MAKE CARD 1 & CARD 2 TALLER
+   =========================================== */
+
+/* Make Card 1 taller */
+.step-card:nth-child(1) {
+    min-height: 580px !important;
+}
+
+/* Make Card 2 taller */
+.step-card:nth-child(2) {
+    min-height: 580px !important;
+}
+
+/* Make textareas in both cards taller */
+.step-card:nth-child(1) .textarea-idea,
+.step-card:nth-child(2) .output-textarea {
+    min-height: 280px !important;
+    height: 300px;
+}
+
+/* That's it - don't change anything else! */
