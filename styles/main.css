@@ -101,9 +101,9 @@ body {
   flex-direction: column;
 }
 
-/* HERO SECTION - UPDATED: More compact header */
+/* HERO SECTION - UPDATED: Compact with CSS logo */
 .hero {
-  padding: 0 0 16px;
+  padding: 0 0 12px;
 }
 
 .hero-top {
@@ -119,84 +119,70 @@ body {
   gap: 16px;
 }
 
+/* NEW CSS LOGO - UPDATED */
 .hero-logo {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 94, 0, 0.1);
-  border-radius: 8px;
-  padding: 8px;
-  border: 1px solid var(--primary);
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
+  border-radius: 12px;
+  padding: 10px;
+  border: 2px solid var(--primary);
+  box-shadow: 
+    0 0 20px rgba(255, 94, 0, 0.4),
+    inset 0 0 15px rgba(0, 243, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.hero-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.hero-logo::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, 
+    var(--primary) 0%,
+    var(--secondary) 50%,
+    var(--primary) 100%);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+.logo-text {
+  font-family: 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #FF5E00, #00F3FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(255, 94, 0, 0.5);
+  letter-spacing: -1px;
+  line-height: 1;
+  text-align: center;
 }
 
 .hero-title-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-/* UPDATED: Brand row on same line */
-.brand-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.brand-name {
-  font-family: 'Courier New', monospace;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--primary);
-  text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(255, 94, 0, 0.5);
-  white-space: nowrap;
-}
-
-.brand-tagline-pill {
-  display: inline-flex;
-  align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 94, 0, 0.1);
-  border: 1px solid rgba(255, 94, 0, 0.3);
-  white-space: nowrap;
-}
-
-.brand-tagline-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 600;
-  color: var(--primary);
-  text-shadow: 0 0 5px rgba(255, 94, 0, 0.5);
-}
-
-.brand-tagline-text {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  flex: 1;
 }
 
 .hero-title {
   font-family: 'Courier New', monospace;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.2;
+  margin-top: 4px;
 }
 
 .hero-title span {
@@ -246,7 +232,7 @@ body {
 
 /* WORKFLOW GRID */
 .workflow {
-  margin-top: 20px;
+  margin-top: 16px;
   flex: 1;
 }
 
@@ -480,9 +466,11 @@ body {
 .textarea-buttons {
   position: absolute;
   bottom: 12px;
+  left: 12px;
   right: 12px;
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
   z-index: 2;
 }
 
@@ -504,10 +492,18 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
+/* CLEAR BUTTON SPECIFIC STYLES - LEFT SIDE */
 .clear-input-btn {
   border-color: var(--danger);
   background: rgba(255, 68, 68, 0.1);
   color: var(--danger);
+}
+
+/* UNDO STATE FOR CLEAR BUTTON */
+.clear-input-btn.undo-state {
+  border-color: var(--secondary);
+  background: rgba(0, 243, 255, 0.1);
+  color: var(--secondary);
 }
 
 .voice-input-btn:hover,
@@ -523,6 +519,13 @@ body {
   color: var(--danger);
   background: rgba(255, 68, 68, 0.2);
   box-shadow: 0 0 15px var(--danger);
+  transform: translateY(-1px);
+}
+
+.clear-input-btn.undo-state:hover {
+  border-color: var(--secondary);
+  background: rgba(0, 243, 255, 0.2);
+  box-shadow: 0 0 15px var(--secondary);
 }
 
 .voice-input-btn.recording,
@@ -582,7 +585,7 @@ body {
 .textarea-idea {
   resize: none;
   min-height: 140px;
-  padding-right: 110px; /* More space for 2 buttons */
+  padding: 12px 60px 12px 60px; /* Equal padding for left/right buttons */
 }
 
 .field-block-output {
@@ -1242,7 +1245,7 @@ textarea::placeholder {
   font-family: 'Courier New', monospace;
 }
 
-/* FOOTER */
+/* FOOTER - UPDATED */
 .footer {
   margin-top: 20px;
   padding-top: 16px;
@@ -1450,8 +1453,31 @@ textarea::placeholder {
     gap: 16px;
   }
 
+  .hero-brand {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .hero-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .logo-text {
+    font-size: 20px;
+  }
+
   .hero-title {
     font-size: 24px;
+  }
+
+  .hero-title-block {
+    flex: 1;
+  }
+
+  .settings-btn {
+    align-self: flex-end;
+    margin-top: -60px;
   }
 
   .cards-grid {
@@ -1479,202 +1505,22 @@ textarea::placeholder {
   }
 }
 
-/* SCROLLBAR CYBERPUNK STYLE */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.5);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border-radius: 4px;
-  border: 1px solid rgba(255, 94, 0, 0.3);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-  box-shadow: 0 0 10px var(--primary);
-}
-
-/* SELECTION COLOR */
-::selection {
-  background: rgba(255, 94, 0, 0.3);
-  color: var(--text-primary);
-}
-
-/* FOCUS OUTLINES */
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* CYBERPUNK TEXT EFFECTS */
-.hero-title span,
-.brand-name,
-.step-header h2,
-.launch-name,
-.modal-header h3,
-.templates-title,
-.template-card-title {
-  text-shadow: 0 0 10px currentColor;
-}
-
-/* GLOWING BORDERS ON HOVER */
-.chip:hover,
-.btn-primary:hover,
-.launch-btn:hover:not(:disabled),
-.template-card:hover,
-.history-item:hover,
-.template-category:hover,
-.preset-option:hover:not(.active) {
-  border-color: var(--primary);
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
-}
-
-/* READABILITY ENHANCEMENTS */
-.textarea-idea,
-.output-textarea,
-.input-text,
-.input-search,
-textarea,
-input,
-select {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.hero-subtitle,
-.settings-btn,
-.step-subtitle,
-.toggle-switch,
-.templates-title,
-.launch-sub,
-.footer {
-  font-size: 13px;
-}
-
-.brand-tagline-label,
-.brand-tagline-text,
-.meta-pill,
-.timer-badge,
-.templates-header-left,
-.templates-sub,
-.template-category,
-.template-card,
-.template-card-meta,
-.template-card-description,
-.btn-ghost-small,
-.btn-ghost-small i,
-.empty-state,
-.voice-status {
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-/* ===========================================
-   RESPONSIVE DESIGN - KEEPING CYBERPUNK AESTHETIC
-   =========================================== */
-
-/* Tablet (1024px and below) */
-@media (max-width: 1024px) {
-  .cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .theme-selector-container {
-    order: 3;
-    width: 100%;
-    max-width: 100%;
-    margin: 12px 0 0 0;
-  }
-  
-  .theme-selector {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
-  }
-  
-  .theme-label {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-  }
-}
-
-/* Mobile (768px and below) */
-@media (max-width: 768px) {
-  .page {
-    padding: 16px;
-  }
-
-  .hero-top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .hero-title {
-    font-size: 24px;
-  }
-
-  .cards-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .step-card {
-    min-height: auto;
-  }
-
-  .footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .templates-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    width: 95%;
-    margin: 10px;
-  }
-  
-  .theme-selector {
-    gap: 6px;
-  }
-  
-  .theme-sample {
-    width: 28px;
-    height: 28px;
-    font-size: 11px;
-  }
-}
-
-/* Small Mobile (480px and below) */
 @media (max-width: 480px) {
   .page {
     padding: 12px;
   }
   
+  .hero-logo {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .logo-text {
+    font-size: 18px;
+  }
+  
   .hero-title {
     font-size: 20px;
-  }
-  
-  .hero-logo {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .brand-name {
-    font-size: 18px;
   }
   
   .step-card {
@@ -1720,7 +1566,20 @@ select {
   .output-textarea {
     min-height: 100px;
     font-size: 13px;
-    padding: 10px;
+    padding: 10px 50px 10px 50px;
+  }
+  
+  .textarea-buttons {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+  }
+  
+  .voice-input-btn,
+  .clear-input-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
   }
   
   .settings-btn {
@@ -1749,37 +1608,32 @@ select {
   }
 }
 
-/* ===========================================
-   CARD LAYOUT OPTIMIZATION - Fix chip overflow
-   =========================================== */
-
-/* Increase width of first card slightly */
+/* CARD LAYOUT OPTIMIZATION */
 .cards-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 0.9fr; /* Adjusted: 1st card largest, 3rd smallest */
+  grid-template-columns: 1.1fr 1fr 0.9fr;
   gap: 24px;
 }
 
-/* Ensure chips stay in one line */
 .chip-row {
   display: flex;
   flex-wrap: nowrap;
   gap: 10px;
   margin-bottom: 16px;
-  justify-content: space-between; /* Evenly distribute chips */
+  justify-content: space-between;
 }
 
 .chip {
-  flex: 1; /* Make chips equal width */
-  min-width: 0; /* Allow them to shrink if needed */
+  flex: 1;
+  min-width: 0;
   border-radius: 4px;
   border: 1px solid var(--border-subtle);
   background: rgba(255, 94, 0, 0.1);
-  padding: 8px 12px; /* Slightly smaller padding */
-  font-size: 13px; /* Slightly smaller font */
+  padding: 8px 12px;
+  font-size: 13px;
   display: flex;
   align-items: center;
-  justify-content: center; /* Center content */
+  justify-content: center;
   gap: 6px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -1792,20 +1646,20 @@ select {
 }
 
 .chip i {
-  font-size: 12px; /* Slightly smaller icons */
+  font-size: 12px;
 }
 
 /* Adjust third card content to fit better */
 .step-card:nth-child(3) .launch-list {
-  gap: 10px; /* Reduce gap between launch buttons */
+  gap: 10px;
 }
 
 .step-card:nth-child(3) .launch-btn {
-  padding: 10px 14px; /* Slightly smaller padding */
+  padding: 10px 14px;
 }
 
 .step-card:nth-child(3) .launch-icon {
-  width: 32px; /* Slightly smaller icons */
+  width: 32px;
   height: 32px;
   font-size: 14px;
 }
@@ -1821,7 +1675,7 @@ select {
 /* Mobile responsiveness */
 @media (max-width: 1024px) {
   .cards-grid {
-    grid-template-columns: repeat(2, 1fr); /* Back to 2 columns */
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .chip-row {
@@ -1830,7 +1684,7 @@ select {
   }
   
   .chip {
-    flex: 0 0 calc(50% - 5px); /* 2 chips per row */
+    flex: 0 0 calc(50% - 5px);
     min-width: auto;
     margin-bottom: 8px;
   }
@@ -1838,15 +1692,14 @@ select {
 
 @media (max-width: 768px) {
   .cards-grid {
-    grid-template-columns: 1fr; /* Single column */
+    grid-template-columns: 1fr;
   }
   
   .chip {
-    flex: 0 0 100%; /* Full width on mobile */
+    flex: 0 0 100%;
   }
 }
 
-/* Very small screens - compress chips further */
 @media (max-width: 480px) {
   .chip {
     padding: 6px 8px;
