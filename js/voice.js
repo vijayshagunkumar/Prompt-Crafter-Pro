@@ -1,9 +1,10 @@
-// voice.js - Voice Input and Output Features for PromptCraft (FIXED VERSION)
+// voice.js - Voice Input and Output Features for PromptCraft (FIXED FOR MOBILE)
 
 // Voice Recognition State
 let voiceRecognition = null;
 let isListening = false;
 let voiceLanguage = 'en-US';
+let lastVoiceResult = ''; // NEW: Track last result to prevent duplicates
 
 // Text-to-Speech State
 let voiceSynthesis = window.speechSynthesis;
@@ -58,7 +59,7 @@ function checkVoiceSupport() {
   }
 }
 
-// Setup Voice Input (Speech-to-Text) - FIXED
+// Setup Voice Input (Speech-to-Text) - FIXED FOR MOBILE DUPLICATES
 function setupVoiceInput() {
   const voiceInputBtn = document.getElementById('voiceInputBtn');
   if (!voiceInputBtn) return;
@@ -77,12 +78,14 @@ function setupVoiceInput() {
   voiceRecognition.continuous = true;
   voiceRecognition.interimResults = true;
   voiceRecognition.lang = voiceLanguage;
+  voiceRecognition.maxAlternatives = 1; // NEW: Reduce alternatives to prevent duplicates
   
   // Event listeners
   voiceRecognition.onstart = function() {
     isListening = true;
+    lastVoiceResult = ''; // Reset last result
     voiceInputBtn.classList.add('recording');
-    voiceInputBtn.innerHTML = '<i class="fas fa-stop"></i>'; // CHANGE TO STOP ICON
+    voiceInputBtn.innerHTML = '<i class="fas fa-stop"></i>';
     voiceInputBtn.title = 'Click to stop recording';
     showVoiceStatus('voiceInputStatus', true);
     console.log('Voice recognition started');
@@ -91,26 +94,47 @@ function setupVoiceInput() {
   voiceRecognition.onresult = function(event) {
     let interimTranscript = '';
     let finalTranscript = '';
+    let isFinal = false;
     
+    // NEW: Simplified result processing for mobile
     for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
+      const transcript = event.results[i][0].transcript.trim();
+      
+      // Check if this is the same as last result (mobile duplicate prevention)
+      if (transcript === lastVoiceResult && event.results[i].isFinal) {
+        continue; // Skip duplicates
+      }
+      
       if (event.results[i].isFinal) {
-        finalTranscript += transcript + ' ';
+        finalTranscript = transcript;
+        lastVoiceResult = transcript; // Store last result
+        isFinal = true;
       } else {
-        interimTranscript += transcript;
+        interimTranscript = transcript;
       }
     }
     
     const requirementEl = document.getElementById('requirement');
-    if (requirementEl) {
-      // Append final transcript
-      if (finalTranscript) {
-        const currentValue = requirementEl.value;
-        requirementEl.value = currentValue + finalTranscript;
-        
-        // Trigger input event to update stats and auto-convert
-        const inputEvent = new Event('input', { bubbles: true });
-        requirementEl.dispatchEvent(inputEvent);
+    if (requirementEl && finalTranscript) {
+      // Only append if we have new final transcript
+      const currentValue = requirementEl.value.trim();
+      
+      // Add space if there's existing text
+      const separator = currentValue ? (currentValue.endsWith('.') || currentValue.endsWith('!') || currentValue.endsWith('?') ? ' ' : ' ') : '';
+      
+      requirementEl.value = currentValue + separator + finalTranscript;
+      
+      // Trigger input event to update stats and auto-convert
+      const inputEvent = new Event('input', { bubbles: true });
+      requirementEl.dispatchEvent(inputEvent);
+      
+      // NEW: For mobile, stop after getting final result to prevent duplicates
+      if (isMobileDevice() && isFinal) {
+        setTimeout(() => {
+          if (isListening) {
+            stopVoiceInput();
+          }
+        }, 500);
       }
     }
   };
@@ -147,7 +171,12 @@ function setupVoiceInput() {
   voiceInputBtn.addEventListener('click', toggleVoiceInput);
 }
 
-// Toggle voice input on/off - FIXED
+// NEW: Mobile device detection
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Toggle voice input on/off
 function toggleVoiceInput() {
   if (isListening) {
     stopVoiceInput();
@@ -156,12 +185,13 @@ function toggleVoiceInput() {
   }
 }
 
-// Start voice input - FIXED
+// Start voice input
 function startVoiceInput() {
   if (!voiceRecognition) return;
   
   try {
     voiceRecognition.lang = voiceLanguage;
+    lastVoiceResult = ''; // Reset last result
     voiceRecognition.start();
     
     if (typeof showNotification === 'function') {
@@ -175,7 +205,7 @@ function startVoiceInput() {
   }
 }
 
-// Stop voice input - FIXED
+// Stop voice input
 function stopVoiceInput() {
   if (!voiceRecognition || !isListening) return;
   
@@ -183,7 +213,7 @@ function stopVoiceInput() {
   const voiceInputBtn = document.getElementById('voiceInputBtn');
   if (voiceInputBtn) {
     voiceInputBtn.classList.remove('recording');
-    voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>'; // CHANGE BACK TO MIC ICON
+    voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
     voiceInputBtn.title = 'Voice Input';
   }
   showVoiceStatus('voiceInputStatus', false);
@@ -199,7 +229,7 @@ function stopVoiceInput() {
   }
 }
 
-// Setup Voice Output (Text-to-Speech) - FIXED
+// Setup Voice Output (Text-to-Speech)
 function setupVoiceOutput() {
   const voiceOutputBtn = document.getElementById('voiceOutputBtn');
   const outputTextarea = document.getElementById('output');
@@ -245,7 +275,7 @@ function setupVoiceOutput() {
   });
 }
 
-// Toggle voice output on/off - FIXED
+// Toggle voice output on/off
 function toggleVoiceOutput() {
   if (isSpeaking) {
     stopVoiceOutput();
@@ -254,7 +284,7 @@ function toggleVoiceOutput() {
   }
 }
 
-// Start voice output (read the prompt aloud) - FIXED
+// Start voice output (read the prompt aloud)
 function startVoiceOutput() {
   const outputTextarea = document.getElementById('output');
   const voiceOutputBtn = document.getElementById('voiceOutputBtn');
@@ -288,15 +318,15 @@ function startVoiceOutput() {
   }
   
   // Speech parameters
-  currentUtterance.rate = 1.0;    // Normal speed
-  currentUtterance.pitch = 1.0;   // Normal pitch
-  currentUtterance.volume = 1.0;  // Full volume
+  currentUtterance.rate = 1.0;
+  currentUtterance.pitch = 1.0;
+  currentUtterance.volume = 1.0;
   
   // Event handlers
   currentUtterance.onstart = function() {
     isSpeaking = true;
     voiceOutputBtn.classList.add('speaking');
-    voiceOutputBtn.innerHTML = '<i class="fas fa-stop"></i>'; // CHANGE TO STOP ICON
+    voiceOutputBtn.innerHTML = '<i class="fas fa-stop"></i>';
     voiceOutputBtn.title = 'Stop reading';
     showVoiceStatus('voiceOutputStatus', true);
   };
@@ -321,7 +351,7 @@ function startVoiceOutput() {
   }
 }
 
-// Stop voice output - FIXED
+// Stop voice output
 function stopVoiceOutput() {
   const voiceOutputBtn = document.getElementById('voiceOutputBtn');
   
@@ -329,7 +359,7 @@ function stopVoiceOutput() {
   
   if (voiceOutputBtn) {
     voiceOutputBtn.classList.remove('speaking');
-    voiceOutputBtn.innerHTML = '<i class="fas fa-volume-up"></i>'; // CHANGE BACK TO SPEAKER ICON
+    voiceOutputBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
     voiceOutputBtn.title = 'Read Aloud';
   }
   
