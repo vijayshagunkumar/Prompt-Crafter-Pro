@@ -2293,3 +2293,150 @@ textarea::placeholder {
         transform: translateY(0);
     }
 }
+
+/* ===========================================
+   FIX: PREVENT CONTENT OVERFLOW IN CARD 1
+   =========================================== */
+
+/* Reset card 1 to proper flex layout */
+.step-card:nth-child(1) {
+    min-height: 600px !important;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden !important; /* Prevent overflow */
+}
+
+/* Make the content area scrollable if needed */
+.step-card:nth-child(1) > *:not(.template-section) {
+    flex-shrink: 0; /* Don't shrink content */
+}
+
+/* Textarea container should grow but not overflow */
+.step-card:nth-child(1) .field-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Important for flex children */
+    position: relative;
+}
+
+/* Textarea should be scrollable, not fixed height */
+.step-card:nth-child(1) .textarea-idea {
+    min-height: 250px !important;
+    height: auto !important; /* Auto height instead of fixed */
+    flex: 1;
+    resize: vertical;
+    max-height: 400px; /* Limit max height */
+    overflow-y: auto; /* Scroll if content is too tall */
+}
+
+/* FIX: Move voice/clear buttons INSIDE the textarea, not overlapping */
+.step-card:nth-child(1) .textarea-buttons {
+    position: absolute;
+    bottom: 10px; /* Move up from bottom */
+    left: 12px;
+    right: 12px;
+    z-index: 2;
+    background: transparent;
+}
+
+/* FIX: Bottom section (ENHANCE PROMPT & TEMPLATE) */
+.step-card:nth-child(1) .template-section {
+    margin-top: auto; /* Push to bottom */
+    padding: 16px 0 0 0;
+    border-top: 1px solid var(--border-subtle);
+    flex-shrink: 0; /* Don't shrink */
+    background: var(--panel-bg);
+    position: relative;
+    z-index: 10;
+}
+
+/* FIX: ENHANCE PROMPT button */
+.step-card:nth-child(1) .btn-primary {
+    width: 100%;
+    margin-bottom: 12px;
+    order: 1;
+    flex-shrink: 0; /* Don't shrink */
+}
+
+/* FIX: TEMPLATE toggle */
+.step-card:nth-child(1) .template-toggle {
+    order: 2;
+    flex-shrink: 0; /* Don't shrink */
+}
+
+/* FIX: Adjust chip row and auto-convert spacing */
+.step-card:nth-child(1) .chip-row {
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.step-card:nth-child(1) .auto-row {
+    margin: 16px 0;
+    flex-shrink: 0;
+}
+
+/* FIX: Ensure step-header doesn't push content */
+.step-card:nth-child(1) .step-header {
+    flex-shrink: 0;
+    margin-bottom: 16px;
+}
+
+/* FIX: Custom scrollbar for textarea */
+.step-card:nth-child(1) .textarea-idea::-webkit-scrollbar {
+    width: 6px;
+}
+
+.step-card:nth-child(1) .textarea-idea::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.step-card:nth-child(1) .textarea-idea::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+/* FIX: Responsive adjustments */
+@media (max-width: 768px) {
+    .step-card:nth-child(1) {
+        min-height: 550px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea {
+        min-height: 200px !important;
+        max-height: 350px;
+    }
+    
+    /* Adjust button position for mobile */
+    .step-card:nth-child(1) .textarea-buttons {
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .step-card:nth-child(1) {
+        min-height: 500px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea {
+        min-height: 180px !important;
+        max-height: 300px;
+    }
+}
+
+/* FIX: Ensure card has proper internal padding */
+.step-card:nth-child(1) {
+    padding: 24px !important;
+}
+
+/* FIX: Make sure template panel doesn't overflow */
+.step-card:nth-child(1) .templates-panel {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 12px;
+}
