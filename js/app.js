@@ -582,7 +582,23 @@ function renderHistory() {
       document.getElementById("requirement").value = item.requirement;
       document.getElementById("output").value = item.prompt;
       updateStats(item.prompt);
+      updateOutputStats();
+      isConverted = true;
+      lastConvertedText = item.requirement;
+      document.getElementById("convertedBadge").style.display = "inline-flex";
+      setLaunchButtonsEnabled(true);
       showNotification("Loaded from history");
+      
+      // Update preset based on the loaded requirement
+      const { role, preset: autoPreset, label } = getRoleAndPreset(item.requirement);
+      lastRole = role;
+      lastTaskLabel = label;
+      
+      if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+        lastPresetSource = "auto";
+        setCurrentPreset(autoPreset);
+      }
+      updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
     });
     list.appendChild(div);
   });
@@ -642,6 +658,9 @@ function setupEventListeners() {
   // Requirement input
   const requirementEl = document.getElementById("requirement");
   requirementEl.addEventListener("input", handleRequirementInput);
+  
+  // NEW: Also listen to keyup to handle voice input completion
+  requirementEl.addEventListener("keyup", handleRequirementInput);
 
   // Auto-convert toggle
   document.getElementById("autoConvert").addEventListener("change", (e) => {
@@ -661,6 +680,14 @@ function setupEventListeners() {
       lastPresetSource = "manual";
       setCurrentPreset(presetId);
 
+      // NEW: Clear output when preset changes
+      if (isConverted) {
+        document.getElementById("output").value = "";
+        isConverted = false;
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+      }
+
       if (document.getElementById("requirement").value.trim() && isConverted) {
         isConverted = false;
         generatePrompt();
@@ -676,10 +703,18 @@ function setupEventListeners() {
       requirementEl.value = btn.dataset.example;
       requirementEl.focus();
       isConverted = false;
+      document.getElementById("output").value = "";
       document.getElementById("convertBtn").disabled = false;
       document.getElementById("convertedBadge").style.display = "none";
       setLaunchButtonsEnabled(false);
-      generatePrompt();
+      
+      // Update stats
+      updateStats(requirementEl.value);
+      
+      // Auto-generate if there's text
+      if (requirementEl.value.trim()) {
+        generatePrompt();
+      }
     });
   });
 
@@ -721,6 +756,9 @@ function setupEventListeners() {
 
   // Export
   document.getElementById("exportBtn").addEventListener("click", exportPrompt);
+  
+  // Output textarea change
+  document.getElementById("output").addEventListener("input", updateOutputStats);
 
   // History toggle + clear
   document
@@ -758,6 +796,12 @@ function setupClearUndoButton() {
         lastClearedText = requirementEl.value;
         requirementEl.value = "";
         requirementEl.focus();
+        
+        // NEW: Clear output when clearing requirement
+        document.getElementById("output").value = "";
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+        // =================
         
         // Change button to UNDO state
         isUndoState = true;
@@ -891,6 +935,11 @@ window.useTemplate = function (id) {
     document.getElementById("requirement").value = template.example || "";
     document.getElementById("output").value = template.content;
     updateStats(template.content);
+    updateOutputStats();
+    isConverted = true;
+    lastConvertedText = template.example || "";
+    document.getElementById("convertedBadge").style.display = "inline-flex";
+    setLaunchButtonsEnabled(true);
     showNotification("Template loaded into prompt");
   }
 };
@@ -911,6 +960,15 @@ function loadUsageCount() {
 // Auto-convert
 function handleRequirementInput() {
   const text = document.getElementById("requirement").value;
+  
+  // NEW: Clear output if user is typing new requirement
+  if (isConverted && text !== lastConvertedText) {
+    document.getElementById("output").value = "";
+    isConverted = false;
+    document.getElementById("convertedBadge").style.display = "none";
+    setLaunchButtonsEnabled(false);
+  }
+  
   isConverted = false;
   document.getElementById("convertedBadge").style.display = "none";
   document.getElementById("convertBtn").disabled = !text.trim();
@@ -975,6 +1033,23 @@ function updateStats(text) {
   ).textContent = `${charCount} characters`;
   document.getElementById("wordCount").textContent = `${wordCount} words`;
   document.getElementById("lineCount").textContent = `${lineCount} lines`;
+}
+
+function updateOutputStats() {
+  const text = document.getElementById("output").value;
+  const charCount = text.length;
+  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lineCount = text.split("\n").length;
+
+  document.getElementById(
+    "outputCharCount"
+  ).textContent = `${charCount} characters`;
+  document.getElementById(
+    "outputWordCount"
+  ).textContent = `${wordCount} words`;
+  document.getElementById(
+    "outputLineCount"
+  ).textContent = `${lineCount} lines`;
 }
 
 // Clean up output
@@ -1103,139 +1178,110 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
+    updateOutputStats();
     saveToHistory(raw, generatedPrompt);
 
     isConverted = true;
     lastConvertedText = raw;
     document.getElementById("convertedBadge").style.display = "inline-flex";
-
     setLaunchButtonsEnabled(true);
 
     showNotification("Prompt generated successfully");
 
-    if (autoConvertEnabled) {
+    // Reset auto-convert timer if there's still text
+    if (autoConvertEnabled && raw) {
+      autoConvertCountdown = autoConvertDelay;
       resetAutoConvertTimer();
     }
-
-    return generatedPrompt;
-  } catch (err) {
-    console.error("Generation error:", err);
-    generatedPrompt = sanitizePrompt(localFormatter(raw));
+  } catch (error) {
+    console.error("Generation error:", error);
+    generatedPrompt = localFormatter(raw);
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
-    saveToHistory(raw, generatedPrompt);
-    showNotification("Generated with local template");
-
-    isConverted = true;
-    lastConvertedText = raw;
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    setLaunchButtonsEnabled(true);
-
-    return generatedPrompt;
+    updateOutputStats();
+    showNotification("Using offline generation");
   } finally {
     convertBtn.disabled = false;
-    convertBtn.innerHTML =
-      '<i class="fas fa-wand-magic-sparkles"></i> Enhance Prompt';
+    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
   }
+
+  return generatedPrompt;
 }
 
 function localFormatter(raw) {
-  const clean = (raw || "").trim() || "[No requirement provided]";
-  const { role, preset: autoPreset, label } = getRoleAndPreset(clean);
-
-  lastRole = role;
-  lastTaskLabel = label;
-
-  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-    lastPresetSource = "auto";
-    setCurrentPreset(autoPreset);
-  } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
-  }
-
-  const template = PRESETS[currentPreset];
-  return template ? template(role, clean) : PRESETS["default"](role, clean);
-}
-
-// Clipboard & AI Tool Integration
-async function copyToClipboard() {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value) {
-    showNotification("No prompt to copy. Generate one first.");
-    return false;
-  }
-
-  try {
-    await navigator.clipboard.writeText(outputEl.value);
-    return true;
-  } catch (err) {
-    const textArea = document.createElement("textarea");
-    textArea.value = outputEl.value;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      return true;
-    } catch (err2) {
-      document.body.removeChild(textArea);
-      showNotification("Failed to copy. Please copy manually.");
-      return false;
-    }
-  }
-}
-
-async function openAITool(platform, url) {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value || !isConverted) {
-    await generatePrompt();
-  }
-
-  const copied = await copyToClipboard();
-  if (!copied) return;
-
-  showNotification(`Prompt copied! Opening ${platform}...`);
-
-  try {
-    window.open(url, "_blank");
-  } catch (err) {
-    showNotification(
-      `${platform} was blocked by your popup blocker. Please allow pop-ups and try again.`
-    );
-  }
+  const requirement = raw;
+  const { role } = getRoleAndPreset(requirement);
+  return PRESETS[currentPreset](role, requirement);
 }
 
 // Export
 function exportPrompt() {
   const outputEl = document.getElementById("output");
-  if (!outputEl.value) {
-    showNotification("Generate a prompt first");
+  const prompt = outputEl.value;
+
+  if (!prompt.trim()) {
+    showNotification("No prompt to export");
     return;
   }
 
-  const blob = new Blob([outputEl.value], {
-    type: "text/plain;charset=utf-8"
-  });
+  const blob = new Blob([prompt], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "prompt.txt";
+  a.download = `prompt-${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showNotification("Prompt exported as prompt.txt");
+  showNotification("Prompt exported");
+}
+
+// AI Tool opener
+function openAITool(name, url) {
+  const outputEl = document.getElementById("output");
+  const prompt = outputEl.value.trim();
+  
+  if (!prompt) {
+    showNotification("No prompt to copy");
+    return;
+  }
+  
+  // Copy prompt to clipboard
+  navigator.clipboard.writeText(prompt)
+    .then(() => {
+      showNotification(`Prompt copied! Opening ${name}...`);
+      setTimeout(() => {
+        window.open(url, '_blank');
+      }, 500);
+    })
+    .catch(err => {
+      console.error('Failed to copy:', err);
+      showNotification("Failed to copy prompt");
+    });
 }
 
 // Notification
 function showNotification(message) {
-  const notification = document.getElementById("notification");
-  document.getElementById("notificationText").textContent = message;
-  notification.style.display = "flex";
+  const notification = document.createElement("div");
+  notification.className = "notification";
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
   setTimeout(() => {
-    notification.style.display = "none";
+    notification.classList.add("show");
+  }, 10);
+
+  setTimeout(() => {
+    notification.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
   }, 3000);
 }
+
+// Make functions globally available
+window.generatePrompt = generatePrompt;
+window.exportPrompt = exportPrompt;
+window.openAITool = openAITool;
+window.saveSettings = saveSettings;
+window.clearAllData = clearAllData;
