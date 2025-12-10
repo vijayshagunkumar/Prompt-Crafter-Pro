@@ -371,14 +371,7 @@ function setupResizeObservers() {
 }
 
 // Update size info display
-function updateSizeInfo(elementId, height) {
-  const element = document.getElementById(elementId);
-  if (!element) return;
-  
-  const lines = Math.floor(height / 20); // Approximate lines
-  element.textContent = `${Math.round(height)}px • ~${lines} lines`;
-  element.style.display = 'block';
-}
+
 
 // Save sizes to localStorage
 function saveTextareaSizes() {
