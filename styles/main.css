@@ -1721,3 +1721,10 @@ textarea::placeholder {
     resize: both !important;
     overflow: auto;
 }
+
+/* Allow full manual resizing for both textareas */
+.textarea-idea,
+.output-textarea {
+    resize: both !important;
+    overflow: auto !important;
+}
