@@ -1978,3 +1978,15 @@ textarea::placeholder {
     padding: 8px 12px;
   }
 }
+
+/* Align template section to the left */
+.template-section {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+
+.template-toggle {
+  margin-left: 0 !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+}
