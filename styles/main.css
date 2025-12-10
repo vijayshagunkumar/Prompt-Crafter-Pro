@@ -2462,3 +2462,40 @@ textarea::placeholder {
 }
 
 /* That's it - don't change anything else! */
+
+/* ===========================================
+   STRONG OVERRIDE: INCREASE CARD SIZES
+   =========================================== */
+
+/* REMOVE ALL HEIGHT CONSTRAINTS FIRST */
+.step-card {
+    height: auto !important;
+    min-height: auto !important;
+}
+
+/* FORCE CARD 1 & 2 TO BE TALLER */
+.step-card:nth-child(1),
+.step-card:nth-child(2) {
+    min-height: 650px !important;
+    height: auto !important;
+}
+
+/* FORCE TEXTAREAS TO BE TALLER */
+#ideaInput,
+#optimizedPrompt {
+    min-height: 350px !important;
+    height: 380px !important;
+}
+
+/* If using classes instead of IDs */
+.step-card:nth-child(1) textarea,
+.step-card:nth-child(2) textarea {
+    min-height: 350px !important;
+    height: 380px !important;
+}
+
+/* FORCE CARD 3 TO BE SMALLER */
+.step-card:nth-child(3) {
+    min-height: 500px !important;
+    height: auto !important;
+}
