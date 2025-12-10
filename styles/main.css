@@ -2031,3 +2031,129 @@ textarea::placeholder {
   margin-bottom: 10px !important;
   line-height: 1.3 !important;
 }
+/* ===========================================
+   FINAL FIX: MAKE CARD 1 & CARD 2 LARGER
+   =========================================== */
+
+/* MAIN CARD HEIGHT INCREASE */
+.step-card {
+    min-height: 500px !important;
+    height: auto;
+}
+
+/* SPECIFICALLY TARGET CARD 1 & 2 FOR EXTRA HEIGHT */
+.step-card:nth-child(1),
+.step-card:nth-child(2) {
+    min-height: 600px !important;
+}
+
+/* MAKE TEXTAREAS MUCH TALLER */
+.step-card:nth-child(1) .textarea-idea,
+.step-card:nth-child(2) .output-textarea {
+    min-height: 350px !important;
+    height: 380px;
+    flex: 1;
+}
+
+/* ENSURE TEXTAREA CONTAINERS EXPAND */
+.step-card:nth-child(1) .field-block,
+.step-card:nth-child(2) .field-block-output {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+}
+
+/* ALLOW MORE EXPANSION */
+.textarea-idea,
+.output-textarea {
+    max-height: 700px !important;
+}
+
+/* ADJUST BUTTON POSITIONS FOR TALLER TEXTAREAS */
+.step-card:nth-child(1) .textarea-buttons,
+.step-card:nth-child(2) .textarea-buttons {
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
+}
+
+/* INCREASE SPACING BETWEEN ELEMENTS IN TALLER CARDS */
+.step-card:nth-child(1) .chip-row,
+.step-card:nth-child(2) .stats-row {
+    margin-bottom: 24px;
+}
+
+.step-card:nth-child(1) .auto-row {
+    margin: 24px 0;
+}
+
+/* MAKE TEMPLATE/HISTORY PANELS TALLER */
+.step-card:nth-child(1) .template-section,
+.step-card:nth-child(2) .history-panel {
+    margin-top: 24px;
+    flex: 1;
+    min-height: 150px;
+}
+
+/* OUTPUT FOOTER SPACING */
+.step-card:nth-child(2) .output-footer {
+    margin-top: 24px;
+    padding-top: 18px;
+}
+
+/* KEEP CARD 3 REASONABLE HEIGHT */
+.step-card:nth-child(3) {
+    min-height: 500px !important;
+}
+
+/* RESPONSIVE ADJUSTMENTS */
+@media (max-width: 1024px) {
+    .step-card:nth-child(1),
+    .step-card:nth-child(2) {
+        min-height: 550px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea,
+    .step-card:nth-child(2) .output-textarea {
+        min-height: 300px !important;
+        height: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .step-card:nth-child(1),
+    .step-card:nth-child(2) {
+        min-height: 500px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea,
+    .step-card:nth-child(2) .output-textarea {
+        min-height: 250px !important;
+        height: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .step-card:nth-child(1),
+    .step-card:nth-child(2) {
+        min-height: 450px !important;
+    }
+    
+    .step-card:nth-child(1) .textarea-idea,
+    .step-card:nth-child(2) .output-textarea {
+        min-height: 220px !important;
+        height: 250px;
+    }
+}
+
+/* SMOOTH TRANSITIONS */
+.step-card {
+    transition: min-height 0.4s ease, height 0.4s ease;
+}
+
+.step-card:nth-child(1) .textarea-idea,
+.step-card:nth-child(2) .output-textarea {
+    transition: min-height 0.4s ease, height 0.4s ease;
+}
+
