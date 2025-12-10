@@ -31,11 +31,11 @@
             <img src="assets/IconLogo.ico" alt="PromptCraft Logo" />
           </div>
 
-          <!-- Title + Tagline -->
+          <!-- Title + Tagline - UPDATED: Same line -->
           <div class="hero-title-block">
             <div class="brand-row">
               <div class="brand-name">PromptCraft</div>
-              <div class="brand-tagline-pill">
+              <div class="brand-tagline-pill" style="margin-left: 16px; display: inline-flex;">
                 <span class="brand-tagline-label">AI APP</span>
                 <span class="brand-tagline-text">Powered by RUPS</span>
               </div>
@@ -102,7 +102,7 @@
             </span>
           </div>
 
-          <!-- Requirement textarea with voice button -->
+          <!-- Requirement textarea with voice + clear buttons -->
           <div class="field-block">
             <div class="textarea-wrapper">
               <textarea
@@ -110,9 +110,14 @@
                 class="textarea-idea"
                 placeholder='Type your requirement here. Example: "Write a professional email to my manager about project updates."'
               ></textarea>
-              <button class="voice-input-btn" id="voiceInputBtn" title="Voice Input">
-                <i class="fas fa-microphone"></i>
-              </button>
+              <div class="textarea-buttons">
+                <button class="voice-input-btn" id="voiceInputBtn" title="Voice Input">
+                  <i class="fas fa-microphone"></i>
+                </button>
+                <button class="clear-input-btn" id="clearInputBtn" title="Clear text">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
             <div class="voice-status" id="voiceInputStatus" style="display:none;">
               <i class="fas fa-circle"></i>
@@ -120,12 +125,22 @@
             </div>
           </div>
 
-          <!-- Template toggle -->
-          <div class="template-section">
+          <!-- ENHANCE PROMPT BUTTON - MOVED UP -->
+          <div class="step-footer" style="margin-top: 16px;">
+            <button id="convertBtn" class="btn-primary btn-full">
+              <i class="fas fa-wand-magic-sparkles"></i>
+              Enhance Prompt
+            </button>
+          </div>
+
+          <!-- Template toggle - SHORTENED with eye icon -->
+          <div class="template-section" style="margin-top: 16px;">
             <button class="template-toggle" id="toggleTemplatesBtn">
               <i class="fas fa-layer-group"></i>
-              Template Library
-              <span class="template-toggle-state">Show</span>
+              Template
+              <span class="template-toggle-eye">
+                <i class="fas fa-eye"></i>
+              </span>
             </button>
 
             <!-- Templates panel -->
@@ -157,14 +172,6 @@
                 <p>No templates yet. Save your first template after generating a prompt.</p>
               </div>
             </div>
-          </div>
-
-          <!-- Convert button -->
-          <div class="step-footer">
-            <button id="convertBtn" class="btn-primary btn-full">
-              <i class="fas fa-wand-magic-sparkles"></i>
-              Enhance Prompt
-            </button>
           </div>
         </section>
 
@@ -260,96 +267,95 @@
           </div>
         </section>
 
-       <!-- STEP 3 – LAUNCH -->
-<section class="step-card">
-  <div class="step-header">
-    <div class="step-pill">3</div>
-    <div class="step-header-main">
-      <div>
-        <h2>Launch</h2>
-        <!-- UPDATED: Changed text and added the same hint class -->
-        <div class="launch-hint" style="margin-top: 8px;">
-          <i class="fas fa-info-circle"></i>
-          Choose your AI tool - Prompt is copied automatically when you click a tool
-        </div>
-      </div>
-    </div>
-  </div>
+        <!-- STEP 3 – LAUNCH -->
+        <section class="step-card">
+          <div class="step-header">
+            <div class="step-pill">3</div>
+            <div class="step-header-main">
+              <div>
+                <h2>Launch</h2>
+                <!-- UPDATED TEXT - Same design as second card -->
+                <div class="launch-hint" style="margin-top: 8px;">
+                  <i class="fas fa-info-circle"></i>
+                  Choose your AI tool - Prompt is copied automatically when you click a tool
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <div class="launch-list">
-    <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
-      <div class="launch-icon">
-        <i class="fa-brands fa-openai"></i>
-      </div>
-      <div class="launch-text">
-        <span class="launch-name">ChatGPT</span>
-        <span class="launch-sub">chat.openai.com</span>
-      </div>
-    </button>
+          <div class="launch-list">
+            <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
+              <div class="launch-icon">
+                <i class="fa-brands fa-openai"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">ChatGPT</span>
+                <span class="launch-sub">chat.openai.com</span>
+              </div>
+            </button>
 
-    <button class="launch-btn launch-claude" id="claudeBtn" disabled>
-      <div class="launch-icon">
-        <i class="fas fa-robot"></i>
-      </div>
-      <div class="launch-text">
-        <span class="launch-name">Claude</span>
-        <span class="launch-sub">claude.ai</span>
-      </div>
-    </button>
+            <button class="launch-btn launch-claude" id="claudeBtn" disabled>
+              <div class="launch-icon">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">Claude</span>
+                <span class="launch-sub">claude.ai</span>
+              </div>
+            </button>
 
-    <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
-      <div class="launch-icon">
-        <i class="fa-brands fa-google"></i>
-      </div>
-      <div class="launch-text">
-        <span class="launch-name">Gemini</span>
-        <span class="launch-sub">gemini.google.com</span>
-      </div>
-    </button>
+            <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
+              <div class="launch-icon">
+                <i class="fa-brands fa-google"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">Gemini</span>
+                <span class="launch-sub">gemini.google.com</span>
+              </div>
+            </button>
 
-    <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
-      <div class="launch-icon">
-        <i class="fas fa-compass"></i>
-      </div>
-      <div class="launch-text">
-        <span class="launch-name">Perplexity</span>
-        <span class="launch-sub">perplexity.ai</span>
-      </div>
-    </button>
+            <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
+              <div class="launch-icon">
+                <i class="fas fa-compass"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">Perplexity</span>
+                <span class="launch-sub">perplexity.ai</span>
+              </div>
+            </button>
 
-    <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
-      <div class="launch-icon">
-        <i class="fas fa-brain"></i>
-      </div>
-      <div class="launch-text">
-        <span class="launch-name">DeepSeek</span>
-        <span class="launch-sub">chat.deepseek.com</span>
-      </div>
-    </button>
+            <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
+              <div class="launch-icon">
+                <i class="fas fa-brain"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">DeepSeek</span>
+                <span class="launch-sub">chat.deepseek.com</span>
+              </div>
+            </button>
 
-    <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
-      <div class="launch-icon">
-        <i class="fa-brands fa-microsoft"></i>
-      </div>
-      <div class="launch-text">
-        <span class="launch-name">Copilot</span>
-        <span class="launch-sub">copilot.microsoft.com</span>
-      </div>
-    </button>
+            <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
+              <div class="launch-icon">
+                <i class="fa-brands fa-microsoft"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">Copilot</span>
+                <span class="launch-sub">copilot.microsoft.com</span>
+              </div>
+            </button>
 
-    <button class="launch-btn launch-grok" id="grokBtn" disabled>
-      <div class="launch-icon">
-        <i class="fas fa-bolt"></i>
+            <button class="launch-btn launch-grok" id="grokBtn" disabled>
+              <div class="launch-icon">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">Grok</span>
+                <span class="launch-sub">x.ai</span>
+              </div>
+            </button>
+          </div>
+        </section>
       </div>
-      <div class="launch-text">
-        <span class="launch-name">Grok</span>
-        <span class="launch-sub">x.ai</span>
-      </div>
-    </button>
-  </div>
-
-  <!-- BOTTOM HINT REMOVED COMPLETELY -->
-</section>
     </main>
 
     <!-- FOOTER -->
