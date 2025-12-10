@@ -22,25 +22,17 @@
   
 <body>
   <div class="page">
-    <!-- HERO / HEADER -->
+    <!-- HERO / HEADER - UPDATED: Compact with CSS logo -->
     <header class="hero">
       <div class="hero-top">
         <div class="hero-brand">
-          <!-- Logo -->
+          <!-- New CSS Logo - UPDATED -->
           <div class="hero-logo">
-            <img src="assets/IconLogo.ico" alt="PromptCraft Logo" />
+            <div class="logo-text">PromptCraft</div>
           </div>
 
-          <!-- Title + Tagline - UPDATED: Same line -->
+          <!-- Title - UPDATED: More compact -->
           <div class="hero-title-block">
-            <div class="brand-row">
-              <div class="brand-name">PromptCraft</div>
-              <div class="brand-tagline-pill" style="margin-left: 16px; display: inline-flex;">
-                <span class="brand-tagline-label">AI APP</span>
-                <span class="brand-tagline-text">Powered by RUPS</span>
-              </div>
-            </div>
-
             <h1 class="hero-title">
               Master the Art of <span>Prompt Engineering</span>
             </h1>
@@ -102,7 +94,7 @@
             </span>
           </div>
 
-          <!-- Requirement textarea with voice + clear buttons -->
+          <!-- Requirement textarea with clear (left) + voice (right) buttons -->
           <div class="field-block">
             <div class="textarea-wrapper">
               <textarea
@@ -111,11 +103,13 @@
                 placeholder='Type your requirement here. Example: "Write a professional email to my manager about project updates."'
               ></textarea>
               <div class="textarea-buttons">
+                <!-- Clear button on LEFT -->
+                <button class="clear-input-btn" id="clearInputBtn" title="Clear text">
+                  <i class="fas fa-broom"></i>
+                </button>
+                <!-- Voice button on RIGHT -->
                 <button class="voice-input-btn" id="voiceInputBtn" title="Voice Input">
                   <i class="fas fa-microphone"></i>
-                </button>
-                <button class="clear-input-btn" id="clearInputBtn" title="Clear text">
-                  <i class="fas fa-times"></i>
                 </button>
               </div>
             </div>
@@ -358,12 +352,14 @@
       </div>
     </main>
 
-    <!-- FOOTER -->
+    <!-- FOOTER - UPDATED: Added AI APP Powered by RUPS -->
     <footer class="footer">
       <div class="footer-left">
         <span><i class="fas fa-brain"></i>Uses structured, role-based prompt patterns</span>
         <span class="dot">•</span>
         <span>v3.1</span>
+        <span class="dot">•</span>
+        <span>AI APP Powered by RUPS</span>
       </div>
       <div class="footer-right">
         <span id="usageCount"><i class="fas fa-bolt"></i>0 prompts generated</span>
