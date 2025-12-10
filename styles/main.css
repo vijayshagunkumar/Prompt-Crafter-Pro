@@ -1687,43 +1687,37 @@ select {
 }
 
 /* ===========================================
-   CHIP LAYOUT FIX - Keep all chips in one line
+   CARD LAYOUT OPTIMIZATION - Fix chip overflow
    =========================================== */
 
+/* Increase width of first card slightly */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.9fr; /* Adjusted: 1st card largest, 3rd smallest */
+  gap: 24px;
+}
+
+/* Ensure chips stay in one line */
 .chip-row {
   display: flex;
-  flex-wrap: nowrap; /* Changed from wrap to nowrap */
+  flex-wrap: nowrap;
   gap: 10px;
   margin-bottom: 16px;
-  overflow-x: auto; /* Allow horizontal scrolling if needed */
-  padding-bottom: 4px; /* Space for scrollbar */
-}
-
-/* Hide scrollbar but keep functionality */
-.chip-row::-webkit-scrollbar {
-  height: 4px;
-}
-
-.chip-row::-webkit-scrollbar-track {
-  background: rgba(255, 94, 0, 0.1);
-  border-radius: 2px;
-}
-
-.chip-row::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 2px;
+  justify-content: space-between; /* Evenly distribute chips */
 }
 
 .chip {
-  flex-shrink: 0; /* Prevent chips from shrinking */
+  flex: 1; /* Make chips equal width */
+  min-width: 0; /* Allow them to shrink if needed */
   border-radius: 4px;
   border: 1px solid var(--border-subtle);
   background: rgba(255, 94, 0, 0.1);
-  padding: 8px 16px;
-  font-size: 14px;
-  display: inline-flex;
+  padding: 8px 12px; /* Slightly smaller padding */
+  font-size: 13px; /* Slightly smaller font */
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center; /* Center content */
+  gap: 6px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1731,28 +1725,76 @@ select {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: 'Courier New', monospace;
-  min-width: fit-content; /* Ensure chip doesn't collapse */
+  text-align: center;
 }
 
-/* Mobile responsiveness for chips */
-@media (max-width: 768px) {
+.chip i {
+  font-size: 12px; /* Slightly smaller icons */
+}
+
+/* Adjust third card content to fit better */
+.step-card:nth-child(3) .launch-list {
+  gap: 10px; /* Reduce gap between launch buttons */
+}
+
+.step-card:nth-child(3) .launch-btn {
+  padding: 10px 14px; /* Slightly smaller padding */
+}
+
+.step-card:nth-child(3) .launch-icon {
+  width: 32px; /* Slightly smaller icons */
+  height: 32px;
+  font-size: 14px;
+}
+
+.step-card:nth-child(3) .launch-name {
+  font-size: 13px;
+}
+
+.step-card:nth-child(3) .launch-sub {
+  font-size: 11px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1024px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr); /* Back to 2 columns */
+  }
+  
   .chip-row {
-    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   .chip {
-    padding: 6px 12px;
+    flex: 0 0 calc(50% - 5px); /* 2 chips per row */
+    min-width: auto;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: 1fr; /* Single column */
+  }
+  
+  .chip {
+    flex: 0 0 100%; /* Full width on mobile */
+  }
+}
+
+/* Very small screens - compress chips further */
+@media (max-width: 480px) {
+  .chip {
+    padding: 6px 8px;
     font-size: 12px;
   }
-}
-
-@media (max-width: 480px) {
-  .chip-row {
-    justify-content: flex-start;
+  
+  .chip i {
+    font-size: 11px;
   }
   
-  .chip {
-    padding: 6px 10px;
-    font-size: 11px;
+  .step-card:nth-child(3) .launch-btn {
+    padding: 8px 12px;
   }
 }
