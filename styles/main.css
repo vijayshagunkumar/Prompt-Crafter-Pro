@@ -1978,32 +1978,3 @@ textarea::placeholder {
     padding: 8px 12px;
   }
 }
-
-/* ===========================================
-   FIX: Align TEMPLATE button to LEFT side
-   =========================================== */
-
-.template-section {
-  text-align: left !important;
-  display: block !important;
-}
-
-.template-toggle {
-  margin-left: 0 !important;
-  margin-right: auto !important;
-  text-align: left !important;
-  justify-content: flex-start !important;
-  width: auto !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-/* If there's a parent container forcing center alignment */
-.step-card .template-section,
-.step-footer + .template-section,
-.step-card > div:last-child {
-  display: flex !important;
-  justify-content: flex-start !important;
-  align-items: flex-start !important;
-  width: 100% !important;
-}
