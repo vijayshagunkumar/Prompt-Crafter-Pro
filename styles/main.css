@@ -1728,3 +1728,18 @@ textarea::placeholder {
     resize: both !important;
     overflow: auto !important;
 }
+
+/* Make textarea resizable - FIX OVERLAY BLOCKING */
+.textarea-buttons {
+    pointer-events: none !important;
+}
+.textarea-buttons * {
+    pointer-events: auto !important;
+}
+
+/* Allow full manual resizing for both textareas */
+.textarea-idea,
+.output-textarea {
+    resize: both !important;
+    overflow: auto !important;
+}
