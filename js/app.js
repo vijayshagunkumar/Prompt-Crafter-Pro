@@ -27,6 +27,14 @@ let historyItems = [];
 let lastClearedText = "";
 let isUndoState = false;
 
+// NEW: Textarea sizing state
+let textareaSizes = {
+  requirement: { height: 140 },
+  output: { height: 200 }
+};
+let isInputExpanded = false;
+let isOutputExpanded = false;
+
 // Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
@@ -283,6 +291,259 @@ function initializeApp() {
   if (req) req.focus();
 
   setLaunchButtonsEnabled(false);
+  
+  // NEW: Initialize textarea sizing
+  initializeTextareaSizing();
+}
+
+// ===========================================
+// TEXTAREA RESIZING AND EXPAND FUNCTIONS
+// ===========================================
+
+// Initialize textarea sizing
+function initializeTextareaSizing() {
+  // Load saved sizes from localStorage
+  const savedSizes = localStorage.getItem('textareaSizes');
+  if (savedSizes) {
+    textareaSizes = JSON.parse(savedSizes);
+    
+    // Apply saved heights
+    const requirementEl = document.getElementById('requirement');
+    const outputEl = document.getElementById('output');
+    
+    if (requirementEl && textareaSizes.requirement.height) {
+      requirementEl.style.height = `${textareaSizes.requirement.height}px`;
+      updateSizeInfo('inputSizeInfo', textareaSizes.requirement.height);
+    }
+    
+    if (outputEl && textareaSizes.output.height) {
+      outputEl.style.height = `${textareaSizes.output.height}px`;
+      updateSizeInfo('outputSizeInfo', textareaSizes.output.height);
+    }
+  }
+  
+  // Setup resize observers
+  setupResizeObservers();
+  
+  // Setup expand/collapse buttons
+  setupExpandButtons();
+}
+
+// Setup resize observers to detect size changes
+function setupResizeObservers() {
+  const requirementEl = document.getElementById('requirement');
+  const outputEl = document.getElementById('output');
+  
+  if (!requirementEl || !outputEl) return;
+  
+  // Use ResizeObserver to detect size changes
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const height = entry.contentRect.height;
+      const textareaId = entry.target.id;
+      
+      // Update size info display
+      if (textareaId === 'requirement') {
+        textareaSizes.requirement.height = height;
+        updateSizeInfo('inputSizeInfo', height);
+      } else if (textareaId === 'output') {
+        textareaSizes.output.height = height;
+        updateSizeInfo('outputSizeInfo', height);
+      }
+      
+      // Save sizes with debounce
+      debounce(saveTextareaSizes, 500);
+      
+      // Add visual feedback
+      entry.target.classList.add('size-changing');
+      setTimeout(() => {
+        entry.target.classList.remove('size-changing');
+      }, 300);
+    }
+  });
+  
+  resizeObserver.observe(requirementEl);
+  resizeObserver.observe(outputEl);
+  
+  // Also track manual drag events
+  requirementEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
+  outputEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
+}
+
+// Update size info display
+function updateSizeInfo(elementId, height) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  
+  const lines = Math.floor(height / 20); // Approximate lines
+  element.textContent = `${Math.round(height)}px • ~${lines} lines`;
+  element.style.display = 'block';
+}
+
+// Save sizes to localStorage
+function saveTextareaSizes() {
+  localStorage.setItem('textareaSizes', JSON.stringify(textareaSizes));
+}
+
+// Setup expand/collapse buttons
+function setupExpandButtons() {
+  const expandInputBtn = document.getElementById('expandInputBtn');
+  const expandOutputBtn = document.getElementById('expandOutputBtn');
+  const expandOverlay = document.getElementById('expandOverlay');
+  
+  if (!expandInputBtn || !expandOutputBtn || !expandOverlay) return;
+  
+  // Input expand/collapse
+  expandInputBtn.addEventListener('click', () => {
+    const textarea = document.getElementById('requirement');
+    if (!textarea) return;
+    
+    if (isInputExpanded) {
+      // Collapse
+      textarea.classList.remove('textarea-expanded');
+      expandInputBtn.classList.remove('expanded');
+      expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandInputBtn.title = 'Expand';
+      expandOverlay.style.display = 'none';
+      isInputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.requirement.height) {
+        textarea.style.height = `${textareaSizes.requirement.height}px`;
+      }
+    } else {
+      // Expand
+      // Save current height before expanding
+      const currentHeight = textarea.offsetHeight;
+      if (currentHeight > 140) {
+        textareaSizes.requirement.height = currentHeight;
+      }
+      
+      textarea.classList.add('textarea-expanded');
+      expandInputBtn.classList.add('expanded');
+      expandInputBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+      expandInputBtn.title = 'Collapse';
+      expandOverlay.style.display = 'block';
+      isInputExpanded = true;
+      
+      // Focus the textarea when expanded
+      textarea.focus();
+      
+      // Scroll to cursor position
+      textarea.scrollTop = textarea.scrollHeight;
+    }
+  });
+  
+  // Output expand/collapse
+  expandOutputBtn.addEventListener('click', () => {
+    const textarea = document.getElementById('output');
+    if (!textarea) return;
+    
+    if (isOutputExpanded) {
+      // Collapse
+      textarea.classList.remove('textarea-expanded');
+      expandOutputBtn.classList.remove('expanded');
+      expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandOutputBtn.title = 'Expand';
+      expandOverlay.style.display = 'none';
+      isOutputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.output.height) {
+        textarea.style.height = `${textareaSizes.output.height}px`;
+      }
+    } else {
+      // Expand
+      // Save current height before expanding
+      const currentHeight = textarea.offsetHeight;
+      if (currentHeight > 200) {
+        textareaSizes.output.height = currentHeight;
+      }
+      
+      textarea.classList.add('textarea-expanded');
+      expandOutputBtn.classList.add('expanded');
+      expandOutputBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+      expandOutputBtn.title = 'Collapse';
+      expandOverlay.style.display = 'block';
+      isOutputExpanded = true;
+    }
+  });
+  
+  // Close expanded mode when clicking overlay
+  expandOverlay.addEventListener('click', () => {
+    const inputTextarea = document.getElementById('requirement');
+    const outputTextarea = document.getElementById('output');
+    
+    if (isInputExpanded && inputTextarea) {
+      inputTextarea.classList.remove('textarea-expanded');
+      expandInputBtn.classList.remove('expanded');
+      expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandInputBtn.title = 'Expand';
+      isInputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.requirement.height) {
+        inputTextarea.style.height = `${textareaSizes.requirement.height}px`;
+      }
+    }
+    
+    if (isOutputExpanded && outputTextarea) {
+      outputTextarea.classList.remove('textarea-expanded');
+      expandOutputBtn.classList.remove('expanded');
+      expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandOutputBtn.title = 'Expand';
+      isOutputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.output.height) {
+        outputTextarea.style.height = `${textareaSizes.output.height}px`;
+      }
+    }
+    
+    expandOverlay.style.display = 'none';
+  });
+  
+  // Close expanded mode with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const expandOverlay = document.getElementById('expandOverlay');
+      if (expandOverlay) expandOverlay.click();
+    }
+  });
+}
+
+// Utility: Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Reset textarea sizes to default
+function resetTextareaSizes() {
+  const requirementEl = document.getElementById('requirement');
+  const outputEl = document.getElementById('output');
+  
+  if (requirementEl) {
+    requirementEl.style.height = '140px';
+    textareaSizes.requirement.height = 140;
+    updateSizeInfo('inputSizeInfo', 140);
+  }
+  
+  if (outputEl) {
+    outputEl.style.height = '200px';
+    textareaSizes.output.height = 200;
+    updateSizeInfo('outputSizeInfo', 200);
+  }
+  
+  saveTextareaSizes();
+  showNotification('Textarea sizes reset to default');
 }
 
 // Settings
@@ -329,6 +590,13 @@ function saveSettings() {
 
 function clearAllData() {
   localStorage.clear();
+  
+  // Reset textarea sizes in memory
+  textareaSizes = {
+    requirement: { height: 140 },
+    output: { height: 200 }
+  };
+  
   showNotification("All data cleared. Reloading...");
   setTimeout(() => {
     window.location.reload();
@@ -644,6 +912,9 @@ function setupEventListeners() {
       clearAllData();
     }
   });
+
+  // NEW: Reset textarea sizes button
+  document.getElementById("resetSizesBtn")?.addEventListener("click", resetTextareaSizes);
 
   // Auto-convert delay slider
   const delaySlider = document.getElementById("autoConvertDelay");
@@ -1262,11 +1533,14 @@ function openAITool(name, url) {
 
 // Notification
 function showNotification(message) {
-  const notification = document.createElement("div");
-  notification.className = "notification";
-  notification.textContent = message;
-  document.body.appendChild(notification);
-
+  const notification = document.getElementById("notification");
+  if (!notification) return;
+  
+  const textEl = document.getElementById("notificationText");
+  if (textEl) textEl.textContent = message;
+  
+  notification.style.display = "flex";
+  
   setTimeout(() => {
     notification.classList.add("show");
   }, 10);
@@ -1274,7 +1548,7 @@ function showNotification(message) {
   setTimeout(() => {
     notification.classList.remove("show");
     setTimeout(() => {
-      document.body.removeChild(notification);
+      notification.style.display = "none";
     }, 300);
   }, 3000);
 }
@@ -1285,3 +1559,4 @@ window.exportPrompt = exportPrompt;
 window.openAITool = openAITool;
 window.saveSettings = saveSettings;
 window.clearAllData = clearAllData;
+window.resetTextareaSizes = resetTextareaSizes;
