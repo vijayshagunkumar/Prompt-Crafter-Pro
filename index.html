@@ -260,99 +260,96 @@
           </div>
         </section>
 
-        <!-- STEP 3 – LAUNCH -->
-        <section class="step-card">
-          <div class="step-header">
-            <div class="step-pill">3</div>
-            <div class="step-header-main">
-              <div>
-                <h2>Launch</h2>
-                <p class="step-subtitle">
-                  Choose your AI tool. Your prompt will be copied automatically.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="launch-list">
-            <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
-              <div class="launch-icon">
-                <i class="fa-brands fa-openai"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">ChatGPT</span>
-                <span class="launch-sub">chat.openai.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-claude" id="claudeBtn" disabled>
-              <div class="launch-icon">
-                <i class="fas fa-robot"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">Claude</span>
-                <span class="launch-sub">claude.ai</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
-              <div class="launch-icon">
-                <i class="fa-brands fa-google"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">Gemini</span>
-                <span class="launch-sub">gemini.google.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
-              <div class="launch-icon">
-                <i class="fas fa-compass"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">Perplexity</span>
-                <span class="launch-sub">perplexity.ai</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
-              <div class="launch-icon">
-                <i class="fas fa-brain"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">DeepSeek</span>
-                <span class="launch-sub">chat.deepseek.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
-              <div class="launch-icon">
-                <i class="fa-brands fa-microsoft"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">Copilot</span>
-                <span class="launch-sub">copilot.microsoft.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-grok" id="grokBtn" disabled>
-              <div class="launch-icon">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <div class="launch-text">
-                <span class="launch-name">Grok</span>
-                <span class="launch-sub">x.ai</span>
-              </div>
-            </button>
-          </div>
-
-          <!-- Hint -->
-          <div class="launch-hint" id="launchHint">
-            <i class="fas fa-info-circle"></i>
-            Prompt is copied automatically when you click a tool.
-          </div>
-        </section>
+       <!-- STEP 3 – LAUNCH -->
+<section class="step-card">
+  <div class="step-header">
+    <div class="step-pill">3</div>
+    <div class="step-header-main">
+      <div>
+        <h2>Launch</h2>
+        <!-- UPDATED: Changed text and added the same hint class -->
+        <div class="launch-hint" style="margin-top: 8px;">
+          <i class="fas fa-info-circle"></i>
+          Choose your AI tool - Prompt is copied automatically when you click a tool
+        </div>
       </div>
+    </div>
+  </div>
+
+  <div class="launch-list">
+    <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
+      <div class="launch-icon">
+        <i class="fa-brands fa-openai"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">ChatGPT</span>
+        <span class="launch-sub">chat.openai.com</span>
+      </div>
+    </button>
+
+    <button class="launch-btn launch-claude" id="claudeBtn" disabled>
+      <div class="launch-icon">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">Claude</span>
+        <span class="launch-sub">claude.ai</span>
+      </div>
+    </button>
+
+    <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
+      <div class="launch-icon">
+        <i class="fa-brands fa-google"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">Gemini</span>
+        <span class="launch-sub">gemini.google.com</span>
+      </div>
+    </button>
+
+    <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
+      <div class="launch-icon">
+        <i class="fas fa-compass"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">Perplexity</span>
+        <span class="launch-sub">perplexity.ai</span>
+      </div>
+    </button>
+
+    <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
+      <div class="launch-icon">
+        <i class="fas fa-brain"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">DeepSeek</span>
+        <span class="launch-sub">chat.deepseek.com</span>
+      </div>
+    </button>
+
+    <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
+      <div class="launch-icon">
+        <i class="fa-brands fa-microsoft"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">Copilot</span>
+        <span class="launch-sub">copilot.microsoft.com</span>
+      </div>
+    </button>
+
+    <button class="launch-btn launch-grok" id="grokBtn" disabled>
+      <div class="launch-icon">
+        <i class="fas fa-bolt"></i>
+      </div>
+      <div class="launch-text">
+        <span class="launch-name">Grok</span>
+        <span class="launch-sub">x.ai</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- BOTTOM HINT REMOVED COMPLETELY -->
+</section>
     </main>
 
     <!-- FOOTER -->
