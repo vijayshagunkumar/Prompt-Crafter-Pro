@@ -23,6 +23,10 @@ let editingTemplateId = null;
 let templates = [];
 let historyItems = [];
 
+// NEW: Clear/Undo button state
+let lastClearedText = "";
+let isUndoState = false;
+
 // Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
@@ -733,26 +737,115 @@ function setupEventListeners() {
 
   // Template listeners
   setupTemplateListeners();
+  
+  // NEW: Clear/Undo button functionality
+  setupClearUndoButton();
 }
 
-// Template listeners
-function setupTemplateListeners() {
-  document.getElementById("toggleTemplatesBtn").addEventListener("click", () => {
-    const panel = document.getElementById("templatesPanel");
-    const btn = document.getElementById("toggleTemplatesBtn");
-    const stateSpan = btn.querySelector(".template-toggle-state");
-
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      if (stateSpan) stateSpan.textContent = "Hide";
-      loadCategories();
-      loadTemplatesToUI();
+// NEW: Clear/Undo button functionality
+function setupClearUndoButton() {
+  const clearBtn = document.getElementById("clearInputBtn");
+  const requirementEl = document.getElementById("requirement");
+  
+  if (!clearBtn || !requirementEl) return;
+  
+  clearBtn.addEventListener("click", function() {
+    const icon = this.querySelector("i");
+    
+    if (!isUndoState) {
+      // First click: CLEAR text
+      if (requirementEl.value.trim()) {
+        lastClearedText = requirementEl.value;
+        requirementEl.value = "";
+        requirementEl.focus();
+        
+        // Change button to UNDO state
+        isUndoState = true;
+        clearBtn.classList.add("undo-state");
+        clearBtn.title = "Undo clear";
+        icon.className = "fas fa-undo";
+        
+        // Update stats and state
+        updateStats("");
+        isConverted = false;
+        document.getElementById("convertBtn").disabled = true;
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+        
+        // Clear timers
+        clearAutoConvertTimer();
+        
+        showNotification("Text cleared. Click undo to restore.");
+      }
     } else {
-      panel.style.display = "none";
-      if (stateSpan) stateSpan.textContent = "Show";
+      // Second click: UNDO (restore text)
+      requirementEl.value = lastClearedText;
+      requirementEl.focus();
+      
+      // Change button back to CLEAR state
+      isUndoState = false;
+      clearBtn.classList.remove("undo-state");
+      clearBtn.title = "Clear text";
+      icon.className = "fas fa-broom";
+      
+      // Update stats and state
+      updateStats(lastClearedText);
+      document.getElementById("convertBtn").disabled = !lastClearedText.trim();
+      
+      // Reset if there's text
+      if (lastClearedText.trim()) {
+        isConverted = false;
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+        
+        // Reset auto-convert timer if enabled
+        if (autoConvertEnabled) {
+          resetAutoConvertTimer();
+        }
+      }
+      
+      showNotification("Text restored");
+      lastClearedText = "";
     }
   });
+  
+  // Reset undo state when user starts typing
+  requirementEl.addEventListener("input", function() {
+    if (isUndoState) {
+      const clearBtn = document.getElementById("clearInputBtn");
+      const icon = clearBtn.querySelector("i");
+      
+      isUndoState = false;
+      clearBtn.classList.remove("undo-state");
+      clearBtn.title = "Clear text";
+      icon.className = "fas fa-broom";
+      lastClearedText = "";
+    }
+  });
+}
 
+// Template listeners - UPDATED with eye icon toggle
+function setupTemplateListeners() {
+  document.getElementById("toggleTemplatesBtn").addEventListener("click", function() {
+    const panel = document.getElementById("templatesPanel");
+    const eyeIcon = this.querySelector(".template-toggle-eye i");
+    
+    if (panel.style.display === "none") {
+      panel.style.display = "block";
+      if (eyeIcon) {
+        eyeIcon.className = "fas fa-eye-slash"; // Change to closed eye
+      }
+    } else {
+      panel.style.display = "none";
+      if (eyeIcon) {
+        eyeIcon.className = "fas fa-eye"; // Change to open eye
+      }
+    }
+    
+    loadCategories();
+    loadTemplatesToUI();
+  });
+  
   document
     .getElementById("templateSearch")
     .addEventListener("input", function () {
@@ -1106,17 +1199,7 @@ async function openAITool(platform, url) {
   const copied = await copyToClipboard();
   if (!copied) return;
 
-  const hint = document.getElementById("launchHint");
-  if (hint) {
-    hint.textContent =
-      "Prompt is copied automatically when you click a tool.";
-    hint.classList.add("launch-hint-active");
-    setTimeout(() => {
-      hint.classList.remove("launch-hint-active");
-    }, 4500);
-  }
-
-  showNotification(`Opening ${platform}...`);
+  showNotification(`Prompt copied! Opening ${platform}...`);
 
   try {
     window.open(url, "_blank");
