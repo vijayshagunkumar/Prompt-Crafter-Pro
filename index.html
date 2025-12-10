@@ -15,6 +15,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="styles/variables.css">
+  <link rel="stylesheet" href="styles/themes.css">
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <!-- Scan Line Effect -->
@@ -102,6 +103,18 @@
                 class="textarea-idea"
                 placeholder='Type your requirement here. Example: "Write a professional email to my manager about project updates."'
               ></textarea>
+              
+              <!-- Add expand button for input -->
+              <button class="expand-btn" id="expandInputBtn" title="Expand/Collapse">
+                <i class="fas fa-expand-alt"></i>
+              </button>
+              
+              <!-- Add size info display -->
+              <div class="size-info" id="inputSizeInfo"></div>
+              
+              <!-- Add resize indicator -->
+              <div class="resize-indicator">Drag to resize</div>
+              
               <div class="textarea-buttons">
                 <!-- Clear button on LEFT -->
                 <button class="clear-input-btn" id="clearInputBtn" title="Clear text">
@@ -225,6 +238,18 @@
                 readonly
                 placeholder="Your optimized prompt will appear here."
               ></textarea>
+              
+              <!-- Add expand button for output -->
+              <button class="expand-btn" id="expandOutputBtn" title="Expand/Collapse">
+                <i class="fas fa-expand-alt"></i>
+              </button>
+              
+              <!-- Add size info display -->
+              <div class="size-info" id="outputSizeInfo"></div>
+              
+              <!-- Add resize indicator -->
+              <div class="resize-indicator">Drag to resize</div>
+              
               <button class="voice-output-btn" id="voiceOutputBtn" title="Read Aloud" style="display:none;">
                 <i class="fas fa-volume-up"></i>
               </button>
@@ -414,6 +439,9 @@
         </div>
 
         <div class="modal-actions">
+          <button class="btn-ghost-small" id="resetSizesBtn">
+            <i class="fas fa-arrows-alt-v"></i> Reset Textarea Sizes
+          </button>
           <button class="btn-ghost-small danger" id="clearDataBtn">
             <i class="fas fa-trash"></i> Clear all data
           </button>
@@ -483,8 +511,12 @@
     <span id="notificationText">Copied to clipboard!</span>
   </div>
 
+  <!-- EXPAND OVERLAY -->
+  <div class="expand-overlay" id="expandOverlay"></div>
+
   <!-- SCRIPT -->
-  <script src="js/app.js"></script>
+  <script src="js/theme.js"></script>
   <script src="js/voice.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
