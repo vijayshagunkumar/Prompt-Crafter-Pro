@@ -1714,3 +1714,10 @@ textarea::placeholder {
     padding: 8px 12px;
   }
 }
+
+/* Allow full manual resizing for user textareas */
+.requirement-input textarea,
+#optimizedPromptTextarea {
+    resize: both !important;
+    overflow: auto;
+}
