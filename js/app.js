@@ -16,35 +16,26 @@ let autoConvertDelay = 60;
 let usageCount = 0;
 let lastConvertedText = "";
 let isConverted = false;
-let autoConvertTimer;
-let autoConvertCountdown = 60;
-let countdownInterval;
+let autoConvertTimer = null;
+let autoConvertCountdown = autoConvertDelay;
+let countdownInterval = null;
 let editingTemplateId = null;
 let templates = [];
 let historyItems = [];
 
-// NEW: Clear/Undo button state
-let lastClearedText = "";
-let isUndoState = false;
-
-// NEW: Textarea sizing state
-let textareaSizes = {
+// Textarea sizing state
+const textareaSizes = {
   requirement: { height: 140 },
-  output: { height: 200 }
+  output: { height: 180 }
 };
-let isInputExpanded = false;
-let isOutputExpanded = false;
 
 // Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
   coding:        { name: "Coding",        icon: "fa-code",     color: "#10b981" },
   writing:       { name: "Writing",       icon: "fa-pen",      color: "#8b5cf6" },
-  analysis:      { name: "Analysis",      icon: "fa-chart-bar",color: "#f59e0b" },
-  business:      { name: "Business",      icon: "fa-briefcase",color: "#ef4444" },
-  creative:      { name: "Creative",      icon: "fa-palette",  color: "#ec4899" },
-  education:     { name: "Education",     icon: "fa-graduation-cap", color: "#06b6d4" },
-  other:         { name: "Other",         icon: "fa-th",       color: "#6b7280" }
+  analysis:      { name: "Analysis",      icon: "fa-chart-line",  color: "#f97316" },
+  other:         { name: "Other",         icon: "fa-sparkles", color: "#e5e7eb" }
 };
 
 // Default templates
@@ -60,75 +51,60 @@ You are an expert business communicator skilled in writing professional emails.
 # Objective
 Write a professional email about [TOPIC] to [RECIPIENT]
 
-# Context
-- Recipient: [DESCRIBE RECIPIENT]
-- Relationship: [DESCRIBE RELATIONSHIP]
-- Purpose: [EMAIL PURPOSE]
-
 # Instructions
-1. Use professional but friendly tone
-2. Start with appropriate greeting
-3. State purpose clearly in first paragraph
-4. Provide necessary details
-5. Include clear call to action
-6. End with professional closing
+1. Use a clear subject line
+2. Start with an appropriate greeting
+3. Explain the purpose of the email clearly
+4. Use a polite and professional tone
+5. Keep paragraphs short and focused
+6. End with a clear call-to-action or next steps
+7. Include a professional closing and signature
+
+# Output Format
+- Subject line
+- Email body in paragraph format
 
 # Notes
-- Keep it concise (150-200 words)
-- Use proper email formatting
-- Include subject line
-- Check for tone appropriateness`,
-    example: "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
-    usageCount: 5,
-    createdAt: Date.now() - 86400000,
-    isDefault: true
+- Avoid jargon unless necessary
+- Use simple, easy-to-understand English`
+  },
+  {
+    id: "2",
+    name: "Product Requirement",
+    description: "Structure product ideas into clear requirements",
+    category: "analysis",
+    content: `# Role
+You are a senior product manager.
+
+# Objective
+Turn the user's idea into a clear, structured product requirement.
+
+# Instructions
+1. Identify the user persona
+2. Define the core problem being solved
+3. Describe the proposed solution
+4. List key features and requirements
+5. Outline success metrics
+6. Mention dependencies and risks
+
+# Output Format
+- Persona
+- Problem Statement
+- Solution Overview
+- Key Requirements (bulleted)
+- Success Metrics
+- Risks & Dependencies
+
+# Notes
+- Use crisp, business-friendly language
+- Keep it skimmable for stakeholders`
   }
 ];
 
-// Preset templates
+// PRESETS: How the final structured prompt is shaped
 const PRESETS = {
-  default: (role, requirement) =>
-    `# Role
-You are an ${role} who will directly perform the user's task.
-
-# Objective
-${requirement}
-
-# Context
-(Add relevant background information or constraints here, if needed.)
-
-# Instructions
-1. Perform the task described in the Objective.
-2. Focus on delivering the final result (email, analysis, code, etc.).
-3. Do **not** talk about prompts, prompt generation, or rewriting instructions.
-4. Do **not** rewrite or summarize the task itself.
-5. Return the completed output in one response.
-
-# Notes
-- Use a clear, professional tone.
-- Structure the answer with headings or bullet points when helpful.
-- Include examples only if they improve clarity.`,
-
-  claude: (role, requirement) =>
-    `# Role
-You are an ${role}.
-
-# Objective
-Perform the following task and return the final result:
-
-${requirement}
-
-# Instructions
-- Do not explain your process unless explicitly asked.
-- Do not rephrase or restate the Objective.
-- Respond only with the completed result, not with a description of the task.
-
-# Notes
-Keep the answer clear and well-structured.`,
-
-  chatgpt: (role, requirement) =>
-    `# Role
-You are an ${role}.
+  default: (role, requirement) => `# Role
+${role}
 
 # Objective
 Carry out the following task for the user and return the finished output:
@@ -136,1079 +112,117 @@ Carry out the following task for the user and return the finished output:
 ${requirement}
 
 # Instructions
-- Start directly with the answer.
-- Do not include meta-commentary or a restatement of the request.
-- Do not talk about prompts or instructions.
-- Output only the final result.
+- Focus on delivering the final result (answer, email, code, etc.).
+- Do not talk about prompts, prompt generation, or rewriting instructions.
+- Do not restate or summarize the user's request.
+- Return only the completed output.
 
 # Notes
 Maintain professional quality and clarity in your response.`,
 
-  detailed: (role, requirement) =>
-    `# Role
-You are an ${role}.
+  communication: (role, requirement) => `# Role
+You are a highly skilled communication specialist.
 
 # Objective
-Execute the following task end-to-end and provide the final output:
+Turn the user's request into a clear, effective piece of communication:
 
 ${requirement}
 
-# Context
-- Add any important background, constraints, or assumptions here if needed.
-
 # Instructions
-1. Analyze the task carefully.
-2. Break the solution into clear, logical sections where useful.
-3. Ensure correctness, structure, and readability.
-4. Do **not** generate instructions or "prompts" for another AI.
-5. Do **not** rewrite or summarize the task; just solve it.
+- Use a tone that matches the context (professional, friendly, or neutral as appropriate).
+- Structure the message with a clear beginning, middle, and end.
+- Avoid jargon and keep the language simple and understandable.
+- Do NOT mention that you are rewriting or optimizing a prompt.
+- Deliver the communication piece ready to send.
+
+# Output Format
+Return only the final message ready to send.
 
 # Notes
-- Use headings, bullet points, or numbered lists as appropriate.
-- Include examples or explanations only if they help the user apply the result.`
+Keep it concise, specific, and audience-appropriate.`,
+
+  coding: (role, requirement) => `# Role
+You are an expert software developer.
+
+# Objective
+Fulfill the following coding-related task:
+
+${requirement}
+
+# Instructions
+- If code is required, provide complete, working code with comments where helpful.
+- Explain reasoning briefly if it helps understanding, but focus on the final code.
+- Do NOT talk about prompts, prompt generation, or rewriting instructions.
+- Optimize for readability and maintainability.
+
+# Output Format
+- Code (in appropriate language)
+- Brief explanation only if essential.
+
+# Notes
+Follow best practices and handle edge cases when possible.`,
+
+  writing: (role, requirement) => `# Role
+You are a skilled writer and editor.
+
+# Objective
+Create a polished written piece based on this request:
+
+${requirement}
+
+# Instructions
+- Choose the appropriate style (formal, informal, storytelling, etc.) based on context.
+- Make the writing clear, engaging, and cohesive.
+- Do NOT mention prompts, prompt generation, or rewriting instructions.
+- Fix any grammar, clarity, or structure issues implicitly.
+
+# Output Format
+Return only the final written content.
+
+# Notes
+Aim for readability and impact.`,
+
+  analysis: (role, requirement) => `# Role
+You are an analytical expert with strong critical thinking skills.
+
+# Objective
+Respond to this analytical or comparative request:
+
+${requirement}
+
+# Instructions
+- Break down complex ideas into clear, structured sections.
+- Highlight key insights, pros/cons, and trade-offs where relevant.
+- Do NOT mention prompts, prompt generation, or rewriting instructions.
+- Keep explanations rigorous but understandable.
+
+# Output Format
+Use headings or bullet points if helpful, but focus on clarity of reasoning.
+
+# Notes
+Support statements with logical arguments or examples where possible.`
 };
 
-// Helper: classify role + best preset + label
-function getRoleAndPreset(text) {
-  const lower = (text || "").toLowerCase();
-  let role = "expert assistant";
-  let preset = "default";
-  let label = "General";
-
-  if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
-    role = "expert email writer";
-    preset = "default";
-    label = "Email";
-  } else if (
-    /code|program|script|develop|software|function|python|javascript|typescript|java|c#|sql|api|bug fix|refactor/i.test(
-      lower
-    )
-  ) {
-    role = "expert developer";
-    preset = "chatgpt";
-    label = "Code";
-  } else if (
-    /analyze|analysis|market|research|evaluate|assessment|review|trend|report|insight|metrics/i.test(
-      lower
-    )
-  ) {
-    role = "expert analyst";
-    preset = "detailed";
-    label = "Analysis";
-  } else if (
-    /blog|article|story|linkedin post|caption|copywriting|content/i.test(lower)
-  ) {
-    role = "expert content writer";
-    preset = "default";
-    label = "Writing";
-  } else if (
-    /workout|exercise|fitness|gym|diet|meal plan|training plan/i.test(lower)
-  ) {
-    role = "expert fitness trainer";
-    preset = "detailed";
-    label = "Workout";
-  } else if (
-    /strategy|business plan|roadmap|pitch deck|proposal|go[- ]to[- ]market|g2m/i.test(
-      lower
-    )
-  ) {
-    role = "expert business consultant";
-    preset = "detailed";
-    label = "Business";
-  } else if (
-    /teach|explain|lesson|tutorial|guide|training material|curriculum/i.test(
-      lower
-    )
-  ) {
-    role = "expert educator";
-    preset = "detailed";
-    label = "Education";
-  }
-
-  return { role, preset, label };
-}
-
-// Helper: set preset + sync UI & badge
-function setCurrentPreset(presetId) {
-  if (!PRESETS[presetId]) return;
-  currentPreset = presetId;
-  document.querySelectorAll(".preset-option").forEach((o) => {
-    o.classList.toggle("active", o.dataset.preset === presetId);
-  });
-  updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
-}
-
-function updatePresetInfo(taskLabel, presetId, source) {
-  const el = document.getElementById("presetInfo");
-  if (!el) return;
-
-  const presetNames = {
-    default: "Standard",
-    chatgpt: "ChatGPT",
-    claude: "Claude",
-    detailed: "Detailed"
-  };
-
-  const nicePreset = presetNames[presetId] || presetId;
-  const srcLabel = source === "manual" ? "manual" : "auto";
-
-  el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel})`;
-}
-
-// Enable / disable all AI launch buttons
-function setLaunchButtonsEnabled(enabled) {
-  const ids = [
-    "chatgptBtn",
-    "claudeBtn",
-    "geminiBtn",
-    "perplexityBtn",
-    "deepseekBtn",
-    "copilotBtn",
-    "grokBtn"
-  ];
-  ids.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = !enabled;
-  });
-}
-
-// Initialize Application
-document.addEventListener("DOMContentLoaded", () => {
-  initializeApp();
-});
-
-function initializeApp() {
-  loadSettings();
-  loadTemplates();
-  loadUsageCount();
-  loadHistory();
-  setupEventListeners();
-  initializeUI();
-  setCurrentPreset(currentPreset);
-  updatePresetInfo("General", currentPreset, "auto");
-
-  const req = document.getElementById("requirement");
-  if (req) req.focus();
-
-  setLaunchButtonsEnabled(false);
-  
-  // NEW: Initialize textarea sizing
-  initializeTextareaSizing();
-}
-
-// ===========================================
-// TEXTAREA RESIZING AND EXPAND FUNCTIONS
-// ===========================================
-
-// Initialize textarea sizing
-function initializeTextareaSizing() {
-  // Load saved sizes from localStorage
-  const savedSizes = localStorage.getItem('textareaSizes');
-  if (savedSizes) {
-    textareaSizes = JSON.parse(savedSizes);
-    
-    // Apply saved heights
-    const requirementEl = document.getElementById('requirement');
-    const outputEl = document.getElementById('output');
-    
-    if (requirementEl && textareaSizes.requirement.height) {
-      requirementEl.style.height = `${textareaSizes.requirement.height}px`;
-      updateSizeInfo('inputSizeInfo', textareaSizes.requirement.height);
-    }
-    
-    if (outputEl && textareaSizes.output.height) {
-      outputEl.style.height = `${textareaSizes.output.height}px`;
-      updateSizeInfo('outputSizeInfo', textareaSizes.output.height);
-    }
-  }
-  
-  // Setup resize observers
-  setupResizeObservers();
-  
-  // Setup expand/collapse buttons
-  setupExpandButtons();
-}
-
-// Setup resize observers to detect size changes
-function setupResizeObservers() {
-  const requirementEl = document.getElementById('requirement');
-  const outputEl = document.getElementById('output');
-  
-  if (!requirementEl || !outputEl) return;
-  
-  // Use ResizeObserver to detect size changes
-  const resizeObserver = new ResizeObserver((entries) => {
-    for (const entry of entries) {
-      const height = entry.contentRect.height;
-      const textareaId = entry.target.id;
-      
-      // Update size info display
-      if (textareaId === 'requirement') {
-        textareaSizes.requirement.height = height;
-        updateSizeInfo('inputSizeInfo', height);
-      } else if (textareaId === 'output') {
-        textareaSizes.output.height = height;
-        updateSizeInfo('outputSizeInfo', height);
-      }
-      
-      // Save sizes with debounce
-      debounce(saveTextareaSizes, 500);
-      
-      // Add visual feedback
-      entry.target.classList.add('size-changing');
-      setTimeout(() => {
-        entry.target.classList.remove('size-changing');
-      }, 300);
-    }
-  });
-  
-  resizeObserver.observe(requirementEl);
-  resizeObserver.observe(outputEl);
-  
-  // Also track manual drag events
-  requirementEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
-  outputEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
-}
-
-// Update size info display
-
-
-// Save sizes to localStorage
-function saveTextareaSizes() {
-  localStorage.setItem('textareaSizes', JSON.stringify(textareaSizes));
-}
-
-// Setup expand/collapse buttons
-function setupExpandButtons() {
-  const expandInputBtn = document.getElementById('expandInputBtn');
-  const expandOutputBtn = document.getElementById('expandOutputBtn');
-  const expandOverlay = document.getElementById('expandOverlay');
-  
-  if (!expandInputBtn || !expandOutputBtn || !expandOverlay) return;
-  
-  // Input expand/collapse
-  expandInputBtn.addEventListener('click', () => {
-    const textarea = document.getElementById('requirement');
-    if (!textarea) return;
-    
-    if (isInputExpanded) {
-      // Collapse
-      textarea.classList.remove('textarea-expanded');
-      expandInputBtn.classList.remove('expanded');
-      expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
-      expandInputBtn.title = 'Expand';
-      expandOverlay.style.display = 'none';
-      isInputExpanded = false;
-      
-      // Restore saved height
-      if (textareaSizes.requirement.height) {
-        textarea.style.height = `${textareaSizes.requirement.height}px`;
-      }
-    } else {
-      // Expand
-      // Save current height before expanding
-      const currentHeight = textarea.offsetHeight;
-      if (currentHeight > 140) {
-        textareaSizes.requirement.height = currentHeight;
-      }
-      
-      textarea.classList.add('textarea-expanded');
-      expandInputBtn.classList.add('expanded');
-      expandInputBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
-      expandInputBtn.title = 'Collapse';
-      expandOverlay.style.display = 'block';
-      isInputExpanded = true;
-      
-      // Focus the textarea when expanded
-      textarea.focus();
-      
-      // Scroll to cursor position
-      textarea.scrollTop = textarea.scrollHeight;
-    }
-  });
-  
-  // Output expand/collapse
-  expandOutputBtn.addEventListener('click', () => {
-    const textarea = document.getElementById('output');
-    if (!textarea) return;
-    
-    if (isOutputExpanded) {
-      // Collapse
-      textarea.classList.remove('textarea-expanded');
-      expandOutputBtn.classList.remove('expanded');
-      expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
-      expandOutputBtn.title = 'Expand';
-      expandOverlay.style.display = 'none';
-      isOutputExpanded = false;
-      
-      // Restore saved height
-      if (textareaSizes.output.height) {
-        textarea.style.height = `${textareaSizes.output.height}px`;
-      }
-    } else {
-      // Expand
-      // Save current height before expanding
-      const currentHeight = textarea.offsetHeight;
-      if (currentHeight > 200) {
-        textareaSizes.output.height = currentHeight;
-      }
-      
-      textarea.classList.add('textarea-expanded');
-      expandOutputBtn.classList.add('expanded');
-      expandOutputBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
-      expandOutputBtn.title = 'Collapse';
-      expandOverlay.style.display = 'block';
-      isOutputExpanded = true;
-    }
-  });
-  
-  // Close expanded mode when clicking overlay
-  expandOverlay.addEventListener('click', () => {
-    const inputTextarea = document.getElementById('requirement');
-    const outputTextarea = document.getElementById('output');
-    
-    if (isInputExpanded && inputTextarea) {
-      inputTextarea.classList.remove('textarea-expanded');
-      expandInputBtn.classList.remove('expanded');
-      expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
-      expandInputBtn.title = 'Expand';
-      isInputExpanded = false;
-      
-      // Restore saved height
-      if (textareaSizes.requirement.height) {
-        inputTextarea.style.height = `${textareaSizes.requirement.height}px`;
-      }
-    }
-    
-    if (isOutputExpanded && outputTextarea) {
-      outputTextarea.classList.remove('textarea-expanded');
-      expandOutputBtn.classList.remove('expanded');
-      expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
-      expandOutputBtn.title = 'Expand';
-      isOutputExpanded = false;
-      
-      // Restore saved height
-      if (textareaSizes.output.height) {
-        outputTextarea.style.height = `${textareaSizes.output.height}px`;
-      }
-    }
-    
-    expandOverlay.style.display = 'none';
-  });
-  
-  // Close expanded mode with Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      const expandOverlay = document.getElementById('expandOverlay');
-      if (expandOverlay) expandOverlay.click();
-    }
-  });
-}
-
-// Utility: Debounce function
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// Reset textarea sizes to default
-function resetTextareaSizes() {
-  const requirementEl = document.getElementById('requirement');
-  const outputEl = document.getElementById('output');
-  
-  if (requirementEl) {
-    requirementEl.style.height = '140px';
-    textareaSizes.requirement.height = 140;
-    updateSizeInfo('inputSizeInfo', 140);
-  }
-  
-  if (outputEl) {
-    outputEl.style.height = '200px';
-    textareaSizes.output.height = 200;
-    updateSizeInfo('outputSizeInfo', 200);
-  }
-  
-  saveTextareaSizes();
-  showNotification('Textarea sizes reset to default');
-}
-
-// Settings
-function loadSettings() {
-  const apiKey = localStorage.getItem("OPENAI_API_KEY") || "";
-  const delay = localStorage.getItem("autoConvertDelay") || "60";
-  const voiceLang = localStorage.getItem("voiceLanguage") || "en-US";
-
-  const apiKeyInput = document.getElementById("apiKeyInput");
-  const autoDelayInput = document.getElementById("autoConvertDelay");
-  const voiceLanguageSelect = document.getElementById("voiceLanguage");
-  const delayValue = document.getElementById("delayValue");
-
-  if (apiKeyInput) apiKeyInput.value = apiKey;
-  if (autoDelayInput) autoDelayInput.value = delay;
-  if (voiceLanguageSelect) voiceLanguageSelect.value = voiceLang;
-  if (delayValue) delayValue.textContent = `Current: ${delay} seconds`;
-
-  autoConvertDelay = parseInt(delay, 10);
-  autoConvertCountdown = autoConvertDelay;
-}
-
-function saveSettings() {
-  const apiKey = (document.getElementById("apiKeyInput").value || "").trim();
-  const delay = document.getElementById("autoConvertDelay").value || "60";
-  const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
-
-  localStorage.setItem("OPENAI_API_KEY", apiKey);
-  localStorage.setItem("autoConvertDelay", delay);
-  localStorage.setItem("voiceLanguage", voiceLang);
-
-  autoConvertDelay = parseInt(delay, 10);
-  autoConvertCountdown = autoConvertDelay;
-
-  // Update voice language if voice features are available
-  if (window.voiceFeatures && window.voiceFeatures.updateVoiceLanguage) {
-    window.voiceFeatures.updateVoiceLanguage(voiceLang);
-  }
-
-  showNotification("Settings saved");
-  const modal = document.getElementById("settingsModal");
-  if (modal) modal.style.display = "none";
-}
-
-function clearAllData() {
-  localStorage.clear();
-  
-  // Reset textarea sizes in memory
-  textareaSizes = {
-    requirement: { height: 140 },
-    output: { height: 200 }
-  };
-  
-  showNotification("All data cleared. Reloading...");
-  setTimeout(() => {
-    window.location.reload();
-  }, 800);
-}
-
-// Templates
-function loadTemplates() {
-  const savedTemplates = localStorage.getItem("promptTemplates");
-  if (savedTemplates) {
-    templates = JSON.parse(savedTemplates);
-  } else {
-    templates = DEFAULT_TEMPLATES;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-  }
-}
-
-function loadCategories() {
-  const container = document.getElementById("templateCategories");
-  if (!container) return;
-  container.innerHTML = "";
-
-  const allCat = document.createElement("div");
-  allCat.className = "template-category active";
-  allCat.dataset.category = "all";
-  allCat.innerHTML = '<i class="fas fa-th"></i> All';
-  allCat.addEventListener("click", () => filterTemplatesUI("all"));
-  container.appendChild(allCat);
-
-  Object.entries(TEMPLATE_CATEGORIES).forEach(([key, value]) => {
-    const div = document.createElement("div");
-    div.className = "template-category";
-    div.dataset.category = key;
-    div.innerHTML = `<i class="fas ${value.icon}"></i> ${value.name}`;
-    div.addEventListener("click", () => filterTemplatesUI(key));
-    container.appendChild(div);
-  });
-}
-
-function loadTemplatesToUI(category = "all", searchQuery = "") {
-  const grid = document.getElementById("templatesGrid");
-  const empty = document.getElementById("emptyTemplates");
-  if (!grid || !empty) return;
-
-  grid.innerHTML = "";
-
-  let filtered = templates.slice();
-
-  if (category !== "all") {
-    filtered = filtered.filter((t) => t.category === category);
-  }
-
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        (t.description || "").toLowerCase().includes(q)
-    );
-  }
-
-  if (!filtered.length) {
-    empty.style.display = "block";
-    return;
-  }
-
-  empty.style.display = "none";
-
-  filtered.forEach((template) => {
-    const card = document.createElement("div");
-    card.className = "template-card";
-
-    const categoryMeta = TEMPLATE_CATEGORIES[template.category] || {
-      name: "Other",
-      color: "#6b7280"
-    };
-
-    card.innerHTML = `
-      <div class="template-card-header">
-        <div class="template-card-title">${template.name}</div>
-        <span class="template-card-meta" style="color:${categoryMeta.color}">
-          <i class="fas ${categoryMeta.icon}"></i> ${categoryMeta.name}
-        </span>
-      </div>
-      <div class="template-card-meta">
-        Used ${template.usageCount || 0} times
-      </div>
-      <div class="template-card-description">
-        ${(template.description || "").substring(0, 120)}${
-          (template.description || "").length > 120 ? "..." : ""
-        }
-      </div>
-      <div class="template-actions">
-        <button class="btn-ghost-small" style="border-color:${categoryMeta.color};color:${categoryMeta.color}" onclick="useTemplate('${template.id}')">
-          <i class="fas fa-play"></i> Use
-        </button>
-        <button class="btn-ghost-small" onclick="editTemplate('${template.id}')">
-          <i class="fas fa-edit"></i>
-        </button>
-        ${
-          !template.isDefault
-            ? `<button class="btn-ghost-small danger" onclick="deleteTemplate('${template.id}')">
-                 <i class="fas fa-trash"></i>
-               </button>`
-            : ""
-        }
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-function filterTemplatesUI(category, searchQuery = "") {
-  document.querySelectorAll(".template-category").forEach((cat) => {
-    cat.classList.remove("active");
-  });
-  const active = document.querySelector(
-    `.template-category[data-category="${category}"]`
-  );
-  if (active) active.classList.add("active");
-
-  const currentSearch =
-    searchQuery || document.getElementById("templateSearch").value;
-  loadTemplatesToUI(category, currentSearch);
-}
-
-function saveTemplate() {
-  const name = document.getElementById("templateName").value.trim();
-  const description = document
-    .getElementById("templateDescription")
-    .value.trim();
-  const content = document.getElementById("templateContent").value.trim();
-  const category = document.getElementById("templateCategory").value;
-  const example = document.getElementById("templateExample").value.trim();
-
-  if (!name || !content) {
-    showNotification("Name and content are required");
-    return;
-  }
-
-  if (editingTemplateId) {
-    const index = templates.findIndex((t) => t.id === editingTemplateId);
-    if (index !== -1) {
-      templates[index] = {
-        ...templates[index],
-        name,
-        description,
-        content,
-        category,
-        example
-      };
-    }
-  } else {
-    const newTemplate = {
-      id: Date.now().toString(),
-      name,
-      description,
-      content,
-      category,
-      example,
-      usageCount: 0,
-      createdAt: Date.now(),
-      isDefault: false
-    };
-    templates.push(newTemplate);
-  }
-
-  localStorage.setItem("promptTemplates", JSON.stringify(templates));
-  loadTemplatesToUI();
-  const modal = document.getElementById("templateModal");
-  if (modal) modal.style.display = "none";
-  showNotification(`Template "${name}" saved`);
-}
-
-function editTemplate(id) {
-  const template = templates.find((t) => t.id === id);
-  if (!template) return;
-
-  editingTemplateId = id;
-  document.getElementById("templateName").value = template.name;
-  document.getElementById("templateDescription").value =
-    template.description || "";
-  document.getElementById("templateContent").value = template.content || "";
-  document.getElementById("templateCategory").value =
-    template.category || "other";
-  document.getElementById("templateExample").value = template.example || "";
-
-  const modal = document.getElementById("templateModal");
-  if (modal) modal.style.display = "flex";
-}
-
-function deleteTemplate(id) {
-  const template = templates.find((t) => t.id === id);
-  if (!template) return;
-
-  if (!confirm(`Delete template "${template.name}"?`)) return;
-
-  templates = templates.filter((t) => t.id !== id);
-  localStorage.setItem("promptTemplates", JSON.stringify(templates));
-  loadTemplatesToUI();
-  showNotification("Template deleted");
-}
-
-// History
-function loadHistory() {
-  const saved = localStorage.getItem("promptHistory");
-  if (saved) {
-    historyItems = JSON.parse(saved);
-  } else {
-    historyItems = [];
-  }
-  renderHistory();
-}
-
-function saveToHistory(requirement, prompt) {
-  const item = {
-    id: Date.now(),
-    requirement,
-    prompt,
-    createdAt: new Date().toISOString()
-  };
-  historyItems.unshift(item);
-  historyItems = historyItems.slice(0, 20);
-  localStorage.setItem("promptHistory", JSON.stringify(historyItems));
-  renderHistory();
-}
-
-function renderHistory() {
-  const list = document.getElementById("historyList");
-  if (!list) return;
-  list.innerHTML = "";
-
-  if (!historyItems.length) {
-    list.innerHTML = `<div class="history-item-meta">No history yet.</div>`;
-    return;
-  }
-
-  historyItems.forEach((item) => {
-    const div = document.createElement("div");
-    div.className = "history-item";
-    div.innerHTML = `
-      <div class="history-item-title">${(item.requirement || "").slice(
-        0,
-        80
-      )}${item.requirement.length > 80 ? "..." : ""}</div>
-      <div class="history-item-meta">${new Date(
-        item.createdAt
-      ).toLocaleString()}</div>
-    `;
-    div.addEventListener("click", () => {
-      document.getElementById("requirement").value = item.requirement;
-      document.getElementById("output").value = item.prompt;
-      updateStats(item.prompt);
-      updateOutputStats();
-      isConverted = true;
-      lastConvertedText = item.requirement;
-      document.getElementById("convertedBadge").style.display = "inline-flex";
-      setLaunchButtonsEnabled(true);
-      showNotification("Loaded from history");
-      
-      // Update preset based on the loaded requirement
-      const { role, preset: autoPreset, label } = getRoleAndPreset(item.requirement);
-      lastRole = role;
-      lastTaskLabel = label;
-      
-      if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-        lastPresetSource = "auto";
-        setCurrentPreset(autoPreset);
-      }
-      updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
-    });
-    list.appendChild(div);
-  });
-}
-
-function clearHistory() {
-  if (!confirm("Clear all history?")) return;
-  historyItems = [];
-  localStorage.removeItem("promptHistory");
-  renderHistory();
-  showNotification("History cleared");
-}
-
-// UI Init
-function initializeUI() {
-  const templatesPanel = document.getElementById("templatesPanel");
-  if (templatesPanel) templatesPanel.style.display = "none";
-  const historyPanel = document.getElementById("historyPanel");
-  if (historyPanel) historyPanel.style.display = "none";
-}
-
-// Event Listeners
-function setupEventListeners() {
-  // Settings
-  document.getElementById("settingsBtn").addEventListener("click", () => {
-    document.getElementById("settingsModal").style.display = "flex";
-  });
-
-  document.getElementById("closeSettingsBtn").addEventListener("click", () => {
-    document.getElementById("settingsModal").style.display = "none";
-  });
-
-  document
-    .getElementById("saveSettingsBtn")
-    .addEventListener("click", saveSettings);
-
-  document.getElementById("clearDataBtn").addEventListener("click", () => {
-    if (
-      confirm(
-        "Are you sure you want to clear all data? This will delete all templates, history, and settings."
-      )
-    ) {
-      clearAllData();
-    }
-  });
-
-  // NEW: Reset textarea sizes button
-  document.getElementById("resetSizesBtn")?.addEventListener("click", resetTextareaSizes);
-
-  // Auto-convert delay slider
-  const delaySlider = document.getElementById("autoConvertDelay");
-  const delayValue = document.getElementById("delayValue");
-  if (delaySlider && delayValue) {
-    delaySlider.addEventListener("input", () => {
-      delayValue.textContent = `Current: ${delaySlider.value} seconds`;
-      autoConvertDelay = parseInt(delaySlider.value, 10);
-    });
-  }
-
-  // Requirement input
-  const requirementEl = document.getElementById("requirement");
-  requirementEl.addEventListener("input", handleRequirementInput);
-  
-  // NEW: Also listen to keyup to handle voice input completion
-  requirementEl.addEventListener("keyup", handleRequirementInput);
-
-  // Auto-convert toggle
-  document.getElementById("autoConvert").addEventListener("change", (e) => {
-    autoConvertEnabled = e.target.checked;
-    if (!autoConvertEnabled) {
-      clearAutoConvertTimer();
-    } else if (requirementEl.value.trim() && !isConverted) {
-      resetAutoConvertTimer();
-    }
-  });
-
-  // Preset selection
-  document.querySelectorAll(".preset-option").forEach((option) => {
-    option.addEventListener("click", () => {
-      const presetId = option.dataset.preset;
-      userPresetLocked = true;
-      lastPresetSource = "manual";
-      setCurrentPreset(presetId);
-
-      // NEW: Clear output when preset changes
-      if (isConverted) {
-        document.getElementById("output").value = "";
-        isConverted = false;
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-      }
-
-      if (document.getElementById("requirement").value.trim() && isConverted) {
-        isConverted = false;
-        generatePrompt();
-      } else {
-        updatePresetInfo(lastTaskLabel, currentPreset, "manual");
-      }
-    });
-  });
-
-  // Examples
-  document.querySelectorAll(".example-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      requirementEl.value = btn.dataset.example;
-      requirementEl.focus();
-      isConverted = false;
-      document.getElementById("output").value = "";
-      document.getElementById("convertBtn").disabled = false;
-      document.getElementById("convertedBadge").style.display = "none";
-      setLaunchButtonsEnabled(false);
-      
-      // Update stats
-      updateStats(requirementEl.value);
-      
-      // Auto-generate if there's text
-      if (requirementEl.value.trim()) {
-        generatePrompt();
-      }
-    });
-  });
-
-  // Convert button
-  document
-    .getElementById("convertBtn")
-    .addEventListener("click", generatePrompt);
-
-  // AI Tools
-  document
-    .getElementById("chatgptBtn")
-    .addEventListener("click", () =>
-      openAITool("ChatGPT", "https://chat.openai.com/")
-    );
-
-  document.getElementById("claudeBtn").addEventListener("click", () =>
-    openAITool("Claude", "https://claude.ai/new")
-  );
-
-  document.getElementById("geminiBtn").addEventListener("click", () =>
-    openAITool("Gemini", "https://gemini.google.com/app")
-  );
-
-  document.getElementById("perplexityBtn").addEventListener("click", () =>
-    openAITool("Perplexity", "https://www.perplexity.ai/")
-  );
-
-  document.getElementById("deepseekBtn").addEventListener("click", () =>
-    openAITool("DeepSeek", "https://chat.deepseek.com/")
-  );
-
-  document.getElementById("copilotBtn").addEventListener("click", () =>
-    openAITool("Copilot", "https://copilot.microsoft.com/")
-  );
-
-  document.getElementById("grokBtn").addEventListener("click", () =>
-    openAITool("Grok", "https://x.ai/")
-  );
-
-  // Export
-  document.getElementById("exportBtn").addEventListener("click", exportPrompt);
-  
-  // Output textarea change
-  document.getElementById("output").addEventListener("input", updateOutputStats);
-
-  // History toggle + clear
-  document
-    .getElementById("toggleHistoryBtn")
-    .addEventListener("click", () => {
-      const panel = document.getElementById("historyPanel");
-      if (!panel) return;
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
-    });
-
-  document
-    .getElementById("clearHistoryBtn")
-    .addEventListener("click", clearHistory);
-
-  // Template listeners
-  setupTemplateListeners();
-  
-  // NEW: Clear/Undo button functionality
-  setupClearUndoButton();
-}
-
-// NEW: Clear/Undo button functionality
-function setupClearUndoButton() {
-  const clearBtn = document.getElementById("clearInputBtn");
-  const requirementEl = document.getElementById("requirement");
-  
-  if (!clearBtn || !requirementEl) return;
-  
-  clearBtn.addEventListener("click", function() {
-    const icon = this.querySelector("i");
-    
-    if (!isUndoState) {
-      // First click: CLEAR text
-      if (requirementEl.value.trim()) {
-        lastClearedText = requirementEl.value;
-        requirementEl.value = "";
-        requirementEl.focus();
-        
-        // NEW: Clear output when clearing requirement
-        document.getElementById("output").value = "";
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-        // =================
-        
-        // Change button to UNDO state
-        isUndoState = true;
-        clearBtn.classList.add("undo-state");
-        clearBtn.title = "Undo clear";
-        icon.className = "fas fa-undo";
-        
-        // Update stats and state
-        updateStats("");
-        isConverted = false;
-        document.getElementById("convertBtn").disabled = true;
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-        
-        // Clear timers
-        clearAutoConvertTimer();
-        
-        showNotification("Text cleared. Click undo to restore.");
-      }
-    } else {
-      // Second click: UNDO (restore text)
-      requirementEl.value = lastClearedText;
-      requirementEl.focus();
-      
-      // Change button back to CLEAR state
-      isUndoState = false;
-      clearBtn.classList.remove("undo-state");
-      clearBtn.title = "Clear text";
-      icon.className = "fas fa-broom";
-      
-      // Update stats and state
-      updateStats(lastClearedText);
-      document.getElementById("convertBtn").disabled = !lastClearedText.trim();
-      
-      // Reset if there's text
-      if (lastClearedText.trim()) {
-        isConverted = false;
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-        
-        // Reset auto-convert timer if enabled
-        if (autoConvertEnabled) {
-          resetAutoConvertTimer();
-        }
-      }
-      
-      showNotification("Text restored");
-      lastClearedText = "";
-    }
-  });
-  
-  // Reset undo state when user starts typing
-  requirementEl.addEventListener("input", function() {
-    if (isUndoState) {
-      const clearBtn = document.getElementById("clearInputBtn");
-      const icon = clearBtn.querySelector("i");
-      
-      isUndoState = false;
-      clearBtn.classList.remove("undo-state");
-      clearBtn.title = "Clear text";
-      icon.className = "fas fa-broom";
-      lastClearedText = "";
-    }
-  });
-}
-
-// Template listeners - UPDATED with eye icon toggle
-function setupTemplateListeners() {
-  document.getElementById("toggleTemplatesBtn").addEventListener("click", function() {
-    const panel = document.getElementById("templatesPanel");
-    const eyeIcon = this.querySelector(".template-toggle-eye i");
-    
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      if (eyeIcon) {
-        eyeIcon.className = "fas fa-eye-slash"; // Change to closed eye
-      }
-    } else {
-      panel.style.display = "none";
-      if (eyeIcon) {
-        eyeIcon.className = "fas fa-eye"; // Change to open eye
-      }
-    }
-    
-    loadCategories();
-    loadTemplatesToUI();
-  });
-  
-  document
-    .getElementById("templateSearch")
-    .addEventListener("input", function () {
-      const activeCategory =
-        document.querySelector(".template-category.active")?.dataset.category ||
-        "all";
-      filterTemplatesUI(activeCategory, this.value);
-    });
-
-  document.getElementById("newTemplateBtn").addEventListener("click", () => {
-    editingTemplateId = null;
-    document.getElementById("templateName").value = "";
-    document.getElementById("templateDescription").value = "";
-    document.getElementById("templateContent").value =
-      document.getElementById("output").value || "";
-    document.getElementById("templateCategory").value = "communication";
-    document.getElementById("templateExample").value =
-      document.getElementById("requirement").value || "";
-    document.getElementById("templateModal").style.display = "flex";
-  });
-
-  document
-    .getElementById("saveTemplateBtn")
-    .addEventListener("click", saveTemplate);
-
-  document.getElementById("closeTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
-  });
-
-  document.getElementById("cancelTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
-  });
-}
-
-// Make template functions globally available
-window.clearHistory = clearHistory;
-window.useTemplate = function (id) {
-  const template = templates.find((t) => t.id === id);
-  if (template) {
-    template.usageCount = (template.usageCount || 0) + 1;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-
-    document.getElementById("requirement").value = template.example || "";
-    document.getElementById("output").value = template.content;
-    updateStats(template.content);
-    updateOutputStats();
-    isConverted = true;
-    lastConvertedText = template.example || "";
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-    setLaunchButtonsEnabled(true);
-    showNotification("Template loaded into prompt");
-  }
+// STORAGE KEYS
+const STORAGE_KEYS = {
+  templates: "promptCrafterTemplates",
+  history: "promptCrafterHistory"
 };
-window.editTemplate = editTemplate;
-window.deleteTemplate = deleteTemplate;
+
+// Utility – save and load JSON
+function saveJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    console.error("Error loading JSON from storage", key, e);
+    return fallback;
+  }
+}
 
 // Usage Count
 function loadUsageCount() {
@@ -1221,18 +235,253 @@ function loadUsageCount() {
   ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
 }
 
+// === AUTO-CONTEXT DETECTIVE ===
+
+let lastDetectedContext = null;
+
+// Detect task type, language and key entities from the requirement text
+function detectContextFromText(text) {
+  const raw = text || "";
+  const lower = raw.toLowerCase();
+
+  // Language detection
+  const hasDevanagari = /[\u0900-\u097F]/.test(raw);
+  const hasHindiWords = /\b(banao|kar do|karo|krdo|ladki|ladka|paani ki bottle|tasveer|likh do|email likh|presentation bana)\b/i.test(
+    raw
+  );
+  let language = "english";
+  if (hasDevanagari || hasHindiWords) {
+    language = /[a-zA-Z]/.test(raw) ? "hinglish" : "hindi";
+  }
+
+  // Task type / intent
+  let taskType = "general";
+  if (
+    /cartoon|illustration|image|photo|picture|poster|thumbnail|logo|banner|icon/.test(
+      lower
+    ) ||
+    (hasHindiWords && /banao|draw|sketch/.test(lower))
+  ) {
+    taskType = "image_generation";
+  } else if (/email|mail|subject:|dear sir|dear team/.test(lower)) {
+    taskType = "email";
+  } else if (/code|function|class |api|bug|error|javascript|python|sql/.test(lower)) {
+    taskType = "coding";
+  } else if (
+    /story|poem|script|blog|article|essay|linkedin post|caption/.test(lower)
+  ) {
+    taskType = "writing";
+  } else if (
+    /analy[sz]e|analysis|compare|summarize|summary|explain|review/.test(lower)
+  ) {
+    taskType = "analysis";
+  }
+
+  // Audience
+  let audience = null;
+  if (/manager|lead|boss|stakeholder|vp|director/.test(lower)) {
+    audience = "senior stakeholder";
+  } else if (/team|colleagues|squad|pod/.test(lower)) {
+    audience = "internal team";
+  } else if (/customer|client|user|buyer/.test(lower)) {
+    audience = "customer";
+  }
+
+  // Tone
+  let tone = null;
+  if (/formal|professional|official/.test(lower) || taskType === "email") {
+    tone = "formal";
+  } else if (/friendly|casual|fun/.test(lower)) {
+    tone = "casual";
+  } else if (/romantic|love|heartfelt|emotional/.test(lower)) {
+    tone = "emotional";
+  }
+
+  // Image-specific entities
+  const keyEntities = [];
+  let medium = null;
+  let background = null;
+
+  if (taskType === "image_generation") {
+    if (/cartoon|illustration|drawing/.test(lower)) {
+      medium = "cartoon / illustration";
+    } else if (/photo|photograph|realistic|hdr/.test(lower)) {
+      medium = "photo-realistic";
+    }
+
+    if (/library|bookshelf|book shelf|study room/.test(lower)) {
+      background = "library / bookshelves";
+      keyEntities.push("library background");
+    }
+    if (/bottle|paani ki bottle|water bottle/.test(lower)) {
+      keyEntities.push("water bottle in hand");
+    }
+    if (/girl|female|woman|ladki/.test(lower)) {
+      keyEntities.push("female character");
+    }
+    if (/boy|male|man|ladka/.test(lower)) {
+      keyEntities.push("male character");
+    }
+  }
+
+  const context = {
+    taskType,
+    language,
+    audience,
+    tone,
+    medium,
+    background,
+    keyEntities,
+    originalText: raw
+  };
+
+  lastDetectedContext = context;
+  return context;
+}
+
+// Build an enriched requirement string using the detected context
+function buildContextAwareRequirement(raw, context) {
+  if (!context) return raw;
+
+  const lines = [];
+
+  // Language hint
+  if (context.language === "hindi" || context.language === "hinglish") {
+    lines.push(
+      "The user spoke in Hindi / Hinglish. First fully understand the intent, then write everything in clear, natural English."
+    );
+  }
+
+  if (context.taskType === "image_generation") {
+    lines.push(
+      "Create a rich, detailed prompt for an AI image generator based on the user's description."
+    );
+
+    const summaryParts = [];
+    if (context.medium) summaryParts.push(`style: ${context.medium}`);
+    if (context.background) summaryParts.push(`background: ${context.background}`);
+    if (context.keyEntities && context.keyEntities.length) {
+      summaryParts.push("focus elements: " + context.keyEntities.join(", "));
+    }
+
+    if (summaryParts.length) {
+      lines.push("Key visual context: " + summaryParts.join(" • "));
+    }
+
+    lines.push(
+      "Do not change the core idea, but you may add 2–3 small, natural details to make the scene vivid."
+    );
+  } else if (context.taskType === "email") {
+    lines.push(
+      "Write a clear, concise, high-quality email that directly solves the user's need."
+    );
+    if (context.audience) {
+      lines.push(`Audience: ${context.audience}.`);
+    }
+    if (context.tone) {
+      lines.push(`Tone: ${context.tone}.`);
+    } else {
+      lines.push("Tone: formal but easy to understand.");
+    }
+  }
+
+  const contextNote = lines.length
+    ? "\n\nContext for this task:\n" + lines.join("\n")
+    : "";
+
+  return raw + contextNote;
+}
+
+// Render context chips under the textarea
+function renderContextChips(context) {
+  const row = document.getElementById("contextChipsRow");
+  if (!row) return;
+
+  row.innerHTML = "";
+
+  if (!context || !context.taskType || !context.originalText.trim()) {
+    row.style.display = "none";
+    return;
+  }
+
+  row.style.display = "flex";
+
+  const chips = [];
+
+  const taskLabelMap = {
+    image_generation: "Image / Illustration",
+    email: "Email / Communication",
+    coding: "Code / Dev",
+    writing: "Writing",
+    analysis: "Analysis / Research",
+    general: "General Task"
+  };
+  const iconMap = {
+    image_generation: "fa-image",
+    email: "fa-envelope",
+    coding: "fa-code",
+    writing: "fa-pen",
+    analysis: "fa-chart-line",
+    general: "fa-wand-magic-sparkles"
+  };
+
+  chips.push({
+    icon: iconMap[context.taskType] || "fa-wand-magic-sparkles",
+    label: taskLabelMap[context.taskType] || "Smart Context"
+  });
+
+  if (context.language === "hindi") {
+    chips.push({ icon: "fa-language", label: "Hindi → English" });
+  } else if (context.language === "hinglish") {
+    chips.push({ icon: "fa-language", label: "Hinglish → English" });
+  }
+
+  if (context.audience) {
+    chips.push({ icon: "fa-user-group", label: `Audience: ${context.audience}` });
+  }
+  if (context.tone) {
+    chips.push({ icon: "fa-wave-square", label: `Tone: ${context.tone}` });
+  }
+
+  if (context.medium) {
+    chips.push({ icon: "fa-palette", label: context.medium });
+  }
+  if (context.background) {
+    chips.push({ icon: "fa-mountain-city", label: context.background });
+  }
+
+  (context.keyEntities || []).slice(0, 3).forEach((entity) => {
+    chips.push({ icon: "fa-tag", label: entity });
+  });
+
+  chips.forEach((chip) => {
+    const btn = document.createElement("button");
+    btn.className = "chip context-chip";
+    btn.innerHTML = `<i class="fas ${chip.icon}"></i> ${chip.label}`;
+    row.appendChild(btn);
+  });
+}
+
 // Auto-convert
 function handleRequirementInput() {
   const text = document.getElementById("requirement").value;
-  
-  // NEW: Clear output if user is typing new requirement
+
+  // Auto-Context Detective – update chips as user types
+  try {
+    const ctx = detectContextFromText(text);
+    renderContextChips(ctx);
+  } catch (e) {
+    console.log("Context detection error:", e);
+  }
+
+  // Clear output if user is typing new requirement
   if (isConverted && text !== lastConvertedText) {
     document.getElementById("output").value = "";
     isConverted = false;
     document.getElementById("convertedBadge").style.display = "none";
     setLaunchButtonsEnabled(false);
   }
-  
+
   isConverted = false;
   document.getElementById("convertedBadge").style.display = "none";
   document.getElementById("convertBtn").disabled = !text.trim();
@@ -1251,114 +500,313 @@ function resetAutoConvertTimer() {
   const requirement = document.getElementById("requirement").value.trim();
   if (autoConvertEnabled && requirement && !isConverted) {
     autoConvertCountdown = autoConvertDelay;
-    const timerValue = document.getElementById("timerValue");
-    const timerDisplay = document.getElementById("timerDisplay");
-    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-    if (timerDisplay) timerDisplay.style.display = "inline-flex";
-
-    countdownInterval = setInterval(() => {
-      autoConvertCountdown--;
-      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-
-      if (autoConvertCountdown <= 0) {
-        clearInterval(countdownInterval);
-        if (timerDisplay) timerDisplay.style.display = "none";
-        if (requirement && requirement !== lastConvertedText) {
-          generatePrompt();
-        }
-      }
-    }, 1000);
-
-    autoConvertTimer = setTimeout(() => {
-      const currentRequirement =
-        document.getElementById("requirement").value.trim();
-      if (currentRequirement && currentRequirement !== lastConvertedText) {
-        generatePrompt();
-      }
-    }, autoConvertDelay * 1000);
+    autoConvertTimer = setTimeout(triggerAutoConvert, autoConvertDelay * 1000);
+    countdownInterval = setInterval(updateCountdownDisplay, 1000);
+    document.getElementById("timerDisplay").style.display = "inline-flex";
+    updateCountdownDisplay();
+  } else {
+    document.getElementById("timerDisplay").style.display = "none";
   }
 }
 
 function clearAutoConvertTimer() {
-  clearTimeout(autoConvertTimer);
-  clearInterval(countdownInterval);
-  const timerDisplay = document.getElementById("timerDisplay");
-  if (timerDisplay) timerDisplay.style.display = "none";
+  if (autoConvertTimer) {
+    clearTimeout(autoConvertTimer);
+    autoConvertTimer = null;
+  }
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+  document.getElementById("timerDisplay").style.display = "none";
+}
+
+function triggerAutoConvert() {
+  clearAutoConvertTimer();
+  generatePrompt();
+}
+
+function updateCountdownDisplay() {
+  autoConvertCountdown = Math.max(0, autoConvertCountdown - 1);
+  const timerValueEl = document.getElementById("timerValue");
+  if (timerValueEl) {
+    timerValueEl.textContent = `${autoConvertCountdown}s`;
+  }
+  if (autoConvertCountdown <= 0) {
+    clearAutoConvertTimer();
+  }
 }
 
 // Stats
 function updateStats(text) {
-  const charCount = text.length;
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lineCount = text.split("\n").length;
-
-  // SAFE VERSION - only update if elements exist
-  try {
-    const charEl = document.getElementById("charCount");
-    const wordEl = document.getElementById("wordCount");
-    const lineEl = document.getElementById("lineCount");
-    
-    if (charEl) charEl.textContent = `${charCount} characters`;
-    if (wordEl) wordEl.textContent = `${wordCount} words`;
-    if (lineEl) lineEl.textContent = `${lineCount} lines`;
-  } catch (error) {
-    // Ignore if elements don't exist
-    console.log("Stats elements not found - ignoring");
+  const inputStats = document.getElementById("inputStats");
+  if (inputStats) {
+    inputStats.textContent = `${text.length} chars`;
   }
 }
 
 function updateOutputStats() {
-  const text = document.getElementById("output").value;
-  const charCount = text.length;
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lineCount = text.split("\n").length;
-
-  // SAFE VERSION - only update if elements exist
-  try {
-    const charEl = document.getElementById("outputCharCount");
-    const wordEl = document.getElementById("outputWordCount");
-    const lineEl = document.getElementById("outputLineCount");
-    
-    if (charEl) charEl.textContent = `${charCount} characters`;
-    if (wordEl) wordEl.textContent = `${wordCount} words`;
-    if (lineEl) lineEl.textContent = `${lineCount} lines`;
-  } catch (error) {
-    // Ignore if elements don't exist
-    console.log("Output stats elements not found - ignoring");
+  const outputEl = document.getElementById("output");
+  const outputStats = document.getElementById("outputStats");
+  if (outputStats && outputEl) {
+    outputStats.textContent = `${outputEl.value.length} chars`;
   }
 }
 
-// Clean up output
-function sanitizePrompt(text) {
-  if (!text) return "";
-  let cleaned = text;
+// Role & Preset Suggestion
+function getRoleAndPreset(rawRequirement) {
+  const text = rawRequirement.toLowerCase();
 
-  cleaned = cleaned.replace(/^```[^\n]*\n?/g, "");
-  cleaned = cleaned.replace(/```$/g, "");
+  // Basic domain detection
+  let role = "expert assistant";
+  let preset = "default";
+  let label = "General";
 
-  const forbiddenLineRegex =
-    /(prompt generator|generate a prompt|convert .*requirement .*prompt|rewrite .*prompt|rewrite .*requirement)/i;
+  if (
+    text.includes("email") ||
+    text.includes("mail") ||
+    text.includes("subject:") ||
+    text.includes("dear ") ||
+    text.includes("notice") ||
+    text.includes("letter")
+  ) {
+    role = "expert communication specialist";
+    preset = "communication";
+    label = "Communication";
+  } else if (
+    text.includes("code") ||
+    text.includes("function") ||
+    text.includes("bug") ||
+    text.includes("error") ||
+    text.includes("api") ||
+    text.includes("script") ||
+    text.includes("program")
+  ) {
+    role = "expert software developer";
+    preset = "coding";
+    label = "Coding";
+  } else if (
+    text.includes("story") ||
+    text.includes("blog") ||
+    text.includes("article") ||
+    text.includes("essay") ||
+    text.includes("post") ||
+    text.includes("writeup") ||
+    text.includes("creative")
+  ) {
+    role = "skilled writer";
+    preset = "writing";
+    label = "Writing";
+  } else if (
+    text.includes("analyze") ||
+    text.includes("analysis") ||
+    text.includes("compare") ||
+    text.includes("comparison") ||
+    text.includes("review") ||
+    text.includes("evaluate")
+  ) {
+    role = "analytical expert";
+    preset = "analysis";
+    label = "Analysis";
+  }
 
-  cleaned = cleaned
-    .split("\n")
-    .filter((line) => {
-      const trimmed = line.trim();
-      if (/^```/.test(trimmed)) return false;
-      if (forbiddenLineRegex.test(trimmed)) return false;
-      return true;
-    })
-    .join("\n");
-
-  cleaned = cleaned.replace(/prompt generator/gi, "assistant");
-  cleaned = cleaned.replace(
-    /generate a prompt/gi,
-    "perform the task and return the final answer"
-  );
-
-  return cleaned.trim();
+  return { role, preset, label };
 }
 
-// Generation - FIXED VERSION
+// Notification helper
+function showNotification(message) {
+  // Simple console log + could be extended with a toast later
+  console.log("[PromptCrafter]", message);
+}
+
+// TEMPLATE LIBRARY
+function loadTemplates() {
+  templates = loadJSON(STORAGE_KEYS.templates, DEFAULT_TEMPLATES);
+}
+
+function saveTemplates() {
+  saveJSON(STORAGE_KEYS.templates, templates);
+}
+
+function renderTemplates() {
+  const grid = document.getElementById("templatesGrid");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+
+  templates.forEach((tpl) => {
+    const card = document.createElement("article");
+    card.className = "template-card";
+    card.dataset.id = tpl.id;
+
+    const cat = TEMPLATE_CATEGORIES[tpl.category] || TEMPLATE_CATEGORIES.other;
+
+    card.innerHTML = `
+      <header class="template-card-header">
+        <div class="template-badge" style="border-color: ${cat.color}; color: ${cat.color}">
+          <i class="fas ${cat.icon}"></i>
+          <span>${cat.name}</span>
+        </div>
+        <div class="template-actions">
+          <button class="icon-btn template-edit" title="Edit template">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="icon-btn template-delete" title="Delete template">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </header>
+      <div class="template-card-body">
+        <h4>${tpl.name}</h4>
+        <p>${tpl.description}</p>
+      </div>
+      <footer class="template-card-footer">
+        <button class="ghost-btn template-use">
+          <i class="fas fa-bolt"></i>
+          Use Template
+        </button>
+      </footer>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+function openTemplatesModal() {
+  document.getElementById("templatesModal").classList.add("open");
+}
+
+function closeTemplatesModal() {
+  document.getElementById("templatesModal").classList.remove("open");
+}
+
+function onTemplatesGridClick(e) {
+  const card = e.target.closest(".template-card");
+  if (!card) return;
+
+  const id = card.dataset.id;
+  const tpl = templates.find((t) => t.id === id);
+  if (!tpl) return;
+
+  if (e.target.closest(".template-use")) {
+    // Insert template content into requirement textarea
+    const requirementEl = document.getElementById("requirement");
+    requirementEl.value = tpl.content;
+    handleRequirementInput();
+    closeTemplatesModal();
+  } else if (e.target.closest(".template-edit")) {
+    openTemplateEditor(tpl);
+  } else if (e.target.closest(".template-delete")) {
+    if (confirm(`Delete template "${tpl.name}"?`)) {
+      templates = templates.filter((t) => t.id !== id);
+      saveTemplates();
+      renderTemplates();
+    }
+  }
+}
+
+function openTemplateEditor(tpl) {
+  editingTemplateId = tpl.id;
+
+  const requirementEl = document.getElementById("requirement");
+  requirementEl.value = tpl.content;
+  handleRequirementInput();
+
+  showNotification("Edit the template content in the idea box, then click 'Save as Template' to update.");
+}
+
+// HISTORY
+function loadHistory() {
+  historyItems = loadJSON(STORAGE_KEYS.history, []);
+}
+
+function saveHistory() {
+  saveJSON(STORAGE_KEYS.history, historyItems);
+}
+
+function addHistoryItem(raw, prompt, role, presetLabel) {
+  const item = {
+    id: Date.now().toString(),
+    timestamp: new Date().toISOString(),
+    role,
+    presetLabel,
+    raw,
+    prompt
+  };
+  historyItems.unshift(item);
+  historyItems = historyItems.slice(0, 200);
+  saveHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById("historyList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!historyItems.length) {
+    container.innerHTML = `<p class="helper-text">No history yet. Your converted prompts will appear here.</p>`;
+    return;
+  }
+
+  historyItems.forEach((item) => {
+    const div = document.createElement("article");
+    div.className = "history-item";
+
+    const date = new Date(item.timestamp);
+    const readable = date.toLocaleString();
+
+    div.innerHTML = `
+      <header class="history-item-header">
+        <div>
+          <h4>${item.presetLabel || "Prompt"}</h4>
+          <p class="history-meta">${readable}</p>
+        </div>
+        <button class="icon-btn history-insert" data-id="${item.id}" title="Insert this prompt">
+          <i class="fas fa-arrow-turn-up"></i>
+        </button>
+      </header>
+      <div class="history-item-body">
+        <p class="history-raw"><strong>Idea:</strong> ${item.raw}</p>
+        <pre class="history-prompt">${item.prompt}</pre>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+function openHistoryModal() {
+  document.getElementById("historyModal").classList.add("open");
+}
+
+function closeHistoryModal() {
+  document.getElementById("historyModal").classList.remove("open");
+}
+
+function onHistoryListClick(e) {
+  const btn = e.target.closest(".history-insert");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const item = historyItems.find((h) => h.id === id);
+  if (!item) return;
+
+  const requirementEl = document.getElementById("requirement");
+  requirementEl.value = item.raw;
+  const outputEl = document.getElementById("output");
+  outputEl.value = item.prompt;
+  updateStats(item.raw);
+  updateOutputStats();
+  isConverted = true;
+  lastConvertedText = item.raw;
+  document.getElementById("convertedBadge").style.display = "inline-flex";
+  setLaunchButtonsEnabled(true);
+
+  closeHistoryModal();
+}
+
+// MAIN GENERATION LOGIC
 async function generatePrompt() {
   const requirementEl = document.getElementById("requirement");
   const outputEl = document.getElementById("output");
@@ -1370,23 +818,28 @@ async function generatePrompt() {
     return "";
   }
 
+  // Detect context once at the start
+  const context = detectContextFromText(raw);
+  const requirementWithContext = buildContextAwareRequirement(raw, context);
+  renderContextChips(context);
+
   const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
   lastRole = role;
   lastTaskLabel = label;
 
   if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+    currentPreset = autoPreset;
+    const presetSelect = document.getElementById("presetSelect");
+    if (presetSelect) {
+      presetSelect.value = autoPreset;
+    }
     lastPresetSource = "auto";
-    setCurrentPreset(autoPreset);
   } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
+    lastPresetSource = "manual";
   }
 
-  usageCount++;
-  localStorage.setItem("promptCrafterUsage", usageCount);
+  usageCount += 1;
+  localStorage.setItem("promptCrafterUsage", usageCount.toString());
   document.getElementById(
     "usageCount"
   ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
@@ -1402,7 +855,7 @@ async function generatePrompt() {
 
   try {
     if (!apiKey) {
-      generatedPrompt = localFormatter(raw);
+      generatedPrompt = localFormatter(requirementWithContext, role);
     } else {
       const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
 
@@ -1420,15 +873,23 @@ Important:
 - Do NOT mention prompts, prompt generation, or rewriting instructions in your output.
 `.trim();
 
-      const userMessage = `User requirement: "${raw}"
+      const contextSummary = context
+        ? `
+Detected context:
+- Task type: ${context.taskType}
+- Language: ${context.language}${context.audience ? `\n- Audience: ${context.audience}` : ""}${context.tone ? `\n- Tone: ${context.tone}` : ""}${context.medium ? `\n- Medium: ${context.medium}` : ""}${context.background ? `\n- Background: ${context.background}` : ""}`
+        : "";
 
-Fill the template accordingly in the current preset format ("${currentPreset}") and return only the filled template.`;
+      const userMessage = `User requirement (original): "${raw}"
+${contextSummary}
+
+Use this understanding and fill the template accordingly in the current preset format ("${currentPreset}"). Return only the completed template.`;
 
       const response = await fetch(OPENAI_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + apiKey
+          Authorization: `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           model: OPENAI_MODEL,
@@ -1444,23 +905,23 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
       if (response.ok) {
         const data = await response.json();
         generatedPrompt =
-          data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
+          data.choices?.[0]?.message?.content?.trim() ||
+          localFormatter(requirementWithContext, role);
       } else {
-        generatedPrompt = localFormatter(raw);
+        console.warn("OpenAI API error, using offline formatter");
+        generatedPrompt = localFormatter(requirementWithContext, role);
       }
     }
 
-    generatedPrompt = sanitizePrompt(generatedPrompt);
-
     outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
     updateOutputStats();
-    saveToHistory(raw, generatedPrompt);
 
     isConverted = true;
     lastConvertedText = raw;
     document.getElementById("convertedBadge").style.display = "inline-flex";
     setLaunchButtonsEnabled(true);
+
+    addHistoryItem(raw, generatedPrompt, role, lastTaskLabel);
 
     showNotification("Prompt generated successfully");
 
@@ -1471,7 +932,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
     }
   } catch (error) {
     console.error("Generation error:", error);
-    generatedPrompt = localFormatter(raw);
+    generatedPrompt = localFormatter(requirementWithContext, role);
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
     updateOutputStats();
@@ -1484,44 +945,82 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
   return generatedPrompt;
 }
 
-function localFormatter(raw) {
+function localFormatter(raw, forcedRole) {
   const requirement = raw;
-  const { role } = getRoleAndPreset(requirement);
-  return PRESETS[currentPreset](role, requirement);
+  const roleToUse = forcedRole || getRoleAndPreset(requirement).role;
+  return PRESETS[currentPreset](roleToUse, requirement);
 }
 
 // Export
 function exportPrompt() {
   const outputEl = document.getElementById("output");
-  const prompt = outputEl.value;
-
-  if (!prompt.trim()) {
+  const prompt = outputEl.value.trim();
+  if (!prompt) {
     showNotification("No prompt to export");
     return;
   }
 
-  const blob = new Blob([prompt], { type: "text/plain" });
+  const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
+
   const a = document.createElement("a");
   a.href = url;
-  a.download = `prompt-${new Date().toISOString().slice(0, 10)}.txt`;
-  document.body.appendChild(a);
+  a.download = "prompt.txt";
   a.click();
-  document.body.removeChild(a);
+
   URL.revokeObjectURL(url);
-  showNotification("Prompt exported");
+  showNotification("Prompt exported as prompt.txt");
 }
 
-// AI Tool opener
-function openAITool(name, url) {
+// Copy + Open helper
+function setLaunchButtonsEnabled(enabled) {
+  const cards = document.querySelectorAll(".tool-card");
+  cards.forEach((card) => {
+    if (enabled) {
+      card.classList.remove("tool-card-disabled");
+    } else {
+      card.classList.add("tool-card-disabled");
+    }
+  });
+}
+
+function onToolCardClick(e) {
+  const card = e.currentTarget;
+  const tool = card.dataset.tool;
   const outputEl = document.getElementById("output");
   const prompt = outputEl.value.trim();
-  
+
   if (!prompt) {
-    showNotification("No prompt to copy");
+    showNotification("Generate a prompt first");
     return;
   }
-  
+
+  let url = "";
+  let name = "";
+
+  switch (tool) {
+    case "chatgpt":
+      url = "https://chat.openai.com/";
+      name = "ChatGPT";
+      break;
+    case "claude":
+      url = "https://claude.ai/";
+      name = "Claude";
+      break;
+    case "gemini":
+      url = "https://gemini.google.com/app";
+      name = "Gemini";
+      break;
+    default:
+      url = "";
+      name = "AI tool";
+  }
+
+  if (!url) {
+    showNotification("Tool not configured yet");
+    return;
+  }
+
   // Copy prompt to clipboard
   navigator.clipboard.writeText(prompt)
     .then(() => {
@@ -1531,37 +1030,165 @@ function openAITool(name, url) {
       }, 500);
     })
     .catch(err => {
-      console.error('Failed to copy:', err);
-      showNotification("Failed to copy prompt");
+      console.error("Clipboard error", err);
+      window.open(url, '_blank');
     });
 }
 
-// Notification
-function showNotification(message) {
-  const notification = document.getElementById("notification");
-  if (!notification) return;
-  
-  const textEl = document.getElementById("notificationText");
-  if (textEl) textEl.textContent = message;
-  
-  notification.style.display = "flex";
-  
-  setTimeout(() => {
-    notification.classList.add("show");
-  }, 10);
+// INIT
+function attachEvents() {
+  const requirementEl = document.getElementById("requirement");
+  const outputEl = document.getElementById("output");
+  const convertBtn = document.getElementById("convertBtn");
+  const autoConvertCheckbox = document.getElementById("autoConvert");
+  const presetSelect = document.getElementById("presetSelect");
+  const lockPresetCheckbox = document.getElementById("lockPreset");
+  const clearRequirementBtn = document.getElementById("clearRequirementBtn");
+  const copyOutputBtn = document.getElementById("copyOutputBtn");
+  const exportBtn = document.getElementById("exportBtn");
+  const saveTemplateBtn = document.getElementById("saveTemplateBtn");
+  const openTemplatesBtn = document.getElementById("openTemplatesBtn");
+  const closeTemplatesBtn = document.getElementById("closeTemplatesBtn");
+  const openHistoryBtn = document.getElementById("openHistoryBtn");
+  const closeHistoryBtn = document.getElementById("closeHistoryBtn");
+  const historyList = document.getElementById("historyList");
+  const templatesGrid = document.getElementById("templatesGrid");
+  const aiToolsGrid = document.getElementById("aiToolsGrid");
 
-  setTimeout(() => {
-    notification.classList.remove("show");
-    setTimeout(() => {
-      notification.style.display = "none";
-    }, 300);
-  }, 3000);
+  if (requirementEl) {
+    requirementEl.addEventListener("input", handleRequirementInput);
+  }
+
+  if (convertBtn) {
+    convertBtn.addEventListener("click", generatePrompt);
+  }
+
+  if (autoConvertCheckbox) {
+    autoConvertCheckbox.addEventListener("change", (e) => {
+      autoConvertEnabled = e.target.checked;
+      if (!autoConvertEnabled) {
+        clearAutoConvertTimer();
+      } else {
+        const text = requirementEl.value.trim();
+        if (text && !isConverted) {
+          resetAutoConvertTimer();
+        }
+      }
+    });
+  }
+
+  if (presetSelect) {
+    presetSelect.addEventListener("change", (e) => {
+      currentPreset = e.target.value;
+      userPresetLocked = lockPresetCheckbox?.checked || false;
+      lastPresetSource = "manual";
+    });
+  }
+
+  if (lockPresetCheckbox) {
+    lockPresetCheckbox.addEventListener("change", (e) => {
+      userPresetLocked = e.target.checked;
+    });
+  }
+
+  if (clearRequirementBtn) {
+    clearRequirementBtn.addEventListener("click", () => {
+      requirementEl.value = "";
+      handleRequirementInput();
+    });
+  }
+
+  if (copyOutputBtn) {
+    copyOutputBtn.addEventListener("click", () => {
+      const prompt = outputEl.value.trim();
+      if (!prompt) {
+        showNotification("No prompt to copy");
+        return;
+      }
+      navigator.clipboard.writeText(prompt).then(() => {
+        showNotification("Prompt copied to clipboard");
+      });
+    });
+  }
+
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportPrompt);
+  }
+
+  if (saveTemplateBtn) {
+    saveTemplateBtn.addEventListener("click", () => {
+      const content = requirementEl.value.trim();
+      if (!content) {
+        showNotification("Type something in the idea box to save as a template");
+        return;
+      }
+
+      const name = prompt("Template name:");
+      if (!name) return;
+
+      const description = prompt("Short description (optional):") || "Custom template";
+      const category = "other";
+
+      if (editingTemplateId) {
+        const idx = templates.findIndex((t) => t.id === editingTemplateId);
+        if (idx >= 0) {
+          templates[idx] = { ...templates[idx], name, description, content, category };
+        }
+        editingTemplateId = null;
+      } else {
+        const newTemplate = {
+          id: Date.now().toString(),
+          name,
+          description,
+          category,
+          content
+        };
+        templates.push(newTemplate);
+      }
+
+      saveTemplates();
+      renderTemplates();
+      showNotification("Template saved");
+    });
+  }
+
+  if (openTemplatesBtn) {
+    openTemplatesBtn.addEventListener("click", openTemplatesModal);
+  }
+  if (closeTemplatesBtn) {
+    closeTemplatesBtn.addEventListener("click", closeTemplatesModal);
+  }
+  if (templatesGrid) {
+    templatesGrid.addEventListener("click", onTemplatesGridClick);
+  }
+
+  if (openHistoryBtn) {
+    openHistoryBtn.addEventListener("click", () => {
+      renderHistory();
+      openHistoryModal();
+    });
+  }
+  if (closeHistoryBtn) {
+    closeHistoryBtn.addEventListener("click", closeHistoryModal);
+  }
+  if (historyList) {
+    historyList.addEventListener("click", onHistoryListClick);
+  }
+
+  if (aiToolsGrid) {
+    aiToolsGrid.querySelectorAll(".tool-card").forEach((card) => {
+      card.addEventListener("click", onToolCardClick);
+    });
+  }
 }
 
-// Make functions globally available
-window.generatePrompt = generatePrompt;
-window.exportPrompt = exportPrompt;
-window.openAITool = openAITool;
-window.saveSettings = saveSettings;
-window.clearAllData = clearAllData;
-window.resetTextareaSizes = resetTextareaSizes;
+// INIT
+document.addEventListener("DOMContentLoaded", () => {
+  loadUsageCount();
+  loadTemplates();
+  renderTemplates();
+  loadHistory();
+  attachEvents();
+  updateStats("");
+  updateOutputStats();
+});
