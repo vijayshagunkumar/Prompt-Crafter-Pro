@@ -1,182 +1,136 @@
-// voice.js - Voice Input and Output Features for PromptCraft (FIXED FOR MOBILE)
+// voice.js - Voice Input and Output Features for PromptCraft
 
-// Voice Recognition State
+// -------------------------
+// State
+// -------------------------
 let voiceRecognition = null;
 let isListening = false;
-let voiceLanguage = 'en-US';
-let lastVoiceResult = ''; // NEW: Track last result to prevent duplicates
+let voiceLanguage = "en-US";
+let lastVoiceResult = "";
 
-// Text-to-Speech State
-let voiceSynthesis = window.speechSynthesis;
 let isSpeaking = false;
 let currentUtterance = null;
 
-// Initialize Voice Features
-function initializeVoiceFeatures() {
-  // Load voice language preference
-  const savedLanguage = localStorage.getItem('voiceLanguage') || 'en-US';
-  voiceLanguage = savedLanguage;
-  
-  // Set language dropdown if exists
-  const languageSelect = document.getElementById('voiceLanguage');
-  if (languageSelect) {
-    languageSelect.value = voiceLanguage;
-  }
-  
-  // Check browser support
-  checkVoiceSupport();
-  
-  // Setup voice input
-  setupVoiceInput();
-  
-  // Setup voice output
-  setupVoiceOutput();
+// -------------------------
+// Helpers
+// -------------------------
+function getEl(id) {
+  return document.getElementById(id);
 }
 
-// Check browser support for voice features
-function checkVoiceSupport() {
-  const hasRecognition = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
-  const hasSynthesis = 'speechSynthesis' in window;
-  
-  if (!hasRecognition) {
-    console.warn('Speech Recognition not supported in this browser');
-    const voiceInputBtn = document.getElementById('voiceInputBtn');
-    if (voiceInputBtn) {
-      voiceInputBtn.title = 'Voice input not supported in this browser';
-      voiceInputBtn.style.opacity = '0.5';
-      voiceInputBtn.style.cursor = 'not-allowed';
-    }
-  }
-  
-  if (!hasSynthesis) {
-    console.warn('Speech Synthesis not supported in this browser');
-    const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-    if (voiceOutputBtn) {
-      voiceOutputBtn.title = 'Voice output not supported in this browser';
-      voiceOutputBtn.style.opacity = '0.5';
-      voiceOutputBtn.style.cursor = 'not-allowed';
-    }
+function safeNotify(message) {
+  // Use global notification helper from app.js if available
+  if (typeof window.showNotification === "function") {
+    window.showNotification(message);
+  } else {
+    console.log("[Voice]", message);
   }
 }
 
-// Setup Voice Input (Speech-to-Text) - FIXED FOR MOBILE DUPLICATES
-function setupVoiceInput() {
-  const voiceInputBtn = document.getElementById('voiceInputBtn');
-  if (!voiceInputBtn) return;
-  
-  // Check if browser supports speech recognition
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
+// -------------------------
+// Voice INPUT (speech → text)
+// -------------------------
+function initRecognition() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
   if (!SpeechRecognition) {
-    voiceInputBtn.disabled = true;
-    voiceInputBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-    return;
+    safeNotify("Voice input not supported in this browser.");
+    return null;
   }
-  
-  // Initialize recognition
-  voiceRecognition = new SpeechRecognition();
-  voiceRecognition.continuous = true;
-  voiceRecognition.interimResults = true;
-  voiceRecognition.lang = voiceLanguage;
-  voiceRecognition.maxAlternatives = 1; // NEW: Reduce alternatives to prevent duplicates
-  
-  // Event listeners
-  voiceRecognition.onstart = function() {
+
+  const rec = new SpeechRecognition();
+  rec.continuous = false;
+  rec.interimResults = true;
+  rec.lang = voiceLanguage;
+  return rec;
+}
+
+function startVoiceInput() {
+  if (isListening) return;
+
+  if (!voiceRecognition) {
+    voiceRecognition = initRecognition();
+  }
+  if (!voiceRecognition) return;
+
+  const micBtn = getEl("voiceInputBtn");
+  const status = getEl("voiceInputStatus");
+
+  try {
     isListening = true;
-    lastVoiceResult = ''; // Reset last result
-    voiceInputBtn.classList.add('recording');
-    voiceInputBtn.innerHTML = '<i class="fas fa-stop"></i>';
-    voiceInputBtn.title = 'Click to stop recording';
-    showVoiceStatus('voiceInputStatus', true);
-    console.log('Voice recognition started');
-  };
-  
-  voiceRecognition.onresult = function(event) {
-    let interimTranscript = '';
-    let finalTranscript = '';
-    let isFinal = false;
-    
-    // NEW: Simplified result processing for mobile
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript.trim();
-      
-      // Check if this is the same as last result (mobile duplicate prevention)
-      if (transcript === lastVoiceResult && event.results[i].isFinal) {
-        continue; // Skip duplicates
-      }
-      
-      if (event.results[i].isFinal) {
-        finalTranscript = transcript;
-        lastVoiceResult = transcript; // Store last result
-        isFinal = true;
-      } else {
-        interimTranscript = transcript;
-      }
+    lastVoiceResult = "";
+
+    micBtn?.classList.add("recording");
+    if (status) {
+      status.style.display = "flex";
+      status.querySelector("span").textContent = "Listening… speak your idea";
     }
-    
-    const requirementEl = document.getElementById('requirement');
-    if (requirementEl && finalTranscript) {
-      // Only append if we have new final transcript
-      const currentValue = requirementEl.value.trim();
-      
-      // Add space if there's existing text
-      const separator = currentValue ? (currentValue.endsWith('.') || currentValue.endsWith('!') || currentValue.endsWith('?') ? ' ' : ' ') : '';
-      
-      requirementEl.value = currentValue + separator + finalTranscript;
-      
-      // Trigger input event to update stats and auto-convert
-      const inputEvent = new Event('input', { bubbles: true });
-      requirementEl.dispatchEvent(inputEvent);
-      
-      // NEW: For mobile, stop after getting final result to prevent duplicates
-      if (isMobileDevice() && isFinal) {
-        setTimeout(() => {
-          if (isListening) {
-            stopVoiceInput();
-          }
-        }, 500);
+
+    voiceRecognition.lang = voiceLanguage;
+
+    voiceRecognition.onresult = (event) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
       }
-    }
-  };
-  
-  voiceRecognition.onerror = function(event) {
-    console.error('Voice recognition error:', event.error);
+      transcript = transcript.trim();
+      lastVoiceResult = transcript;
+
+      const textarea = getEl("requirement");
+      if (!textarea) return;
+
+      const current = textarea.value.trim();
+      const separator = current ? " " : "";
+      textarea.value = current + separator + transcript;
+      // trigger app.js listeners
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      textarea.dispatchEvent(new Event("keyup", { bubbles: true }));
+    };
+
+    voiceRecognition.onerror = (event) => {
+      console.error("Voice recognition error:", event.error);
+      safeNotify("Voice input error or permission blocked.");
+      stopVoiceInput();
+    };
+
+    voiceRecognition.onend = () => {
+      stopVoiceInput();
+    };
+
+    voiceRecognition.start();
+    safeNotify("Voice input started");
+  } catch (err) {
+    console.error("Voice start error:", err);
+    safeNotify("Could not start voice input.");
     stopVoiceInput();
-    
-    let errorMessage = 'Voice input error';
-    switch(event.error) {
-      case 'no-speech':
-        errorMessage = 'No speech detected. Please try again.';
-        break;
-      case 'audio-capture':
-        errorMessage = 'Microphone not accessible. Please check permissions.';
-        break;
-      case 'not-allowed':
-        errorMessage = 'Microphone permission denied.';
-        break;
-      default:
-        errorMessage = `Voice input error: ${event.error}`;
-    }
-    
-    if (typeof showNotification === 'function') {
-      showNotification(errorMessage);
-    }
-  };
-  
-  voiceRecognition.onend = function() {
-    stopVoiceInput();
-  };
-  
-  // Button click handler
-  voiceInputBtn.addEventListener('click', toggleVoiceInput);
+  }
 }
 
-// NEW: Mobile device detection
-function isMobileDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+function stopVoiceInput() {
+  if (!isListening) return;
+
+  try {
+    if (voiceRecognition) {
+      voiceRecognition.onresult = null;
+      voiceRecognition.onend = null;
+      voiceRecognition.onerror = null;
+      voiceRecognition.stop();
+    }
+  } catch (err) {
+    console.log("Voice stop error:", err);
+  }
+
+  isListening = false;
+
+  const micBtn = getEl("voiceInputBtn");
+  const status = getEl("voiceInputStatus");
+  micBtn?.classList.remove("recording");
+  if (status) {
+    status.style.display = "none";
+  }
 }
 
-// Toggle voice input on/off
 function toggleVoiceInput() {
   if (isListening) {
     stopVoiceInput();
@@ -185,97 +139,83 @@ function toggleVoiceInput() {
   }
 }
 
-// Start voice input
-function startVoiceInput() {
-  if (!voiceRecognition) return;
-  
-  try {
-    voiceRecognition.lang = voiceLanguage;
-    lastVoiceResult = ''; // Reset last result
-    voiceRecognition.start();
-    
-    if (typeof showNotification === 'function') {
-      showNotification('Listening... Speak now (click microphone to stop)');
-    }
-  } catch (error) {
-    console.error('Error starting voice recognition:', error);
-    if (typeof showNotification === 'function') {
-      showNotification('Could not start voice input');
-    }
+// -------------------------
+// Voice OUTPUT (text → speech)
+// -------------------------
+function startVoiceOutput() {
+  if (isSpeaking) {
+    stopVoiceOutput();
+    return;
   }
-}
 
-// Stop voice input
-function stopVoiceInput() {
-  if (!voiceRecognition || !isListening) return;
-  
-  isListening = false;
-  const voiceInputBtn = document.getElementById('voiceInputBtn');
-  if (voiceInputBtn) {
-    voiceInputBtn.classList.remove('recording');
-    voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    voiceInputBtn.title = 'Voice Input';
-  }
-  showVoiceStatus('voiceInputStatus', false);
-  
-  try {
-    voiceRecognition.stop();
-  } catch (error) {
-    console.error('Error stopping voice recognition:', error);
-  }
-  
-  if (typeof showNotification === 'function') {
-    showNotification('Voice recording stopped');
-  }
-}
+  const outputEl = getEl("output");
+  if (!outputEl) return;
 
-// Setup Voice Output (Text-to-Speech)
-function setupVoiceOutput() {
-  const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-  const outputTextarea = document.getElementById('output');
-  
-  if (!voiceOutputBtn || !outputTextarea) return;
-  
-  // Initial check for content
-  if (outputTextarea.value.trim()) {
-    voiceOutputBtn.style.display = 'flex';
-  } else {
-    voiceOutputBtn.style.display = 'none';
+  const text = outputEl.value.trim();
+  if (!text) {
+    safeNotify("Nothing to read. Generate a prompt first.");
+    return;
+  }
+
+  const status = getEl("voiceOutputStatus");
+  const btn = getEl("voiceOutputBtn");
+
+  try {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+      isSpeaking = true;
+      currentUtterance = utterance;
+      btn?.classList.add("speaking");
+      if (status) {
+        status.style.display = "flex";
+        status.querySelector("span").textContent = "Reading your prompt…";
+      }
+    };
+
+    utterance.onend = () => {
+      stopVoiceOutput();
+    };
+
+    utterance.onerror = () => {
+      stopVoiceOutput();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.error("Voice output error:", err);
+    safeNotify("Could not start voice output.");
     stopVoiceOutput();
   }
-  
-  // Button click handler
-  voiceOutputBtn.addEventListener('click', toggleVoiceOutput);
-  
-  // Listen for content changes in output
-  const observer = new MutationObserver(() => {
-    if (outputTextarea.value.trim()) {
-      voiceOutputBtn.style.display = 'flex';
-    } else {
-      voiceOutputBtn.style.display = 'none';
-      stopVoiceOutput();
-    }
-  });
-  
-  observer.observe(outputTextarea, { 
-    attributes: true, 
-    childList: true, 
-    characterData: true,
-    subtree: true 
-  });
-  
-  // Also listen to input events
-  outputTextarea.addEventListener('input', () => {
-    if (outputTextarea.value.trim()) {
-      voiceOutputBtn.style.display = 'flex';
-    } else {
-      voiceOutputBtn.style.display = 'none';
-      stopVoiceOutput();
-    }
-  });
 }
 
-// Toggle voice output on/off
+function stopVoiceOutput() {
+  try {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  } catch (err) {
+    console.log("speechSynthesis.cancel error:", err);
+  }
+
+  isSpeaking = false;
+  currentUtterance = null;
+
+  const status = getEl("voiceOutputStatus");
+  const btn = getEl("voiceOutputBtn");
+  btn?.classList.remove("speaking");
+  if (status) {
+    status.style.display = "none";
+  }
+}
+
 function toggleVoiceOutput() {
   if (isSpeaking) {
     stopVoiceOutput();
@@ -284,149 +224,107 @@ function toggleVoiceOutput() {
   }
 }
 
-// Start voice output (read the prompt aloud)
-function startVoiceOutput() {
-  const outputTextarea = document.getElementById('output');
-  const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-  
-  if (!outputTextarea || !voiceOutputBtn) return;
-  
-  const text = outputTextarea.value.trim();
-  if (!text) {
-    if (typeof showNotification === 'function') {
-      showNotification('No text to read');
-    }
-    return;
+// -------------------------
+// Language preference
+// -------------------------
+function updateVoiceLanguage(lang) {
+  voiceLanguage = lang || "en-US";
+  try {
+    localStorage.setItem("promptCrafterVoiceLang", voiceLanguage);
+  } catch (e) {
+    console.log("Could not store voice language:", e);
   }
-  
-  // Cancel any ongoing speech
-  if (voiceSynthesis.speaking) {
-    voiceSynthesis.cancel();
-  }
-  
-  // Create utterance
-  currentUtterance = new SpeechSynthesisUtterance(text);
-  
-  // Set language
-  currentUtterance.lang = voiceLanguage;
-  
-  // Set voice (try to find a voice matching the language)
-  const voices = voiceSynthesis.getVoices();
-  const matchingVoice = voices.find(voice => voice.lang.startsWith(voiceLanguage.split('-')[0]));
-  if (matchingVoice) {
-    currentUtterance.voice = matchingVoice;
-  }
-  
-  // Speech parameters
-  currentUtterance.rate = 1.0;
-  currentUtterance.pitch = 1.0;
-  currentUtterance.volume = 1.0;
-  
-  // Event handlers
-  currentUtterance.onstart = function() {
-    isSpeaking = true;
-    voiceOutputBtn.classList.add('speaking');
-    voiceOutputBtn.innerHTML = '<i class="fas fa-stop"></i>';
-    voiceOutputBtn.title = 'Stop reading';
-    showVoiceStatus('voiceOutputStatus', true);
-  };
-  
-  currentUtterance.onend = function() {
-    stopVoiceOutput();
-  };
-  
-  currentUtterance.onerror = function(event) {
-    console.error('Speech synthesis error:', event);
-    stopVoiceOutput();
-    if (typeof showNotification === 'function') {
-      showNotification('Error reading text aloud');
-    }
-  };
-  
-  // Start speaking
-  voiceSynthesis.speak(currentUtterance);
-  
-  if (typeof showNotification === 'function') {
-    showNotification('Reading prompt aloud... (click speaker to stop)');
-  }
-}
-
-// Stop voice output
-function stopVoiceOutput() {
-  const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-  
-  isSpeaking = false;
-  
-  if (voiceOutputBtn) {
-    voiceOutputBtn.classList.remove('speaking');
-    voiceOutputBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-    voiceOutputBtn.title = 'Read Aloud';
-  }
-  
-  showVoiceStatus('voiceOutputStatus', false);
-  
-  if (voiceSynthesis.speaking) {
-    voiceSynthesis.cancel();
-  }
-  
-  currentUtterance = null;
-  
-  if (typeof showNotification === 'function') {
-    showNotification('Reading stopped');
-  }
-}
-
-// Show/hide voice status indicator
-function showVoiceStatus(elementId, show) {
-  const statusElement = document.getElementById(elementId);
-  if (statusElement) {
-    statusElement.style.display = show ? 'flex' : 'none';
-  }
-}
-
-// Update voice language
-function updateVoiceLanguage(language) {
-  voiceLanguage = language;
-  localStorage.setItem('voiceLanguage', language);
-  
-  // Update recognition language if active
   if (voiceRecognition) {
-    voiceRecognition.lang = language;
-    
-    // Restart if currently listening
-    if (isListening) {
-      stopVoiceInput();
-      setTimeout(startVoiceInput, 100);
+    voiceRecognition.lang = voiceLanguage;
+  }
+  safeNotify("Voice language set to " + voiceLanguage);
+}
+
+function loadVoiceLanguage() {
+  try {
+    const saved = localStorage.getItem("promptCrafterVoiceLang");
+    if (saved) {
+      voiceLanguage = saved;
+      const select = getEl("voiceLanguage");
+      if (select) {
+        select.value = saved;
+      }
     }
-  }
-  
-  if (typeof showNotification === 'function') {
-    showNotification(`Voice language updated to ${language}`);
+  } catch (e) {
+    console.log("Could not load voice language:", e);
   }
 }
 
-// Save voice language from settings
-function saveVoiceLanguage() {
-  const languageSelect = document.getElementById('voiceLanguage');
-  if (languageSelect) {
-    updateVoiceLanguage(languageSelect.value);
+// -------------------------
+// Init wiring
+// -------------------------
+function initializeVoiceFeatures() {
+  loadVoiceLanguage();
+
+  const micBtn = getEl("voiceInputBtn");
+  const clearBtn = getEl("clearInputBtn");
+  const outBtn = getEl("voiceOutputBtn");
+  const langSelect = getEl("voiceLanguage");
+  const outputEl = getEl("output");
+
+  if (micBtn) {
+    micBtn.addEventListener("click", toggleVoiceInput);
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      const textarea = getEl("requirement");
+      if (textarea) {
+        textarea.value = "";
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        textarea.dispatchEvent(new Event("keyup", { bubbles: true }));
+      }
+    });
+  }
+
+  if (outBtn) {
+    outBtn.addEventListener("click", toggleVoiceOutput);
+  }
+
+  if (langSelect) {
+    langSelect.addEventListener("change", (e) =>
+      updateVoiceLanguage(e.target.value)
+    );
+  }
+
+  // Show / hide "Read Aloud" button depending on whether we have output text
+  if (outputEl && outBtn) {
+    const observer = new MutationObserver(() => {
+      const hasText = !!outputEl.value.trim();
+      outBtn.style.display = hasText ? "inline-flex" : "none";
+    });
+
+    observer.observe(outputEl, {
+      characterData: true,
+      subtree: true,
+      childList: true
+    });
+
+    // Also run once initially
+    const hasText = !!outputEl.value.trim();
+    outBtn.style.display = hasText ? "inline-flex" : "none";
+
+    // Fallback: listen to input event as well
+    outputEl.addEventListener("input", () => {
+      const hasTextNow = !!outputEl.value.trim();
+      outBtn.style.display = hasTextNow ? "inline-flex" : "none";
+    });
   }
 }
 
-// Cleanup on page unload
-window.addEventListener('beforeunload', function() {
-  stopVoiceInput();
-  stopVoiceOutput();
-});
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeVoiceFeatures);
+// Auto-init once DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeVoiceFeatures);
 } else {
   initializeVoiceFeatures();
 }
 
-// Export functions for use in app.js if needed
+// Expose a tiny API if needed by app.js
 window.voiceFeatures = {
   startVoiceInput,
   stopVoiceInput,
@@ -434,6 +332,5 @@ window.voiceFeatures = {
   startVoiceOutput,
   stopVoiceOutput,
   toggleVoiceOutput,
-  updateVoiceLanguage,
-  saveVoiceLanguage
+  updateVoiceLanguage
 };
