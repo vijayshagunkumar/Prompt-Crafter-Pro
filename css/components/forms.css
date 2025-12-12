@@ -294,3 +294,42 @@ select:focus {
     gap: var(--space-sm);
   }
 }
+
+/* Fix all text colors */
+.helper-text {
+  color: var(--text-secondary) !important;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Fix button colors */
+.btn-primary {
+  color: var(--text-on-primary) !important;
+}
+
+.ghost-btn {
+  color: var(--text-primary) !important;
+}
+
+/* Fix textarea scroll */
+.textarea-idea {
+  max-height: 180px;
+  min-height: 120px;
+}
+
+/* Fix textarea button positioning */
+.textarea-buttons {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+/* Compact cards */
+.step-card {
+  overflow: hidden;
+  height: auto;
+  min-height: auto;
+}
