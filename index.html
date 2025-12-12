@@ -44,14 +44,23 @@
       max-height: 220px;
     }
     
-    /* Fix textarea button positioning */
+    /* Fix textarea button positioning - CLEAR LEFT, MIC RIGHT */
     .textarea-buttons {
       position: absolute;
       bottom: 0.75rem;
-      right: 0.75rem;
       display: flex;
       gap: 0.5rem;
       z-index: 10;
+    }
+    
+    /* Clear button on LEFT */
+    .clear-btn-left {
+      left: 0.75rem;
+    }
+    
+    /* Mic button on RIGHT */
+    .mic-btn-right {
+      right: 0.75rem;
     }
     
     /* Compact header */
@@ -70,18 +79,15 @@
       overflow: hidden;
       height: auto;
       min-height: 680px;
+      display: flex;
+      flex-direction: column;
     }
     
-    /* Fix action buttons in header */
-    .top-right .btn-primary {
-      background: var(--gradient-brand);
-      color: black !important;
-      font-weight: 600;
-    }
-    
-    .top-right .ghost-btn {
-      border: 1px solid var(--primary);
-      color: var(--primary) !important;
+    /* Make sure content area takes available space */
+    .card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     
     /* Better AI tools grid */
@@ -120,6 +126,54 @@
       backdrop-filter: blur(4px);
     }
     
+    /* Compact header without top-right buttons */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .top-left {
+      flex: 1;
+    }
+    
+    /* Remove top-right buttons container */
+    .top-right {
+      display: none; /* HIDE the top-right buttons */
+    }
+    
+    /* Action buttons below prompt */
+    .prompt-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    
+    .prompt-actions .ghost-btn,
+    .prompt-actions .secondary-btn {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+    
+    /* Disabled state for action buttons */
+    .prompt-actions .ghost-btn:disabled,
+    .prompt-actions .secondary-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    
+    /* Convert button in Card 1 */
+    .convert-btn-container {
+      margin-top: auto;
+      padding-top: 1.5rem;
+    }
+    
     /* Responsive fixes */
     @media (max-width: 768px) {
       .step-card {
@@ -133,6 +187,19 @@
       .hero-top {
         flex-direction: column;
         gap: 1rem;
+      }
+      
+      .prompt-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .textarea-buttons.clear-btn-left {
+        left: 0.5rem;
+      }
+      
+      .textarea-buttons.mic-btn-right {
+        right: 0.5rem;
       }
     }
   </style>
@@ -200,7 +267,7 @@
 
     <!-- MAIN PANEL -->
     <div class="main-panel">
-      <!-- HEADER -->
+      <!-- HEADER - WITHOUT TOP-RIGHT BUTTONS -->
       <header class="top-bar">
         <div class="top-left">
           <div class="page-title">
@@ -208,9 +275,23 @@
             <p>Craft perfect prompts for any AI in one place</p>
           </div>
         </div>
+        <!-- REMOVED: top-right buttons div -->
+      </header>
 
-        </header>
-
+      <!-- HERO -->
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <h1>From messy idea to perfect AI prompt</h1>
+            <p>Type or speak your rough idea. PromptCraft transforms it into a structured, high-impact prompt tailored for any AI model.</p>
+          </div>
+          <div class="hero-badges">
+            <span class="pill-badge"><i class="fas fa-microphone"></i> Voice input</span>
+            <span class="pill-badge"><i class="fas fa-wand-magic-sparkles"></i> Smart restructuring</span>
+            <span class="pill-badge"><i class="fas fa-brain"></i> Auto-context detection</span>
+          </div>
+        </div>
+      </header>
 
       <!-- MAIN WORKFLOW -->
       <main class="workflow">
@@ -226,47 +307,62 @@
               </div>
             </div>
 
-            <!-- Auto-convert -->
-            <div class="auto-row">
-              <label class="toggle-switch">
-                <input type="checkbox" id="autoConvert" checked />
-                <span class="toggle-slider"></span>
-                <span class="toggle-label">Auto-convert as I type</span>
-              </label>
+            <div class="card-content">
+              <!-- Auto-convert -->
+              <div class="auto-row">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="autoConvert" checked />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Auto-convert as I type</span>
+                </label>
 
-              <span class="timer-badge" id="timerDisplay" style="display:none;">
-                <i class="fas fa-clock"></i>
-                <span id="timerValue">60s</span>
-              </span>
-            </div>
+                <span class="timer-badge" id="timerDisplay" style="display:none;">
+                  <i class="fas fa-clock"></i>
+                  <span id="timerValue">60s</span>
+                </span>
+              </div>
 
-            <!-- Context Chips -->
-            <div class="chip-row" id="contextChipsRow" style="display:none;"></div>
+              <!-- Context Chips -->
+              <div class="chip-row" id="contextChipsRow" style="display:none;"></div>
 
-            <!-- Requirement textarea -->
-            <div class="field-block">
-              <div class="textarea-wrapper">
-                <textarea
-                  id="requirement"
-                  class="textarea-idea"
-                  placeholder='Type or paste your raw idea here. Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write a professional email to my manager about project delay"...'
-                ></textarea>
+              <!-- Requirement textarea -->
+              <div class="field-block">
+                <div class="textarea-wrapper">
+                  <textarea
+                    id="requirement"
+                    class="textarea-idea"
+                    placeholder='Type or paste your raw idea here. Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write a professional email to my manager about project delay"...'
+                  ></textarea>
 
-                <div class="textarea-buttons">
-                  <button class="icon-btn" id="clearRequirementBtn" title="Clear">
-                    <i class="fas fa-xmark"></i>
-                  </button>
-                  <button class="icon-btn" id="voiceBtn" title="Voice input">
-                    <i class="fas fa-microphone"></i>
-                  </button>
+                  <!-- Clear button on LEFT -->
+                  <div class="textarea-buttons clear-btn-left">
+                    <button class="icon-btn" id="clearRequirementBtn" title="Clear">
+                      <i class="fas fa-xmark"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Mic button on RIGHT -->
+                  <div class="textarea-buttons mic-btn-right">
+                    <button class="icon-btn" id="voiceBtn" title="Voice input">
+                      <i class="fas fa-microphone"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="helper-row">
+                  <span class="helper-text">
+                    <i class="fas fa-lightbulb"></i>
+                    You can mix Hindi, English, or Hinglish. Auto-Context Detective will understand and optimize it.
+                  </span>
+                  <span class="char-counter" id="inputStats">0 chars</span>
                 </div>
               </div>
-              <div class="helper-row">
-                <span class="helper-text">
-                  <i class="fas fa-lightbulb"></i>
-                  You can mix Hindi, English, or Hinglish. Auto-Context Detective will understand and optimize it.
-                </span>
-                <span class="char-counter" id="inputStats">0 chars</span>
+              
+              <!-- CONVERT BUTTON in Card 1 -->
+              <div class="convert-btn-container">
+                <button class="primary-btn" id="convertBtn" disabled>
+                  <i class="fas fa-magic"></i>
+                  Convert Idea to Prompt
+                </button>
               </div>
             </div>
           </section>
@@ -284,65 +380,59 @@
               </span>
             </div>
 
-            <div class="preset-row">
-              <div class="preset-left">
-                <label class="field-label">Preset</label>
-                <select id="presetSelect">
-                  <option value="default">Default – General Purpose</option>
-                  <option value="communication">Communication – Emails, Messages</option>
-                  <option value="coding">Coding – Dev Tasks</option>
-                  <option value="writing">Writing – Blogs, Stories</option>
-                  <option value="analysis">Analysis – Reviews & Comparisons</option>
-                </select>
-              </div>
-              <div class="preset-right">
-                <label class="checkbox-pill">
-                  <input type="checkbox" id="lockPreset" />
-                  <span></span>
-                  Lock preset
-                </label>
-              </div>
-            </div>
-
-            <div class="field-block">
-              <div class="textarea-wrapper">
-                <textarea
-                  id="output"
-                  class="output-textarea"
-                  placeholder="Your structured, AI-ready prompt will appear here..."
-                  readonly
-                ></textarea>
-                <div class="textarea-buttons">
-                  <button class="icon-btn" id="copyOutputBtn" title="Copy prompt">
-                    <i class="fas fa-copy"></i>
-                  </button>
+            <div class="card-content">
+              <div class="preset-row">
+                <div class="preset-left">
+                  <label class="field-label">Preset</label>
+                  <select id="presetSelect">
+                    <option value="default">Default – General Purpose</option>
+                    <option value="communication">Communication – Emails, Messages</option>
+                    <option value="coding">Coding – Dev Tasks</option>
+                    <option value="writing">Writing – Blogs, Stories</option>
+                    <option value="analysis">Analysis – Reviews & Comparisons</option>
+                  </select>
+                </div>
+                <div class="preset-right">
+                  <label class="checkbox-pill">
+                    <input type="checkbox" id="lockPreset" />
+                    <span></span>
+                    Lock preset
+                  </label>
                 </div>
               </div>
-              <div class="helper-row">
-                <span class="helper-text">
-                  <i class="fas fa-circle-nodes"></i>
-                  This prompt is designed to be pasted into any AI tool: ChatGPT, Claude, Gemini, Midjourney, DALL·E, and more.
-                </span>
-                <span class="char-counter" id="outputStats">0 chars</span>
-              </div>
-            </div>
 
-            <!-- Convert Button -->
-            <div class="actions-row">
-              <button class="primary-btn" id="convertBtn" disabled>
-                <i class="fas fa-magic"></i>
-                Convert Idea to Prompt
-              </button>
-            </div>
-            
-            <!-- Action buttons below prompt -->
-            <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
-              <button class="ghost-btn" id="exportBtnBottom" style="flex: 1;">
-                <i class="fas fa-file-export"></i> Export Prompt
-              </button>
-              <button class="secondary-btn" id="saveTemplateBtnBottom" style="flex: 1;">
-                <i class="fas fa-bookmark"></i> Save as Template
-              </button>
+              <div class="field-block">
+                <div class="textarea-wrapper">
+                  <textarea
+                    id="output"
+                    class="output-textarea"
+                    placeholder="Your structured, AI-ready prompt will appear here..."
+                    readonly
+                  ></textarea>
+                  <div class="textarea-buttons mic-btn-right">
+                    <button class="icon-btn" id="copyOutputBtn" title="Copy prompt">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="helper-row">
+                  <span class="helper-text">
+                    <i class="fas fa-circle-nodes"></i>
+                    This prompt is designed to be pasted into any AI tool: ChatGPT, Claude, Gemini, Midjourney, DALL·E, and more.
+                  </span>
+                  <span class="char-counter" id="outputStats">0 chars</span>
+                </div>
+              </div>
+              
+              <!-- Action buttons below prompt - ONLY THESE SHOULD APPEAR -->
+              <div class="prompt-actions">
+                <button class="ghost-btn" id="exportBtn" disabled>
+                  <i class="fas fa-file-export"></i> Export Prompt
+                </button>
+                <button class="secondary-btn" id="saveTemplateBtn" disabled>
+                  <i class="fas fa-bookmark"></i> Save as Template
+                </button>
+              </div>
             </div>
           </section>
 
@@ -356,14 +446,16 @@
               </div>
             </div>
 
-            <div class="tools-grid" id="aiToolsGrid">
-              <!-- AI tools will be dynamically rendered here -->
-            </div>
+            <div class="card-content">
+              <div class="tools-grid" id="aiToolsGrid">
+                <!-- AI tools will be dynamically rendered here -->
+              </div>
 
-            <p class="helper-text" style="margin-top: 1rem;">
-              <i class="fas fa-sort"></i>
-              Tools are automatically ordered based on your prompt content. The most suitable tool appears first.
-            </p>
+              <p class="helper-text" style="margin-top: auto;">
+                <i class="fas fa-sort"></i>
+                Tools are automatically ordered based on your prompt content. The most suitable tool appears first.
+              </p>
+            </div>
           </section>
         </div>
 
@@ -383,7 +475,7 @@
         </div>
 
         <!-- HISTORY MODAL -->
-        <div class="modal-backdrop" id="historyModal">
+        <div class="modal-background" id="historyModal">
           <div class="modal">
             <div class="modal-header">
               <h3><i class="fas fa-clock-rotate-left"></i> Prompt History</h3>
@@ -404,19 +496,39 @@
   <script type="module" src="js/app.js"></script>
   
   <script>
-    // Sync button clicks
-    document.addEventListener('DOMContentLoaded', function() {
+    // Enable/disable action buttons based on prompt generation
+    function updateActionButtons() {
+      const outputTextarea = document.getElementById('output');
       const exportBtn = document.getElementById('exportBtn');
-      const exportBtnBottom = document.getElementById('exportBtnBottom');
       const saveBtn = document.getElementById('saveTemplateBtn');
-      const saveBtnBottom = document.getElementById('saveTemplateBtnBottom');
       
-      if (exportBtn && exportBtnBottom) {
-        exportBtn.addEventListener('click', () => exportBtnBottom.click());
+      const hasPrompt = outputTextarea && outputTextarea.value.trim().length > 0;
+      
+      if (exportBtn) {
+        exportBtn.disabled = !hasPrompt;
+      }
+      if (saveBtn) {
+        saveBtn.disabled = !hasPrompt;
+      }
+    }
+    
+    // Update buttons on load and when output changes
+    document.addEventListener('DOMContentLoaded', function() {
+      updateActionButtons();
+      
+      const outputTextarea = document.getElementById('output');
+      if (outputTextarea) {
+        outputTextarea.addEventListener('input', updateActionButtons);
       }
       
-      if (saveBtn && saveBtnBottom) {
-        saveBtn.addEventListener('click', () => saveBtnBottom.click());
+      // Also update when convert button is clicked (handled by app.js)
+      const convertBtn = document.getElementById('convertBtn');
+      if (convertBtn) {
+        const originalClick = convertBtn.onclick;
+        convertBtn.onclick = function(e) {
+          if (originalClick) originalClick.call(this, e);
+          setTimeout(updateActionButtons, 500); // Update after conversion
+        };
       }
     });
   </script>
