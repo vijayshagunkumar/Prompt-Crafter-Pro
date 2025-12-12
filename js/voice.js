@@ -1,136 +1,85 @@
-// voice.js - Voice Input and Output Features for PromptCraft
+// voice.js - Simplified Voice Input for PromptCraft
 
-// -------------------------
-// State
-// -------------------------
+// Voice Recognition State
 let voiceRecognition = null;
 let isListening = false;
-let voiceLanguage = "en-US";
-let lastVoiceResult = "";
 
-let isSpeaking = false;
-let currentUtterance = null;
-
-// -------------------------
-// Helpers
-// -------------------------
-function getEl(id) {
-  return document.getElementById(id);
-}
-
-function safeNotify(message) {
-  // Use global notification helper from app.js if available
-  if (typeof window.showNotification === "function") {
-    window.showNotification(message);
-  } else {
-    console.log("[Voice]", message);
-  }
-}
-
-// -------------------------
-// Voice INPUT (speech → text)
-// -------------------------
-function initRecognition() {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
+// Initialize Voice Features
+function initializeVoiceFeatures() {
+  const voiceBtn = document.getElementById('voiceBtn');
+  const requirementEl = document.getElementById('requirement');
+  
+  if (!voiceBtn || !requirementEl) return;
+  
+  // Check if browser supports speech recognition
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
   if (!SpeechRecognition) {
-    safeNotify("Voice input not supported in this browser.");
-    return null;
+    voiceBtn.disabled = true;
+    voiceBtn.title = 'Voice input not supported in this browser';
+    voiceBtn.style.opacity = '0.5';
+    voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+    return;
   }
-
-  const rec = new SpeechRecognition();
-  rec.continuous = false;
-  rec.interimResults = true;
-  rec.lang = voiceLanguage;
-  return rec;
-}
-
-function startVoiceInput() {
-  if (isListening) return;
-
-  if (!voiceRecognition) {
-    voiceRecognition = initRecognition();
-  }
-  if (!voiceRecognition) return;
-
-  const micBtn = getEl("voiceInputBtn");
-  const status = getEl("voiceInputStatus");
-
-  try {
+  
+  // Initialize recognition
+  voiceRecognition = new SpeechRecognition();
+  voiceRecognition.continuous = false;
+  voiceRecognition.interimResults = false;
+  voiceRecognition.lang = 'en-US';
+  voiceRecognition.maxAlternatives = 1;
+  
+  // Button click handler
+  voiceBtn.addEventListener('click', toggleVoiceInput);
+  
+  // Event listeners
+  voiceRecognition.onstart = function() {
     isListening = true;
-    lastVoiceResult = "";
-
-    micBtn?.classList.add("recording");
-    if (status) {
-      status.style.display = "flex";
-      status.querySelector("span").textContent = "Listening… speak your idea";
-    }
-
-    voiceRecognition.lang = voiceLanguage;
-
-    voiceRecognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      transcript = transcript.trim();
-      lastVoiceResult = transcript;
-
-      const textarea = getEl("requirement");
-      if (!textarea) return;
-
-      const current = textarea.value.trim();
-      const separator = current ? " " : "";
-      textarea.value = current + separator + transcript;
-      // trigger app.js listeners
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
-      textarea.dispatchEvent(new Event("keyup", { bubbles: true }));
-    };
-
-    voiceRecognition.onerror = (event) => {
-      console.error("Voice recognition error:", event.error);
-      safeNotify("Voice input error or permission blocked.");
-      stopVoiceInput();
-    };
-
-    voiceRecognition.onend = () => {
-      stopVoiceInput();
-    };
-
-    voiceRecognition.start();
-    safeNotify("Voice input started");
-  } catch (err) {
-    console.error("Voice start error:", err);
-    safeNotify("Could not start voice input.");
+    voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+    voiceBtn.classList.add('recording');
+    voiceBtn.title = 'Stop recording';
+    showNotification('Listening... Speak now');
+  };
+  
+  voiceRecognition.onresult = function(event) {
+    const transcript = event.results[0][0].transcript;
+    requirementEl.value = transcript;
+    
+    // Trigger input event
+    const inputEvent = new Event('input', { bubbles: true });
+    requirementEl.dispatchEvent(inputEvent);
+    
+    showNotification('Voice input captured');
+  };
+  
+  voiceRecognition.onerror = function(event) {
+    console.error('Voice recognition error:', event.error);
     stopVoiceInput();
-  }
-}
-
-function stopVoiceInput() {
-  if (!isListening) return;
-
-  try {
-    if (voiceRecognition) {
-      voiceRecognition.onresult = null;
-      voiceRecognition.onend = null;
-      voiceRecognition.onerror = null;
-      voiceRecognition.stop();
+    
+    let errorMessage = 'Voice input error';
+    switch(event.error) {
+      case 'no-speech':
+        errorMessage = 'No speech detected. Please try again.';
+        break;
+      case 'audio-capture':
+        errorMessage = 'Microphone not accessible. Please check permissions.';
+        break;
+      case 'not-allowed':
+        errorMessage = 'Microphone permission denied.';
+        break;
+      default:
+        errorMessage = `Voice input error: ${event.error}`;
     }
-  } catch (err) {
-    console.log("Voice stop error:", err);
-  }
-
-  isListening = false;
-
-  const micBtn = getEl("voiceInputBtn");
-  const status = getEl("voiceInputStatus");
-  micBtn?.classList.remove("recording");
-  if (status) {
-    status.style.display = "none";
-  }
+    
+    showNotification(errorMessage);
+  };
+  
+  voiceRecognition.onend = function() {
+    stopVoiceInput();
+  };
 }
 
+// Toggle voice input on/off
 function toggleVoiceInput() {
   if (isListening) {
     stopVoiceInput();
@@ -139,198 +88,94 @@ function toggleVoiceInput() {
   }
 }
 
-// -------------------------
-// Voice OUTPUT (text → speech)
-// -------------------------
-function startVoiceOutput() {
-  if (isSpeaking) {
-    stopVoiceOutput();
-    return;
-  }
-
-  const outputEl = getEl("output");
-  if (!outputEl) return;
-
-  const text = outputEl.value.trim();
-  if (!text) {
-    safeNotify("Nothing to read. Generate a prompt first.");
-    return;
-  }
-
-  const status = getEl("voiceOutputStatus");
-  const btn = getEl("voiceOutputBtn");
-
+// Start voice input
+function startVoiceInput() {
+  if (!voiceRecognition) return;
+  
   try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
+    voiceRecognition.start();
+  } catch (error) {
+    console.error('Error starting voice recognition:', error);
+    showNotification('Could not start voice input');
+  }
+}
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+// Stop voice input
+function stopVoiceInput() {
+  if (!voiceRecognition || !isListening) return;
+  
+  isListening = false;
+  const voiceBtn = document.getElementById('voiceBtn');
+  if (voiceBtn) {
+    voiceBtn.classList.remove('recording');
+    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    voiceBtn.title = 'Voice Input';
+  }
+  
+  try {
+    voiceRecognition.stop();
+  } catch (error) {
+    console.error('Error stopping voice recognition:', error);
+  }
+}
 
-    utterance.onstart = () => {
-      isSpeaking = true;
-      currentUtterance = utterance;
-      btn?.classList.add("speaking");
-      if (status) {
-        status.style.display = "flex";
-        status.querySelector("span").textContent = "Reading your prompt…";
+// Notification helper (simplified version for voice.js)
+function showNotification(message) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(30, 41, 59, 0.95);
+    color: #00F3FF;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 1001;
+    border: 1px solid #00F3FF;
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  `;
+  
+  notification.innerHTML = `
+    <i class="fas fa-check-circle"></i>
+    <span>${message}</span>
+  `;
+  
+  // Add to body
+  document.body.appendChild(notification);
+  
+  // Show notification
+  setTimeout(() => {
+    notification.style.display = 'flex';
+    setTimeout(() => {
+      notification.style.opacity = '1';
+    }, 10);
+  }, 10);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
       }
-    };
-
-    utterance.onend = () => {
-      stopVoiceOutput();
-    };
-
-    utterance.onerror = () => {
-      stopVoiceOutput();
-    };
-
-    window.speechSynthesis.speak(utterance);
-  } catch (err) {
-    console.error("Voice output error:", err);
-    safeNotify("Could not start voice output.");
-    stopVoiceOutput();
-  }
+    }, 300);
+  }, 3000);
 }
 
-function stopVoiceOutput() {
-  try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-  } catch (err) {
-    console.log("speechSynthesis.cancel error:", err);
-  }
-
-  isSpeaking = false;
-  currentUtterance = null;
-
-  const status = getEl("voiceOutputStatus");
-  const btn = getEl("voiceOutputBtn");
-  btn?.classList.remove("speaking");
-  if (status) {
-    status.style.display = "none";
-  }
-}
-
-function toggleVoiceOutput() {
-  if (isSpeaking) {
-    stopVoiceOutput();
-  } else {
-    startVoiceOutput();
-  }
-}
-
-// -------------------------
-// Language preference
-// -------------------------
-function updateVoiceLanguage(lang) {
-  voiceLanguage = lang || "en-US";
-  try {
-    localStorage.setItem("promptCrafterVoiceLang", voiceLanguage);
-  } catch (e) {
-    console.log("Could not store voice language:", e);
-  }
-  if (voiceRecognition) {
-    voiceRecognition.lang = voiceLanguage;
-  }
-  safeNotify("Voice language set to " + voiceLanguage);
-}
-
-function loadVoiceLanguage() {
-  try {
-    const saved = localStorage.getItem("promptCrafterVoiceLang");
-    if (saved) {
-      voiceLanguage = saved;
-      const select = getEl("voiceLanguage");
-      if (select) {
-        select.value = saved;
-      }
-    }
-  } catch (e) {
-    console.log("Could not load voice language:", e);
-  }
-}
-
-// -------------------------
-// Init wiring
-// -------------------------
-function initializeVoiceFeatures() {
-  loadVoiceLanguage();
-
-  const micBtn = getEl("voiceInputBtn");
-  const clearBtn = getEl("clearInputBtn");
-  const outBtn = getEl("voiceOutputBtn");
-  const langSelect = getEl("voiceLanguage");
-  const outputEl = getEl("output");
-
-  if (micBtn) {
-    micBtn.addEventListener("click", toggleVoiceInput);
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      const textarea = getEl("requirement");
-      if (textarea) {
-        textarea.value = "";
-        textarea.dispatchEvent(new Event("input", { bubbles: true }));
-        textarea.dispatchEvent(new Event("keyup", { bubbles: true }));
-      }
-    });
-  }
-
-  if (outBtn) {
-    outBtn.addEventListener("click", toggleVoiceOutput);
-  }
-
-  if (langSelect) {
-    langSelect.addEventListener("change", (e) =>
-      updateVoiceLanguage(e.target.value)
-    );
-  }
-
-  // Show / hide "Read Aloud" button depending on whether we have output text
-  if (outputEl && outBtn) {
-    const observer = new MutationObserver(() => {
-      const hasText = !!outputEl.value.trim();
-      outBtn.style.display = hasText ? "inline-flex" : "none";
-    });
-
-    observer.observe(outputEl, {
-      characterData: true,
-      subtree: true,
-      childList: true
-    });
-
-    // Also run once initially
-    const hasText = !!outputEl.value.trim();
-    outBtn.style.display = hasText ? "inline-flex" : "none";
-
-    // Fallback: listen to input event as well
-    outputEl.addEventListener("input", () => {
-      const hasTextNow = !!outputEl.value.trim();
-      outBtn.style.display = hasTextNow ? "inline-flex" : "none";
-    });
-  }
-}
-
-// Auto-init once DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeVoiceFeatures);
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeVoiceFeatures);
 } else {
   initializeVoiceFeatures();
 }
-
-// Expose a tiny API if needed by app.js
-window.voiceFeatures = {
-  startVoiceInput,
-  stopVoiceInput,
-  toggleVoiceInput,
-  startVoiceOutput,
-  stopVoiceOutput,
-  toggleVoiceOutput,
-  updateVoiceLanguage
-};
