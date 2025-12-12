@@ -79,3 +79,47 @@ textarea {
   resize: vertical !important;     /* allow user to expand */
   overflow: auto !important;
 }
+
+/* ============================================================
+   Restore textarea resize (and make sure buttons don't block it)
+   ============================================================ */
+
+/* Make sure resize is enabled */
+.textarea-idea,
+.output-textarea,
+textarea {
+  resize: vertical !important;
+  overflow: auto !important;
+}
+
+/* Reserve space so text doesn't sit under icon buttons
+   + keep bottom-right corner free for resize handle */
+.textarea-idea,
+.output-textarea {
+  padding-right: 3.2rem !important;
+  padding-bottom: 3.2rem !important;
+}
+
+/* Default button container positioning */
+.textarea-wrapper {
+  position: relative !important;
+}
+
+/* Clear button should be bottom-left */
+.textarea-wrapper .textarea-buttons.clear-btn-left {
+  position: absolute !important;
+  left: 0.75rem !important;
+  right: auto !important;
+  bottom: 0.75rem !important;
+  z-index: 20 !important;
+}
+
+/* Mic button should NOT sit on bottom-right corner (blocks resize grip)
+   Move it slightly up so resize handle remains draggable */
+.textarea-wrapper .textarea-buttons.mic-btn-right {
+  position: absolute !important;
+  right: 0.75rem !important;
+  left: auto !important;
+  bottom: 2.85rem !important; /* key: frees the resize corner */
+  z-index: 20 !important;
+}
