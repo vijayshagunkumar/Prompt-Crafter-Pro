@@ -1,1 +1,190 @@
+/* sidebar-layout.css - Sidebar Layout System */
 
+/* App Shell Layout */
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  background: var(--bg-body);
+}
+
+/* Main Panel */
+.main-panel {
+  padding: var(--space-lg);
+  overflow-y: auto;
+  background: var(--bg-body);
+  position: relative;
+}
+
+/* Sidebar Layout Variations */
+.app-shell.sidebar-collapsed {
+  grid-template-columns: 60px 1fr;
+}
+
+.app-shell.sidebar-hidden {
+  grid-template-columns: 1fr;
+}
+
+.app-shell.sidebar-hidden .sidebar {
+  display: none;
+}
+
+/* Split Layout */
+.app-shell.split-layout {
+  grid-template-columns: 260px 1fr 300px;
+}
+
+.app-shell.split-layout .sidebar-right {
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border-subtle);
+  padding: var(--space-lg);
+  overflow-y: auto;
+}
+
+/* Full Width Layout */
+.app-shell.full-width {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+}
+
+.app-shell.full-width .sidebar {
+  grid-row: 1;
+  grid-column: 1;
+  height: auto;
+  position: static;
+  border-right: none;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-shell.full-width .main-panel {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: fixed;
+  top: var(--space-md);
+  left: var(--space-md);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--panel-bg);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: var(--z-fixed);
+  transition: var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 94, 0, 0.1);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Responsive Sidebar */
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: 220px 1fr;
+  }
+  
+  .app-shell.split-layout {
+    grid-template-columns: 220px 1fr;
+  }
+  
+  .app-shell.split-layout .sidebar-right {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    z-index: var(--z-modal);
+    transition: left 0.3s ease;
+    border-right: 1px solid var(--border-subtle);
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .sidebar-toggle {
+    display: flex;
+  }
+  
+  .main-panel {
+    padding: var(--space-md);
+  }
+  
+  .app-shell.sidebar-collapsed,
+  .app-shell.split-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-panel {
+    padding: var(--space-sm);
+  }
+  
+  .sidebar {
+    width: 100%;
+  }
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: calc(var(--z-modal) - 1);
+}
+
+.sidebar-overlay.open {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Layout Transitions */
+.app-shell {
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* Print Layout */
+@media print {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .main-panel {
+    padding: 0;
+  }
+}
