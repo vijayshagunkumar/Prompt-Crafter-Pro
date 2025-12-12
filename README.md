@@ -1,4 +1,5 @@
-# Prompt Crafter Pro
+# Prompt Crafter Pro 
+Innovation
 
 A tool to transform ideas into structured AI prompts.
 
