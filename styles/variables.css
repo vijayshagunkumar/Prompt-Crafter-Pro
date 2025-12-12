@@ -1,109 +1,82 @@
-/* styles/variables.css - Updated Professional Theme */
+/* styles/variables.css – Cyberpunk/Neon Theme for PromptCraft */
+
 :root {
-  /* Professional Color Palette */
-  --primary: #2563eb;               /* Professional blue - primary brand */
-  --primary-dark: #1d4ed8;          /* Darker blue for hover states */
-  --primary-light: #3b82f6;         /* Lighter blue for accents */
-  --secondary: #64748b;             /* Muted slate for secondary elements */
-  --accent: #8b5cf6;                /* Vibrant purple for highlights */
-  --success: #10b981;               /* Green for success states */
-  --warning: #f59e0b;               /* Amber for warnings */
-  --danger: #ef4444;                /* Red for errors/destructive actions */
+  /* CYBERPUNK NEON COLOR PALETTE */
+  --primary: #FF5E00;                 /* Neon Orange - Primary accent */
+  --primary-dark: #FF4500;            /* Darker orange */
+  --primary-light: #FF8C42;           /* Lighter orange */
+  --secondary: #00F3FF;               /* Cyber Blue - Secondary accent */
+  --accent: #FF00FF;                  /* Neon Pink/Magenta */
+  --matrix-green: #00FF41;            /* Matrix green for special highlights */
   
-  /* Neutral Backgrounds */
-  --bg-primary: #ffffff;            /* Main background */
-  --bg-secondary: #f8fafc;          /* Secondary background (cards, etc.) */
-  --bg-tertiary: #f1f5f9;           /* Tertiary background (hover states) */
-  --bg-card: #ffffff;               /* Card background */
-  --bg-input: #ffffff;              /* Input background */
+  /* DARK BACKGROUNDS */
+  --bg-body: #0A0E17;                 /* Deep navy blue - main background */
+  --bg-primary: #111827;              /* Dark panel background */
+  --bg-secondary: #1E293B;            /* Slightly lighter dark */
+  --bg-tertiary: #2D3748;             /* Even lighter for contrast */
   
-  /* Text Colors */
-  --text-primary: #1e293b;          /* Primary text - high contrast */
-  --text-secondary: #475569;        /* Secondary text */
-  --text-muted: #64748b;            /* Muted text (hints, labels) */
-  --text-light: #94a3b8;            /* Very light text (disabled) */
+  /* PANELS / CARDS */
+  --panel-bg: #111827;                /* Card backgrounds */
+  --panel-border: #FF5E00;            /* Neon orange borders */
   
-  /* Borders & Shadows */
-  --border: #e2e8f0;                /* Default border color */
-  --border-light: #f1f5f9;          /* Light border (dividers) */
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  /* INPUTS */
+  --input-bg: #0A0E17;                /* Dark input backgrounds */
+  --input-border: #2D3748;            /* Subtle borders */
+  --input-border-focus: #FF5E00;      /* Neon orange on focus */
+  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2); /* Orange glow */
   
-  /* UI Elements */
-  --radius: 12px;                   /* Default border radius */
-  --radius-sm: 8px;                 /* Small radius (buttons, inputs) */
-  --radius-lg: 16px;                /* Large radius (modals) */
-  --transition: all 0.2s ease;      /* Default transition */
+  /* TEXT */
+  --text-primary: #F1F5F9;            /* Bright white for readability */
+  --text-secondary: #94A3B8;          /* Light gray for secondary text */
+  --text-muted: #64748B;              /* Gray for muted text */
+  --text-light: #CBD5E1;              /* Light gray */
+  --text-on-primary: #000000;         /* Black text on orange buttons */
   
-  /* Brand Gradient */
-  --gradient: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+  /* BORDERS */
+  --border-subtle: #2D3748;           /* Subtle borders */
   
-  /* AI Tool Colors (for specific buttons) */
-  --chatgpt: #10a37f;              /* ChatGPT green */
-  --claude: #d4a574;               /* Claude brown */
-  --gemini: #4285f4;               /* Google blue */
-  --perplexity: #8c4dff;           /* Perplexity purple */
-  --deepseek: #0d9488;             /* DeepSeek teal */
-}
-
-/* Dark Theme */
-[data-theme="dark"] {
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --primary-light: #60a5fa;
-  --secondary: #94a3b8;
-  --accent: #a78bfa;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
+  /* SHADOWS WITH GLOW EFFECTS */
+  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
+  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
+  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
   
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-card: #1e293b;
-  --bg-input: #334155;
+  /* SHARP CORNERS (Cyberpunk aesthetic) */
+  --radius-sm: 2px;                   /* Very sharp */
+  --radius-md: 4px;                   /* Moderately sharp */
+  --radius-lg: 8px;                   /* Slightly rounded */
+  --radius-full: 999px;               /* For pills and circles */
   
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
+  /* TRANSITIONS */
+  --transition-fast: all 0.2s ease-out;
   
-  --border: #475569;
-  --border-light: #334155;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-}
-
-/* Auto Theme (System Preference) */
-@media (prefers-color-scheme: dark) {
-  [data-theme="auto"] {
-    /* Same as dark theme above */
-    --primary: #3b82f6;
-    --primary-dark: #2563eb;
-    --primary-light: #60a5fa;
-    --secondary: #94a3b8;
-    --accent: #a78bfa;
-    --success: #34d399;
-    --warning: #fbbf24;
-    --danger: #f87171;
-    
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-card: #1e293b;
-    --bg-input: #334155;
-    
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-light: #64748b;
-    
-    --border: #475569;
-    --border-light: #334155;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-  }
+  /* GRADIENTS */
+  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+  --gradient-subtle: linear-gradient(135deg, #111827 0%, #0A0E17 100%);
+  --gradient-neon: linear-gradient(90deg, #FF5E00, #FF00FF, #00F3FF);
+  
+  /* TOAST/NOTIFICATION */
+  --toast-bg: #1E293B;
+  --toast-text: #00F3FF;
+  
+  /* AI TOOL COLORS (Cyberpunk versions) */
+  --chatgpt: #74AA9C;
+  --chatgpt-purple: #AB68FF;
+  --claude: #DE7356;
+  --gemini: #4796E3;
+  --perplexity: #20808D;
+  --deepseek: #00F3FF;                /* Matches cyber blue */
+  --copilot: #199FD7;
+  --grok: #FF5E00;                    /* Matches neon orange */
+  
+  /* THEME VARIABLES */
+  --primary-color: #FF5E00;
+  --secondary-color: #00F3FF;
+  --accent-color: #FF00FF;
+  --gradient-primary: linear-gradient(135deg, #FF5E00, #00F3FF);
+  --primary-rgb: 255, 94, 0;
+  
+  /* GLOW INTENSITIES */
+  --glow-soft: 0 0 10px;
+  --glow-medium: 0 0 20px;
+  --glow-strong: 0 0 30px;
 }
