@@ -40,6 +40,17 @@
   .hero-badges {
     justify-content: flex-start;
   }
+  
+  .top-bar {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .top-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 768px) {
@@ -230,7 +241,8 @@
 /* Print Styles */
 @media print {
   .sidebar,
-  .theme-toggle,
+  .theme-toggle-btn,
+  .theme-modal-btn,
   .voice-btn,
   .tool-footer,
   .modal-backdrop {
@@ -249,13 +261,8 @@
   }
 }
 
-/* ============================================================
-   LAPTOP HEIGHT FIX: keep action buttons visible in Step 1 & 2
-   ============================================================ */
-
-/* Typical laptop: 1366x768, 1440x900, etc. */
+/* Laptop Height Fixes */
 @media (min-width: 1024px) and (max-height: 820px) {
-
   /* Reduce overall card height + padding slightly */
   .step-card {
     min-height: 520px !important;
@@ -282,7 +289,7 @@
   }
 
   /* Make textareas take the remaining space instead of fixed big height */
-  #ideaInput,
+  #requirement,
   #output,
   .textarea-idea,
   .output-textarea {
@@ -318,15 +325,11 @@
   }
 }
 
-/* ============================================================
-   Laptop height fix (1366x768 etc.)
-   Keep Step-1 Convert + Step-2 Export/Save visible
-   ============================================================ */
+/* Laptop height fix (1366x768 etc.) */
 @media (min-width: 1024px) and (max-height: 820px) {
-
   /* Make each card fit the viewport better */
-  body .cards-grid .step-card{
-    height: calc(100vh - 210px) !important; /* header + spacing */
+  .cards-grid .step-card {
+    height: calc(100vh - 210px) !important;
     min-height: 480px !important;
     padding: 16px !important;
     display: flex !important;
@@ -334,43 +337,43 @@
   }
 
   /* Let the textarea area grow/shrink */
-  body .cards-grid .textarea-container{
+  .cards-grid .textarea-container {
     flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     min-height: 0 !important;
   }
 
-  body .cards-grid .textarea-wrapper{
+  .cards-grid .textarea-wrapper {
     flex: 1 1 auto !important;
     min-height: 0 !important;
   }
 
   /* Reduce textarea height so buttons appear without scroll */
-  body .cards-grid textarea.textarea-idea,
-  body .cards-grid textarea.output-textarea{
+  .cards-grid textarea.textarea-idea,
+  .cards-grid textarea.output-textarea {
     flex: 1 1 auto !important;
     min-height: 140px !important;
     height: auto !important;
   }
 
   /* Slightly tighten helper row spacing */
-  body .cards-grid .helper-row{
+  .cards-grid .helper-row {
     margin-top: 8px !important;
   }
 
   /* Keep buttons near the bottom but visible */
-  body .cards-grid .elegant-convert-btn{
+  .cards-grid .elegant-convert-btn {
     margin-top: 10px !important;
     padding: 12px 14px !important;
   }
 
-  body .cards-grid .prompt-actions{
+  .cards-grid .prompt-actions {
     margin-top: 10px !important;
   }
 
   /* Optional: make action buttons a bit smaller on laptop height */
-  body .cards-grid .prompt-actions button{
+  .cards-grid .prompt-actions button {
     padding: 10px 12px !important;
     font-size: 0.88rem !important;
   }
