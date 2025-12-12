@@ -1,12 +1,15 @@
-// Application State
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "ft:gpt-3.5-turbo-1106:personal::CkAjxivm";
+// PromptCraft – app.js
 
+// API Configuration
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = "gpt-3.5-turbo";
+
+// Application State
 let currentPreset = "default";
-let userPresetLocked = false;       // when user clicks a preset, we stop auto-switching
-let lastPresetSource = "auto";      // 'auto' or 'manual'
-let lastTaskLabel = "General";      // Email / Code / Analysis / Blog / etc.
-let lastRole = "expert assistant";  // from classifier
+let userPresetLocked = false;
+let lastPresetSource = "auto";
+let lastTaskLabel = "General";
+let lastRole = "expert assistant";
 
 let autoConvertEnabled = true;
 let autoConvertDelay = 60;
@@ -18,17 +21,30 @@ let autoConvertCountdown = 60;
 let countdownInterval;
 let editingTemplateId = null;
 let templates = [];
+let historyItems = [];
 
-// Template categories
+// NEW: Clear/Undo button state
+let lastClearedText = "";
+let isUndoState = false;
+
+// NEW: Textarea sizing state
+let textareaSizes = {
+  requirement: { height: 140 },
+  output: { height: 200 }
+};
+let isInputExpanded = false;
+let isOutputExpanded = false;
+
+// Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
   communication: { name: "Communication", icon: "fa-envelope", color: "#3b82f6" },
-  coding: { name: "Coding", icon: "fa-code", color: "#10b981" },
-  writing: { name: "Writing", icon: "fa-pen", color: "#8b5cf6" },
-  analysis: { name: "Analysis", icon: "fa-chart-bar", color: "#f59e0b" },
-  business: { name: "Business", icon: "fa-briefcase", color: "#ef4444" },
-  creative: { name: "Creative", icon: "fa-palette", color: "#ec4899" },
-  education: { name: "Education", icon: "fa-graduation-cap", color: "#06b6d4" },
-  other: { name: "Other", icon: "fa-th", color: "#6b7280" }
+  coding:        { name: "Coding",        icon: "fa-code",     color: "#10b981" },
+  writing:       { name: "Writing",       icon: "fa-pen",      color: "#8b5cf6" },
+  analysis:      { name: "Analysis",      icon: "fa-chart-bar",color: "#f59e0b" },
+  business:      { name: "Business",      icon: "fa-briefcase",color: "#ef4444" },
+  creative:      { name: "Creative",      icon: "fa-palette",  color: "#ec4899" },
+  education:     { name: "Education",     icon: "fa-graduation-cap", color: "#06b6d4" },
+  other:         { name: "Other",         icon: "fa-th",       color: "#6b7280" }
 };
 
 // Default templates
@@ -38,7 +54,6 @@ const DEFAULT_TEMPLATES = [
     name: "Professional Email",
     description: "Write clear, professional emails for business communication",
     category: "communication",
-    tags: ["email", "professional", "business"],
     content: `# Role
 You are an expert business communicator skilled in writing professional emails.
 
@@ -63,49 +78,14 @@ Write a professional email about [TOPIC] to [RECIPIENT]
 - Use proper email formatting
 - Include subject line
 - Check for tone appropriateness`,
-    example:
-      "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
+    example: "Write a professional email to my manager requesting a meeting to discuss project timeline adjustments.",
     usageCount: 5,
     createdAt: Date.now() - 86400000,
-    isDefault: true
-  },
-  {
-    id: "2",
-    name: "Code Review Request",
-    description: "Request code reviews from team members effectively",
-    category: "coding",
-    tags: ["code", "review", "team"],
-    content: `# Role
-You are an experienced software developer who needs code review.
-
-# Objective
-Request code review for [FEATURE/BUG_FIX] from [TEAM_MEMBER/TEAM]
-
-# Context
-- PR/MR Link: [LINK]
-- Changes: [BRIEF_DESCRIPTION]
-- Testing: [WHAT_WAS_TESTED]
-
-# Instructions
-1. Mention specific files/lines to review
-2. Explain the change briefly
-3. Mention any concerns or trade-offs
-4. Specify what kind of feedback you need
-5. Provide context if needed
-
-# Notes
-- Be specific about what to review
-- Mention deadlines if any
-- Thank the reviewer in advance`,
-    example:
-      "Request code review for the new user authentication system from the backend team.",
-    usageCount: 3,
-    createdAt: Date.now() - 172800000,
     isDefault: true
   }
 ];
 
-// Preset templates – markdown with Role / Objective / Context / Instructions / Notes
+// Preset templates
 const PRESETS = {
   default: (role, requirement) =>
     `# Role
@@ -120,7 +100,7 @@ ${requirement}
 # Instructions
 1. Perform the task described in the Objective.
 2. Focus on delivering the final result (email, analysis, code, etc.).
-3. Do **not** talk about prompts, prompt generation, or instructions.
+3. Do **not** talk about prompts, prompt generation, or rewriting instructions.
 4. Do **not** rewrite or summarize the task itself.
 5. Return the completed output in one response.
 
@@ -188,7 +168,7 @@ ${requirement}
 - Include examples or explanations only if they help the user apply the result.`
 };
 
-// -------- Helper: classify role + BEST preset + label ----------
+// Helper: classify role + best preset + label
 function getRoleAndPreset(text) {
   const lower = (text || "").toLowerCase();
   let role = "expert assistant";
@@ -248,12 +228,7 @@ function getRoleAndPreset(text) {
   return { role, preset, label };
 }
 
-// Backwards compatible helper
-function getAppropriateRole(text) {
-  return getRoleAndPreset(text).role;
-}
-
-// -------- Helper: set preset + sync UI & badge ----------
+// Helper: set preset + sync UI & badge
 function setCurrentPreset(presetId) {
   if (!PRESETS[presetId]) return;
   currentPreset = presetId;
@@ -280,6 +255,23 @@ function updatePresetInfo(taskLabel, presetId, source) {
   el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel})`;
 }
 
+// Enable / disable all AI launch buttons
+function setLaunchButtonsEnabled(enabled) {
+  const ids = [
+    "chatgptBtn",
+    "claudeBtn",
+    "geminiBtn",
+    "perplexityBtn",
+    "deepseekBtn",
+    "copilotBtn",
+    "grokBtn"
+  ];
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !enabled;
+  });
+}
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
@@ -289,27 +281,322 @@ function initializeApp() {
   loadSettings();
   loadTemplates();
   loadUsageCount();
+  loadHistory();
   setupEventListeners();
   initializeUI();
   setCurrentPreset(currentPreset);
   updatePresetInfo("General", currentPreset, "auto");
-  document.getElementById("requirement").focus();
+
+  const req = document.getElementById("requirement");
+  if (req) req.focus();
+
+  setLaunchButtonsEnabled(false);
+  
+  // NEW: Initialize textarea sizing
+  initializeTextareaSizing();
 }
 
+// ===========================================
+// TEXTAREA RESIZING AND EXPAND FUNCTIONS
+// ===========================================
+
+// Initialize textarea sizing
+function initializeTextareaSizing() {
+  // Load saved sizes from localStorage
+  const savedSizes = localStorage.getItem('textareaSizes');
+  if (savedSizes) {
+    textareaSizes = JSON.parse(savedSizes);
+    
+    // Apply saved heights
+    const requirementEl = document.getElementById('requirement');
+    const outputEl = document.getElementById('output');
+    
+    if (requirementEl && textareaSizes.requirement.height) {
+      requirementEl.style.height = `${textareaSizes.requirement.height}px`;
+      updateSizeInfo('inputSizeInfo', textareaSizes.requirement.height);
+    }
+    
+    if (outputEl && textareaSizes.output.height) {
+      outputEl.style.height = `${textareaSizes.output.height}px`;
+      updateSizeInfo('outputSizeInfo', textareaSizes.output.height);
+    }
+  }
+  
+  // Setup resize observers
+  setupResizeObservers();
+  
+  // Setup expand/collapse buttons
+  setupExpandButtons();
+}
+
+// Setup resize observers to detect size changes
+function setupResizeObservers() {
+  const requirementEl = document.getElementById('requirement');
+  const outputEl = document.getElementById('output');
+  
+  if (!requirementEl || !outputEl) return;
+  
+  // Use ResizeObserver to detect size changes
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const height = entry.contentRect.height;
+      const textareaId = entry.target.id;
+      
+      // Update size info display
+      if (textareaId === 'requirement') {
+        textareaSizes.requirement.height = height;
+        updateSizeInfo('inputSizeInfo', height);
+      } else if (textareaId === 'output') {
+        textareaSizes.output.height = height;
+        updateSizeInfo('outputSizeInfo', height);
+      }
+      
+      // Save sizes with debounce
+      debounce(saveTextareaSizes, 500);
+      
+      // Add visual feedback
+      entry.target.classList.add('size-changing');
+      setTimeout(() => {
+        entry.target.classList.remove('size-changing');
+      }, 300);
+    }
+  });
+  
+  resizeObserver.observe(requirementEl);
+  resizeObserver.observe(outputEl);
+  
+  // Also track manual drag events
+  requirementEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
+  outputEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
+}
+
+// Update size info display
+
+
+// Save sizes to localStorage
+function saveTextareaSizes() {
+  localStorage.setItem('textareaSizes', JSON.stringify(textareaSizes));
+}
+
+// Setup expand/collapse buttons
+function setupExpandButtons() {
+  const expandInputBtn = document.getElementById('expandInputBtn');
+  const expandOutputBtn = document.getElementById('expandOutputBtn');
+  const expandOverlay = document.getElementById('expandOverlay');
+  
+  if (!expandInputBtn || !expandOutputBtn || !expandOverlay) return;
+  
+  // Input expand/collapse
+  expandInputBtn.addEventListener('click', () => {
+    const textarea = document.getElementById('requirement');
+    if (!textarea) return;
+    
+    if (isInputExpanded) {
+      // Collapse
+      textarea.classList.remove('textarea-expanded');
+      expandInputBtn.classList.remove('expanded');
+      expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandInputBtn.title = 'Expand';
+      expandOverlay.style.display = 'none';
+      isInputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.requirement.height) {
+        textarea.style.height = `${textareaSizes.requirement.height}px`;
+      }
+    } else {
+      // Expand
+      // Save current height before expanding
+      const currentHeight = textarea.offsetHeight;
+      if (currentHeight > 140) {
+        textareaSizes.requirement.height = currentHeight;
+      }
+      
+      textarea.classList.add('textarea-expanded');
+      expandInputBtn.classList.add('expanded');
+      expandInputBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+      expandInputBtn.title = 'Collapse';
+      expandOverlay.style.display = 'block';
+      isInputExpanded = true;
+      
+      // Focus the textarea when expanded
+      textarea.focus();
+      
+      // Scroll to cursor position
+      textarea.scrollTop = textarea.scrollHeight;
+    }
+  });
+  
+  // Output expand/collapse
+  expandOutputBtn.addEventListener('click', () => {
+    const textarea = document.getElementById('output');
+    if (!textarea) return;
+    
+    if (isOutputExpanded) {
+      // Collapse
+      textarea.classList.remove('textarea-expanded');
+      expandOutputBtn.classList.remove('expanded');
+      expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandOutputBtn.title = 'Expand';
+      expandOverlay.style.display = 'none';
+      isOutputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.output.height) {
+        textarea.style.height = `${textareaSizes.output.height}px`;
+      }
+    } else {
+      // Expand
+      // Save current height before expanding
+      const currentHeight = textarea.offsetHeight;
+      if (currentHeight > 200) {
+        textareaSizes.output.height = currentHeight;
+      }
+      
+      textarea.classList.add('textarea-expanded');
+      expandOutputBtn.classList.add('expanded');
+      expandOutputBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+      expandOutputBtn.title = 'Collapse';
+      expandOverlay.style.display = 'block';
+      isOutputExpanded = true;
+    }
+  });
+  
+  // Close expanded mode when clicking overlay
+  expandOverlay.addEventListener('click', () => {
+    const inputTextarea = document.getElementById('requirement');
+    const outputTextarea = document.getElementById('output');
+    
+    if (isInputExpanded && inputTextarea) {
+      inputTextarea.classList.remove('textarea-expanded');
+      expandInputBtn.classList.remove('expanded');
+      expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandInputBtn.title = 'Expand';
+      isInputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.requirement.height) {
+        inputTextarea.style.height = `${textareaSizes.requirement.height}px`;
+      }
+    }
+    
+    if (isOutputExpanded && outputTextarea) {
+      outputTextarea.classList.remove('textarea-expanded');
+      expandOutputBtn.classList.remove('expanded');
+      expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      expandOutputBtn.title = 'Expand';
+      isOutputExpanded = false;
+      
+      // Restore saved height
+      if (textareaSizes.output.height) {
+        outputTextarea.style.height = `${textareaSizes.output.height}px`;
+      }
+    }
+    
+    expandOverlay.style.display = 'none';
+  });
+  
+  // Close expanded mode with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const expandOverlay = document.getElementById('expandOverlay');
+      if (expandOverlay) expandOverlay.click();
+    }
+  });
+}
+
+// Utility: Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Reset textarea sizes to default
+function resetTextareaSizes() {
+  const requirementEl = document.getElementById('requirement');
+  const outputEl = document.getElementById('output');
+  
+  if (requirementEl) {
+    requirementEl.style.height = '140px';
+    textareaSizes.requirement.height = 140;
+    updateSizeInfo('inputSizeInfo', 140);
+  }
+  
+  if (outputEl) {
+    outputEl.style.height = '200px';
+    textareaSizes.output.height = 200;
+    updateSizeInfo('outputSizeInfo', 200);
+  }
+  
+  saveTextareaSizes();
+  showNotification('Textarea sizes reset to default');
+}
+
+// Settings
 function loadSettings() {
   const apiKey = localStorage.getItem("OPENAI_API_KEY") || "";
   const delay = localStorage.getItem("autoConvertDelay") || "60";
-  const theme = localStorage.getItem("theme") || "light";
+  const voiceLang = localStorage.getItem("voiceLanguage") || "en-US";
 
-  document.getElementById("apiKeyInput").value = apiKey;
-  document.getElementById("autoConvertDelay").value = delay;
-  document.getElementById("themeSelect").value = theme;
-  document.getElementById("delayValue").textContent = `Current: ${delay} seconds`;
+  const apiKeyInput = document.getElementById("apiKeyInput");
+  const autoDelayInput = document.getElementById("autoConvertDelay");
+  const voiceLanguageSelect = document.getElementById("voiceLanguage");
+  const delayValue = document.getElementById("delayValue");
+
+  if (apiKeyInput) apiKeyInput.value = apiKey;
+  if (autoDelayInput) autoDelayInput.value = delay;
+  if (voiceLanguageSelect) voiceLanguageSelect.value = voiceLang;
+  if (delayValue) delayValue.textContent = `Current: ${delay} seconds`;
 
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
 }
 
+function saveSettings() {
+  const apiKey = (document.getElementById("apiKeyInput").value || "").trim();
+  const delay = document.getElementById("autoConvertDelay").value || "60";
+  const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
+
+  localStorage.setItem("OPENAI_API_KEY", apiKey);
+  localStorage.setItem("autoConvertDelay", delay);
+  localStorage.setItem("voiceLanguage", voiceLang);
+
+  autoConvertDelay = parseInt(delay, 10);
+  autoConvertCountdown = autoConvertDelay;
+
+  // Update voice language if voice features are available
+  if (window.voiceFeatures && window.voiceFeatures.updateVoiceLanguage) {
+    window.voiceFeatures.updateVoiceLanguage(voiceLang);
+  }
+
+  showNotification("Settings saved");
+  const modal = document.getElementById("settingsModal");
+  if (modal) modal.style.display = "none";
+}
+
+function clearAllData() {
+  localStorage.clear();
+  
+  // Reset textarea sizes in memory
+  textareaSizes = {
+    requirement: { height: 140 },
+    output: { height: 200 }
+  };
+  
+  showNotification("All data cleared. Reloading...");
+  setTimeout(() => {
+    window.location.reload();
+  }, 800);
+}
+
+// Templates
 function loadTemplates() {
   const savedTemplates = localStorage.getItem("promptTemplates");
   if (savedTemplates) {
@@ -320,27 +607,290 @@ function loadTemplates() {
   }
 }
 
-function loadUsageCount() {
-  const savedUsage = localStorage.getItem("promptCrafterUsage");
-  if (savedUsage) {
-    usageCount = parseInt(savedUsage, 10);
-    document.getElementById(
-      "usageCount"
-    ).textContent = `${usageCount} prompts generated`;
-  }
+function loadCategories() {
+  const container = document.getElementById("templateCategories");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const allCat = document.createElement("div");
+  allCat.className = "template-category active";
+  allCat.dataset.category = "all";
+  allCat.innerHTML = '<i class="fas fa-th"></i> All';
+  allCat.addEventListener("click", () => filterTemplatesUI("all"));
+  container.appendChild(allCat);
+
+  Object.entries(TEMPLATE_CATEGORIES).forEach(([key, value]) => {
+    const div = document.createElement("div");
+    div.className = "template-category";
+    div.dataset.category = key;
+    div.innerHTML = `<i class="fas ${value.icon}"></i> ${value.name}`;
+    div.addEventListener("click", () => filterTemplatesUI(key));
+    container.appendChild(div);
+  });
 }
 
+function loadTemplatesToUI(category = "all", searchQuery = "") {
+  const grid = document.getElementById("templatesGrid");
+  const empty = document.getElementById("emptyTemplates");
+  if (!grid || !empty) return;
+
+  grid.innerHTML = "";
+
+  let filtered = templates.slice();
+
+  if (category !== "all") {
+    filtered = filtered.filter((t) => t.category === category);
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        (t.description || "").toLowerCase().includes(q)
+    );
+  }
+
+  if (!filtered.length) {
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  filtered.forEach((template) => {
+    const card = document.createElement("div");
+    card.className = "template-card";
+
+    const categoryMeta = TEMPLATE_CATEGORIES[template.category] || {
+      name: "Other",
+      color: "#6b7280"
+    };
+
+    card.innerHTML = `
+      <div class="template-card-header">
+        <div class="template-card-title">${template.name}</div>
+        <span class="template-card-meta" style="color:${categoryMeta.color}">
+          <i class="fas ${categoryMeta.icon}"></i> ${categoryMeta.name}
+        </span>
+      </div>
+      <div class="template-card-meta">
+        Used ${template.usageCount || 0} times
+      </div>
+      <div class="template-card-description">
+        ${(template.description || "").substring(0, 120)}${
+          (template.description || "").length > 120 ? "..." : ""
+        }
+      </div>
+      <div class="template-actions">
+        <button class="btn-ghost-small" style="border-color:${categoryMeta.color};color:${categoryMeta.color}" onclick="useTemplate('${template.id}')">
+          <i class="fas fa-play"></i> Use
+        </button>
+        <button class="btn-ghost-small" onclick="editTemplate('${template.id}')">
+          <i class="fas fa-edit"></i>
+        </button>
+        ${
+          !template.isDefault
+            ? `<button class="btn-ghost-small danger" onclick="deleteTemplate('${template.id}')">
+                 <i class="fas fa-trash"></i>
+               </button>`
+            : ""
+        }
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filterTemplatesUI(category, searchQuery = "") {
+  document.querySelectorAll(".template-category").forEach((cat) => {
+    cat.classList.remove("active");
+  });
+  const active = document.querySelector(
+    `.template-category[data-category="${category}"]`
+  );
+  if (active) active.classList.add("active");
+
+  const currentSearch =
+    searchQuery || document.getElementById("templateSearch").value;
+  loadTemplatesToUI(category, currentSearch);
+}
+
+function saveTemplate() {
+  const name = document.getElementById("templateName").value.trim();
+  const description = document
+    .getElementById("templateDescription")
+    .value.trim();
+  const content = document.getElementById("templateContent").value.trim();
+  const category = document.getElementById("templateCategory").value;
+  const example = document.getElementById("templateExample").value.trim();
+
+  if (!name || !content) {
+    showNotification("Name and content are required");
+    return;
+  }
+
+  if (editingTemplateId) {
+    const index = templates.findIndex((t) => t.id === editingTemplateId);
+    if (index !== -1) {
+      templates[index] = {
+        ...templates[index],
+        name,
+        description,
+        content,
+        category,
+        example
+      };
+    }
+  } else {
+    const newTemplate = {
+      id: Date.now().toString(),
+      name,
+      description,
+      content,
+      category,
+      example,
+      usageCount: 0,
+      createdAt: Date.now(),
+      isDefault: false
+    };
+    templates.push(newTemplate);
+  }
+
+  localStorage.setItem("promptTemplates", JSON.stringify(templates));
+  loadTemplatesToUI();
+  const modal = document.getElementById("templateModal");
+  if (modal) modal.style.display = "none";
+  showNotification(`Template "${name}" saved`);
+}
+
+function editTemplate(id) {
+  const template = templates.find((t) => t.id === id);
+  if (!template) return;
+
+  editingTemplateId = id;
+  document.getElementById("templateName").value = template.name;
+  document.getElementById("templateDescription").value =
+    template.description || "";
+  document.getElementById("templateContent").value = template.content || "";
+  document.getElementById("templateCategory").value =
+    template.category || "other";
+  document.getElementById("templateExample").value = template.example || "";
+
+  const modal = document.getElementById("templateModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function deleteTemplate(id) {
+  const template = templates.find((t) => t.id === id);
+  if (!template) return;
+
+  if (!confirm(`Delete template "${template.name}"?`)) return;
+
+  templates = templates.filter((t) => t.id !== id);
+  localStorage.setItem("promptTemplates", JSON.stringify(templates));
+  loadTemplatesToUI();
+  showNotification("Template deleted");
+}
+
+// History
+function loadHistory() {
+  const saved = localStorage.getItem("promptHistory");
+  if (saved) {
+    historyItems = JSON.parse(saved);
+  } else {
+    historyItems = [];
+  }
+  renderHistory();
+}
+
+function saveToHistory(requirement, prompt) {
+  const item = {
+    id: Date.now(),
+    requirement,
+    prompt,
+    createdAt: new Date().toISOString()
+  };
+  historyItems.unshift(item);
+  historyItems = historyItems.slice(0, 20);
+  localStorage.setItem("promptHistory", JSON.stringify(historyItems));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (!historyItems.length) {
+    list.innerHTML = `<div class="history-item-meta">No history yet.</div>`;
+    return;
+  }
+
+  historyItems.forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <div class="history-item-title">${(item.requirement || "").slice(
+        0,
+        80
+      )}${item.requirement.length > 80 ? "..." : ""}</div>
+      <div class="history-item-meta">${new Date(
+        item.createdAt
+      ).toLocaleString()}</div>
+    `;
+    div.addEventListener("click", () => {
+      document.getElementById("requirement").value = item.requirement;
+      document.getElementById("output").value = item.prompt;
+      updateStats(item.prompt);
+      updateOutputStats();
+      isConverted = true;
+      lastConvertedText = item.requirement;
+      document.getElementById("convertedBadge").style.display = "inline-flex";
+      setLaunchButtonsEnabled(true);
+      showNotification("Loaded from history");
+      
+      // Update preset based on the loaded requirement
+      const { role, preset: autoPreset, label } = getRoleAndPreset(item.requirement);
+      lastRole = role;
+      lastTaskLabel = label;
+      
+      if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+        lastPresetSource = "auto";
+        setCurrentPreset(autoPreset);
+      }
+      updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
+    });
+    list.appendChild(div);
+  });
+}
+
+function clearHistory() {
+  if (!confirm("Clear all history?")) return;
+  historyItems = [];
+  localStorage.removeItem("promptHistory");
+  renderHistory();
+  showNotification("History cleared");
+}
+
+// UI Init
+function initializeUI() {
+  const templatesPanel = document.getElementById("templatesPanel");
+  if (templatesPanel) templatesPanel.style.display = "none";
+  const historyPanel = document.getElementById("historyPanel");
+  if (historyPanel) historyPanel.style.display = "none";
+}
+
+// Event Listeners
 function setupEventListeners() {
   // Settings
   document.getElementById("settingsBtn").addEventListener("click", () => {
     document.getElementById("settingsModal").style.display = "flex";
   });
 
-  document
-    .getElementById("closeSettingsBtn")
-    .addEventListener("click", () => {
-      document.getElementById("settingsModal").style.display = "none";
-    });
+  document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+    document.getElementById("settingsModal").style.display = "none";
+  });
 
   document
     .getElementById("saveSettingsBtn")
@@ -356,17 +906,25 @@ function setupEventListeners() {
     }
   });
 
+  // NEW: Reset textarea sizes button
+  document.getElementById("resetSizesBtn")?.addEventListener("click", resetTextareaSizes);
+
   // Auto-convert delay slider
   const delaySlider = document.getElementById("autoConvertDelay");
   const delayValue = document.getElementById("delayValue");
-  delaySlider.addEventListener("input", () => {
-    delayValue.textContent = `Current: ${delaySlider.value} seconds`;
-    autoConvertDelay = parseInt(delaySlider.value, 10);
-  });
+  if (delaySlider && delayValue) {
+    delaySlider.addEventListener("input", () => {
+      delayValue.textContent = `Current: ${delaySlider.value} seconds`;
+      autoConvertDelay = parseInt(delaySlider.value, 10);
+    });
+  }
 
   // Requirement input
   const requirementEl = document.getElementById("requirement");
   requirementEl.addEventListener("input", handleRequirementInput);
+  
+  // NEW: Also listen to keyup to handle voice input completion
+  requirementEl.addEventListener("keyup", handleRequirementInput);
 
   // Auto-convert toggle
   document.getElementById("autoConvert").addEventListener("change", (e) => {
@@ -378,13 +936,21 @@ function setupEventListeners() {
     }
   });
 
-  // Preset selection (manual override)
+  // Preset selection
   document.querySelectorAll(".preset-option").forEach((option) => {
     option.addEventListener("click", () => {
       const presetId = option.dataset.preset;
       userPresetLocked = true;
       lastPresetSource = "manual";
       setCurrentPreset(presetId);
+
+      // NEW: Clear output when preset changes
+      if (isConverted) {
+        document.getElementById("output").value = "";
+        isConverted = false;
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+      }
 
       if (document.getElementById("requirement").value.trim() && isConverted) {
         isConverted = false;
@@ -401,9 +967,18 @@ function setupEventListeners() {
       requirementEl.value = btn.dataset.example;
       requirementEl.focus();
       isConverted = false;
+      document.getElementById("output").value = "";
       document.getElementById("convertBtn").disabled = false;
       document.getElementById("convertedBadge").style.display = "none";
-      generatePrompt();
+      setLaunchButtonsEnabled(false);
+      
+      // Update stats
+      updateStats(requirementEl.value);
+      
+      // Auto-generate if there's text
+      if (requirementEl.value.trim()) {
+        generatePrompt();
+      }
     });
   });
 
@@ -412,85 +987,257 @@ function setupEventListeners() {
     .getElementById("convertBtn")
     .addEventListener("click", generatePrompt);
 
-  // Copy button
-  document.getElementById("copyBtn").addEventListener("click", async () => {
-    if (!document.getElementById("output").value) await generatePrompt();
-    await copyToClipboard();
-    showNotification("Prompt copied to clipboard!");
-  });
+  // AI Tools
+  document
+    .getElementById("chatgptBtn")
+    .addEventListener("click", () =>
+      openAITool("ChatGPT", "https://chat.openai.com/")
+    );
 
- // AI Tools
-document.getElementById('chatgptBtn')
-  .addEventListener('click', () => openAITool('ChatGPT', 'https://chat.openai.com/'));
+  document.getElementById("claudeBtn").addEventListener("click", () =>
+    openAITool("Claude", "https://claude.ai/new")
+  );
 
-document.getElementById('claudeBtn')
-  .addEventListener('click', () => openAITool('Claude', 'https://claude.ai/new'));
+  document.getElementById("geminiBtn").addEventListener("click", () =>
+    openAITool("Gemini", "https://gemini.google.com/app")
+  );
 
-document.getElementById('geminiBtn')
-  .addEventListener('click', () => openAITool('Gemini', 'https://gemini.google.com/app'));
+  document.getElementById("perplexityBtn").addEventListener("click", () =>
+    openAITool("Perplexity", "https://www.perplexity.ai/")
+  );
 
-document.getElementById('perplexityBtn')
-  .addEventListener('click', () => openAITool('Perplexity', 'https://www.perplexity.ai/'));
+  document.getElementById("deepseekBtn").addEventListener("click", () =>
+    openAITool("DeepSeek", "https://chat.deepseek.com/")
+  );
 
-document.getElementById('deepseekBtn')
-  .addEventListener('click', () => openAITool('DeepSeek', 'https://chat.deepseek.com/'));
+  document.getElementById("copilotBtn").addEventListener("click", () =>
+    openAITool("Copilot", "https://copilot.microsoft.com/")
+  );
 
-// NEW: Copilot & Grok
-document.getElementById('copilotBtn')
-  .addEventListener('click', () => openAITool('Copilot', 'https://copilot.microsoft.com/'));
-
-document.getElementById('grokBtn')
-  .addEventListener('click', () => openAITool('Grok', 'https://x.ai/'));
+  document.getElementById("grokBtn").addEventListener("click", () =>
+    openAITool("Grok", "https://x.ai/")
+  );
 
   // Export
   document.getElementById("exportBtn").addEventListener("click", exportPrompt);
+  
+  // Output textarea change
+  document.getElementById("output").addEventListener("input", updateOutputStats);
 
-  // History
+  // History toggle + clear
   document
     .getElementById("toggleHistoryBtn")
-    .addEventListener("click", toggleHistory);
+    .addEventListener("click", () => {
+      const panel = document.getElementById("historyPanel");
+      if (!panel) return;
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    });
+
   document
     .getElementById("clearHistoryBtn")
     .addEventListener("click", clearHistory);
 
-  // Template functionality
+  // Template listeners
   setupTemplateListeners();
+  
+  // NEW: Clear/Undo button functionality
+  setupClearUndoButton();
 }
 
-function initializeUI() {
-  updateStats("");
-  loadHistory();
-}
-
-// Core Functions
-function handleRequirementInput() {
+// NEW: Clear/Undo button functionality
+function setupClearUndoButton() {
+  const clearBtn = document.getElementById("clearInputBtn");
   const requirementEl = document.getElementById("requirement");
-  const convertBtn = document.getElementById("convertBtn");
-  const text = requirementEl.value;
+  
+  if (!clearBtn || !requirementEl) return;
+  
+  clearBtn.addEventListener("click", function() {
+    const icon = this.querySelector("i");
+    
+    if (!isUndoState) {
+      // First click: CLEAR text
+      if (requirementEl.value.trim()) {
+        lastClearedText = requirementEl.value;
+        requirementEl.value = "";
+        requirementEl.focus();
+        
+        // NEW: Clear output when clearing requirement
+        document.getElementById("output").value = "";
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+        // =================
+        
+        // Change button to UNDO state
+        isUndoState = true;
+        clearBtn.classList.add("undo-state");
+        clearBtn.title = "Undo clear";
+        icon.className = "fas fa-undo";
+        
+        // Update stats and state
+        updateStats("");
+        isConverted = false;
+        document.getElementById("convertBtn").disabled = true;
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+        
+        // Clear timers
+        clearAutoConvertTimer();
+        
+        showNotification("Text cleared. Click undo to restore.");
+      }
+    } else {
+      // Second click: UNDO (restore text)
+      requirementEl.value = lastClearedText;
+      requirementEl.focus();
+      
+      // Change button back to CLEAR state
+      isUndoState = false;
+      clearBtn.classList.remove("undo-state");
+      clearBtn.title = "Clear text";
+      icon.className = "fas fa-broom";
+      
+      // Update stats and state
+      updateStats(lastClearedText);
+      document.getElementById("convertBtn").disabled = !lastClearedText.trim();
+      
+      // Reset if there's text
+      if (lastClearedText.trim()) {
+        isConverted = false;
+        document.getElementById("convertedBadge").style.display = "none";
+        setLaunchButtonsEnabled(false);
+        
+        // Reset auto-convert timer if enabled
+        if (autoConvertEnabled) {
+          resetAutoConvertTimer();
+        }
+      }
+      
+      showNotification("Text restored");
+      lastClearedText = "";
+    }
+  });
+  
+  // Reset undo state when user starts typing
+  requirementEl.addEventListener("input", function() {
+    if (isUndoState) {
+      const clearBtn = document.getElementById("clearInputBtn");
+      const icon = clearBtn.querySelector("i");
+      
+      isUndoState = false;
+      clearBtn.classList.remove("undo-state");
+      clearBtn.title = "Clear text";
+      icon.className = "fas fa-broom";
+      lastClearedText = "";
+    }
+  });
+}
 
-  if (isConverted && text.trim() !== lastConvertedText) {
+// Template listeners - UPDATED with eye icon toggle
+function setupTemplateListeners() {
+  document.getElementById("toggleTemplatesBtn").addEventListener("click", function() {
+    const panel = document.getElementById("templatesPanel");
+    const eyeIcon = this.querySelector(".template-toggle-eye i");
+    
+    if (panel.style.display === "none") {
+      panel.style.display = "block";
+      if (eyeIcon) {
+        eyeIcon.className = "fas fa-eye-slash"; // Change to closed eye
+      }
+    } else {
+      panel.style.display = "none";
+      if (eyeIcon) {
+        eyeIcon.className = "fas fa-eye"; // Change to open eye
+      }
+    }
+    
+    loadCategories();
+    loadTemplatesToUI();
+  });
+  
+  document
+    .getElementById("templateSearch")
+    .addEventListener("input", function () {
+      const activeCategory =
+        document.querySelector(".template-category.active")?.dataset.category ||
+        "all";
+      filterTemplatesUI(activeCategory, this.value);
+    });
+
+  document.getElementById("newTemplateBtn").addEventListener("click", () => {
+    editingTemplateId = null;
+    document.getElementById("templateName").value = "";
+    document.getElementById("templateDescription").value = "";
+    document.getElementById("templateContent").value =
+      document.getElementById("output").value || "";
+    document.getElementById("templateCategory").value = "communication";
+    document.getElementById("templateExample").value =
+      document.getElementById("requirement").value || "";
+    document.getElementById("templateModal").style.display = "flex";
+  });
+
+  document
+    .getElementById("saveTemplateBtn")
+    .addEventListener("click", saveTemplate);
+
+  document.getElementById("closeTemplateBtn").addEventListener("click", () => {
+    document.getElementById("templateModal").style.display = "none";
+  });
+
+  document.getElementById("cancelTemplateBtn").addEventListener("click", () => {
+    document.getElementById("templateModal").style.display = "none";
+  });
+}
+
+// Make template functions globally available
+window.clearHistory = clearHistory;
+window.useTemplate = function (id) {
+  const template = templates.find((t) => t.id === id);
+  if (template) {
+    template.usageCount = (template.usageCount || 0) + 1;
+    localStorage.setItem("promptTemplates", JSON.stringify(templates));
+
+    document.getElementById("requirement").value = template.example || "";
+    document.getElementById("output").value = template.content;
+    updateStats(template.content);
+    updateOutputStats();
+    isConverted = true;
+    lastConvertedText = template.example || "";
+    document.getElementById("convertedBadge").style.display = "inline-flex";
+    setLaunchButtonsEnabled(true);
+    showNotification("Template loaded into prompt");
+  }
+};
+window.editTemplate = editTemplate;
+window.deleteTemplate = deleteTemplate;
+
+// Usage Count
+function loadUsageCount() {
+  const savedUsage = localStorage.getItem("promptCrafterUsage");
+  if (savedUsage) {
+    usageCount = parseInt(savedUsage, 10);
+  }
+  document.getElementById(
+    "usageCount"
+  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+}
+
+// Auto-convert
+function handleRequirementInput() {
+  const text = document.getElementById("requirement").value;
+  
+  // NEW: Clear output if user is typing new requirement
+  if (isConverted && text !== lastConvertedText) {
+    document.getElementById("output").value = "";
     isConverted = false;
-    convertBtn.disabled = false;
     document.getElementById("convertedBadge").style.display = "none";
-    document.getElementById("timerDisplay").style.display = "none";
-    clearAutoConvertTimer();
+    setLaunchButtonsEnabled(false);
   }
+  
+  isConverted = false;
+  document.getElementById("convertedBadge").style.display = "none";
+  document.getElementById("convertBtn").disabled = !text.trim();
 
-  // Auto-detect role + preset if user hasn't locked one
-  const { role, preset, label } = getRoleAndPreset(text);
-  lastRole = role;
-  lastTaskLabel = label;
-
-  if (!userPresetLocked && preset && preset !== currentPreset) {
-    lastPresetSource = "auto";
-    setCurrentPreset(preset);
-  } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
-  }
+  setLaunchButtonsEnabled(false);
 
   if (autoConvertEnabled) {
     resetAutoConvertTimer();
@@ -504,20 +1251,18 @@ function resetAutoConvertTimer() {
   const requirement = document.getElementById("requirement").value.trim();
   if (autoConvertEnabled && requirement && !isConverted) {
     autoConvertCountdown = autoConvertDelay;
-    document.getElementById(
-      "timerValue"
-    ).textContent = `${autoConvertCountdown}s`;
-    document.getElementById("timerDisplay").style.display = "inline-flex";
+    const timerValue = document.getElementById("timerValue");
+    const timerDisplay = document.getElementById("timerDisplay");
+    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
+    if (timerDisplay) timerDisplay.style.display = "inline-flex";
 
     countdownInterval = setInterval(() => {
       autoConvertCountdown--;
-      document.getElementById(
-        "timerValue"
-      ).textContent = `${autoConvertCountdown}s`;
+      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
 
       if (autoConvertCountdown <= 0) {
         clearInterval(countdownInterval);
-        document.getElementById("timerDisplay").style.display = "none";
+        if (timerDisplay) timerDisplay.style.display = "none";
         if (requirement && requirement !== lastConvertedText) {
           generatePrompt();
         }
@@ -537,27 +1282,57 @@ function resetAutoConvertTimer() {
 function clearAutoConvertTimer() {
   clearTimeout(autoConvertTimer);
   clearInterval(countdownInterval);
-  document.getElementById("timerDisplay").style.display = "none";
+  const timerDisplay = document.getElementById("timerDisplay");
+  if (timerDisplay) timerDisplay.style.display = "none";
 }
 
+// Stats
 function updateStats(text) {
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lineCount = text.split("\n").length;
 
-  document.getElementById(
-    "charCount"
-  ).textContent = `${charCount} characters`;
-  document.getElementById("wordCount").textContent = `${wordCount} words`;
-  document.getElementById("lineCount").textContent = `${lineCount} lines`;
+  // SAFE VERSION - only update if elements exist
+  try {
+    const charEl = document.getElementById("charCount");
+    const wordEl = document.getElementById("wordCount");
+    const lineEl = document.getElementById("lineCount");
+    
+    if (charEl) charEl.textContent = `${charCount} characters`;
+    if (wordEl) wordEl.textContent = `${wordCount} words`;
+    if (lineEl) lineEl.textContent = `${lineCount} lines`;
+  } catch (error) {
+    // Ignore if elements don't exist
+    console.log("Stats elements not found - ignoring");
+  }
 }
 
-// Clean up any bad output from the finetuned model
+function updateOutputStats() {
+  const text = document.getElementById("output").value;
+  const charCount = text.length;
+  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lineCount = text.split("\n").length;
+
+  // SAFE VERSION - only update if elements exist
+  try {
+    const charEl = document.getElementById("outputCharCount");
+    const wordEl = document.getElementById("outputWordCount");
+    const lineEl = document.getElementById("outputLineCount");
+    
+    if (charEl) charEl.textContent = `${charCount} characters`;
+    if (wordEl) wordEl.textContent = `${wordCount} words`;
+    if (lineEl) lineEl.textContent = `${lineCount} lines`;
+  } catch (error) {
+    // Ignore if elements don't exist
+    console.log("Output stats elements not found - ignoring");
+  }
+}
+
+// Clean up output
 function sanitizePrompt(text) {
   if (!text) return "";
   let cleaned = text;
 
-  // Strip code fences if present
   cleaned = cleaned.replace(/^```[^\n]*\n?/g, "");
   cleaned = cleaned.replace(/```$/g, "");
 
@@ -574,7 +1349,6 @@ function sanitizePrompt(text) {
     })
     .join("\n");
 
-  // Soft replacements if anything slipped inside a line
   cleaned = cleaned.replace(/prompt generator/gi, "assistant");
   cleaned = cleaned.replace(
     /generate a prompt/gi,
@@ -584,6 +1358,7 @@ function sanitizePrompt(text) {
   return cleaned.trim();
 }
 
+// Generation - FIXED VERSION
 async function generatePrompt() {
   const requirementEl = document.getElementById("requirement");
   const outputEl = document.getElementById("output");
@@ -595,7 +1370,6 @@ async function generatePrompt() {
     return "";
   }
 
-  // Smart auto-preset (only if user didn't lock)
   const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
   lastRole = role;
   lastTaskLabel = label;
@@ -611,16 +1385,14 @@ async function generatePrompt() {
     );
   }
 
-  // Track usage
   usageCount++;
   localStorage.setItem("promptCrafterUsage", usageCount);
   document.getElementById(
     "usageCount"
-  ).textContent = `${usageCount} prompts generated`;
+  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
 
   const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
 
-  // Show converting state
   convertBtn.disabled = true;
   convertBtn.innerHTML =
     '<i class="fas fa-spinner fa-spin"></i> Converting...';
@@ -630,10 +1402,8 @@ async function generatePrompt() {
 
   try {
     if (!apiKey) {
-      // Use local formatter
       generatedPrompt = localFormatter(raw);
     } else {
-      // Use API with template filling
       const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
 
       const system = `
@@ -684,575 +1454,114 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
+    updateOutputStats();
     saveToHistory(raw, generatedPrompt);
 
-    // Update state
     isConverted = true;
     lastConvertedText = raw;
-    convertBtn.disabled = true;
     document.getElementById("convertedBadge").style.display = "inline-flex";
+    setLaunchButtonsEnabled(true);
 
     showNotification("Prompt generated successfully");
 
-    if (autoConvertEnabled) {
+    // Reset auto-convert timer if there's still text
+    if (autoConvertEnabled && raw) {
+      autoConvertCountdown = autoConvertDelay;
       resetAutoConvertTimer();
     }
-
-    return generatedPrompt;
-  } catch (err) {
-    console.error("Generation error:", err);
-    generatedPrompt = sanitizePrompt(localFormatter(raw));
+  } catch (error) {
+    console.error("Generation error:", error);
+    generatedPrompt = localFormatter(raw);
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
-    saveToHistory(raw, generatedPrompt);
-    showNotification("Generated with local template");
-
-    isConverted = true;
-    lastConvertedText = raw;
-    convertBtn.disabled = true;
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    return generatedPrompt;
+    updateOutputStats();
+    showNotification("Using offline generation");
   } finally {
-    convertBtn.disabled = true;
-    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
+    convertBtn.disabled = false;
+    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
   }
+
+  return generatedPrompt;
 }
 
 function localFormatter(raw) {
-  const clean = (raw || "").trim() || "[No requirement provided]";
-  const { role, preset: autoPreset, label } = getRoleAndPreset(clean);
-
-  lastRole = role;
-  lastTaskLabel = label;
-
-  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-    lastPresetSource = "auto";
-    setCurrentPreset(autoPreset);
-  } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
-  }
-
-  const template = PRESETS[currentPreset];
-  return template ? template(role, clean) : PRESETS["default"](role, clean);
+  const requirement = raw;
+  const { role } = getRoleAndPreset(requirement);
+  return PRESETS[currentPreset](role, requirement);
 }
 
-async function copyToClipboard() {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value) {
-    showNotification("No prompt to copy. Generate one first.");
-    return false;
-  }
-
-  try {
-    await navigator.clipboard.writeText(outputEl.value);
-    return true;
-  } catch (err) {
-    // Fallback
-    const textArea = document.createElement("textarea");
-    textArea.value = outputEl.value;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      return true;
-    } catch (err2) {
-      document.body.removeChild(textArea);
-      showNotification("Failed to copy. Please copy manually.");
-      return false;
-    }
-  }
-}
-
-async function openAITool(platform, url) {
-  const outputEl = document.getElementById("output");
-  if (!outputEl.value || !isConverted) {
-    await generatePrompt();
-  }
-
-  const copied = await copyToClipboard();
-  if (!copied) return;
-
-  showNotification(`Prompt copied! Opening ${platform}...`);
-
-  try {
-    window.open(url, "_blank");
-  } catch (err) {
-    showNotification(
-      `${platform} blocked by popup blocker. Please allow popups.`
-    );
-  }
-}
-
+// Export
 function exportPrompt() {
   const outputEl = document.getElementById("output");
-  if (!outputEl.value) {
-    showNotification("Generate a prompt first");
+  const prompt = outputEl.value;
+
+  if (!prompt.trim()) {
+    showNotification("No prompt to export");
     return;
   }
 
-  const blob = new Blob([outputEl.value], { type: "text/plain" });
+  const blob = new Blob([prompt], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `prompt-${Date.now()}.txt`;
+  a.download = `prompt-${new Date().toISOString().slice(0, 10)}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-
-  showNotification("Prompt exported as .txt file");
+  showNotification("Prompt exported");
 }
 
-// Settings Functions
-function saveSettings() {
-  const apiKey = document.getElementById("apiKeyInput").value.trim();
-  const delay = document.getElementById("autoConvertDelay").value;
-  const theme = document.getElementById("themeSelect").value;
-
-  localStorage.setItem("OPENAI_API_KEY", apiKey);
-  localStorage.setItem("autoConvertDelay", delay);
-  localStorage.setItem("theme", theme);
-
-  autoConvertDelay = parseInt(delay, 10);
-  autoConvertCountdown = autoConvertDelay;
-
-  document.getElementById("settingsModal").style.display = "none";
-  showNotification("Settings saved successfully!");
-}
-
-function clearAllData() {
-  localStorage.removeItem("promptTemplates");
-  localStorage.removeItem("promptHistory");
-  localStorage.removeItem("promptCrafterUsage");
-
-  // Keep settings
-  const apiKey = localStorage.getItem("OPENAI_API_KEY");
-  const delay = localStorage.getItem("autoConvertDelay");
-  const theme = localStorage.getItem("theme");
-
-  localStorage.clear();
-
-  if (apiKey) localStorage.setItem("OPENAI_API_KEY", apiKey);
-  if (delay) localStorage.setItem("autoConvertDelay", delay);
-  if (theme) localStorage.setItem("theme", theme);
-
-  // Reset state
-  usageCount = 0;
-  templates = [...DEFAULT_TEMPLATES];
-  isConverted = false;
-  lastConvertedText = "";
-
-  // Reset UI
-  document.getElementById("requirement").value = "";
-  document.getElementById("output").value = "";
-  document.getElementById("usageCount").textContent = "0 prompts generated";
-  document.getElementById("historyList").innerHTML = "";
-  document.getElementById("templatesGrid").innerHTML = "";
-  updateStats("");
-
-  // Clear badges
-  document.getElementById("convertedBadge").style.display = "none";
-  document.getElementById("timerDisplay").style.display = "none";
-  document.getElementById("convertBtn").disabled = false;
-
-  // Save default templates
-  localStorage.setItem("promptTemplates", JSON.stringify(templates));
-
-  document.getElementById("settingsModal").style.display = "none";
-  showNotification("All data cleared successfully!");
-}
-
-// History Functions
-function saveToHistory(requirement, prompt) {
-  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
-  const item = {
-    id: Date.now(),
-    requirement:
-      requirement.substring(0, 100) +
-      (requirement.length > 100 ? "..." : ""),
-    prompt: prompt,
-    timestamp: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
-    }),
-    date: new Date().toLocaleDateString(),
-    fullRequirement: requirement
-  };
-
-  history.unshift(item);
-  if (history.length > 15) history.pop();
-
-  localStorage.setItem("promptHistory", JSON.stringify(history));
-  localStorage.setItem(`fullReq_${item.id}`, requirement);
-  loadHistory();
-}
-
-function loadHistory() {
-  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
-  const historyList = document.getElementById("historyList");
-  historyList.innerHTML = "";
-
-  if (history.length === 0) {
-    historyList.innerHTML =
-      '<div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">No history yet</div>';
+// AI Tool opener
+function openAITool(name, url) {
+  const outputEl = document.getElementById("output");
+  const prompt = outputEl.value.trim();
+  
+  if (!prompt) {
+    showNotification("No prompt to copy");
     return;
   }
-
-  history.forEach((item) => {
-    const div = document.createElement("div");
-    div.className = "history-item";
-    div.innerHTML = `
-      <div style="flex: 1; min-width: 0;">
-        <div style="font-weight:500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.requirement}</div>
-        <div style="font-size:11px;color:var(--muted)">${item.date} ${item.timestamp}</div>
-      </div>
-      <button class="btn small" style="padding:6px 12px;font-size:12px; flex-shrink: 0;" onclick="event.stopPropagation();useHistoryItem('${item.id}')">Use</button>
-    `;
-    div.addEventListener("click", (e) => {
-      if (!e.target.closest("button")) {
-        const requirementEl = document.getElementById("requirement");
-        const outputEl = document.getElementById("output");
-        requirementEl.value =
-          localStorage.getItem(`fullReq_${item.id}`) || item.requirement;
-        outputEl.value = item.prompt;
-        updateStats(item.prompt);
-        isConverted = true;
-        lastConvertedText = requirementEl.value.trim();
-        document.getElementById("convertBtn").disabled = true;
-        document.getElementById("convertedBadge").style.display = "inline-flex";
-        showNotification("Prompt loaded from history");
-      }
-    });
-    historyList.appendChild(div);
-  });
-}
-
-function toggleHistory() {
-  const panel = document.getElementById("historyPanel");
-  const isVisible = panel.style.display === "block";
-  panel.style.display = isVisible ? "none" : "block";
-  if (!isVisible) loadHistory();
-}
-
-function clearHistory() {
-  if (confirm("Are you sure you want to clear all history?")) {
-    localStorage.removeItem("promptHistory");
-    loadHistory();
-    showNotification("History cleared");
-  }
-}
-
-// Template Functions
-function setupTemplateListeners() {
-  // Toggle templates panel
-  document.getElementById("toggleTemplatesBtn").addEventListener("click", () => {
-    const panel = document.getElementById("templatesPanel");
-    const btn = document.getElementById("toggleTemplatesBtn");
-
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      btn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
-      loadCategories();
-      loadTemplatesToUI();
-    } else {
-      panel.style.display = "none";
-      btn.innerHTML = '<i class="fas fa-eye"></i> Show';
-    }
-  });
-
-  // Template search
-  document
-    .getElementById("templateSearch")
-    .addEventListener("input", function () {
-      const activeCategory =
-        document.querySelector(".template-category.active")?.dataset.category ||
-        "all";
-      filterTemplatesUI(activeCategory, this.value);
-    });
-
-  // New template
-  document.getElementById("newTemplateBtn").addEventListener("click", () => {
-    editingTemplateId = null;
-    document.getElementById("modalTitle").textContent = "New Template";
-    document.getElementById("templateName").value = "";
-    document.getElementById("templateDescription").value = "";
-    document.getElementById("templateContent").value =
-      document.getElementById("output").value || "";
-    document.getElementById("templateCategory").value = "communication";
-    document.getElementById("templateExample").value =
-      document.getElementById("requirement").value || "";
-    document.getElementById("templateModal").style.display = "flex";
-  });
-
-  // Save as template
-  document
-    .getElementById("saveAsTemplateBtn")
-    .addEventListener("click", () => {
-      if (!document.getElementById("output").value.trim()) {
-        showNotification(
-          "Generate a prompt first before saving as template"
-        );
-        return;
-      }
-
-      editingTemplateId = null;
-      document.getElementById("modalTitle").textContent = "Save as Template";
-      document.getElementById("templateName").value = `Prompt ${new Date().toLocaleDateString()}`;
-      document.getElementById("templateDescription").value =
-        "Custom prompt template";
-      document.getElementById("templateContent").value =
-        document.getElementById("output").value;
-      document.getElementById("templateCategory").value = "other";
-      document.getElementById("templateExample").value =
-        document.getElementById("requirement").value || "";
-      document.getElementById("templateModal").style.display = "flex";
-    });
-
-  // Save template
-  document
-    .getElementById("saveTemplateBtn")
-    .addEventListener("click", saveTemplate);
-
-  // Close template modal
-  document
-    .getElementById("closeTemplateBtn")
-    .addEventListener("click", () => {
-      document.getElementById("templateModal").style.display = "none";
-    });
-
-  document
-    .getElementById("cancelTemplateBtn")
-    .addEventListener("click", () => {
-      document.getElementById("templateModal").style.display = "none";
+  
+  // Copy prompt to clipboard
+  navigator.clipboard.writeText(prompt)
+    .then(() => {
+      showNotification(`Prompt copied! Opening ${name}...`);
+      setTimeout(() => {
+        window.open(url, '_blank');
+      }, 500);
+    })
+    .catch(err => {
+      console.error('Failed to copy:', err);
+      showNotification("Failed to copy prompt");
     });
 }
 
-function loadCategories() {
-  const container = document.getElementById("templateCategories");
-  container.innerHTML = "";
-
-  // All category
-  const allCat = document.createElement("div");
-  allCat.className = "template-category active";
-  allCat.dataset.category = "all";
-  allCat.innerHTML = '<i class="fas fa-th"></i> All';
-  allCat.addEventListener("click", () => filterTemplatesUI("all"));
-  container.appendChild(allCat);
-
-  // Other categories
-  Object.keys(TEMPLATE_CATEGORIES).forEach((id) => {
-    const cat = TEMPLATE_CATEGORIES[id];
-    const catEl = document.createElement("div");
-    catEl.className = "template-category";
-    catEl.dataset.category = id;
-    catEl.innerHTML = `<i class="fas ${cat.icon}"></i> ${cat.name}`;
-    catEl.addEventListener("click", () => filterTemplatesUI(id));
-    container.appendChild(catEl);
-  });
-}
-
-function loadTemplatesToUI(filterCategory = "all", searchQuery = "") {
-  const grid = document.getElementById("templatesGrid");
-  const empty = document.getElementById("emptyTemplates");
-
-  grid.innerHTML = "";
-
-  let filtered = templates;
-
-  if (filterCategory !== "all") {
-    filtered = filtered.filter((t) => t.category === filterCategory);
-  }
-
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(
-      (t) =>
-        t.name.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query) ||
-        (t.tags && t.tags.some((tag) => tag.toLowerCase().includes(query)))
-    );
-  }
-
-  if (filtered.length === 0) {
-    empty.style.display = "block";
-    return;
-  }
-
-  empty.style.display = "none";
-
-  filtered.forEach((template) => {
-    const category = TEMPLATE_CATEGORIES[template.category];
-    const card = document.createElement("div");
-    card.className = "template-card";
-    card.innerHTML = `
-      <div class="template-icon" style="background:${category.color}">
-        <i class="fas ${category.icon}"></i>
-      </div>
-      <div class="template-title">${template.name}</div>
-      <div class="template-desc">${template.description}</div>
-      <div class="template-meta">
-        <span><i class="fas fa-download"></i> Used ${
-          template.usageCount || 0
-        } times</span>
-        <span class="tag"><i class="fas fa-tag"></i> ${category.name}</span>
-      </div>
-      <div class="template-actions">
-        <button class="btn small" style="background:${category.color}" onclick="useTemplate('${template.id}')">
-          <i class="fas fa-play"></i> Use
-        </button>
-        <button class="btn small" style="background:#64748b" onclick="editTemplate('${template.id}')">
-          <i class="fas fa-edit"></i>
-        </button>
-        ${
-          !template.isDefault
-            ? `<button class="btn small" style="background:#ef4444" onclick="deleteTemplate('${template.id}')">
-          <i class="fas fa-trash"></i>
-        </button>`
-            : ""
-        }
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-function filterTemplatesUI(category, searchQuery = "") {
-  document.querySelectorAll(".template-category").forEach((cat) => {
-    cat.classList.remove("active");
-  });
-  document
-    .querySelector(`.template-category[data-category="${category}"]`)
-    .classList.add("active");
-
-  const currentSearch =
-    searchQuery || document.getElementById("templateSearch").value;
-  loadTemplatesToUI(category, currentSearch);
-}
-
-function saveTemplate() {
-  const name = document.getElementById("templateName").value.trim();
-  const description = document
-    .getElementById("templateDescription")
-    .value.trim();
-  const content = document.getElementById("templateContent").value.trim();
-  const category = document.getElementById("templateCategory").value;
-  const example = document.getElementById("templateExample").value.trim();
-
-  if (!name || !content) {
-    showNotification("Name and content are required");
-    return;
-  }
-
-  if (editingTemplateId) {
-    // Update existing template
-    const index = templates.findIndex((t) => t.id === editingTemplateId);
-    if (index !== -1) {
-      templates[index] = {
-        ...templates[index],
-        name,
-        description,
-        content,
-        category,
-        example
-      };
-    }
-  } else {
-    // Add new template
-    const newTemplate = {
-      id: Date.now().toString(),
-      name,
-      description,
-      content,
-      category,
-      example,
-      usageCount: 0,
-      createdAt: Date.now(),
-      isDefault: false
-    };
-    templates.push(newTemplate);
-  }
-
-  localStorage.setItem("promptTemplates", JSON.stringify(templates));
-  loadTemplatesToUI();
-  document.getElementById("templateModal").style.display = "none";
-  showNotification(`Template "${name}" saved`);
-}
-
-// Utility Functions
+// Notification
 function showNotification(message) {
   const notification = document.getElementById("notification");
-  document.getElementById("notificationText").textContent = message;
+  if (!notification) return;
+  
+  const textEl = document.getElementById("notificationText");
+  if (textEl) textEl.textContent = message;
+  
   notification.style.display = "flex";
+  
   setTimeout(() => {
-    notification.style.display = "none";
+    notification.classList.add("show");
+  }, 10);
+
+  setTimeout(() => {
+    notification.classList.remove("show");
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 300);
   }, 3000);
 }
 
 // Make functions globally available
-window.clearHistory = clearHistory;
-window.useTemplate = function (id) {
-  const template = templates.find((t) => t.id === id);
-  if (template) {
-    // Update usage count
-    template.usageCount = (template.usageCount || 0) + 1;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-
-    // Fill requirement with example
-    document.getElementById("requirement").value = template.example || "";
-
-    // Generate prompt from template content
-    document.getElementById("output").value = template.content;
-    updateStats(template.content);
-
-    // Update state
-    isConverted = true;
-    lastConvertedText = document
-      .getElementById("requirement")
-      .value.trim();
-    document.getElementById("convertBtn").disabled = true;
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-
-    showNotification(`Using "${template.name}" template`);
-  }
-};
-
-window.editTemplate = function (id) {
-  const template = templates.find((t) => t.id === id);
-  if (template) {
-    editingTemplateId = id;
-    document.getElementById("modalTitle").textContent = "Edit Template";
-    document.getElementById("templateName").value = template.name;
-    document.getElementById("templateDescription").value =
-      template.description;
-    document.getElementById("templateContent").value = template.content;
-    document.getElementById("templateCategory").value = template.category;
-    document.getElementById("templateExample").value = template.example || "";
-
-    document.getElementById("templateModal").style.display = "flex";
-  }
-};
-
-window.deleteTemplate = function (id) {
-  if (confirm("Are you sure you want to delete this template?")) {
-    templates = templates.filter((t) => t.id !== id || t.isDefault);
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-    loadTemplatesToUI();
-    showNotification("Template deleted");
-  }
-};
-
-window.useHistoryItem = function (id) {
-  const history = JSON.parse(localStorage.getItem("promptHistory") || "[]");
-  const item = history.find((h) => h.id == id);
-  if (item) {
-    document.getElementById("requirement").value =
-      localStorage.getItem(`fullReq_${id}`) || item.requirement;
-    generatePrompt();
-  }
-};
+window.generatePrompt = generatePrompt;
+window.exportPrompt = exportPrompt;
+window.openAITool = openAITool;
+window.saveSettings = saveSettings;
+window.clearAllData = clearAllData;
+window.resetTextareaSizes = resetTextareaSizes;
