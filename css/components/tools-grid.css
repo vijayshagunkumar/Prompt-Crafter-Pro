@@ -143,3 +143,70 @@
 
 /* Reduce list gap so cards don’t feel huge */
 .tools-grid { gap: 12px !important; }
+
+/* ============================================================
+   FORCE compact Step-3 tool cards (wins over index.html <style>)
+   Paste at END of css/components/tools-grid.css
+   ============================================================ */
+
+body .tools-grid,
+body #aiToolsGrid {
+  gap: 10px !important;
+}
+
+/* If grid-view is accidentally applied, force LIST layout */
+body .tools-grid.grid-view,
+body #aiToolsGrid.grid-view {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+}
+
+/* Force tool card to be compact list row */
+body .tools-grid .tool-card,
+body #aiToolsGrid .tool-card {
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  display: grid !important;
+  grid-template-columns: 34px 1fr auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  /* prevent tall “poster” cards */
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Smaller icon */
+body .tools-grid .tool-card .tool-icon,
+body #aiToolsGrid .tool-card .tool-icon {
+  width: 34px !important;
+  height: 34px !important;
+  font-size: 0.95rem !important;
+  border-radius: 10px !important;
+}
+
+/* Tight, smaller title + remove global h4 spacing */
+body .tools-grid .tool-card .tool-body h4,
+body #aiToolsGrid .tool-card .tool-body h4 {
+  font-size: 0.85rem !important;
+  line-height: 1.2 !important;
+  margin: 0 0 2px 0 !important;   /* kills global h4 margin */
+  font-weight: 700 !important;
+}
+
+/* Smaller description */
+body .tools-grid .tool-card .tool-body p,
+body #aiToolsGrid .tool-card .tool-body p {
+  font-size: 0.72rem !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Smaller “Open” */
+body .tools-grid .tool-card .tool-footer,
+body #aiToolsGrid .tool-card .tool-footer {
+  font-size: 0.72rem !important;
+  gap: 6px !important;
+}
