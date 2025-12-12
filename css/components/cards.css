@@ -38,3 +38,9 @@
 
 /* Keep your existing badge/chip styles below if you want,
    OR keep as-is (no need to change everything). */
+
+/* Allow card to expand when textarea is resized */
+.step-card {
+  max-height: none !important;
+  overflow: visible !important;
+}
