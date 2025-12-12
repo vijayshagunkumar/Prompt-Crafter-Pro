@@ -10,13 +10,13 @@ import { loadTemplates } from './features/templates.js';
 import { loadHistory } from './features/history.js';
 import { detectContextFromText } from './features/context-detective.js';
 
+// Import AI modules
+import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
+
 // Import UI modules
 import { initializeEventHandlers } from './ui/event-handlers.js';
-import { showNotification, showSuccess, showError } from './ui/notifications.js';
+import { showNotification, showSuccess, showError, showInfo } from './ui/notifications.js';
 import modalManager from './ui/modal-manager.js';
-
-// Import AI modules
-import { renderAIToolsGrid } from './ai/ai-tools.js';
 
 /**
  * Initialize the application
@@ -45,8 +45,14 @@ async function initializeApp() {
     // Initialize AI tools
     initializeAITools();
     
+    // Initialize theme
+    initializeTheme();
+    
     // Update stats
     updateAllStats();
+    
+    // Setup tool click handlers
+    setupToolClickHandlers(showNotification);
     
     // Show welcome message
     setTimeout(() => {
@@ -73,9 +79,6 @@ function initializeUI() {
   
   // Set initial button states
   updateButtonStates();
-  
-  // Set up theme
-  initializeTheme();
 }
 
 /**
@@ -94,10 +97,7 @@ function initializeModals() {
  * Initialize AI tools grid
  */
 function initializeAITools() {
-  const toolsGrid = document.getElementById('aiToolsGrid');
-  if (toolsGrid) {
-    toolsGrid.innerHTML = renderAIToolsGrid('general', '', false);
-  }
+  updateAIToolsGrid('general', '', false);
 }
 
 /**
@@ -172,14 +172,49 @@ function updateButtonStates() {
 function initializeTheme() {
   // Load saved theme or use default
   const savedTheme = localStorage.getItem(STORAGE_KEYS.appTheme) || DEFAULTS.theme;
-  document.documentElement.setAttribute('data-app-theme', savedTheme);
+  setTheme(savedTheme, false);
   
   // Update theme toggle button
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      toggleTheme();
-    });
+    themeToggle.innerHTML = savedTheme === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+}
+
+/**
+ * Set theme
+ */
+function setTheme(themeName, showNotification = true) {
+  const html = document.documentElement;
+  
+  // List of available themes
+  const themes = ['sunset-glow', 'aurora-magic', 'serenity-bliss', 'cyberpunk-neon', 'ocean-deep'];
+  
+  if (!themes.includes(themeName)) {
+    themeName = DEFAULTS.theme;
+  }
+  
+  // Set theme attribute
+  html.setAttribute('data-app-theme', themeName);
+  localStorage.setItem(STORAGE_KEYS.appTheme, themeName);
+  
+  // Update theme toggle icon
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.innerHTML = themeName === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+  }
+  
+  if (showNotification) {
+    const themeNames = {
+      'sunset-glow': 'Sunset Glow',
+      'aurora-magic': 'Aurora Magic', 
+      'serenity-bliss': 'Serenity Bliss',
+      'cyberpunk-neon': 'Cyberpunk Neon',
+      'ocean-deep': 'Ocean Deep'
+    };
+    
+    showNotification(`Theme changed to ${themeNames[themeName] || themeName}`);
   }
 }
 
@@ -193,10 +228,7 @@ function toggleTheme() {
   const nextIndex = (currentIndex + 1) % themes.length;
   const nextTheme = themes[nextIndex];
   
-  document.documentElement.setAttribute('data-app-theme', nextTheme);
-  localStorage.setItem(STORAGE_KEYS.appTheme, nextTheme);
-  
-  showNotification(`Theme changed to ${nextTheme}`);
+  setTheme(nextTheme);
 }
 
 /**
@@ -264,7 +296,9 @@ window.PromptCraft = {
   resetAppData,
   showNotification,
   showSuccess,
-  showError
+  showError,
+  setTheme,
+  toggleTheme
 };
 
 console.log('🎯 PromptCraft loaded');
