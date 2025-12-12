@@ -58,3 +58,13 @@ textarea::-moz-selection {
   background: rgba(255,106,26,0.35) !important;
   color: rgba(255,255,255,0.95) !important;
 }
+
+/* Make tag/chip labels readable */
+.badge,
+.chip,
+.preset-badge,
+.mode-pill {
+  color: rgba(255,255,255,0.85) !important;
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+}
