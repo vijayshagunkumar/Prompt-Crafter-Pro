@@ -178,17 +178,16 @@ function initializeTheme() {
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.innerHTML = savedTheme === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    // Remove any existing event listener and add new one
-    themeToggle.onclick = toggleTheme;
+    themeToggle.addEventListener('click', toggleTheme);
   }
 }
 
 /**
  * Set theme
  * @param {string} themeName - Theme name
- * @param {boolean} showNotification - Whether to show notification
+ * @param {boolean} showNotif - Whether to show notification
  */
-function setTheme(themeName, showNotification = true) {
+function setTheme(themeName, showNotif = true) {
   const html = document.documentElement;
   
   // List of available themes
@@ -208,7 +207,7 @@ function setTheme(themeName, showNotification = true) {
     themeToggle.innerHTML = themeName === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
   }
   
-  if (showNotification) {
+  if (showNotif) {
     const themeNames = {
       'sunset-glow': 'Sunset Glow',
       'aurora-magic': 'Aurora Magic', 
@@ -217,7 +216,6 @@ function setTheme(themeName, showNotification = true) {
       'ocean-deep': 'Ocean Deep'
     };
     
-    // Use imported showNotification function
     showNotification(`Theme changed to ${themeNames[themeName] || themeName}`);
   }
 }
@@ -292,7 +290,7 @@ if (document.readyState === 'loading') {
   initializeApp();
 }
 
-// Export for debugging - MAKE SURE toggleTheme IS EXPORTED
+// Export for debugging
 window.PromptCraft = {
   appState,
   modalManager,
@@ -302,7 +300,7 @@ window.PromptCraft = {
   showSuccess,
   showError,
   setTheme,
-  toggleTheme // ADDED THIS
+  toggleTheme
 };
 
 console.log('🎯 PromptCraft loaded');
