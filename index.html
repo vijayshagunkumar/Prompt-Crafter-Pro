@@ -652,6 +652,72 @@
       font-size: 0.875rem !important;
     }
     /* ===== END OF COMPACT CODE ===== */
+    <style>
+  /* ... all your existing button and textarea styles ... */
+  
+  /* ===== PASTE BUTTON FIX CODE HERE ===== */
+  /* Textarea Bottom Buttons - FIXED POSITIONS */
+  .textarea-buttons {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  /* Clear button position for Card 1 */
+  #card1 .textarea-buttons {
+    right: 50px; /* Mic at right, clear at left of mic */
+  }
+
+  #card1 .textarea-buttons .icon-btn:nth-child(1) {
+    /* Clear button - left position */
+    position: absolute;
+    right: 40px;
+  }
+
+  #card1 .textarea-buttons .icon-btn:nth-child(2) {
+    /* Mic button - right position */
+    position: relative;
+    right: 0;
+  }
+
+  /* Card 2 only has copy button */
+  #card2 .textarea-buttons {
+    right: 12px;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.75rem;
+  }
+
+  .icon-btn:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary-light);
+  }
+  /* ===== END BUTTON FIX ===== */
+  
+  /* ===== PASTE COMPACT CODE HERE ===== */
+  /* Make everything more compact */
+  .main-container {
+    padding: 20px !important;
+    gap: 20px !important;
+  }
+  /* ... rest of compact code ... */
+</style>
     
   </style> <!-- This is where the style tag closes -->
   </style>
