@@ -3,8 +3,8 @@
 import appState from '../core/app-state.js';
 import { detectContextFromText, createContextChipsHTML } from '../features/context-detective.js';
 import { generatePrompt } from '../ai/prompt-generator.js';
-import { renderAIToolsGrid, handleToolClick } from '../ai/ai-tools.js';
-import { showNotification, showSuccess, showError, showLoading } from './notifications.js';
+import { updateAIToolsGrid, setupToolClickHandlers } from '../ai/ai-tools.js';
+import { showNotification, showSuccess, showError, showInfo } from './notifications.js';
 import modalManager, { openModal, closeModal } from './modal-manager.js';
 import { setupVoiceButton } from '../features/voice.js';
 import { renderTemplatesGrid } from '../features/templates.js';
@@ -99,7 +99,7 @@ function handleRequirementInput(requirementEl, contextChipsRow) {
       contextChipsRow.style.display = 'flex';
       
       // Update AI tools based on context
-      updateAITools(context.taskType, text, false);
+      updateAIToolsGrid(context.taskType, text, false);
     } else {
       contextChipsRow.innerHTML = '';
       contextChipsRow.style.display = 'none';
@@ -146,9 +146,7 @@ function setupOutputHandlers() {
         return;
       }
 
-      const hideLoading = showLoading('Copying to clipboard...');
       const success = await copyPromptToClipboard(prompt);
-      hideLoading();
 
       if (success) {
         showSuccess('Prompt copied to clipboard');
@@ -234,7 +232,7 @@ async function handleConvert() {
       
       // Update AI tools with new context
       const context = detectContextFromText(raw);
-      updateAITools(context.taskType, result.prompt, true);
+      updateAIToolsGrid(context.taskType, result.prompt, true);
       
       showSuccess('Prompt generated successfully');
     } else {
@@ -242,6 +240,10 @@ async function handleConvert() {
       outputEl.value = result.prompt;
       updateOutputStats();
       updateLaunchButtons(true);
+      
+      // Still update AI tools
+      const context = detectContextFromText(raw);
+      updateAIToolsGrid(context.taskType, result.prompt, true);
     }
   } catch (error) {
     console.error('Conversion error:', error);
@@ -257,30 +259,8 @@ async function handleConvert() {
  * Setup tool handlers
  */
 function setupToolHandlers() {
-  const toolsGrid = document.getElementById('aiToolsGrid');
-  
-  if (toolsGrid) {
-    // Delegate click events to tool cards
-    toolsGrid.addEventListener('click', (e) => {
-      const toolCard = e.target.closest('.tool-card');
-      if (!toolCard || toolCard.classList.contains('tool-card-disabled')) {
-        return;
-      }
-
-      const toolId = toolCard.dataset.tool;
-      const outputEl = document.getElementById('output');
-      const prompt = outputEl.value.trim();
-      
-      if (!prompt) {
-        showError('Generate a prompt first');
-        return;
-      }
-
-      // Find tool by ID and handle click
-      // This would be connected to the AI tools module
-      console.log(`Opening ${toolId} with prompt`);
-    });
-  }
+  // Tool click handlers are now handled by ai-tools.js
+  // setupToolClickHandlers is called from app.js
 }
 
 /**
@@ -359,15 +339,6 @@ function setupVoiceHandlers() {
 function setupUIHandlers() {
   // Update usage count display
   updateUsageCount();
-  
-  // Theme toggle
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      // This would be connected to the theme system
-      console.log('Toggle theme');
-    });
-  }
 }
 
 /**
@@ -376,11 +347,8 @@ function setupUIHandlers() {
  * @param {string} promptText - Prompt text
  * @param {boolean} isConverted - Whether prompt is generated
  */
-function updateAITools(taskType, promptText, isConverted) {
-  const toolsGrid = document.getElementById('aiToolsGrid');
-  if (toolsGrid) {
-    toolsGrid.innerHTML = renderAIToolsGrid(taskType, promptText, isConverted);
-  }
+function updateAIToolsGrid(taskType, promptText, isConverted) {
+  updateAIToolsGrid(taskType, promptText, isConverted);
 }
 
 /**
@@ -392,8 +360,10 @@ function updateLaunchButtons(enabled) {
   toolCards.forEach(card => {
     if (enabled) {
       card.classList.remove('tool-card-disabled');
+      card.disabled = false;
     } else {
       card.classList.add('tool-card-disabled');
+      card.disabled = true;
     }
   });
 }
