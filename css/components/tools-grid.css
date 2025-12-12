@@ -4,37 +4,27 @@
   background: var(--bg-primary);
   border: 1px solid var(--border-light);
   border-radius: 8px;
-  padding: 0.625rem;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
-  height: 48px;
-  margin-bottom: 0.25rem;
+  height: 52px !important; /* FIX OVERLAP */
+  margin-bottom: 6px !important; /* FIX OVERLAP */
+  min-height: 52px !important;
+  max-height: 52px !important;
 }
 
-.tool-card:hover:not(.tool-card-disabled) {
-  border-color: var(--primary);
-  background: var(--primary-soft);
-  transform: translateY(-1px);
+.tools-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px !important;
 }
 
-.tool-card.best-match {
-  border-color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.tool-card-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* Tool Icon - Ultra Compact */
 .tool-icon {
-  width: 28px;
-  height: 28px;
+  width: 30px !important;
+  height: 30px !important;
   background: var(--primary-soft);
   border: 1px solid var(--primary-light);
   border-radius: 6px;
@@ -42,69 +32,25 @@
   align-items: center;
   justify-content: center;
   color: var(--primary);
-  font-size: 0.75rem;
+  font-size: 0.75rem !important;
   flex-shrink: 0;
 }
 
-/* Tool Info - Ultra Compact */
-.tool-info {
-  flex: 1;
-  min-width: 0;
-}
-
 .tool-info h4 {
-  font-size: 0.75rem;
+  font-size: 0.75rem !important;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.125rem;
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tool-info p {
-  font-size: 0.625rem;
+  font-size: 0.625rem !important;
   color: var(--text-secondary);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Tool Arrow */
-.tool-arrow {
-  color: var(--text-tertiary);
-  font-size: 0.75rem;
-  opacity: 0.6;
-  flex-shrink: 0;
-}
-
-/* Tools Grid Layout - No Overlap */
-.tools-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .tool-card {
-    padding: 0.5rem;
-    height: 44px;
-    gap: 0.5rem;
-  }
-  
-  .tool-icon {
-    width: 24px;
-    height: 24px;
-    font-size: 0.6875rem;
-  }
-  
-  .tool-info h4 {
-    font-size: 0.6875rem;
-  }
-  
-  .tool-info p {
-    font-size: 0.5625rem;
-  }
 }
