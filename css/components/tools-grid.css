@@ -17,3 +17,62 @@
   border-color: rgba(255,94,0,0.45);
   transform: none;
 }
+
+/* =========================================
+   Compact tool cards (ChatGPT/Grok/etc.)
+   Add at END of tools-grid.css
+   ========================================= */
+
+/* Card container */
+.tool-card {
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+}
+
+/* Reduce gaps inside card */
+.tool-card-header,
+.tool-body,
+.tool-footer {
+  gap: 10px !important;
+}
+
+/* Make icon smaller */
+.tool-icon,
+.tool-logo,
+.tool-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 12px !important;
+}
+
+/* Tighten title/description */
+.tool-title,
+.tool-category {
+  font-size: 0.9rem !important;
+  line-height: 1.15 !important;
+}
+
+.tool-desc,
+.tool-tag,
+.tool-subtitle,
+.tool-meta {
+  font-size: 0.78rem !important;
+  line-height: 1.25 !important;
+  color: var(--text-muted) !important;
+}
+
+/* Make the action link/button smaller (Open / Launch) */
+.tool-open,
+.tool-action,
+.tool-btn,
+.tool-footer a,
+.tool-footer button {
+  font-size: 0.82rem !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+}
+
+/* If your tools list is a grid on desktop, reduce row height feel */
+.tools-grid {
+  gap: 10px !important;
+}
