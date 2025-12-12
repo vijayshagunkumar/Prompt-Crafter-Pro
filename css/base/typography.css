@@ -1,4 +1,4 @@
-/* typography.css - Typography System */
+/* typography.css - Professional Typography System */
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
@@ -34,6 +34,7 @@ h6 {
 p {
   margin-bottom: var(--space-md);
   color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 .text-xs {
@@ -75,7 +76,7 @@ p {
 }
 
 .text-muted {
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 .text-accent {
