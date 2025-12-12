@@ -1,48 +1,44 @@
-/* cards.css - Professional Card Styles with Expansion */
+/* cards.css - Clean Card Styles */
 
 /* Step Card Base */
 .step-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  border-radius: 16px;
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 680px;
   position: relative;
-  overflow: visible;
-  box-shadow: var(--shadow-card);
-  transition: var(--transition-base);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .step-card:hover {
-  box-shadow: var(--shadow-elevated);
   border-color: var(--primary-light);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Expanded Card State */
+/* Expanded Card State - Clean */
 .step-card.expanded {
   position: fixed !important;
   top: 50% !important;
   left: 50% !important;
-  transform: translate(-50%, -50%) scale(0.95) !important;
+  transform: translate(-50%, -50%) scale(0.98) !important;
   width: 90vw !important;
-  height: 90vh !important;
+  height: 85vh !important;
   max-width: 1200px !important;
-  max-height: 800px !important;
   z-index: 2000 !important;
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3) !important;
-  border: 2px solid var(--primary) !important;
-  animation: cardExpand 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
-  overflow-y: auto !important;
+  box-shadow: 0 40px 60px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid var(--primary) !important;
+  animation: cardExpand 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
 }
 
 @keyframes cardExpand {
   0% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.98);
   }
   100% {
     opacity: 1;
@@ -50,23 +46,23 @@
   }
 }
 
-/* Expand Button */
+/* Expand Button - Clean */
 .expand-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 36px;
-  height: 36px;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 32px;
+  height: 32px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition-base);
-  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
   z-index: 10;
 }
 
@@ -74,41 +70,26 @@
   background: var(--primary-soft);
   color: var(--primary);
   border-color: var(--primary);
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
 }
 
-.expand-btn.expanded {
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.expand-btn.expanded i {
-  transform: rotate(180deg);
-}
-
-.expand-btn i {
-  transition: transform 0.3s ease;
-}
-
-/* Close Button for Expanded Cards */
+/* Close Button */
 .close-expanded {
   position: absolute;
-  top: 20px;
-  right: 60px;
-  width: 36px;
-  height: 36px;
+  top: 1.5rem;
+  right: 4rem;
+  width: 32px;
+  height: 32px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition-base);
-  font-size: 1rem;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
   z-index: 10;
   opacity: 0;
   visibility: hidden;
@@ -123,7 +104,6 @@
   background: var(--error);
   color: white;
   border-color: var(--error);
-  transform: scale(1.1);
 }
 
 /* Card Overlay */
@@ -133,12 +113,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
   z-index: 1999;
   opacity: 0;
   visibility: hidden;
-  transition: var(--transition-base);
+  transition: opacity 0.3s ease;
 }
 
 .card-overlay.show {
@@ -146,31 +126,27 @@
   visibility: visible;
 }
 
-/* Step Pill */
-.step-pill {
-  width: 40px;
-  height: 40px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--primary-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-/* Step Header */
+/* Step Header - Clean */
 .step-header {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-  padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--border-light);
-  padding-right: 50px; /* Space for expand button */
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-pill {
+  width: 32px;
+  height: 32px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 8px;
+  border: 1px solid var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
 }
 
 .step-header-main {
@@ -178,32 +154,19 @@
 }
 
 .step-header-main h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: var(--space-xs);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
   color: var(--text-primary);
 }
 
 .step-header-main p {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   margin: 0;
 }
 
-/* Badge */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--accent);
-  color: white;
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* Textarea Container for Expansion */
+/* Expanded textarea */
 .step-card.expanded .textarea-container {
   flex: 1;
   display: flex;
@@ -218,47 +181,35 @@
 
 .step-card.expanded textarea {
   flex: 1;
-  min-height: 300px;
+  min-height: 400px;
   font-size: 0.9375rem;
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
-/* Responsive adjustments for expanded cards */
+/* Responsive */
 @media (max-width: 768px) {
   .step-card.expanded {
     width: 95vw !important;
-    height: 95vh !important;
-    padding: var(--space-md) !important;
+    height: 90vh !important;
+    padding: 1.25rem !important;
   }
   
   .expand-btn {
-    top: 15px;
-    right: 15px;
-    width: 32px;
-    height: 32px;
-    font-size: 0.75rem;
+    top: 1rem;
+    right: 1rem;
+    width: 28px;
+    height: 28px;
   }
   
   .close-expanded {
-    top: 15px;
-    right: 55px;
-    width: 32px;
-    height: 32px;
-    font-size: 0.875rem;
+    top: 1rem;
+    right: 3.5rem;
+    width: 28px;
+    height: 28px;
   }
   
   .step-card {
-    min-height: 620px;
-  }
-}
-
-@media (max-width: 576px) {
-  .step-card {
-    min-height: 580px;
-    padding: var(--space-md);
-  }
-  
-  .step-header {
-    padding-right: 40px;
+    min-height: 600px;
+    padding: 1.25rem;
   }
 }
