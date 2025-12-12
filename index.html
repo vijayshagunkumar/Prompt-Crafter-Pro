@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-app-theme="sunset-glow">
+<html lang="en" data-theme="professional-blue">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PromptCraft | AI Prompt Studio</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptCraft | Professional AI Prompt Studio</title>
 
   <!-- Fonts & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/main.css" />
@@ -25,14 +21,29 @@
     }
     
     body {
-      background: var(--bg-body);
+      background: var(--bg-secondary);
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
-    /* Main Container - Full width */
+    /* Glassmorphism backdrop effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--primary-soft) 0%, transparent 100%);
+      opacity: 0.1;
+      z-index: -1;
+      pointer-events: none;
+    }
+    
+    /* Main Container */
     .main-container {
       max-width: 1600px;
       margin: 0 auto;
@@ -42,14 +53,14 @@
       min-height: 100vh;
     }
     
-    /* Header with Brand - Moved above cards */
+    /* Header with Brand */
     .brand-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-light);
     }
     
     .brand-container {
@@ -59,354 +70,68 @@
     }
     
     .brand-logo {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      border-radius: 12px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: black;
+      color: white;
       font-size: 1.5rem;
       font-weight: bold;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
     
     .brand-text h1 {
-      font-size: 1.75rem;
+      font-size: 1.875rem;
       margin-bottom: 0.25rem;
-      background: linear-gradient(90deg, #FF5E00, #FF8C42);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      font-weight: 800;
     }
     
     .brand-text p {
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
       color: var(--text-secondary);
       margin: 0;
     }
     
-    /* Three Cards Grid - Full width */
+    /* Current Theme Display */
+    .current-theme {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--primary-soft);
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    
+    .current-theme strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    /* Three Cards Grid */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 1.5rem;
       align-items: stretch;
       flex: 1;
-    }
-    
-    .step-card {
-      background: var(--panel-bg);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      height: 650px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .step-card:hover {
-      border-color: rgba(255, 94, 0, 0.3);
-      box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
-    }
-    
-    /* Step Header */
-    .step-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-    }
-    
-    .step-pill {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      color: black;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 0.875rem;
-      flex-shrink: 0;
-    }
-    
-    .step-header-main {
-      flex: 1;
-    }
-    
-    .step-header-main h3 {
-      font-size: 1.125rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    .step-header-main p {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-      margin: 0;
-    }
-    
-    /* Elegant Convert Button - Smaller and beautiful */
-    .elegant-convert-btn {
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.875rem 1.25rem;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      width: 100%;
-      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: 1rem;
-    }
-    
-    .elegant-convert-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 94, 0, 0.35);
-      background: linear-gradient(135deg, #FF4500 0%, #FF5E00 100%);
-    }
-    
-    .elegant-convert-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-    
-    /* Text Areas */
-    .textarea-container {
-      flex: 1;
-      margin-bottom: 1rem;
-    }
-    
-    .textarea-wrapper {
-      position: relative;
-    }
-    
-    .textarea-idea, .output-textarea {
-      width: 100%;
-      min-height: 140px;
-      max-height: 160px;
-      padding: 1rem;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      resize: vertical;
-    }
-    
-    .textarea-idea:focus, .output-textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.1);
-    }
-    
-    /* Textarea Buttons */
-    .textarea-buttons {
-      position: absolute;
-      bottom: 0.75rem;
-      display: flex;
-      gap: 0.5rem;
-      z-index: 10;
-    }
-    
-    .clear-btn-left {
-      left: 0.75rem;
-    }
-    
-    .mic-btn-right {
-      right: 0.75rem;
-    }
-    
-    .icon-btn {
-      width: 36px;
-      height: 36px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      border-radius: 6px;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .icon-btn:hover {
-      background: rgba(255, 94, 0, 0.2);
-      transform: translateY(-1px);
-    }
-    
-    /* Helper Text */
-    .helper-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.5rem;
-    }
-    
-    .helper-text {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      line-height: 1.4;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.375rem;
-    }
-    
-    .char-counter {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-    }
-    
-    /* Auto-convert Toggle */
-    .auto-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    
-    .toggle-switch {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-    }
-    
-    .toggle-switch input {
-      display: none;
-    }
-    
-    .toggle-slider {
-      width: 40px;
-      height: 22px;
-      background: var(--input-bg);
-      border-radius: 20px;
-      position: relative;
-      border: 1px solid var(--border-subtle);
-      transition: 0.3s;
-    }
-    
-    .toggle-slider::before {
-      content: "";
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: var(--text-secondary);
-      border-radius: 50%;
-      top: 1px;
-      left: 1px;
-      transition: 0.3s;
-    }
-    
-    input:checked + .toggle-slider {
-      background: rgba(255, 94, 0, 0.2);
-      border-color: var(--primary);
-    }
-    
-    input:checked + .toggle-slider::before {
-      transform: translateX(18px);
-      background: var(--primary);
-    }
-    
-    .toggle-label {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-    }
-    
-    /* Preset Selector */
-    .preset-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    
-    .preset-left {
-      flex: 1;
-    }
-    
-    .field-label {
-      display: block;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      margin-bottom: 0.375rem;
-      color: var(--text-primary);
-    }
-    
-    select {
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 6px;
-      color: var(--text-primary);
-      font-size: 0.8125rem;
-      cursor: pointer;
-    }
-    
-    /* Badges */
-    .badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      background: rgba(0, 255, 65, 0.1);
-      color: #00FF41;
-      border-radius: 4px;
-      border: 1px solid #00FF41;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
+      margin-bottom: 2rem;
     }
     
     /* Action Buttons */
     .prompt-actions {
       display: flex;
       gap: 0.75rem;
-      margin-top: 1rem;
-    }
-    
-    .ghost-btn, .secondary-btn {
-      flex: 1;
-      padding: 0.75rem;
-      font-size: 0.8125rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .ghost-btn {
-      background: transparent;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-    }
-    
-    .secondary-btn {
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      color: var(--primary);
-    }
-    
-    .ghost-btn:hover, .secondary-btn:hover {
-      background: rgba(255, 94, 0, 0.15);
-    }
-    
-    .ghost-btn:disabled, .secondary-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
+      margin-top: 1.5rem;
     }
     
     /* Card 3 - Scrollable Tools */
@@ -423,28 +148,30 @@
       gap: 0.5rem;
     }
     
+    /* Tool Card Styling */
     .tool-card {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 8px;
-      padding: 0.875rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1rem;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: 0.75rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: var(--transition-base);
     }
     
     .tool-card:hover {
       border-color: var(--primary);
-      background: rgba(255, 94, 0, 0.05);
+      background: var(--primary-soft);
       transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
     }
     
     .tool-card.best-match {
       border-color: var(--primary);
-      background: rgba(255, 94, 0, 0.1);
+      background: var(--primary-soft);
       position: relative;
     }
     
@@ -454,7 +181,7 @@
       top: -8px;
       left: 10px;
       background: var(--primary);
-      color: black;
+      color: var(--text-on-primary);
       font-size: 0.625rem;
       font-weight: 600;
       padding: 2px 6px;
@@ -462,37 +189,38 @@
     }
     
     .tool-icon {
-      width: 36px;
-      height: 36px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      border-radius: 6px;
+      width: 40px;
+      height: 40px;
+      background: var(--primary-soft);
+      border: 1px solid var(--primary-light);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--primary);
-      font-size: 1rem;
+      font-size: 1.125rem;
     }
     
     .tool-info h4 {
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
       margin-bottom: 0.125rem;
+      font-weight: 600;
     }
     
     .tool-info p {
-      font-size: 0.75rem;
+      font-size: 0.8125rem;
       color: var(--text-secondary);
       margin: 0;
     }
     
-    /* Footer with Features and Stats */
+    /* Footer */
     .main-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-subtle);
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-light);
     }
     
     .features-footer {
@@ -503,14 +231,14 @@
     .feature-item {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
+      gap: 0.5rem;
       color: var(--text-secondary);
-      font-size: 0.8125rem;
+      font-size: 0.875rem;
     }
     
     .feature-item i {
       color: var(--primary);
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
     }
     
     .stats-footer {
@@ -518,54 +246,69 @@
       align-items: center;
       gap: 0.5rem;
       color: var(--text-secondary);
-      font-size: 0.8125rem;
+      font-size: 0.875rem;
     }
     
     .stats-footer i {
       color: var(--primary);
     }
     
-    /* Theme Toggle - Bottom Right Corner */
-    .theme-toggle-fixed {
+    /* Theme Notification */
+    .theme-notification {
       position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      border-radius: 50%;
-      color: var(--primary);
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      padding: 16px 24px;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+      border: 2px solid var(--border-light);
+      backdrop-filter: blur(20px);
+      z-index: 2001;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
+      gap: 12px;
+      font-weight: 600;
     }
     
-    .theme-toggle-fixed:hover {
-      background: rgba(255, 94, 0, 0.2);
-      transform: rotate(15deg);
+    .theme-notification.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
     
-    /* Context Chips */
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
+    .theme-notification i {
+      color: var(--primary);
+      font-size: 1.25rem;
+    }
+    
+    /* Overlay for expanded cards */
+    .card-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1999;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition-base);
+    }
+    
+    .card-overlay.show {
+      opacity: 1;
+      visibility: visible;
     }
     
     /* Responsive Design */
     @media (max-width: 1200px) {
       .cards-grid {
         grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .step-card {
-        height: 620px;
       }
     }
     
@@ -577,10 +320,6 @@
       .cards-grid {
         grid-template-columns: 1fr;
         gap: 1.25rem;
-      }
-      
-      .step-card {
-        height: 580px;
       }
       
       .brand-header {
@@ -603,19 +342,9 @@
     }
     
     @media (max-width: 576px) {
-      .step-card {
-        height: 550px;
-        padding: 1.25rem;
-      }
-      
-      .elegant-convert-btn {
-        padding: 0.75rem 1rem;
-        font-size: 0.875rem;
-      }
-      
       .brand-logo {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         font-size: 1.25rem;
       }
       
@@ -623,20 +352,24 @@
         font-size: 1.5rem;
       }
       
-      .theme-toggle-fixed {
-        width: 44px;
-        height: 44px;
-        bottom: 1rem;
-        right: 1rem;
+      .tool-card {
+        padding: 0.875rem;
+        gap: 0.625rem;
+      }
+      
+      .tool-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Main Container - Full Width -->
+  <!-- Main Container -->
   <div class="main-container">
     
-    <!-- Header with Brand - Above cards -->
+    <!-- Header with Brand -->
     <header class="brand-header">
       <div class="brand-container">
         <div class="brand-logo">
@@ -644,8 +377,13 @@
         </div>
         <div class="brand-text">
           <h1>PromptCraft</h1>
-          <p>Studio-grade prompts</p>
+          <p>Professional AI Prompt Studio</p>
         </div>
+      </div>
+      
+      <div class="current-theme">
+        <i class="fas fa-palette"></i>
+        <span>Theme: <strong id="currentThemeName">Professional Blue</strong></span>
       </div>
     </header>
 
@@ -653,7 +391,17 @@
     <div class="cards-grid">
       
       <!-- CARD 1: Your Idea -->
-      <section class="step-card">
+      <section class="step-card" id="card1">
+        <!-- Expand Button -->
+        <button class="expand-btn" data-card="card1" title="Expand window">
+          <i class="fas fa-expand-alt"></i>
+        </button>
+        
+        <!-- Close Button (visible only when expanded) -->
+        <button class="close-expanded" data-card="card1" title="Close expanded view">
+          <i class="fas fa-times"></i>
+        </button>
+        
         <div class="step-header">
           <div class="step-pill">1</div>
           <div class="step-header-main">
@@ -714,7 +462,17 @@
       </section>
 
       <!-- CARD 2: Structured Prompt -->
-      <section class="step-card">
+      <section class="step-card" id="card2">
+        <!-- Expand Button -->
+        <button class="expand-btn" data-card="card2" title="Expand window">
+          <i class="fas fa-expand-alt"></i>
+        </button>
+        
+        <!-- Close Button (visible only when expanded) -->
+        <button class="close-expanded" data-card="card2" title="Close expanded view">
+          <i class="fas fa-times"></i>
+        </button>
+        
         <div class="step-header">
           <div class="step-pill">2</div>
           <div class="step-header-main">
@@ -776,7 +534,7 @@
       </section>
 
       <!-- CARD 3: Send to AI -->
-      <section class="step-card">
+      <section class="step-card" id="card3">
         <div class="step-header">
           <div class="step-pill">3</div>
           <div class="step-header-main">
@@ -822,9 +580,23 @@
       </div>
     </footer>
 
-    <!-- Theme Toggle - Bottom Right Corner -->
-    <button id="themeToggle" class="theme-toggle-fixed" title="Change theme">
-      <i class="fas fa-moon"></i>
+    <!-- Overlay for expanded cards -->
+    <div class="card-overlay" id="cardOverlay"></div>
+
+    <!-- Theme Save Notification -->
+    <div class="theme-notification" id="themeNotification">
+      <i class="fas fa-check-circle"></i>
+      <span>Theme switched to Professional Blue</span>
+    </div>
+    
+    <!-- Theme Toggle Button - Bottom Right -->
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme">
+      <i class="fas fa-palette"></i>
+    </button>
+    
+    <!-- Theme Modal Button (Shows on hover) -->
+    <button class="theme-modal-btn" id="themeModalBtn" title="Select Theme">
+      <i class="fas fa-sliders-h"></i>
     </button>
   </div>
 
