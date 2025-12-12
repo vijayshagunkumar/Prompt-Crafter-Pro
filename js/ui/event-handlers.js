@@ -1,6 +1,8 @@
-// event-handlers.js - UI Event Handlers
+// event-handlers.js - Professional UI Event Handlers
 
 import appState from '../core/app-state.js';
+import themeManager from '../core/theme-manager.js';
+import cardExpander from '../features/card-expander.js';
 import { detectContextFromText, createContextChipsHTML } from '../features/context-detective.js';
 import { generatePrompt } from '../ai/prompt-generator.js';
 import { updateAIToolsGrid, setupToolClickHandlers } from '../ai/ai-tools.js';
@@ -21,6 +23,8 @@ export function initializeEventHandlers() {
   setupModalHandlers();
   setupVoiceHandlers();
   setupUIHandlers();
+  setupThemeHandlers();
+  setupCardExpansionHandlers();
 }
 
 /**
@@ -31,7 +35,6 @@ function setupRequirementHandlers() {
   const clearBtn = document.getElementById('clearRequirementBtn');
   const autoConvertCheckbox = document.getElementById('autoConvert');
   const presetSelect = document.getElementById('presetSelect');
-  const lockPresetCheckbox = document.getElementById('lockPreset');
   const contextChipsRow = document.getElementById('contextChipsRow');
 
   if (!requirementEl) return;
@@ -68,15 +71,8 @@ function setupRequirementHandlers() {
   if (presetSelect) {
     presetSelect.addEventListener('change', (e) => {
       appState.currentPreset = e.target.value;
-      appState.userPresetLocked = lockPresetCheckbox?.checked || false;
+      appState.userPresetLocked = false;
       appState.lastPresetSource = "manual";
-    });
-  }
-
-  // Lock preset
-  if (lockPresetCheckbox) {
-    lockPresetCheckbox.addEventListener('change', (e) => {
-      appState.userPresetLocked = e.target.checked;
     });
   }
 }
@@ -98,7 +94,7 @@ function handleRequirementInput(requirementEl, contextChipsRow) {
       contextChipsRow.innerHTML = createContextChipsHTML(context);
       contextChipsRow.style.display = 'flex';
       
-      // Update AI tools based on context - USE THE IMPORTED FUNCTION
+      // Update AI tools based on context
       updateAIToolsGrid(context.taskType, text, false);
     } else {
       contextChipsRow.innerHTML = '';
@@ -230,7 +226,7 @@ async function handleConvert() {
       updateOutputStats();
       updateLaunchButtons(true);
       
-      // Update AI tools with new context - USE THE IMPORTED FUNCTION
+      // Update AI tools with new context
       const context = detectContextFromText(raw);
       updateAIToolsGrid(context.taskType, result.prompt, true);
       
@@ -331,6 +327,29 @@ function setupVoiceHandlers() {
       }
     });
   }
+}
+
+/**
+ * Setup theme handlers
+ */
+function setupThemeHandlers() {
+  // Theme toggle button is handled by theme-manager.js
+  // Additional theme-related handlers can be added here
+}
+
+/**
+ * Setup card expansion handlers
+ */
+function setupCardExpansionHandlers() {
+  // Card expansion is handled by card-expander.js
+  // Additional expansion-related handlers can be added here
+  
+  // Listen for ESC key to close expanded cards
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && cardExpander.isCardExpanded()) {
+      cardExpander.closeExpandedCard();
+    }
+  });
 }
 
 /**
