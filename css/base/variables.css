@@ -1,71 +1,37 @@
-/* variables.css - Premium Dark (same brand, more elegant) */
+/* variables.css - Professional Theme System */
 
-:root {
-  /* Brand */
-  --primary: #FF5E00;
-  --primary-dark: #FF4500;
-  --primary-light: #FF8C42;
-  --secondary: #00F3FF;
-  --accent: #FF00FF;
-  --matrix-green: #00FF41;
-
-  /* Backgrounds */
-  --bg-body: #070B12;
-  --bg-primary: rgba(255,255,255,0.04);
-  --bg-secondary: rgba(255,255,255,0.06);
-  --bg-tertiary: rgba(255,255,255,0.08);
-
-  /* Panels / Cards */
-  --panel-bg: rgba(255,255,255,0.045);
-  --panel-border: rgba(255,255,255,0.10);
-
-  /* Inputs */
-  --input-bg: rgba(255,255,255,0.035);
-  --input-border: rgba(255,255,255,0.10);
-  --input-border-focus: rgba(255,94,0,0.55);
-  --input-shadow-focus: 0 0 0 4px rgba(255,94,0,0.20);
-
-  /* Text */
-  --text-primary: rgba(255,255,255,0.92);
-  --text-secondary: rgba(255,255,255,0.64);
-  --text-muted: rgba(255,255,255,0.48);
-  --text-light: rgba(255,255,255,0.74);
-  --text-on-primary: #0b0f16;
-
-  /* Borders */
-  --border-subtle: rgba(255,255,255,0.10);
-
-  /* Shadows (neutral + premium, not orange-glow heavy) */
-  --shadow-soft: 0 8px 22px rgba(0,0,0,0.35);
-  --shadow-card: 0 12px 34px rgba(0,0,0,0.45);
-  --shadow-elevated: 0 20px 60px rgba(0,0,0,0.55);
-
-  /* Radius (modern) */
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-full: 999px;
-
-  /* Transitions */
-  --transition-fast: all 140ms cubic-bezier(.2,.8,.2,1);
-  --transition-base: all 220ms cubic-bezier(.2,.8,.2,1);
-  --transition-slow: all 420ms cubic-bezier(.2,.8,.2,1);
-
-  /* Gradients */
-  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-  --gradient-subtle: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.035) 100%);
-  --gradient-neon: linear-gradient(90deg, #FF5E00, #FF00FF, #00F3FF);
-
-  /* Z-INDEX */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-toast: 1080;
-
+:root[data-theme="professional-blue"] {
+  /* Theme 1: Professional Blue (Claude-style) */
+  --primary: #3B82F6;
+  --primary-dark: #2563EB;
+  --primary-light: #60A5FA;
+  --primary-soft: rgba(59, 130, 246, 0.1);
+  
+  --secondary: #8B5CF6;
+  --accent: #10B981;
+  --error: #EF4444;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F9FAFB;
+  --bg-tertiary: #F3F4F6;
+  --bg-card: #FFFFFF;
+  
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-on-primary: #FFFFFF;
+  
+  --border-light: #E5E7EB;
+  --border-medium: #D1D5DB;
+  --border-strong: #9CA3AF;
+  
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 12px 34px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.15);
+  
+  --gradient-brand: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  --gradient-subtle: linear-gradient(180deg, rgba(249, 250, 251, 1) 0%, rgba(243, 244, 246, 1) 100%);
+  
   /* Spacing */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -74,4 +40,335 @@
   --space-xl: 2rem;
   --space-2xl: 3rem;
   --space-3xl: 4rem;
+  
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  
+  /* Transitions */
+  --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Z-index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+:root[data-theme="glassmorphism"] {
+  /* Theme 2: Glassmorphism (Premium Frosted) */
+  --primary: #8B5CF6;
+  --primary-dark: #7C3AED;
+  --primary-light: #A78BFA;
+  --primary-soft: rgba(139, 92, 246, 0.15);
+  
+  --secondary: #EC4899;
+  --accent: #06B6D4;
+  --error: #F87171;
+  
+  --bg-primary: rgba(255, 255, 255, 0.85);
+  --bg-secondary: rgba(248, 250, 252, 0.75);
+  --bg-tertiary: rgba(241, 245, 249, 0.65);
+  --bg-card: rgba(255, 255, 255, 0.7);
+  
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
+  --text-tertiary: #64748B;
+  --text-on-primary: #FFFFFF;
+  
+  --border-light: rgba(226, 232, 240, 0.5);
+  --border-medium: rgba(203, 213, 225, 0.4);
+  --border-strong: rgba(148, 163, 184, 0.3);
+  
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 12px 34px rgba(0, 0, 0, 0.15);
+  --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.2);
+  
+  --gradient-brand: linear-gradient(135deg, #8B5CF6, #EC4899);
+  --gradient-subtle: linear-gradient(180deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.8) 100%);
+  
+  /* Same spacing, radius, transitions, z-index as above */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  
+  --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+:root[data-theme="modern-tech"] {
+  /* Theme 3: Modern Tech (Dark Professional) */
+  --primary: #00D4AA;
+  --primary-dark: #00B894;
+  --primary-light: #00F7D6;
+  --primary-soft: rgba(0, 212, 170, 0.1);
+  
+  --secondary: #667EEA;
+  --accent: #FF6B6B;
+  --error: #FF4444;
+  
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
+  --bg-card: #1E293B;
+  
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-tertiary: #94A3B8;
+  --text-on-primary: #0F172A;
+  
+  --border-light: #334155;
+  --border-medium: #475569;
+  --border-strong: #64748B;
+  
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 12px 34px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.5);
+  
+  --gradient-brand: linear-gradient(135deg, #00D4AA, #667EEA);
+  --gradient-subtle: linear-gradient(180deg, rgba(30, 41, 59, 1) 0%, rgba(51, 65, 85, 1) 100%);
+  
+  /* Same spacing, radius, transitions, z-index as above */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  
+  --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+:root[data-theme="executive-dark"] {
+  /* Theme 4: Executive Dark (Premium Business) */
+  --primary: #8B5CF6;
+  --primary-dark: #7C3AED;
+  --primary-light: #A78BFA;
+  --primary-soft: rgba(139, 92, 246, 0.1);
+  
+  --secondary: #EC4899;
+  --accent: #06B6D4;
+  --error: #F87171;
+  
+  --bg-primary: #0F0F1A;
+  --bg-secondary: #1A1A2E;
+  --bg-tertiary: #2D2D44;
+  --bg-card: #1A1A2E;
+  
+  --text-primary: #E2E8F0;
+  --text-secondary: #A0AEC0;
+  --text-tertiary: #718096;
+  --text-on-primary: #0F0F1A;
+  
+  --border-light: #2D3748;
+  --border-medium: #4A5568;
+  --border-strong: #718096;
+  
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 12px 34px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.6);
+  
+  --gradient-brand: linear-gradient(135deg, #8B5CF6, #EC4899);
+  --gradient-subtle: linear-gradient(180deg, rgba(26, 26, 46, 1) 0%, rgba(45, 45, 68, 1) 100%);
+  
+  /* Same spacing, radius, transitions, z-index as above */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  
+  --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+:root[data-theme="corporate-green"] {
+  /* Theme 5: Corporate Green (Enterprise) */
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-light: #10B981;
+  --primary-soft: rgba(5, 150, 105, 0.1);
+  
+  --secondary: #3B82F6;
+  --accent: #F59E0B;
+  --error: #DC2626;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F0FDF4;
+  --bg-tertiary: #DCFCE7;
+  --bg-card: #FFFFFF;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #64748B;
+  --text-on-primary: #FFFFFF;
+  
+  --border-light: #BBF7D0;
+  --border-medium: #86EFAC;
+  --border-strong: #4ADE80;
+  
+  --shadow-soft: 0 8px 22px rgba(5, 150, 105, 0.1);
+  --shadow-card: 0 12px 34px rgba(5, 150, 105, 0.15);
+  --shadow-elevated: 0 20px 60px rgba(5, 150, 105, 0.2);
+  
+  --gradient-brand: linear-gradient(135deg, #059669, #3B82F6);
+  --gradient-subtle: linear-gradient(180deg, rgba(240, 253, 244, 1) 0%, rgba(220, 252, 231, 1) 100%);
+  
+  /* Same spacing, radius, transitions, z-index as above */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  
+  --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* Default theme - Professional Blue */
+:root {
+  /* Set Professional Blue as default */
+  --primary: #3B82F6;
+  --primary-dark: #2563EB;
+  --primary-light: #60A5FA;
+  --primary-soft: rgba(59, 130, 246, 0.1);
+  
+  --secondary: #8B5CF6;
+  --accent: #10B981;
+  --error: #EF4444;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F9FAFB;
+  --bg-tertiary: #F3F4F6;
+  --bg-card: #FFFFFF;
+  
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-on-primary: #FFFFFF;
+  
+  --border-light: #E5E7EB;
+  --border-medium: #D1D5DB;
+  --border-strong: #9CA3AF;
+  
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 12px 34px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.15);
+  
+  --gradient-brand: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  --gradient-subtle: linear-gradient(180deg, rgba(249, 250, 251, 1) 0%, rgba(243, 244, 246, 1) 100%);
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  
+  /* Transitions */
+  --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Z-index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
 }
