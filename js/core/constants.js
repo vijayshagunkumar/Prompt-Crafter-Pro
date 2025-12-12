@@ -20,7 +20,7 @@ export const DEFAULTS = {
   voiceLanguage: "en-US"
 };
 
-// AI Tools Configuration
+// AI Tools Configuration - ALL TOOLS INCLUDED
 export const AI_TOOLS = [
   {
     id: "chatgpt",
@@ -34,7 +34,8 @@ export const AI_TOOLS = [
       writing: 9,
       communication: 8,
       analysis: 7,
-      coding: 6
+      coding: 6,
+      creative: 7
     }
   },
   {
@@ -49,7 +50,8 @@ export const AI_TOOLS = [
       analysis: 9,
       communication: 8,
       general: 7,
-      coding: 6
+      coding: 6,
+      creative: 9
     }
   },
   {
@@ -64,7 +66,72 @@ export const AI_TOOLS = [
       research: 9,
       web: 8,
       general: 7,
-      coding: 6
+      coding: 6,
+      creative: 7
+    }
+  },
+  {
+    id: "perplexity",
+    name: "Perplexity",
+    description: "Excellent for research with citations and sources.",
+    icon: "fas fa-search",
+    color: "#20808D",
+    url: "https://www.perplexity.ai/",
+    weights: {
+      research: 10,
+      analysis: 9,
+      web: 10,
+      general: 7,
+      writing: 6,
+      creative: 5
+    }
+  },
+  {
+    id: "deepseek",
+    name: "DeepSeek",
+    description: "Great for coding and technical tasks.",
+    icon: "fas fa-robot",
+    color: "#00F3FF",
+    url: "https://chat.deepseek.com/",
+    weights: {
+      coding: 10,
+      analysis: 8,
+      technical: 9,
+      general: 7,
+      writing: 6,
+      creative: 6
+    }
+  },
+  {
+    id: "copilot",
+    name: "Copilot",
+    description: "Microsoft's AI for coding and development.",
+    icon: "fas fa-code",
+    color: "#199FD7",
+    url: "https://copilot.microsoft.com/",
+    weights: {
+      coding: 10,
+      technical: 9,
+      analysis: 7,
+      general: 6,
+      writing: 5,
+      creative: 6
+    }
+  },
+  {
+    id: "grok",
+    name: "Grok",
+    description: "X AI with real-time knowledge and wit.",
+    icon: "fas fa-brain",
+    color: "#FF5E00",
+    url: "https://grok.x.ai/",
+    weights: {
+      general: 9,
+      creative: 8,
+      writing: 7,
+      analysis: 6,
+      coding: 5,
+      conversation: 9
     }
   }
 ];
