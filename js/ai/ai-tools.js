@@ -10,7 +10,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Best for realistic and creative AI images.",
     icon: "fas fa-palette",
     color: "#00A67E",
-    url: "https://openai.com/index/dall-e-3/", // CORRECT DALL-E URL
+    url: "https://chat.openai.com", // CORRECT DALL-E URL
     weights: {
       general: 5,
       writing: 3,
