@@ -248,3 +248,72 @@
     border: 1px solid #ddd;
   }
 }
+
+/* ============================================================
+   LAPTOP HEIGHT FIX: keep action buttons visible in Step 1 & 2
+   ============================================================ */
+
+/* Typical laptop: 1366x768, 1440x900, etc. */
+@media (min-width: 1024px) and (max-height: 820px) {
+
+  /* Reduce overall card height + padding slightly */
+  .step-card {
+    min-height: 520px !important;
+    padding: 16px !important;
+  }
+
+  /* Make the card a flex column where middle grows, footer/actions stay visible */
+  .step-card {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Tighten header spacing */
+  .step-header {
+    margin-bottom: 10px !important;
+  }
+
+  /* Reduce some vertical spacing rows */
+  .helper-row,
+  .stats-footer,
+  .features-footer {
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+  }
+
+  /* Make textareas take the remaining space instead of fixed big height */
+  #ideaInput,
+  #output,
+  .textarea-idea,
+  .output-textarea {
+    min-height: 160px !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Ensure textarea wrappers can stretch */
+  .textarea-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Keep the action buttons ALWAYS visible at the bottom */
+  .card__actions,
+  .prompt-actions {
+    margin-top: auto !important;
+    padding-top: 12px !important;
+  }
+
+  /* Compact preset row a bit */
+  .preset-row,
+  .auto-row {
+    margin-bottom: 8px !important;
+  }
+
+  /* Slightly smaller buttons so they fit without scroll */
+  .btn {
+    padding: 10px 12px !important;
+    font-size: 0.88rem !important;
+  }
+}
