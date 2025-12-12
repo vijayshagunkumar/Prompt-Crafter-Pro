@@ -1,14 +1,15 @@
-/* cards.css - Polished */
+/* cards.css - Professional Card Styles with Expansion */
 
+/* Step Card Base */
 .step-card {
-  background: var(--gradient-subtle);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 650px;
+  min-height: 680px;
   position: relative;
   overflow: visible;
   box-shadow: var(--shadow-card);
@@ -17,30 +18,247 @@
 
 .step-card:hover {
   box-shadow: var(--shadow-elevated);
-  border-color: rgba(255,255,255,0.14);
-  transform: translateY(-1px);
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
 }
 
-.step-pill {
-  width: 32px;
-  height: 32px;
-  background: rgba(255,94,0,0.18);
-  color: var(--primary);
-  border-radius: 12px;
-  border: 1px solid rgba(255,94,0,0.35);
+/* Expanded Card State */
+.step-card.expanded {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) scale(0.95) !important;
+  width: 90vw !important;
+  height: 90vh !important;
+  max-width: 1200px !important;
+  max-height: 800px !important;
+  z-index: 2000 !important;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid var(--primary) !important;
+  animation: cardExpand 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
+  overflow-y: auto !important;
+}
+
+@keyframes cardExpand {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Expand Button */
+.expand-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-size: 0.875rem;
+  z-index: 10;
+}
+
+.expand-btn:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.expand-btn.expanded {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.expand-btn.expanded i {
+  transform: rotate(180deg);
+}
+
+.expand-btn i {
+  transition: transform 0.3s ease;
+}
+
+/* Close Button for Expanded Cards */
+.close-expanded {
+  position: absolute;
+  top: 20px;
+  right: 60px;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-size: 1rem;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.step-card.expanded .close-expanded {
+  opacity: 1;
+  visibility: visible;
+}
+
+.close-expanded:hover {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+  transform: scale(1.1);
+}
+
+/* Card Overlay */
+.card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1999;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition-base);
+}
+
+.card-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Step Pill */
+.step-pill {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
   flex-shrink: 0;
 }
 
-/* Keep your existing badge/chip styles below if you want,
-   OR keep as-is (no need to change everything). */
+/* Step Header */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-light);
+  padding-right: 50px; /* Space for expand button */
+}
 
-/* Allow card to expand when textarea is resized */
-.step-card {
-  max-height: none !important;
-  overflow: visible !important;
+.step-header-main {
+  flex: 1;
+}
+
+.step-header-main h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+  color: var(--text-primary);
+}
+
+.step-header-main p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Textarea Container for Expansion */
+.step-card.expanded .textarea-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card.expanded .textarea-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card.expanded textarea {
+  flex: 1;
+  min-height: 300px;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+/* Responsive adjustments for expanded cards */
+@media (max-width: 768px) {
+  .step-card.expanded {
+    width: 95vw !important;
+    height: 95vh !important;
+    padding: var(--space-md) !important;
+  }
+  
+  .expand-btn {
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+  
+  .close-expanded {
+    top: 15px;
+    right: 55px;
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+  
+  .step-card {
+    min-height: 620px;
+  }
+}
+
+@media (max-width: 576px) {
+  .step-card {
+    min-height: 580px;
+    padding: var(--space-md);
+  }
+  
+  .step-header {
+    padding-right: 40px;
+  }
 }
