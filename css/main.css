@@ -18,9 +18,9 @@
 @import url('components/modals.css');
 @import url('components/tools-grid.css');
 
-/* Themes */
+/* Themes - PROFESSIONAL THEME SYSTEM ONLY */
 @import url('themes/themes.css');
-@import url('themes/cyberpunk.css');
+/* IMPORTANT: Remove cyberpunk.css import */
 
 /* ===========================================
    MAIN APP LAYOUT
@@ -31,14 +31,15 @@
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  background: var(--bg-body);
+  background: var(--bg-secondary);
 }
 
 /* Main Panel */
 .main-panel {
   padding: var(--space-xl);
   overflow-y: auto;
-  background: var(--bg-body);
+  background: var(--bg-secondary);
+  position: relative;
 }
 
 /* Top Bar */
@@ -48,12 +49,13 @@
   align-items: center;
   margin-bottom: var(--space-xl);
   padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .page-title h2 {
   font-size: 1.75rem;
   margin-bottom: 0.375rem;
+  color: var(--text-primary);
 }
 
 .page-title p {
@@ -84,6 +86,7 @@
   font-size: 2.25rem;
   margin-bottom: 0.875rem;
   line-height: 1.2;
+  color: var(--text-primary);
 }
 
 .hero-top p {
@@ -104,6 +107,7 @@
   margin-top: var(--space-xl);
 }
 
+/* Cards Grid - Updated for new system */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -111,9 +115,15 @@
   align-items: stretch;
 }
 
-/* Step Cards */
+/* Step Cards - Updated */
 .step-card {
-  min-height: 700px;
+  min-height: 680px;
+  position: relative; /* For expand buttons */
+}
+
+/* Step Card with Expand Button */
+.step-card .step-header {
+  padding-right: 50px; /* Space for expand button */
 }
 
 /* Auto-row */
@@ -163,27 +173,28 @@
   margin-top: var(--space-xl);
 }
 
-/* Helper Text Sizes - FIXED FOR CONSISTENCY */
+/* Helper Text */
 .helper-text {
   font-size: 0.8125rem !important;
   line-height: 1.4;
+  color: var(--text-secondary);
 }
 
-/* Notification */
+/* Notification - Updated for themes */
 .notification {
   position: fixed;
   bottom: var(--space-lg);
   right: var(--space-lg);
-  background: rgba(30, 41, 59, 0.95);
-  color: var(--secondary);
+  background: var(--bg-card);
+  color: var(--text-primary);
   padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
   display: none;
   align-items: center;
   gap: var(--space-sm);
   z-index: var(--z-toast);
-  border: 1px solid var(--secondary);
+  border: 1px solid var(--border-light);
   backdrop-filter: blur(10px);
 }
 
@@ -219,7 +230,7 @@
   overflow-y: auto;
 }
 
-/* Modal Backdrop */
+/* Modal Backdrop - Updated */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -231,6 +242,7 @@
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal-backdrop);
+  backdrop-filter: blur(4px);
 }
 
 .modal-backdrop.open {
@@ -238,15 +250,16 @@
 }
 
 .modal {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--primary);
-  box-shadow: 0 0 30px rgba(255, 94, 0, 0.3);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 90%;
   max-width: 700px;
   max-height: 90vh;
   overflow: hidden;
   display: none;
+  backdrop-filter: blur(20px);
 }
 
 .modal.open {
@@ -257,7 +270,7 @@
 .footer {
   margin-top: var(--space-xl);
   padding-top: var(--space-md);
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -278,11 +291,7 @@
 
 @media (max-width: 1400px) {
   .cards-grid {
-    gap: var(--space-lg);
-  }
-  
-  .step-card {
-    min-height: 650px;
+    gap: 20px;
   }
 }
 
@@ -307,12 +316,12 @@
   }
   
   .main-panel {
-    padding: var(--space-lg);
+    padding: 20px;
   }
   
   .hero-top {
     flex-direction: column;
-    gap: var(--space-md);
+    gap: 16px;
   }
   
   .hero-badges {
@@ -321,7 +330,7 @@
   
   .top-bar {
     flex-direction: column;
-    gap: var(--space-md);
+    gap: 16px;
     align-items: flex-start;
   }
   
@@ -345,38 +354,34 @@
   }
   
   .main-panel {
-    padding: var(--space-md);
+    padding: 16px;
   }
   
   .cards-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-lg);
+    gap: 20px;
   }
   
   .step-card:nth-child(3) {
     grid-column: span 1;
   }
   
-  .step-card {
-    min-height: 550px;
-  }
-  
   .hero-top h1 {
-    font-size: 1.875rem;
+    font-size: 1.75rem;
   }
   
   .hero-top p {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
   
   .modal {
     width: 95%;
-    margin: var(--space-sm);
+    margin: 10px;
   }
   
   .footer {
     flex-direction: column;
-    gap: var(--space-md);
+    gap: 16px;
     text-align: center;
   }
   
@@ -388,16 +393,15 @@
 
 @media (max-width: 576px) {
   .main-panel {
-    padding: var(--space-sm);
+    padding: 12px;
   }
   
   .step-card {
-    padding: var(--space-md);
-    min-height: 500px;
+    padding: 16px;
   }
   
   .hero-top h1 {
-    font-size: 1.625rem;
+    font-size: 1.5rem;
   }
   
   .hero-badges {
@@ -413,7 +417,7 @@
   .textarea-buttons {
     flex-direction: column;
     align-items: flex-end;
-    gap: var(--space-xs);
+    gap: 8px;
   }
   
   .textarea-buttons .icon-btn {
@@ -422,16 +426,44 @@
   }
   
   .tools-grid {
-    gap: var(--space-xs);
+    gap: 8px;
   }
   
   .tool-card {
-    padding: var(--space-sm);
+    padding: 12px;
   }
   
   .notification {
-    left: var(--space-sm);
-    right: var(--space-sm);
-    bottom: var(--space-sm);
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* Laptop Height Fixes */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .step-card {
+    min-height: 520px !important;
+  }
+  
+  .cards-grid .step-card {
+    height: calc(100vh - 210px) !important;
+    min-height: 480px !important;
+  }
+  
+  .cards-grid .textarea-container {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .cards-grid .textarea-wrapper {
+    flex: 1 1 auto !important;
+  }
+  
+  .cards-grid textarea.textarea-idea,
+  .cards-grid textarea.output-textarea {
+    flex: 1 1 auto !important;
+    min-height: 140px !important;
   }
 }
