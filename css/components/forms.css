@@ -63,8 +63,8 @@ textarea::-moz-selection {
 .chip,
 .preset-badge,
 .mode-pill {
-  color: rgba(210, 190, 120, 0.95);
-  background: rgba(210, 190, 120, 0.10);
-  border: 1px solid rgba(210, 190, 120, 0.35);
+  color: rgba(120, 220, 210, 0.95);
+  background: rgba(0, 243, 255, 0.10);
+  border: 1px solid rgba(0, 243, 255, 0.35);
   font-weight: 600;
 }
