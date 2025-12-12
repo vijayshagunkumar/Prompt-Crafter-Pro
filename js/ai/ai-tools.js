@@ -2,7 +2,7 @@
 
 import { AI_TOOLS } from '../core/constants.js';
 
-// Add DALL-E and Midjourney to the tools
+// Add DALL-E and Midjourney to the tools with CORRECT URLs
 const ENHANCED_AI_TOOLS = [
   {
     id: "dalle",
@@ -10,7 +10,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Best for realistic and creative AI images.",
     icon: "fas fa-palette",
     color: "#00A67E",
-    url: "https://chat.openai.com/",
+    url: "https://labs.openai.com/", // CORRECT DALL-E URL
     weights: {
       general: 5,
       writing: 3,
@@ -30,7 +30,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Excellent for artistic and stylized images.",
     icon: "fas fa-paint-brush",
     color: "#1E1E1E",
-    url: "https://www.midjourney.com/",
+    url: "https://www.midjourney.com/", // CORRECT Midjourney URL
     weights: {
       general: 4,
       writing: 2,
@@ -45,7 +45,16 @@ const ENHANCED_AI_TOOLS = [
     },
     isImageTool: true
   },
-  ...AI_TOOLS // Include all original tools
+  ...AI_TOOLS.map(tool => {
+    // Ensure ChatGPT has correct URL
+    if (tool.id === "chatgpt") {
+      return {
+        ...tool,
+        url: "https://chat.openai.com/"
+      };
+    }
+    return tool;
+  })
 ];
 
 /**
@@ -223,13 +232,13 @@ export async function handleToolClick(tool, prompt, showNotification) {
     
     // Open tool in new tab after short delay
     setTimeout(() => {
-      window.open(tool.url, '_blank');
+      window.open(tool.url, '_blank', 'noopener,noreferrer');
     }, 500);
   } catch (error) {
     console.error('Clipboard error:', error);
     showNotification(`Opening ${tool.name}...`);
     // Open tool even if clipboard fails
-    window.open(tool.url, '_blank');
+    window.open(tool.url, '_blank', 'noopener,noreferrer');
   }
 }
 
