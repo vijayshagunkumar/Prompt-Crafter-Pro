@@ -34,11 +34,11 @@
     .main-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 1.5rem;
+      padding: 20px !important;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      gap: 1.5rem;
+      gap: 20px !important;
     }
     
     /* Header - Minimal Compact */
@@ -46,7 +46,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0;
+      margin-bottom: 0 !important;
+      padding: 0 !important;
     }
     
     .brand {
@@ -56,20 +57,20 @@
     }
     
     .brand-logo {
-      width: 36px;
-      height: 36px;
+      width: 32px !important;
+      height: 32px !important;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-size: 1rem;
+      font-size: 0.875rem !important;
       font-weight: 700;
     }
     
     .brand-text h1 {
-      font-size: 1.375rem;
+      font-size: 1.25rem !important;
       font-weight: 700;
       color: var(--text-primary);
       letter-spacing: -0.3px;
@@ -99,7 +100,7 @@
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
+      gap: 20px !important;
       flex: 1;
     }
     
@@ -108,10 +109,10 @@
       background: var(--bg-card);
       border: 1px solid var(--border-light);
       border-radius: 14px;
-      padding: 1.5rem;
+      padding: 20px !important;
       display: flex;
       flex-direction: column;
-      height: 680px;
+      height: 640px !important;
       position: relative;
       transition: all 0.2s ease;
     }
@@ -126,12 +127,12 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 16px !important;
     }
     
     .step-pill {
-      width: 28px;
-      height: 28px;
+      width: 24px !important;
+      height: 24px !important;
       background: var(--primary-soft);
       color: var(--primary);
       border-radius: 7px;
@@ -139,7 +140,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 0.8125rem;
+      font-size: 0.75rem !important;
       flex-shrink: 0;
     }
     
@@ -148,14 +149,14 @@
     }
     
     .step-header-main h3 {
-      font-size: 1.125rem;
+      font-size: 1rem !important;
       font-weight: 600;
       color: var(--text-primary);
       margin-bottom: 0.125rem;
     }
     
     .step-header-main p {
-      font-size: 0.75rem;
+      font-size: 0.75rem !important;
       color: var(--text-secondary);
       margin: 0;
     }
@@ -208,7 +209,7 @@
       font-weight: 500;
     }
     
-    /* Text Areas - LARGE and CLEAN with Bottom Buttons */
+    /* Text Areas - LARGE and CLEAN */
     .textarea-container {
       flex: 1;
       margin-bottom: 0.75rem;
@@ -224,14 +225,14 @@
     .textarea-idea, .output-textarea {
       width: 100%;
       flex: 1;
-      min-height: 220px;
-      padding: 1.25rem;
+      min-height: 180px !important;
+      padding: 16px !important;
       background: var(--bg-primary);
       border: 1px solid var(--border-light);
       border-radius: 10px;
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
-      font-size: 0.9375rem;
+      font-size: 0.875rem !important;
       line-height: 1.6;
       resize: none;
       transition: all 0.2s ease;
@@ -247,14 +248,24 @@
       color: var(--text-tertiary);
     }
     
-    /* Textarea Bottom Buttons - RIGHT BOTTOM */
+    /* Textarea Bottom Buttons - FIXED POSITIONS */
     .textarea-buttons {
       position: absolute;
-      bottom: 0.75rem;
-      right: 0.75rem;
+      bottom: 12px;
+      right: 12px;
       display: flex;
-      gap: 0.5rem;
+      gap: 8px;
       z-index: 10;
+    }
+    
+    /* Card 1: Clear (left) + Mic (right) */
+    #card1 .textarea-buttons {
+      right: 50px;
+    }
+    
+    /* Card 2: Only Copy button */
+    #card2 .textarea-buttons {
+      right: 12px;
     }
     
     .icon-btn {
@@ -262,7 +273,7 @@
       height: 32px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-light);
-      border-radius: 7px;
+      border-radius: 6px;
       color: var(--text-secondary);
       display: flex;
       align-items: center;
@@ -282,14 +293,14 @@
     /* Convert Button - Clean */
     .elegant-convert-btn {
       width: 100%;
-      padding: 0.875rem 1.25rem;
+      padding: 12px 16px !important;
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       border: none;
       border-radius: 10px;
       font-family: 'Inter', sans-serif;
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: 0.875rem !important;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -421,12 +432,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    
-    .tool-arrow {
-      color: var(--text-tertiary);
-      font-size: 0.75rem;
-      opacity: 0.6;
     }
     
     /* Helper Text - Minimal */
@@ -577,149 +582,6 @@
         font-size: 0.5625rem;
       }
     }
-      <style>
-    /* ... all your existing styles ... */
-    
-    /* Textarea Bottom Buttons - FIXED POSITIONS */
-    .textarea-buttons {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      display: flex;
-      gap: 8px;
-      z-index: 10;
-    }
-    
-    /* ... other styles ... */
-
-    /* ===== PASTE THE COMPACT CODE HERE ===== */
-    /* Make everything more compact */
-    .main-container {
-      padding: 20px !important;
-      gap: 20px !important;
-    }
-
-    .cards-grid {
-      gap: 20px !important;
-    }
-
-    .step-card {
-      padding: 20px !important;
-      height: 640px !important;
-    }
-
-    .app-header {
-      margin-bottom: 0 !important;
-      padding: 0 !important;
-    }
-
-    .brand-logo {
-      width: 32px !important;
-      height: 32px !important;
-      font-size: 0.875rem !important;
-    }
-
-    .brand-text h1 {
-      font-size: 1.25rem !important;
-    }
-
-    .step-header {
-      margin-bottom: 16px !important;
-    }
-
-    .step-pill {
-      width: 24px !important;
-      height: 24px !important;
-      font-size: 0.75rem !important;
-    }
-
-    .step-header-main h3 {
-      font-size: 1rem !important;
-    }
-
-    .step-header-main p {
-      font-size: 0.75rem !important;
-    }
-
-    .textarea-idea, .output-textarea {
-      min-height: 180px !important;
-      padding: 16px !important;
-      font-size: 0.875rem !important;
-    }
-
-    .elegant-convert-btn {
-      padding: 12px 16px !important;
-      font-size: 0.875rem !important;
-    }
-    /* ===== END OF COMPACT CODE ===== */
-    <style>
-  /* ... all your existing button and textarea styles ... */
-  
-  /* ===== PASTE BUTTON FIX CODE HERE ===== */
-  /* Textarea Bottom Buttons - FIXED POSITIONS */
-  .textarea-buttons {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-  }
-
-  /* Clear button position for Card 1 */
-  #card1 .textarea-buttons {
-    right: 50px; /* Mic at right, clear at left of mic */
-  }
-
-  #card1 .textarea-buttons .icon-btn:nth-child(1) {
-    /* Clear button - left position */
-    position: absolute;
-    right: 40px;
-  }
-
-  #card1 .textarea-buttons .icon-btn:nth-child(2) {
-    /* Mic button - right position */
-    position: relative;
-    right: 0;
-  }
-
-  /* Card 2 only has copy button */
-  #card2 .textarea-buttons {
-    right: 12px;
-  }
-
-  .icon-btn {
-    width: 32px;
-    height: 32px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-size: 0.75rem;
-  }
-
-  .icon-btn:hover {
-    background: var(--primary-soft);
-    color: var(--primary);
-    border-color: var(--primary-light);
-  }
-  /* ===== END BUTTON FIX ===== */
-  
-  /* ===== PASTE COMPACT CODE HERE ===== */
-  /* Make everything more compact */
-  .main-container {
-    padding: 20px !important;
-    gap: 20px !important;
-  }
-  /* ... rest of compact code ... */
-</style>
-    
-  </style> <!-- This is where the style tag closes -->
   </style>
 </head>
 <body>
@@ -777,8 +639,11 @@
               placeholder="Describe what you need...&#10;Example: 'Write a professional email about project delay'&#10;or 'Create a female cartoon character holding water bottle'"
             ></textarea>
             
-            <!-- MIC Button at Right Bottom -->
+            <!-- Buttons at Right Bottom -->
             <div class="textarea-buttons">
+              <button class="icon-btn" id="clearRequirementBtn" title="Clear text">
+                <i class="fas fa-xmark"></i>
+              </button>
               <button class="icon-btn" id="voiceBtn" title="Voice input">
                 <i class="fas fa-microphone"></i>
               </button>
@@ -921,23 +786,16 @@
       }
       
       // Clear button functionality
+      const clearBtn = document.getElementById('clearRequirementBtn');
       const requirementEl = document.getElementById('requirement');
-      const clearBtn = document.createElement('button');
-      clearBtn.className = 'icon-btn';
-      clearBtn.innerHTML = '<i class="fas fa-xmark"></i>';
-      clearBtn.title = 'Clear text';
-      clearBtn.style.position = 'absolute';
-      clearBtn.style.bottom = '0.75rem';
-      clearBtn.style.right = '3.75rem';
-      clearBtn.style.zIndex = '10';
       
-      clearBtn.addEventListener('click', () => {
-        requirementEl.value = '';
-        requirementEl.focus();
-        requirementEl.dispatchEvent(new Event('input'));
-      });
-      
-      requirementEl.parentNode.appendChild(clearBtn);
+      if (clearBtn && requirementEl) {
+        clearBtn.addEventListener('click', () => {
+          requirementEl.value = '';
+          requirementEl.focus();
+          requirementEl.dispatchEvent(new Event('input'));
+        });
+      }
       
       updateActionButtons();
       
