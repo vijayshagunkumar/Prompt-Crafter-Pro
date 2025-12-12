@@ -23,11 +23,55 @@ let editingTemplateId = null;
 let templates = [];
 let historyItems = [];
 
-// Textarea sizing state
-const textareaSizes = {
-  requirement: { height: 140 },
-  output: { height: 180 }
-};
+// AI Tools Configuration
+const AI_TOOLS = [
+  {
+    id: "chatgpt",
+    name: "ChatGPT",
+    description: "Best for general tasks, writing, and reasoning.",
+    icon: "fa-brands fa-openai",
+    color: "#74AA9C",
+    url: "https://chat.openai.com/",
+    // Scoring weights for different task types
+    weights: {
+      general: 10,
+      writing: 9,
+      communication: 8,
+      analysis: 7,
+      coding: 6
+    }
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    description: "Great for long-form text and thoughtful responses.",
+    icon: "fas fa-sparkles",
+    color: "#DE7356",
+    url: "https://claude.ai/",
+    weights: {
+      writing: 10,
+      analysis: 9,
+      communication: 8,
+      general: 7,
+      coding: 6
+    }
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    description: "Strong on web + research heavy prompts.",
+    icon: "fas fa-infinity",
+    color: "#4796E3",
+    url: "https://gemini.google.com/app",
+    weights: {
+      analysis: 10,
+      research: 9,
+      web: 8,
+      general: 7,
+      coding: 6
+    }
+  }
+];
 
 // Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
@@ -230,9 +274,10 @@ function loadUsageCount() {
   if (savedUsage) {
     usageCount = parseInt(savedUsage, 10);
   }
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+  const usageElement = document.getElementById('usageCount');
+  if (usageElement) {
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+  }
 }
 
 // === AUTO-CONTEXT DETECTIVE ===
@@ -462,6 +507,86 @@ function renderContextChips(context) {
   });
 }
 
+// === DYNAMIC AI TOOLS ORDERING ===
+function calculateToolScores(taskType, promptText) {
+  const scores = {};
+  const lowerText = promptText.toLowerCase();
+  
+  AI_TOOLS.forEach(tool => {
+    let score = 0;
+    
+    // Base score from task type weights
+    score += tool.weights[taskType] || 5;
+    
+    // Bonus for specific keywords in prompt
+    if (taskType === 'writing' && /story|creative|novel|poem|fiction/i.test(lowerText)) {
+      if (tool.id === 'claude') score += 3;
+    }
+    
+    if (taskType === 'analysis' && /research|web|search|internet/i.test(lowerText)) {
+      if (tool.id === 'gemini') score += 3;
+    }
+    
+    if (taskType === 'coding' && /code|program|debug|script/i.test(lowerText)) {
+      if (tool.id === 'chatgpt') score += 2;
+    }
+    
+    if (taskType === 'communication' && /email|formal|professional/i.test(lowerText)) {
+      if (tool.id === 'claude') score += 2;
+    }
+    
+    scores[tool.id] = score;
+  });
+  
+  return scores;
+}
+
+function orderToolsByScore(scores) {
+  return AI_TOOLS
+    .map(tool => ({
+      ...tool,
+      score: scores[tool.id] || 0
+    }))
+    .sort((a, b) => b.score - a.score);
+}
+
+function renderAITools(taskType = 'general', promptText = '') {
+  const toolsGrid = document.getElementById('aiToolsGrid');
+  if (!toolsGrid) return;
+  
+  const scores = calculateToolScores(taskType, promptText);
+  const orderedTools = orderToolsByScore(scores);
+  
+  toolsGrid.innerHTML = '';
+  
+  orderedTools.forEach(tool => {
+    const toolCard = document.createElement('button');
+    toolCard.className = 'tool-card';
+    toolCard.dataset.tool = tool.id;
+    
+    if (!isConverted) {
+      toolCard.classList.add('tool-card-disabled');
+    }
+    
+    toolCard.innerHTML = `
+      <div class="tool-icon" style="border-color: ${tool.color}; color: ${tool.color}">
+        <i class="${tool.icon}"></i>
+      </div>
+      <div class="tool-body">
+        <h4>${tool.name}</h4>
+        <p>${tool.description}</p>
+      </div>
+      <div class="tool-footer">
+        <span>Open</span>
+        <i class="fas fa-arrow-up-right-from-square"></i>
+      </div>
+    `;
+    
+    toolCard.addEventListener('click', () => onToolCardClick(tool));
+    toolsGrid.appendChild(toolCard);
+  });
+}
+
 // Auto-convert
 function handleRequirementInput() {
   const text = document.getElementById("requirement").value;
@@ -470,6 +595,9 @@ function handleRequirementInput() {
   try {
     const ctx = detectContextFromText(text);
     renderContextChips(ctx);
+    
+    // Update AI tools based on detected task type
+    renderAITools(ctx.taskType, text);
   } catch (e) {
     console.log("Context detection error:", e);
   }
@@ -502,10 +630,12 @@ function resetAutoConvertTimer() {
     autoConvertCountdown = autoConvertDelay;
     autoConvertTimer = setTimeout(triggerAutoConvert, autoConvertDelay * 1000);
     countdownInterval = setInterval(updateCountdownDisplay, 1000);
-    document.getElementById("timerDisplay").style.display = "inline-flex";
+    const timerDisplay = document.getElementById("timerDisplay");
+    if (timerDisplay) timerDisplay.style.display = "inline-flex";
     updateCountdownDisplay();
   } else {
-    document.getElementById("timerDisplay").style.display = "none";
+    const timerDisplay = document.getElementById("timerDisplay");
+    if (timerDisplay) timerDisplay.style.display = "none";
   }
 }
 
@@ -518,7 +648,8 @@ function clearAutoConvertTimer() {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
-  document.getElementById("timerDisplay").style.display = "none";
+  const timerDisplay = document.getElementById("timerDisplay");
+  if (timerDisplay) timerDisplay.style.display = "none";
 }
 
 function triggerAutoConvert() {
@@ -615,8 +746,32 @@ function getRoleAndPreset(rawRequirement) {
 
 // Notification helper
 function showNotification(message) {
-  // Simple console log + could be extended with a toast later
-  console.log("[PromptCrafter]", message);
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.innerHTML = `
+    <i class="fas fa-check-circle"></i>
+    <span>${message}</span>
+  `;
+  
+  // Add to body
+  document.body.appendChild(notification);
+  
+  // Show notification
+  setTimeout(() => {
+    notification.style.display = 'flex';
+    notification.style.opacity = '1';
+  }, 10);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
 }
 
 // TEMPLATE LIBRARY
@@ -673,11 +828,19 @@ function renderTemplates() {
 }
 
 function openTemplatesModal() {
-  document.getElementById("templatesModal").classList.add("open");
+  const modal = document.getElementById("templatesModal");
+  if (modal) {
+    modal.style.display = "flex";
+    modal.classList.add("open");
+  }
 }
 
 function closeTemplatesModal() {
-  document.getElementById("templatesModal").classList.remove("open");
+  const modal = document.getElementById("templatesModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.remove("open");
+  }
 }
 
 function onTemplatesGridClick(e) {
@@ -777,11 +940,19 @@ function renderHistory() {
 }
 
 function openHistoryModal() {
-  document.getElementById("historyModal").classList.add("open");
+  const modal = document.getElementById("historyModal");
+  if (modal) {
+    modal.style.display = "flex";
+    modal.classList.add("open");
+  }
 }
 
 function closeHistoryModal() {
-  document.getElementById("historyModal").classList.remove("open");
+  const modal = document.getElementById("historyModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.remove("open");
+  }
 }
 
 function onHistoryListClick(e) {
@@ -840,9 +1011,10 @@ async function generatePrompt() {
 
   usageCount += 1;
   localStorage.setItem("promptCrafterUsage", usageCount.toString());
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+  const usageElement = document.getElementById('usageCount');
+  if (usageElement) {
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+  }
 
   const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
 
@@ -920,6 +1092,9 @@ Use this understanding and fill the template accordingly in the current preset f
     lastConvertedText = raw;
     document.getElementById("convertedBadge").style.display = "inline-flex";
     setLaunchButtonsEnabled(true);
+    
+    // Update AI tools with the generated prompt
+    renderAITools(context.taskType, generatedPrompt);
 
     addHistoryItem(raw, generatedPrompt, role, lastTaskLabel);
 
@@ -934,7 +1109,6 @@ Use this understanding and fill the template accordingly in the current preset f
     console.error("Generation error:", error);
     generatedPrompt = localFormatter(requirementWithContext, role);
     outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
     updateOutputStats();
     showNotification("Using offline generation");
   } finally {
@@ -984,9 +1158,7 @@ function setLaunchButtonsEnabled(enabled) {
   });
 }
 
-function onToolCardClick(e) {
-  const card = e.currentTarget;
-  const tool = card.dataset.tool;
+function onToolCardClick(tool) {
   const outputEl = document.getElementById("output");
   const prompt = outputEl.value.trim();
 
@@ -995,28 +1167,7 @@ function onToolCardClick(e) {
     return;
   }
 
-  let url = "";
-  let name = "";
-
-  switch (tool) {
-    case "chatgpt":
-      url = "https://chat.openai.com/";
-      name = "ChatGPT";
-      break;
-    case "claude":
-      url = "https://claude.ai/";
-      name = "Claude";
-      break;
-    case "gemini":
-      url = "https://gemini.google.com/app";
-      name = "Gemini";
-      break;
-    default:
-      url = "";
-      name = "AI tool";
-  }
-
-  if (!url) {
+  if (!tool || !tool.url) {
     showNotification("Tool not configured yet");
     return;
   }
@@ -1024,15 +1175,84 @@ function onToolCardClick(e) {
   // Copy prompt to clipboard
   navigator.clipboard.writeText(prompt)
     .then(() => {
-      showNotification(`Prompt copied! Opening ${name}...`);
+      showNotification(`Prompt copied! Opening ${tool.name}...`);
       setTimeout(() => {
-        window.open(url, '_blank');
+        window.open(tool.url, '_blank');
       }, 500);
     })
     .catch(err => {
       console.error("Clipboard error", err);
-      window.open(url, '_blank');
+      window.open(tool.url, '_blank');
     });
+}
+
+// Initialize Voice Features
+function initializeVoiceFeatures() {
+  const voiceBtn = document.getElementById('voiceBtn');
+  const requirementEl = document.getElementById('requirement');
+  
+  if (!voiceBtn || !requirementEl) return;
+  
+  // Check if browser supports speech recognition
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if (!SpeechRecognition) {
+    voiceBtn.disabled = true;
+    voiceBtn.title = 'Voice input not supported in this browser';
+    voiceBtn.style.opacity = '0.5';
+    return;
+  }
+  
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
+  
+  let isListening = false;
+  
+  voiceBtn.addEventListener('click', () => {
+    if (isListening) {
+      recognition.stop();
+      isListening = false;
+      voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+      voiceBtn.classList.remove('recording');
+    } else {
+      try {
+        recognition.start();
+        isListening = true;
+        voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        voiceBtn.classList.add('recording');
+        showNotification('Listening... Speak now');
+      } catch (error) {
+        console.error('Speech recognition error:', error);
+        showNotification('Error starting voice input');
+      }
+    }
+  });
+  
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    requirementEl.value = transcript;
+    requirementEl.dispatchEvent(new Event('input', { bubbles: true }));
+    showNotification('Voice input captured');
+  };
+  
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+    isListening = false;
+    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    voiceBtn.classList.remove('recording');
+    
+    if (event.error === 'not-allowed') {
+      showNotification('Microphone permission denied');
+    }
+  };
+  
+  recognition.onend = () => {
+    isListening = false;
+    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    voiceBtn.classList.remove('recording');
+  };
 }
 
 // INIT
@@ -1053,7 +1273,6 @@ function attachEvents() {
   const closeHistoryBtn = document.getElementById("closeHistoryBtn");
   const historyList = document.getElementById("historyList");
   const templatesGrid = document.getElementById("templatesGrid");
-  const aiToolsGrid = document.getElementById("aiToolsGrid");
 
   if (requirementEl) {
     requirementEl.addEventListener("input", handleRequirementInput);
@@ -1175,20 +1394,18 @@ function attachEvents() {
     historyList.addEventListener("click", onHistoryListClick);
   }
 
-  if (aiToolsGrid) {
-    aiToolsGrid.querySelectorAll(".tool-card").forEach((card) => {
-      card.addEventListener("click", onToolCardClick);
-    });
-  }
+  // Initialize AI Tools
+  renderAITools();
 }
 
-// INIT
+// MAIN INITIALIZATION
 document.addEventListener("DOMContentLoaded", () => {
   loadUsageCount();
   loadTemplates();
   renderTemplates();
   loadHistory();
   attachEvents();
+  initializeVoiceFeatures();
   updateStats("");
   updateOutputStats();
 });
