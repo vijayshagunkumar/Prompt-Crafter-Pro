@@ -22,3 +22,39 @@ select:hover,
   border-color: rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.05);
 }
+
+/* =========================================
+   Text visibility fix (textarea + selection)
+   ========================================= */
+
+/* Ensure typed text is always bright */
+.textarea-idea,
+.output-textarea,
+textarea {
+  color: var(--text-primary) !important;
+  caret-color: var(--primary) !important;
+}
+
+/* Placeholder should be visible but muted */
+.textarea-idea::placeholder,
+.output-textarea::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,0.45) !important;
+  opacity: 1 !important; /* Firefox */
+}
+
+/* When user selects text, keep it readable */
+.textarea-idea::selection,
+.output-textarea::selection,
+textarea::selection {
+  background: rgba(255,106,26,0.35) !important; /* orange tint */
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* Some browsers also use this */
+.textarea-idea::-moz-selection,
+.output-textarea::-moz-selection,
+textarea::-moz-selection {
+  background: rgba(255,106,26,0.35) !important;
+  color: rgba(255,255,255,0.95) !important;
+}
