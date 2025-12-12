@@ -68,3 +68,14 @@ textarea::-moz-selection {
   border: 1px solid rgba(0, 243, 255, 0.35);
   font-weight: 600;
 }
+
+/* =========================================
+   Restore textarea resize / enlarge behavior
+   ========================================= */
+
+.textarea-idea,
+.output-textarea,
+textarea {
+  resize: vertical !important;     /* allow user to expand */
+  overflow: auto !important;
+}
