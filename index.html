@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="css/main.css" />
   
   <style>
-    /* Fix specific issues */
+    /* Fix specific color and layout issues */
     .helper-text {
       color: var(--text-secondary) !important;
       font-size: 0.8125rem;
@@ -29,34 +29,29 @@
       color: white !important;
     }
     
-    /* Fix textarea scroll */
+    .ghost-btn, .secondary-btn {
+      color: var(--text-primary) !important;
+    }
+    
+    /* Fix textarea heights */
     .textarea-idea {
       max-height: 180px;
       min-height: 120px;
     }
     
-    /* Fix sidebar spacing */
-    .app-shell {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: 100vh;
+    .output-textarea {
+      min-height: 180px;
+      max-height: 220px;
     }
     
-    /* Fix action buttons color */
-    .top-right .btn-primary,
-    .top-right .ghost-btn {
-      color: var(--text-primary) !important;
-    }
-    
-    .top-right .btn-primary {
-      background: var(--gradient-brand);
-      color: black !important;
-    }
-    
-    /* Fix tool list overflow */
-    .tools-info {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
+    /* Fix textarea button positioning */
+    .textarea-buttons {
+      position: absolute;
+      bottom: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 10;
     }
     
     /* Compact header */
@@ -70,21 +65,75 @@
       margin-bottom: 1rem;
     }
     
-    /* No scroll on cards */
+    /* Fix card heights */
     .step-card {
       overflow: hidden;
-      min-height: auto;
       height: auto;
+      min-height: 680px;
     }
     
-    /* Fix mic button position */
-    .textarea-buttons {
+    /* Fix action buttons in header */
+    .top-right .btn-primary {
+      background: var(--gradient-brand);
+      color: black !important;
+      font-weight: 600;
+    }
+    
+    .top-right .ghost-btn {
+      border: 1px solid var(--primary);
+      color: var(--primary) !important;
+    }
+    
+    /* Better AI tools grid */
+    .tools-grid {
+      margin: 1.5rem 0;
+    }
+    
+    .tool-card.best-match {
+      border-color: var(--primary);
+      background: rgba(255, 94, 0, 0.1);
+      position: relative;
+    }
+    
+    .tool-card.best-match::before {
+      content: '🎯 Best Match';
       position: absolute;
-      bottom: 0.75rem;
-      right: 0.75rem;
-      display: flex;
-      gap: 0.5rem;
-      z-index: 10;
+      top: -10px;
+      left: 10px;
+      background: var(--primary);
+      color: black;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    
+    /* Fix sidebar footer */
+    .sidebar-footer {
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    /* Fix modal backdrop */
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+    }
+    
+    /* Responsive fixes */
+    @media (max-width: 768px) {
+      .step-card {
+        min-height: 600px;
+      }
+      
+      .cards-grid {
+        gap: 1.25rem;
+      }
+      
+      .hero-top {
+        flex-direction: column;
+        gap: 1rem;
+      }
     }
   </style>
 </head>
@@ -92,7 +141,7 @@
   <!-- App Shell -->
   <div class="app-shell">
     
-    <!-- LEFT RAIL - RESTORED WITH FUNCTIONALITY -->
+    <!-- LEFT SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-logo">
@@ -125,7 +174,7 @@
           <p class="nav-label">AI Engines</p>
           <div class="nav-pill-row">
             <span class="nav-pill">
-              <i class="fab fa-openai"></i> OpenAI
+              <i class="fab fa-openai"></i> GPT
             </span>
             <span class="nav-pill">
               <i class="fas fa-sparkles"></i> Claude
@@ -151,12 +200,12 @@
 
     <!-- MAIN PANEL -->
     <div class="main-panel">
-      <!-- HEADER - COMPACT -->
+      <!-- HEADER -->
       <header class="top-bar">
         <div class="top-left">
           <div class="page-title">
             <h2>Prompt Studio</h2>
-            <p>Craft perfect prompts for any AI</p>
+            <p>Craft perfect prompts for any AI in one place</p>
           </div>
         </div>
 
@@ -172,7 +221,22 @@
         </div>
       </header>
 
-      <!-- WORKFLOW -->
+      <!-- HERO -->
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <h1>From messy idea to perfect AI prompt</h1>
+            <p>Type or speak your rough idea. PromptCraft transforms it into a structured, high-impact prompt tailored for any AI model.</p>
+          </div>
+          <div class="hero-badges">
+            <span class="pill-badge"><i class="fas fa-microphone"></i> Voice input</span>
+            <span class="pill-badge"><i class="fas fa-wand-magic-sparkles"></i> Smart restructuring</span>
+            <span class="pill-badge"><i class="fas fa-brain"></i> Auto-context detection</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- MAIN WORKFLOW -->
       <main class="workflow">
         <div class="cards-grid">
           
@@ -182,7 +246,7 @@
               <div class="step-pill">1</div>
               <div class="step-header-main">
                 <h3>Your Idea</h3>
-                <p>Type or speak your rough requirement</p>
+                <p>Type or speak your rough requirement in any language</p>
               </div>
             </div>
 
@@ -193,6 +257,11 @@
                 <span class="toggle-slider"></span>
                 <span class="toggle-label">Auto-convert as I type</span>
               </label>
+
+              <span class="timer-badge" id="timerDisplay" style="display:none;">
+                <i class="fas fa-clock"></i>
+                <span id="timerValue">60s</span>
+              </span>
             </div>
 
             <!-- Context Chips -->
@@ -204,7 +273,7 @@
                 <textarea
                   id="requirement"
                   class="textarea-idea"
-                  placeholder='Type or paste your raw idea here...'
+                  placeholder='Type or paste your raw idea here. Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write a professional email to my manager about project delay"...'
                 ></textarea>
 
                 <div class="textarea-buttons">
@@ -232,10 +301,10 @@
               <div class="step-pill">2</div>
               <div class="step-header-main">
                 <h3>Structured Prompt</h3>
-                <p>AI-ready formatted prompt</p>
+                <p>We reshape your idea into a perfect AI-ready prompt</p>
               </div>
               <span class="badge" id="convertedBadge" style="display:none;">
-                <i class="fas fa-check-circle"></i> Ready
+                <i class="fas fa-check-circle"></i> Converted
               </span>
             </div>
 
@@ -264,11 +333,11 @@
                 <textarea
                   id="output"
                   class="output-textarea"
-                  placeholder="Your structured prompt will appear here..."
+                  placeholder="Your structured, AI-ready prompt will appear here..."
                   readonly
                 ></textarea>
                 <div class="textarea-buttons">
-                  <button class="icon-btn" id="copyOutputBtn" title="Copy">
+                  <button class="icon-btn" id="copyOutputBtn" title="Copy prompt">
                     <i class="fas fa-copy"></i>
                   </button>
                 </div>
@@ -276,13 +345,13 @@
               <div class="helper-row">
                 <span class="helper-text">
                   <i class="fas fa-circle-nodes"></i>
-                  This prompt is designed for ChatGPT, Claude, Gemini, Midjourney, DALL·E, and more.
+                  This prompt is designed to be pasted into any AI tool: ChatGPT, Claude, Gemini, Midjourney, DALL·E, and more.
                 </span>
                 <span class="char-counter" id="outputStats">0 chars</span>
               </div>
             </div>
 
-            <!-- CONVERT BUTTON HERE (Where it should be) -->
+            <!-- Convert Button -->
             <div class="actions-row">
               <button class="primary-btn" id="convertBtn" disabled>
                 <i class="fas fa-magic"></i>
@@ -291,12 +360,12 @@
             </div>
             
             <!-- Action buttons below prompt -->
-            <div class="actions-row" style="margin-top: 1rem; gap: 0.5rem; display: flex;">
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
               <button class="ghost-btn" id="exportBtnBottom" style="flex: 1;">
-                <i class="fas fa-file-export"></i> Export
+                <i class="fas fa-file-export"></i> Export Prompt
               </button>
               <button class="secondary-btn" id="saveTemplateBtnBottom" style="flex: 1;">
-                <i class="fas fa-bookmark"></i> Save Template
+                <i class="fas fa-bookmark"></i> Save as Template
               </button>
             </div>
           </section>
@@ -307,7 +376,7 @@
               <div class="step-pill">3</div>
               <div class="step-header-main">
                 <h3>Send to AI</h3>
-                <p>Open with your preferred tool</p>
+                <p>Open your favorite AI with this prompt</p>
               </div>
             </div>
 
@@ -315,14 +384,14 @@
               <!-- AI tools will be dynamically rendered here -->
             </div>
 
-            <p class="helper-text">
+            <p class="helper-text" style="margin-top: 1rem;">
               <i class="fas fa-sort"></i>
-              Tools are ordered by relevance. Image tools appear first for image prompts.
+              Tools are automatically ordered based on your prompt content. The most suitable tool appears first.
             </p>
           </section>
         </div>
 
-        <!-- MODALS - RESTORED -->
+        <!-- TEMPLATE LIBRARY MODAL -->
         <div class="modal-backdrop" id="templatesModal">
           <div class="modal">
             <div class="modal-header">
@@ -337,6 +406,7 @@
           </div>
         </div>
 
+        <!-- HISTORY MODAL -->
         <div class="modal-backdrop" id="historyModal">
           <div class="modal">
             <div class="modal-header">
@@ -358,16 +428,20 @@
   <script type="module" src="js/app.js"></script>
   
   <script>
-    // Fix button event handlers
+    // Sync button clicks
     document.addEventListener('DOMContentLoaded', function() {
-      // Make both export buttons work
-      document.getElementById('exportBtn').addEventListener('click', function() {
-        document.getElementById('exportBtnBottom').click();
-      });
+      const exportBtn = document.getElementById('exportBtn');
+      const exportBtnBottom = document.getElementById('exportBtnBottom');
+      const saveBtn = document.getElementById('saveTemplateBtn');
+      const saveBtnBottom = document.getElementById('saveTemplateBtnBottom');
       
-      document.getElementById('saveTemplateBtn').addEventListener('click', function() {
-        document.getElementById('saveTemplateBtnBottom').click();
-      });
+      if (exportBtn && exportBtnBottom) {
+        exportBtn.addEventListener('click', () => exportBtnBottom.click());
+      }
+      
+      if (saveBtn && saveBtnBottom) {
+        saveBtn.addEventListener('click', () => saveBtnBottom.click());
+      }
     });
   </script>
 </body>
