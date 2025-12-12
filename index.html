@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PromptCraft | Prompt Crafter Pro</title>
+  <title>PromptCraft | AI Prompt Studio</title>
 
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- Favicon -->
@@ -15,6 +15,107 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/main.css" />
+  
+  <style>
+    /* Additional elegant styles */
+    .text-gradient {
+      background: linear-gradient(90deg, #FF5E00, #FF00FF, #00F3FF);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .text-mono {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.02em;
+    }
+    
+    .text-sparkle {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .text-sparkle::after {
+      content: '✨';
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.8em;
+      opacity: 0.7;
+      animation: sparkle 2s ease-in-out infinite;
+    }
+    
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.3; transform: translateY(-50%) rotate(0deg); }
+      50% { opacity: 1; transform: translateY(-50%) rotate(20deg); }
+    }
+    
+    .tool-list {
+      display: inline;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .tool-list span {
+      padding: 1px 6px;
+      background: rgba(255, 94, 0, 0.1);
+      border-radius: 4px;
+      margin: 0 2px;
+      border: 1px solid rgba(255, 94, 0, 0.3);
+    }
+    
+    .elegant-note {
+      position: relative;
+      padding-left: 24px;
+      font-size: 0.8125rem;
+      line-height: 1.6;
+    }
+    
+    .elegant-note i {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      color: var(--primary);
+    }
+    
+    .language-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: var(--secondary);
+      margin: 0 2px;
+    }
+    
+    .ai-brands {
+      display: inline-flex;
+      gap: 4px;
+      margin: 0 4px;
+    }
+    
+    .ai-badge {
+      padding: 1px 6px;
+      background: rgba(255, 94, 0, 0.1);
+      border: 1px solid rgba(255, 94, 0, 0.3);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+  </style>
 </head>
 <body>
   <!-- Animated Scan Line -->
@@ -33,8 +134,8 @@
           <span class="brand-icon">⚡</span>
         </div>
         <div class="brand-text">
-          <h1>Prompt Crafter Pro</h1>
-          <p>Turn rough ideas into studio-grade prompts</p>
+          <h1 class="text-gradient">PromptCraft</h1>
+          <p>Turn rough ideas into <span class="text-sparkle">studio-grade</span> prompts</p>
         </div>
       </div>
 
@@ -59,7 +160,7 @@
           <p class="nav-label">AI Engines</p>
           <div class="nav-pill-row">
             <span class="nav-pill">
-              <i class="fab fa-openai"></i> OpenAI
+              <i class="fab fa-openai"></i> GPT
             </span>
             <span class="nav-pill">
               <i class="fas fa-sparkles"></i> Claude
@@ -74,10 +175,10 @@
       <div class="sidebar-footer">
         <div class="usage-pill">
           <span id="usageCount">
-            <i class="fas fa-bolt"></i>0 prompts generated
+            <i class="fas fa-bolt"></i>0 prompts crafted
           </span>
         </div>
-        <button id="themeToggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">
+        <button id="themeToggle" class="theme-toggle" title="Cycle theme">
           <i class="fas fa-moon"></i>
         </button>
       </div>
@@ -89,7 +190,7 @@
       <header class="top-bar">
         <div class="top-left">
           <div class="page-title">
-            <h2>Prompt Studio</h2>
+            <h2 class="text-gradient">Prompt Studio</h2>
             <p>Craft perfect prompts for any AI in one place</p>
           </div>
         </div>
@@ -110,13 +211,13 @@
       <header class="hero">
         <div class="hero-top">
           <div>
-            <h1>From messy idea to perfect AI prompt</h1>
-            <p>Type or speak your rough idea. Prompt Crafter Pro turns it into a structured, high-impact prompt tailored for any AI model.</p>
+            <h1>From messy idea to <span class="text-gradient">perfect AI prompt</span></h1>
+            <p>Type or speak your rough idea. PromptCraft transforms it into a structured, high-impact prompt tailored for any AI model.</p>
           </div>
           <div class="hero-badges">
             <span class="pill-badge"><i class="fas fa-microphone"></i> Voice input</span>
             <span class="pill-badge"><i class="fas fa-wand-magic-sparkles"></i> Smart restructuring</span>
-            <span class="pill-badge"><i class="fas fa-brain"></i> Auto-context detective</span>
+            <span class="pill-badge"><i class="fas fa-brain"></i> Auto-context detection</span>
           </div>
         </div>
       </header>
@@ -171,12 +272,24 @@
                 </div>
               </div>
               <div class="helper-row">
-                <span class="helper-text">
-                  <i class="fas fa-lightbulb"></i>
-                  You can mix Hindi, English, or Hinglish. Auto-Context Detective will understand and optimize it.
+                <span class="elegant-note">
+                  <i class="fas fa-language"></i>
+                  Mix 
+                  <span class="language-badge"><i class="fas fa-language"></i>Hindi</span>, 
+                  <span class="language-badge"><i class="fas fa-globe"></i>English</span>, or 
+                  <span class="language-badge"><i class="fas fa-code-merge"></i>Hinglish</span>. 
+                  <span class="text-gradient">Auto-Context Detective</span> understands and optimizes.
                 </span>
                 <span class="char-counter" id="inputStats">0 chars</span>
               </div>
+            </div>
+
+            <!-- CONVERT BUTTON -->
+            <div class="actions-row">
+              <button class="primary-btn" id="convertBtn" disabled>
+                <i class="fas fa-magic"></i>
+                Convert Idea to Prompt
+              </button>
             </div>
           </section>
 
@@ -217,7 +330,7 @@
               <div class="textarea-wrapper">
                 <textarea
                   id="output"
-                  class="output-textarea"
+                  class="output-textarea text-mono"
                   placeholder="Your structured, AI-ready prompt will appear here..."
                   readonly
                 ></textarea>
@@ -228,19 +341,20 @@
                 </div>
               </div>
               <div class="helper-row">
-                <span class="helper-text">
+                <span class="elegant-note">
                   <i class="fas fa-circle-nodes"></i>
-                  This prompt is designed to be pasted into any AI tool: ChatGPT, Claude, Gemini, Midjourney, DALL·E, and more.
+                  This prompt is designed for 
+                  <span class="ai-brands">
+                    <span class="ai-badge">ChatGPT</span>
+                    <span class="ai-badge">Claude</span>
+                    <span class="ai-badge">Gemini</span>
+                    <span class="ai-badge">Midjourney</span>
+                    <span class="ai-badge">DALL·E</span>
+                  </span>
+                  and more.
                 </span>
                 <span class="char-counter" id="outputStats">0 chars</span>
               </div>
-            </div>
-
-            <div class="actions-row">
-              <button class="primary-btn" id="convertBtn" disabled>
-                <i class="fas fa-magic"></i>
-                Convert Idea to Prompt
-              </button>
             </div>
           </section>
 
@@ -258,11 +372,41 @@
               <!-- AI tools will be dynamically rendered here -->
             </div>
 
-            <p class="helper-text">
-              <i class="fas fa-info-circle"></i>
-              Tools are automatically ordered based on your prompt content. The most suitable tool appears first.
+            <p class="elegant-note">
+              <i class="fas fa-sort"></i>
+              Tools are <span class="text-gradient">automatically ordered</span> based on your prompt content. The most suitable tool appears first.
             </p>
           </section>
+        </div>
+
+        <!-- TEMPLATE LIBRARY MODAL -->
+        <div class="modal-backdrop" id="templatesModal">
+          <div class="modal">
+            <div class="modal-header">
+              <h3><i class="fas fa-layer-group"></i> Template Library</h3>
+              <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="templates-grid" id="templatesGrid">
+                <!-- Templates will be injected here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORY MODAL -->
+        <div class="modal-backdrop" id="historyModal">
+          <div class="modal">
+            <div class="modal-header">
+              <h3><i class="fas fa-clock-rotate-left"></i> Prompt History</h3>
+              <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="history-list" id="historyList">
+                <!-- History items will be injected here -->
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -270,50 +414,5 @@
 
   <!-- Scripts -->
   <script type="module" src="js/app.js"></script>
-  
-  <!-- Fallback inline script -->
-  <script>
-    // Fallback if modules don't load
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, setting up basic functionality...');
-      
-      // Basic event handlers
-      const requirementEl = document.getElementById('requirement');
-      const convertBtn = document.getElementById('convertBtn');
-      const clearBtn = document.getElementById('clearRequirementBtn');
-      
-      if (requirementEl && convertBtn) {
-        requirementEl.addEventListener('input', function() {
-          convertBtn.disabled = !this.value.trim();
-          document.getElementById('inputStats').textContent = `${this.value.length} chars`;
-        });
-      }
-      
-      if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-          requirementEl.value = '';
-          requirementEl.dispatchEvent(new Event('input'));
-          showNotification('Input cleared');
-        });
-      }
-      
-      // Simple notification function
-      window.showNotification = function(message) {
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.classList.add('show');
-        }, 10);
-        
-        setTimeout(() => {
-          notification.classList.remove('show');
-          setTimeout(() => notification.remove(), 300);
-        }, 3000);
-      };
-    });
-  </script>
 </body>
 </html>
