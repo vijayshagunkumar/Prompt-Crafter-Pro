@@ -1,8 +1,4 @@
 // settings-manager.js - Settings Management System
-// In settings-manager.js, add this function
-function getSettingsModalHTML() {
-  return `/* PASTE THE ENTIRE settings-modal.html CONTENT HERE */`;
-}
 import { STORAGE_KEYS } from '../core/constants.js';
 import { showNotification, showSuccess, showError, showInfo } from './notifications.js';
 import modalManager from './modal-manager.js';
@@ -44,6 +40,7 @@ class SettingsManager {
             experimentalFeatures: false
         };
         
+        this.modalInitialized = false;
         this.init();
     }
     
@@ -108,7 +105,7 @@ class SettingsManager {
         
         const modalHTML = `
             <div class="modal-backdrop" id="settingsBackdrop" style="display: none;">
-                <div class="modal settings-modal" id="settingsModal">
+                <div class="modal settings-modal" id="settingsModal" style="display: none;">
                     <div class="modal-header">
                         <h3><i class="fas fa-cog"></i> Settings</h3>
                         <button class="modal-close">&times;</button>
@@ -183,7 +180,7 @@ class SettingsManager {
                                                id="openaiApiKey" 
                                                placeholder="sk-..." 
                                                value="${this.settings.openaiApiKey ? '••••••••' : ''}">
-                                        <button class="btn-sm" id="toggleApiKey">
+                                        <button class="btn-sm" id="toggleApiKey" type="button">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
@@ -294,13 +291,13 @@ class SettingsManager {
                                 <div class="setting-group">
                                     <h4><i class="fas fa-database"></i> Data Management</h4>
                                     <div class="setting-buttons">
-                                        <button class="btn-secondary" id="exportSettingsBtn">
+                                        <button class="btn-secondary" id="exportSettingsBtn" type="button">
                                             <i class="fas fa-download"></i> Export Settings
                                         </button>
-                                        <button class="btn-secondary" id="importSettingsBtn">
+                                        <button class="btn-secondary" id="importSettingsBtn" type="button">
                                             <i class="fas fa-upload"></i> Import Settings
                                         </button>
-                                        <button class="btn-danger" id="clearDataBtn">
+                                        <button class="btn-danger" id="clearDataBtn" type="button">
                                             <i class="fas fa-trash"></i> Clear All Data
                                         </button>
                                     </div>
@@ -358,10 +355,10 @@ class SettingsManager {
                                 <div class="setting-group">
                                     <h4><i class="fas fa-bug"></i> Diagnostics</h4>
                                     <div class="setting-buttons">
-                                        <button class="btn-secondary" id="runDiagnosticsBtn">
+                                        <button class="btn-secondary" id="runDiagnosticsBtn" type="button">
                                             <i class="fas fa-stethoscope"></i> Run Diagnostics
                                         </button>
-                                        <button class="btn-secondary" id="exportLogsBtn">
+                                        <button class="btn-secondary" id="exportLogsBtn" type="button">
                                             <i class="fas fa-file-export"></i> Export Logs
                                         </button>
                                     </div>
@@ -371,10 +368,10 @@ class SettingsManager {
                     </div>
                     
                     <div class="modal-footer">
-                        <button class="btn-secondary" id="resetSettingsBtn">
+                        <button class="btn-secondary" id="resetSettingsBtn" type="button">
                             <i class="fas fa-undo"></i> Reset to Defaults
                         </button>
-                        <button class="btn-primary" id="saveSettingsBtn">
+                        <button class="btn-primary" id="saveSettingsBtn" type="button">
                             <i class="fas fa-save"></i> Save Settings
                         </button>
                     </div>
@@ -382,70 +379,156 @@ class SettingsManager {
             </div>
         `;
         
+        // Insert modal HTML
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
-        // Register modal
-        const modal = document.getElementById('settingsModal');
-        const backdrop = document.getElementById('settingsBackdrop');
-        modalManager.register('settingsModal', modal);
-        
-        // Initialize settings UI
-        this.initializeSettingsUI();
+        // Initialize the UI components AFTER DOM is ready
+        setTimeout(() => {
+            this.initializeSettingsUI();
+            this.modalInitialized = true;
+            console.log('⚙️ Settings modal initialized');
+        }, 100);
     }
     
     /**
      * Initialize settings UI components
      */
     initializeSettingsUI() {
-        // Load current values
-        this.loadCurrentValues();
+        try {
+            // Load current values
+            this.loadCurrentValues();
+            
+            // Setup tab switching
+            this.setupTabs();
+            
+            // Setup theme previews
+            this.setupThemePreviews();
+            
+            // Setup event listeners
+            this.setupEventListeners();
+            
+            // Setup modal close handlers
+            this.setupModalHandlers();
+        } catch (error) {
+            console.error('Error initializing settings UI:', error);
+        }
+    }
+    
+    /**
+     * Setup modal close handlers
+     */
+    setupModalHandlers() {
+        const modal = document.getElementById('settingsModal');
+        const backdrop = document.getElementById('settingsBackdrop');
+        const closeBtn = modal?.querySelector('.modal-close');
         
-        // Setup tab switching
-        this.setupTabs();
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
+        }
         
-        // Setup theme previews
-        this.setupThemePreviews();
+        if (backdrop) {
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    this.closeModal();
+                }
+            });
+        }
         
-        // Setup event listeners
-        this.setupEventListeners();
+        // Escape key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isModalOpen()) {
+                this.closeModal();
+            }
+        });
+    }
+    
+    /**
+     * Check if modal is open
+     */
+    isModalOpen() {
+        const modal = document.getElementById('settingsModal');
+        return modal && modal.style.display === 'block';
+    }
+    
+    /**
+     * Close modal
+     */
+    closeModal() {
+        const modal = document.getElementById('settingsModal');
+        const backdrop = document.getElementById('settingsBackdrop');
+        
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        
+        if (backdrop) {
+            backdrop.style.display = 'none';
+        }
     }
     
     /**
      * Load current values into form
      */
     loadCurrentValues() {
-        // Theme selection
-        const currentTheme = themeManager.getCurrentTheme();
-        document.querySelectorAll('.theme-option').forEach(option => {
-            if (option.dataset.theme === currentTheme) {
-                option.classList.add('active');
+        try {
+            // Theme selection - will be handled by setupThemePreviews
+            
+            // Font size
+            const fontSizeInput = document.querySelector(`input[name="fontSize"][value="${this.settings.fontSize}"]`);
+            if (fontSizeInput) {
+                fontSizeInput.checked = true;
             }
-        });
-        
-        // Font size
-        document.querySelector(`input[name="fontSize"][value="${this.settings.fontSize}"]`).checked = true;
-        
-        // Checkboxes
-        document.getElementById('reduceAnimations').checked = this.settings.reduceAnimations;
-        document.getElementById('highContrast').checked = this.settings.highContrast;
-        document.getElementById('useLocalMode').checked = this.settings.useLocalMode;
-        document.getElementById('autoConvert').checked = this.settings.autoConvert;
-        document.getElementById('translateToEnglish').checked = this.settings.translateToEnglish;
-        document.getElementById('saveHistory').checked = this.settings.saveHistory;
-        document.getElementById('exportOnExit').checked = this.settings.exportOnExit;
-        document.getElementById('analytics').checked = this.settings.analytics;
-        document.getElementById('developerMode').checked = this.settings.developerMode;
-        document.getElementById('debugLogging').checked = this.settings.debugLogging;
-        document.getElementById('experimentalFeatures').checked = this.settings.experimentalFeatures;
-        
-        // Selects
-        document.getElementById('voiceLanguage').value = this.settings.voiceLanguage;
-        document.getElementById('uiLanguage').value = this.settings.uiLanguage;
-        document.getElementById('maxHistoryItems').value = this.settings.maxHistoryItems;
-        
-        // Slider
-        document.getElementById('autoConvertDelay').value = this.settings.autoConvertDelay;
-        document.getElementById('delayValue').textContent = `${this.settings.autoConvertDelay}s`;
+            
+            // Checkboxes
+            this.setCheckboxValue('reduceAnimations', this.settings.reduceAnimations);
+            this.setCheckboxValue('highContrast', this.settings.highContrast);
+            this.setCheckboxValue('useLocalMode', this.settings.useLocalMode);
+            this.setCheckboxValue('autoConvert', this.settings.autoConvert);
+            this.setCheckboxValue('translateToEnglish', this.settings.translateToEnglish);
+            this.setCheckboxValue('saveHistory', this.settings.saveHistory);
+            this.setCheckboxValue('exportOnExit', this.settings.exportOnExit);
+            this.setCheckboxValue('analytics', this.settings.analytics);
+            this.setCheckboxValue('developerMode', this.settings.developerMode);
+            this.setCheckboxValue('debugLogging', this.settings.debugLogging);
+            this.setCheckboxValue('experimentalFeatures', this.settings.experimentalFeatures);
+            
+            // Selects
+            this.setSelectValue('voiceLanguage', this.settings.voiceLanguage);
+            this.setSelectValue('uiLanguage', this.settings.uiLanguage);
+            this.setSelectValue('maxHistoryItems', this.settings.maxHistoryItems);
+            
+            // Slider
+            const delaySlider = document.getElementById('autoConvertDelay');
+            const delayValue = document.getElementById('delayValue');
+            if (delaySlider && delayValue) {
+                delaySlider.value = this.settings.autoConvertDelay;
+                delayValue.textContent = `${this.settings.autoConvertDelay}s`;
+            }
+        } catch (error) {
+            console.error('Error loading current values:', error);
+        }
+    }
+    
+    /**
+     * Helper: Set checkbox value
+     */
+    setCheckboxValue(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.checked = value;
+        }
+    }
+    
+    /**
+     * Helper: Set select value
+     */
+    setSelectValue(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.value = value;
+        }
     }
     
     /**
@@ -465,7 +548,10 @@ class SettingsManager {
                 
                 // Update active content
                 tabContents.forEach(content => content.classList.remove('active'));
-                document.getElementById(`${tabId}Tab`).classList.add('active');
+                const targetTab = document.getElementById(`${tabId}Tab`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
             });
         });
     }
@@ -511,6 +597,9 @@ class SettingsManager {
                     opt.classList.remove('active');
                 });
                 option.classList.add('active');
+                
+                // Update setting
+                this.settings.theme = themeId;
             });
         });
     }
@@ -519,77 +608,86 @@ class SettingsManager {
      * Setup event listeners
      */
     setupEventListeners() {
-        const modal = document.getElementById('settingsModal');
-        
         // API key toggle
         const apiKeyInput = document.getElementById('openaiApiKey');
         const toggleApiKeyBtn = document.getElementById('toggleApiKey');
         
-        toggleApiKeyBtn?.addEventListener('click', () => {
-            const type = apiKeyInput.type === 'password' ? 'text' : 'password';
-            apiKeyInput.type = type;
-            toggleApiKeyBtn.innerHTML = type === 'password' ? 
-                '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-        });
+        if (toggleApiKeyBtn && apiKeyInput) {
+            toggleApiKeyBtn.addEventListener('click', () => {
+                const type = apiKeyInput.type === 'password' ? 'text' : 'password';
+                apiKeyInput.type = type;
+                toggleApiKeyBtn.innerHTML = type === 'password' ? 
+                    '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
+        }
         
         // Delay slider
         const delaySlider = document.getElementById('autoConvertDelay');
         const delayValue = document.getElementById('delayValue');
         
-        delaySlider?.addEventListener('input', (e) => {
-            delayValue.textContent = `${e.target.value}s`;
-        });
+        if (delaySlider && delayValue) {
+            delaySlider.addEventListener('input', (e) => {
+                delayValue.textContent = `${e.target.value}s`;
+            });
+        }
         
         // Save settings
         const saveBtn = document.getElementById('saveSettingsBtn');
-        saveBtn?.addEventListener('click', () => {
-            this.saveCurrentSettings();
-        });
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveCurrentSettings();
+            });
+        }
         
         // Reset settings
         const resetBtn = document.getElementById('resetSettingsBtn');
-        resetBtn?.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all settings to default?')) {
-                this.resetToDefaults();
-            }
-        });
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all settings to default?')) {
+                    this.resetToDefaults();
+                }
+            });
+        }
         
         // Export settings
         const exportBtn = document.getElementById('exportSettingsBtn');
-        exportBtn?.addEventListener('click', () => {
-            this.exportSettings();
-        });
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportSettings();
+            });
+        }
         
         // Import settings
         const importBtn = document.getElementById('importSettingsBtn');
-        importBtn?.addEventListener('click', () => {
-            this.importSettings();
-        });
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                this.importSettings();
+            });
+        }
         
         // Clear data
         const clearBtn = document.getElementById('clearDataBtn');
-        clearBtn?.addEventListener('click', () => {
-            this.clearAllData();
-        });
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                this.clearAllData();
+            });
+        }
         
         // Diagnostics
         const diagnosticsBtn = document.getElementById('runDiagnosticsBtn');
-        diagnosticsBtn?.addEventListener('click', () => {
-            this.runDiagnostics();
-        });
+        if (diagnosticsBtn) {
+            diagnosticsBtn.addEventListener('click', () => {
+                this.runDiagnostics();
+            });
+        }
         
         // Export logs
         const exportLogsBtn = document.getElementById('exportLogsBtn');
-        exportLogsBtn?.addEventListener('click', () => {
-            this.exportLogs();
-        });
-        
-        // Close on save
-        modal?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                this.saveCurrentSettings();
-            }
-        });
+        if (exportLogsBtn) {
+            exportLogsBtn.addEventListener('click', () => {
+                this.exportLogs();
+            });
+        }
     }
     
     /**
@@ -599,34 +697,43 @@ class SettingsManager {
         try {
             // Get values from form
             this.settings.theme = themeManager.getCurrentTheme();
-            this.settings.fontSize = document.querySelector('input[name="fontSize"]:checked')?.value || 'medium';
-            this.settings.reduceAnimations = document.getElementById('reduceAnimations').checked;
-            this.settings.highContrast = document.getElementById('highContrast').checked;
+            
+            const fontSizeInput = document.querySelector('input[name="fontSize"]:checked');
+            this.settings.fontSize = fontSizeInput ? fontSizeInput.value : 'medium';
+            
+            this.settings.reduceAnimations = document.getElementById('reduceAnimations')?.checked || false;
+            this.settings.highContrast = document.getElementById('highContrast')?.checked || false;
             
             // AI settings
             const apiKeyInput = document.getElementById('openaiApiKey');
             if (apiKeyInput && apiKeyInput.value !== '••••••••') {
                 this.settings.openaiApiKey = apiKeyInput.value;
             }
-            this.settings.useLocalMode = document.getElementById('useLocalMode').checked;
-            this.settings.autoConvert = document.getElementById('autoConvert').checked;
-            this.settings.autoConvertDelay = parseInt(document.getElementById('autoConvertDelay').value);
+            
+            this.settings.useLocalMode = document.getElementById('useLocalMode')?.checked || false;
+            this.settings.autoConvert = document.getElementById('autoConvert')?.checked || true;
+            
+            const delaySlider = document.getElementById('autoConvertDelay');
+            this.settings.autoConvertDelay = delaySlider ? parseInt(delaySlider.value) : 60;
             
             // Language settings
-            this.settings.voiceLanguage = document.getElementById('voiceLanguage').value;
-            this.settings.uiLanguage = document.getElementById('uiLanguage').value;
-            this.settings.translateToEnglish = document.getElementById('translateToEnglish').checked;
+            this.settings.voiceLanguage = document.getElementById('voiceLanguage')?.value || 'en-US';
+            this.settings.uiLanguage = document.getElementById('uiLanguage')?.value || 'en';
+            this.settings.translateToEnglish = document.getElementById('translateToEnglish')?.checked || true;
             
             // Privacy settings
-            this.settings.saveHistory = document.getElementById('saveHistory').checked;
-            this.settings.maxHistoryItems = parseInt(document.getElementById('maxHistoryItems').value);
-            this.settings.exportOnExit = document.getElementById('exportOnExit').checked;
-            this.settings.analytics = document.getElementById('analytics').checked;
+            this.settings.saveHistory = document.getElementById('saveHistory')?.checked || true;
+            
+            const maxHistorySelect = document.getElementById('maxHistoryItems');
+            this.settings.maxHistoryItems = maxHistorySelect ? parseInt(maxHistorySelect.value) : 200;
+            
+            this.settings.exportOnExit = document.getElementById('exportOnExit')?.checked || false;
+            this.settings.analytics = document.getElementById('analytics')?.checked || false;
             
             // Advanced settings
-            this.settings.developerMode = document.getElementById('developerMode').checked;
-            this.settings.debugLogging = document.getElementById('debugLogging').checked;
-            this.settings.experimentalFeatures = document.getElementById('experimentalFeatures').checked;
+            this.settings.developerMode = document.getElementById('developerMode')?.checked || false;
+            this.settings.debugLogging = document.getElementById('debugLogging')?.checked || false;
+            this.settings.experimentalFeatures = document.getElementById('experimentalFeatures')?.checked || false;
             
             // Save to localStorage
             if (this.saveSettings()) {
@@ -639,7 +746,7 @@ class SettingsManager {
                 
                 showSuccess('Settings saved successfully');
                 setTimeout(() => {
-                    modalManager.close('settingsModal');
+                    this.closeModal();
                 }, 1000);
             } else {
                 showError('Failed to save settings');
@@ -674,12 +781,6 @@ class SettingsManager {
             document.documentElement.classList.add('high-contrast');
         } else {
             document.documentElement.classList.remove('high-contrast');
-        }
-        
-        // Update auto-convert
-        const autoConvertCheckbox = document.getElementById('autoConvert');
-        if (autoConvertCheckbox) {
-            autoConvertCheckbox.checked = this.settings.autoConvert;
         }
         
         // Dispatch settings changed event
@@ -879,14 +980,44 @@ class SettingsManager {
      * Open settings modal
      */
     openModal() {
-        // Refresh theme previews
-        this.setupThemePreviews();
+        // If modal doesn't exist or isn't initialized, create it
+        if (!document.getElementById('settingsModal') || !this.modalInitialized) {
+            this.createSettingsModal();
+            
+            // Wait for modal to be initialized
+            setTimeout(() => {
+                this.showModal();
+            }, 150);
+        } else {
+            this.showModal();
+        }
+    }
+    
+    /**
+     * Show the modal
+     */
+    showModal() {
+        const modal = document.getElementById('settingsModal');
+        const backdrop = document.getElementById('settingsBackdrop');
         
-        // Load current values
-        this.loadCurrentValues();
-        
-        // Open modal
-        modalManager.open('settingsModal');
+        if (modal && backdrop) {
+            // Refresh theme previews
+            this.setupThemePreviews();
+            
+            // Load current values
+            this.loadCurrentValues();
+            
+            // Show modal
+            backdrop.style.display = 'block';
+            modal.style.display = 'block';
+            
+            // Add animation
+            modal.style.animation = 'modalSlideIn 0.3s ease';
+            
+            console.log('⚙️ Settings modal opened');
+        } else {
+            console.error('Settings modal elements not found');
+        }
     }
 }
 
