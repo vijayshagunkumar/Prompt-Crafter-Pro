@@ -1,6 +1,6 @@
-/* cards.css - Card Components */
+/* cards.css - Card Components - COMPLETELY FIXED */
 
-/* Step Cards */
+/* Base card - FIXED: Removed min-height, added consistent sizing */
 .step-card {
   background: var(--panel-bg);
   border-radius: var(--radius-lg);
@@ -9,39 +9,111 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 650px;
   position: relative;
-  overflow: visible;
   box-shadow: var(--shadow-card);
-  transition: var(--transition-base);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
 }
 
 .step-card:hover {
-  box-shadow: var(--shadow-elevated);
   border-color: rgba(255, 94, 0, 0.3);
 }
 
+/* Header - FIXED: Better spacing and control positioning */
 .step-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-sm);
   margin-bottom: var(--space-lg);
-}
-
-.step-pill {
-  width: 32px;
-  height: 32px;
-  background: var(--gradient-brand);
-  color: var(--text-on-primary);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.875rem;
   flex-shrink: 0;
 }
 
+/* Maximize button - FIXED: Stable positioning */
+.card-max-btn {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 10;
+  position: relative;
+}
+
+.card-max-btn:hover {
+  background: rgba(255, 94, 0, 0.1);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Backdrop - FIXED: Proper display control */
+.card-max-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.card-max-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Lock scroll */
+body.card-max-open {
+  overflow: hidden;
+}
+
+/* Maximized state - FIXED: Stable animation, prevent "dancing" */
+.step-card.is-maximized {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 90vw;
+  height: 90vh;
+  max-width: 1200px;
+  z-index: 2000;
+  animation: maximizeCard 0.3s ease forwards;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--primary);
+  overflow: auto;
+  margin: 0;
+  padding: var(--space-xl);
+}
+
+@keyframes maximizeCard {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Textareas expand correctly */
+.step-card.is-maximized textarea {
+  min-height: 55vh;
+  max-height: none;
+  font-size: 1.1rem;
+}
+
+/* Step Cards */
 .step-header-main {
   flex: 1;
 }
@@ -95,10 +167,26 @@
   gap: 0.25rem;
 }
 
-/* Responsive card adjustments */
+/* Card content area - FIXED: Consistent sizing */
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Textarea container */
+.textarea-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Step Cards adjustments - FIXED: Remove hard min-height */
 @media (max-width: 768px) {
   .step-card {
-    min-height: 550px;
     padding: var(--space-md);
   }
   
@@ -120,133 +208,382 @@
     height: 28px;
     font-size: 0.75rem;
   }
-  
-  .tool-card {
+}
+
+/* Card Maximize - Mobile Insets - FIXED */
+@media (max-width: 768px) {
+  .step-card.is-maximized {
+    width: 95vw;
+    height: 95vh;
+    padding: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .step-card.is-maximized {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
     padding: var(--space-sm);
   }
 }
 
-/* =========================
-   Card Maximize (Fullscreen)
-   ========================= */
+/* Prevent content overflow in cards */
+.step-card * {
+  max-width: 100%;
+}
 
-.step-header-actions {
-  margin-left: auto;
+/* Card footer buttons - FIXED: Consistent sizing */
+.card-footer {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+/* Ensure all cards have same base structure */
+.step-card > *:last-child {
+  margin-top: auto;
+}
+
+/* Card loading state */
+.card-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  justify-content: center;
+  z-index: 10;
 }
 
-.card-max-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-md);
+/* Card error state */
+.card-error {
+  border-color: #FF4757;
+  background: rgba(255, 71, 87, 0.1);
 }
 
-.card-max-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(6px);
-  z-index: 1990;
-  display: none;
+/* Card success state */
+.card-success {
+  border-color: var(--matrix-green);
+  background: rgba(0, 255, 65, 0.1);
 }
 
-body.card-max-open {
-  overflow: hidden;
+/* Card empty state */
+.card-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
 }
 
-body.card-max-open .card-max-backdrop {
-  display: block;
+.card-empty i {
+  font-size: 2rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.5;
 }
 
-.step-card.is-maximized {
-  position: fixed;
-  inset: 16px;
-  z-index: 2000;
-  width: auto;
-  height: auto;
-  min-height: calc(100vh - 32px);
-  max-height: calc(100vh - 32px);
-  overflow: auto;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-  border-color: rgba(255, 94, 0, 0.45);
+/* Card transitions */
+.step-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Card hover effects */
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
 }
 
 .step-card.is-maximized:hover {
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  transform: translate(-50%, -50%) scale(1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
-.step-card.is-maximized .textarea-idea,
-.step-card.is-maximized .output-textarea {
-  max-height: none;
-  min-height: 55vh;
+/* Card focus state for accessibility */
+.step-card:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
-/* cards.css - Card Components */
 
-/* Base card */
-.step-card {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
+/* Card drag handle (for potential future feature) */
+.card-drag-handle {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 24px;
+  height: 24px;
+  cursor: move;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.card-drag-handle:hover {
+  opacity: 0.7;
+}
+
+/* Card resize handle (for potential future feature) */
+.card-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: se-resize;
+  opacity: 0.3;
+}
+
+/* Card close button (for modals/expanded views) */
+.card-close-btn {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  padding: var(--space-lg);
-  display: flex;
-  flex-direction: column;
-  min-height: 620px;
-  position: relative;
-  box-shadow: var(--shadow-card);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.step-card:hover {
-  border-color: rgba(255, 94, 0, 0.3);
-}
-
-/* Header */
-.step-header {
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-lg);
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 10;
 }
 
-/* Maximize button */
-.card-max-btn {
-  margin-left: auto;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-md);
+.card-close-btn:hover {
+  background: rgba(255, 71, 87, 0.1);
+  color: #FF4757;
+  border-color: #FF4757;
 }
 
-/* Backdrop */
-.card-max-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 1990;
-  display: none;
+/* Card status indicators */
+.card-status {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  z-index: 5;
 }
 
-/* Lock scroll */
-body.card-max-open {
+.card-status.success {
+  background: var(--matrix-green);
+  color: black;
+}
+
+.card-status.error {
+  background: #FF4757;
+  color: white;
+}
+
+.card-status.warning {
+  background: #FFA502;
+  color: black;
+}
+
+.card-status.info {
+  background: var(--secondary);
+  color: black;
+}
+
+/* Card progress bar */
+.card-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--border-subtle);
   overflow: hidden;
 }
 
-/* Maximized state */
-.step-card.is-maximized {
-  position: fixed;
-  inset: 16px;
-  z-index: 2000;
-  width: auto;
-  height: auto;
-  max-height: calc(100vh - 32px);
-  overflow: auto;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+.card-progress-bar {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
 }
 
-/* Textareas expand correctly */
-.step-card.is-maximized textarea {
-  min-height: 55vh;
-  max-height: none;
+/* Card skeleton loading */
+.card-skeleton {
+  background: linear-gradient(90deg, 
+    var(--bg-card) 25%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Card drag and drop styling */
+.card-dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-drop-zone {
+  border: 2px dashed var(--primary);
+  background: rgba(255, 94, 0, 0.1);
+}
+
+/* Card selection */
+.card-selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.2);
+}
+
+/* Card minimized state */
+.card-minimized {
+  height: 60px;
+  overflow: hidden;
+}
+
+.card-minimized .card-content {
+  display: none;
+}
+
+/* Card collapsible sections */
+.card-section {
+  margin-bottom: var(--space-lg);
+}
+
+.card-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-section-content {
+  padding-top: var(--space-md);
+}
+
+.card-section.collapsed .card-section-content {
+  display: none;
+}
+
+/* Card tabs */
+.card-tabs {
+  display: flex;
+  gap: 1px;
+  background: var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+
+.card-tab {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.card-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.card-tab.active {
+  background: rgba(255, 94, 0, 0.15);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Card notifications */
+.card-notification {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  z-index: 10;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Card context menu */
+.card-context-menu {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  z-index: 20;
+}
+
+/* Card fullscreen exit button */
+.card-fullscreen-exit {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--transition-fast);
+}
+
+.card-fullscreen-exit:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+/* Card print styles */
+@media print {
+  .step-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .card-max-btn,
+  .card-close-btn,
+  .card-context-menu {
+    display: none !important;
+  }
 }
