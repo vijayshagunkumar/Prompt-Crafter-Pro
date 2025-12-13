@@ -283,3 +283,93 @@ window.PromptCraft = {
 };
 
 console.log('🎯 PromptCraft loaded');
+// Add this to your existing app.js file at the end:
+
+// ======================
+// SETTINGS MODAL HANDLER
+// ======================
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 App initialized');
+    
+    // Settings button handler
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+        console.log('⚙️ Settings button found');
+        
+        settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('⚙️ Settings button clicked');
+            
+            // Open settings modal
+            import('./ui/settings-manager.js').then(module => {
+                module.openSettingsModal();
+            }).catch(error => {
+                console.error('Failed to open settings:', error);
+                // Fallback: try to show modal manually
+                const modal = document.getElementById('settingsModal');
+                const backdrop = document.getElementById('settingsBackdrop');
+                if (modal && backdrop) {
+                    backdrop.style.display = 'block';
+                    modal.style.display = 'block';
+                }
+            });
+        });
+        
+        // Add keyboard shortcut (Ctrl/Cmd + ,)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+                e.preventDefault();
+                import('./ui/settings-manager.js').then(module => {
+                    module.openSettingsModal();
+                });
+            }
+        });
+    } else {
+        console.warn('⚠️ Settings button not found');
+    }
+});
+
+// ======================
+// DEBUG HELPERS
+// ======================
+
+// Add this to test if settings is working
+window.debugSettings = function() {
+    console.log('🔧 Debug settings:');
+    console.log('1. Checking settings button:', document.getElementById('settingsBtn'));
+    console.log('2. Checking settings modal:', document.getElementById('settingsModal'));
+    console.log('3. Checking settings backdrop:', document.getElementById('settingsBackdrop'));
+    
+    const modal = document.getElementById('settingsModal');
+    const backdrop = document.getElementById('settingsBackdrop');
+    
+    if (modal && backdrop) {
+        console.log('✅ Modal elements found');
+        console.log('Modal display:', modal.style.display);
+        console.log('Backdrop display:', backdrop.style.display);
+        
+        // Try to show it
+        backdrop.style.display = 'block';
+        modal.style.display = 'block';
+        console.log('🟢 Modal shown manually');
+    } else {
+        console.log('❌ Modal elements not found');
+    }
+};
+
+// ======================
+// INITIALIZE APP
+// ======================
+
+// Initialize settings when app starts
+setTimeout(() => {
+    import('./ui/settings-manager.js').then(module => {
+        module.initializeSettings();
+        console.log('✅ Settings initialized');
+    }).catch(error => {
+        console.error('Failed to initialize settings:', error);
+    });
+}, 1000);
