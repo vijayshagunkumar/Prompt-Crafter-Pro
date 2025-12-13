@@ -1,4 +1,4 @@
-// app.js - Main Application Entry Point
+// app.js - Main Application Entry Point (UPDATED & COMPLETE)
 
 // Import core modules
 import appState from './core/app-state.js';
@@ -9,7 +9,7 @@ import { initializeVoice } from './features/voice.js';
 import { loadTemplates } from './features/templates.js';
 import { loadHistory } from './features/history.js';
 import { detectContextFromText } from './features/context-detective.js';
-import { initCardExpander } from './features/card-expander.js'; // ✅ ADDED
+import { initCardExpander } from './features/card-expander.js';
 
 // Import AI modules
 import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
@@ -18,6 +18,10 @@ import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
 import { initializeEventHandlers } from './ui/event-handlers.js';
 import { showNotification, showSuccess, showError, showInfo } from './ui/notifications.js';
 import modalManager from './ui/modal-manager.js';
+import themeManager from './ui/theme-manager.js';
+
+// Import Settings
+import { initializeSettings, openSettingsModal } from './ui/settings-manager.js';
 
 /**
  * Initialize the application
@@ -29,6 +33,9 @@ async function initializeApp() {
 
     // Initialize app state
     appState.init();
+
+    // Initialize theme manager
+    themeManager.init();
 
     // Load data
     loadTemplates();
@@ -43,14 +50,14 @@ async function initializeApp() {
     // Initialize UI
     initializeUI();
 
-    // ✅ Initialize card maximize/restore for Card 1 + Card 2 (does NOT touch Card 3)
+    // Initialize card maximize/restore for Card 1 + Card 2
     initCardExpander();
 
     // Initialize AI tools
     initializeAITools();
 
-    // Initialize theme
-    initializeTheme();
+    // Initialize settings
+    initializeSettings();
 
     // Update stats
     updateAllStats();
@@ -83,6 +90,19 @@ function initializeUI() {
 
   // Set initial button states
   updateButtonStates();
+
+  // Setup settings button
+  setupSettingsButton();
+}
+
+/**
+ * Setup settings button in header
+ */
+function setupSettingsButton() {
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', openSettingsModal);
+  }
 }
 
 /**
@@ -92,16 +112,21 @@ function initializeModals() {
   // Register all modals
   const templatesModal = document.getElementById('templatesModal');
   const historyModal = document.getElementById('historyModal');
+  const settingsModal = document.getElementById('settingsModal');
 
   if (templatesModal) modalManager.register('templatesModal', templatesModal);
   if (historyModal) modalManager.register('historyModal', historyModal);
+  if (settingsModal) modalManager.register('settingsModal', settingsModal);
 }
 
 /**
  * Initialize AI tools grid
  */
 function initializeAITools() {
-  updateAIToolsGrid('general', '', false);
+  const requirementEl = document.getElementById('requirement');
+  const text = requirementEl ? requirementEl.value : '';
+  const context = detectContextFromText(text);
+  updateAIToolsGrid(context.taskType, text, false);
 }
 
 /**
@@ -119,7 +144,7 @@ function updateAllStats() {
 function updateUsageCount() {
   const usageElement = document.getElementById('usageCount');
   if (usageElement) {
-    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${appState.usageCount} prompts generated`;
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts generated`;
   }
 }
 
@@ -171,73 +196,6 @@ function updateButtonStates() {
 }
 
 /**
- * Initialize theme
- */
-function initializeTheme() {
-  // Load saved theme or use default
-  const savedTheme = localStorage.getItem(STORAGE_KEYS.appTheme) || DEFAULTS.theme;
-  setTheme(savedTheme, false);
-
-  // Update theme toggle button
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    themeToggle.innerHTML = savedTheme === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    themeToggle.addEventListener('click', toggleTheme);
-  }
-}
-
-/**
- * Set theme
- * @param {string} themeName - Theme name
- * @param {boolean} showNotif - Whether to show notification
- */
-function setTheme(themeName, showNotif = true) {
-  const html = document.documentElement;
-
-  // List of available themes
-  const themes = ['sunset-glow', 'aurora-magic', 'serenity-bliss', 'cyberpunk-neon', 'ocean-deep'];
-
-  if (!themes.includes(themeName)) {
-    themeName = DEFAULTS.theme;
-  }
-
-  // Set theme attribute
-  html.setAttribute('data-app-theme', themeName);
-  localStorage.setItem(STORAGE_KEYS.appTheme, themeName);
-
-  // Update theme toggle icon
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    themeToggle.innerHTML = themeName === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-  }
-
-  if (showNotif) {
-    const themeNames = {
-      'sunset-glow': 'Sunset Glow',
-      'aurora-magic': 'Aurora Magic',
-      'serenity-bliss': 'Serenity Bliss',
-      'cyberpunk-neon': 'Cyberpunk Neon',
-      'ocean-deep': 'Ocean Deep'
-    };
-
-    showNotification(`Theme changed to ${themeNames[themeName] || themeName}`);
-  }
-}
-
-/**
- * Toggle between themes
- */
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-app-theme');
-  const themes = ['sunset-glow', 'aurora-magic', 'serenity-bliss', 'cyberpunk-neon', 'ocean-deep'];
-  const currentIndex = themes.indexOf(currentTheme);
-  const nextIndex = (currentIndex + 1) % themes.length;
-  const nextTheme = themes[nextIndex];
-
-  setTheme(nextTheme);
-}
-
-/**
  * Export app data for backup
  */
 function exportAppData() {
@@ -247,9 +205,10 @@ function exportAppData() {
     templates: appState.templates,
     history: appState.historyItems,
     settings: {
-      theme: localStorage.getItem(STORAGE_KEYS.appTheme),
+      theme: themeManager.getCurrentTheme(),
       voiceLanguage: localStorage.getItem(STORAGE_KEYS.voiceLanguage),
-      usageCount: appState.usageCount
+      usageCount: appState.usageCount,
+      apiKeyConfigured: !!localStorage.getItem('OPENAI_API_KEY')
     }
   };
 
@@ -272,6 +231,19 @@ function resetAppData() {
   if (confirm('Are you sure you want to reset all app data? This cannot be undone.')) {
     localStorage.clear();
     location.reload();
+  }
+}
+
+/**
+ * Toggle sidebar on mobile
+ */
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
   }
 }
 
@@ -298,13 +270,16 @@ if (document.readyState === 'loading') {
 window.PromptCraft = {
   appState,
   modalManager,
+  themeManager,
   exportAppData,
   resetAppData,
   showNotification,
   showSuccess,
   showError,
-  setTheme,
-  toggleTheme
+  updateAllStats,
+  updateUsageCount,
+  updateInputStats,
+  updateOutputStats
 };
 
 console.log('🎯 PromptCraft loaded');
