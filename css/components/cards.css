@@ -182,3 +182,71 @@ body.card-max-open .card-max-backdrop {
   max-height: none;
   min-height: 55vh;
 }
+/* cards.css - Card Components */
+
+/* Base card */
+.step-card {
+  background: var(--panel-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  min-height: 620px;
+  position: relative;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.step-card:hover {
+  border-color: rgba(255, 94, 0, 0.3);
+}
+
+/* Header */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+/* Maximize button */
+.card-max-btn {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+}
+
+/* Backdrop */
+.card-max-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1990;
+  display: none;
+}
+
+/* Lock scroll */
+body.card-max-open {
+  overflow: hidden;
+}
+
+/* Maximized state */
+.step-card.is-maximized {
+  position: fixed;
+  inset: 16px;
+  z-index: 2000;
+  width: auto;
+  height: auto;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+/* Textareas expand correctly */
+.step-card.is-maximized textarea {
+  min-height: 55vh;
+  max-height: none;
+}
