@@ -1,0 +1,125 @@
+/* variable-mapping.css - Maps settings modal variables to cyberpunk theme */
+
+:root {
+  /* Background Mapping */
+  --bg-surface: var(--panel-bg);
+  --bg-card: var(--bg-secondary);
+  --bg-hover: rgba(255, 94, 0, 0.1);
+  --bg-active: rgba(255, 94, 0, 0.2);
+  
+  /* Text Mapping */
+  --text-tertiary: var(--text-muted);
+  --text-on-dark: var(--text-primary);
+  --text-on-light: #000000;
+  
+  /* Border Mapping */
+  --border-light: var(--border-subtle);
+  --border-medium: rgba(255, 94, 0, 0.3);
+  --border-dark: rgba(255, 94, 0, 0.5);
+  
+  /* Status Colors Mapping */
+  --success: var(--matrix-green);
+  --danger: #FF4757;
+  --warning: #FFA502;
+  --info: var(--secondary);
+  
+  /* Shadow Mapping */
+  --shadow-sm: 0 1px 3px rgba(255, 94, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(255, 94, 0, 0.5);
+  
+  /* Radius Mapping */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-lg);
+  --radius-full: var(--radius-full);
+  
+  /* Transition Mapping */
+  --transition-fast: var(--transition-fast);
+  --transition-base: var(--transition-base);
+  --transition-slow: var(--transition-slow);
+  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* Z-index Mapping */
+  --z-dropdown: var(--z-dropdown);
+  --z-sticky: var(--z-sticky);
+  --z-fixed: var(--z-fixed);
+  --z-modal-backdrop: var(--z-modal-backdrop);
+  --z-modal: var(--z-modal);
+  --z-popover: var(--z-popover);
+  --z-tooltip: var(--z-tooltip);
+  --z-toast: var(--z-toast);
+  
+  /* Spacing Mapping */
+  --space-xs: var(--space-xs);
+  --space-sm: var(--space-sm);
+  --space-md: var(--space-md);
+  --space-lg: var(--space-lg);
+  --space-xl: var(--space-xl);
+  --space-2xl: var(--space-2xl);
+  --space-3xl: var(--space-3xl);
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --bg-surface: #ffffff;
+  --bg-card: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+}
+
+/* Glassmorphism theme overrides */
+[data-theme="glassmorphism"] {
+  --bg-surface: rgba(255, 255, 255, 0.1);
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.2);
+}
+
+/* High contrast mode */
+.high-contrast {
+  --bg-surface: #000000;
+  --bg-card: #111111;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-light: #333333;
+  --border-medium: #666666;
+  --primary: #FF5E00;
+  --success: #00FF00;
+  --danger: #FF0000;
+  --warning: #FFFF00;
+  --info: #00FFFF;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print mode */
+@media print {
+  :root {
+    --bg-surface: transparent !important;
+    --bg-card: transparent !important;
+    --text-primary: #000000 !important;
+    --text-secondary: #333333 !important;
+    --border-light: #000000 !important;
+    --primary: #000000 !important;
+    --success: #000000 !important;
+    --danger: #000000 !important;
+    --warning: #000000 !important;
+    --info: #000000 !important;
+  }
+}
