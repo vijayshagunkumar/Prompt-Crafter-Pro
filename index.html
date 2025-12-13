@@ -13,12 +13,59 @@
   <link rel="stylesheet" href="css/main.css" />
   
   <style>
-    /* ===== CLEAN MINIMAL DESIGN ===== */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    /* ===== CSS VARIABLES - ADD THIS FIRST ===== */
+  :root[data-theme="professional-blue"] {
+    /* Primary Colors */
+    --primary: #3B82F6;
+    --primary-dark: #2563EB;
+    --primary-light: #60A5FA;
+    --primary-soft: rgba(59, 130, 246, 0.1);
+    
+    /* Backgrounds */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F9FAFB;
+    --bg-tertiary: #F3F4F6;
+    --bg-card: #FFFFFF;
+    
+    /* Text */
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    
+    /* Borders */
+    --border-light: #E5E7EB;
+    --border-medium: #D1D5DB;
+    
+    /* Secondary Colors */
+    --secondary: #8B5CF6;
+    --accent: #10B981;
+    --error: #EF4444;
+  }
+  
+  :root {
+    /* Fallback defaults */
+    --primary: #3B82F6;
+    --primary-dark: #2563EB;
+    --primary-light: #60A5FA;
+    --primary-soft: rgba(59, 130, 246, 0.1);
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F9FAFB;
+    --bg-tertiary: #F3F4F6;
+    --bg-card: #FFFFFF;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --border-light: #E5E7EB;
+    --secondary: #8B5CF6;
+  }
+  
+  /* ===== CLEAN MINIMAL DESIGN ===== */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+    
     
     body {
       background: var(--bg-secondary);
