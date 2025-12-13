@@ -1,4 +1,4 @@
-/* responsive.css - Responsive Utilities */
+/* responsive.css - Responsive Styles */
 
 /* Responsive Breakpoints */
 @media (max-width: 1400px) {
@@ -13,7 +13,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-  
+
   .step-card {
     min-height: 600px;
   }
@@ -23,20 +23,20 @@
   .app-shell {
     grid-template-columns: 240px 1fr;
   }
-  
+
   .sidebar {
     width: 240px;
   }
-  
+
   .main-panel {
     padding: 20px;
   }
-  
+
   .hero-top {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .hero-badges {
     justify-content: flex-start;
   }
@@ -46,47 +46,47 @@
   .app-shell {
     grid-template-columns: 1fr;
   }
-  
+
   .sidebar {
     display: none;
   }
-  
+
   .sidebar.open {
     display: flex;
   }
-  
+
   .main-panel {
     padding: 16px;
   }
-  
+
   .cards-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .step-card {
     min-height: 500px;
   }
-  
+
   .hero-top h1 {
     font-size: 1.75rem;
   }
-  
+
   .hero-top p {
     font-size: 0.875rem;
   }
-  
+
   .top-bar {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .top-right {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .modal {
     width: 95%;
     margin: 10px;
@@ -97,154 +97,65 @@
   .main-panel {
     padding: 12px;
   }
-  
+
   .step-card {
     padding: 16px;
     min-height: 450px;
   }
-  
+
   .hero-top h1 {
     font-size: 1.5rem;
   }
-  
+
   .hero-badges {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .pill-badge {
     width: 100%;
     justify-content: center;
   }
-  
+
   .textarea-buttons {
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
   }
-  
+
   .textarea-buttons .icon-btn {
     width: 32px;
     height: 32px;
   }
-  
+
   .tools-grid {
     gap: 8px;
   }
-  
+
   .tool-card {
     padding: 12px;
   }
-  
+
   .tool-icon {
     width: 36px;
     height: 36px;
     font-size: 1rem;
   }
-  
+
   .tool-body h4 {
     font-size: 0.8125rem;
   }
-  
+
   .tool-body p {
     font-size: 0.6875rem;
   }
 }
 
-/* Hide/Show based on screen size */
-.visible-sm { display: none; }
-.visible-md { display: none; }
-.visible-lg { display: none; }
-.visible-xl { display: none; }
-
-@media (max-width: 640px) {
-  .visible-sm { display: block; }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .visible-md { display: block; }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .visible-lg { display: block; }
-}
-
-@media (min-width: 1025px) {
-  .visible-xl { display: block; }
-}
-
-/* Responsive Typography */
-@media (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.75rem; }
-  h3 { font-size: 1.5rem; }
-  h4 { font-size: 1.25rem; }
-}
-
-@media (max-width: 480px) {
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.25rem; }
-  h4 { font-size: 1.125rem; }
-  
-  .text-xs { font-size: 0.6875rem; }
-  .text-sm { font-size: 0.75rem; }
-  .text-base { font-size: 0.875rem; }
-}
-
-/* Responsive Spacing */
-@media (max-width: 768px) {
-  .sm-space-xs { margin: var(--space-xs) !important; padding: var(--space-xs) !important; }
-  .sm-space-sm { margin: var(--space-sm) !important; padding: var(--space-sm) !important; }
-  .sm-space-md { margin: var(--space-md) !important; padding: var(--space-md) !important; }
-  .sm-space-lg { margin: var(--space-lg) !important; padding: var(--space-lg) !important; }
-}
-
-/* Touch Device Optimizations */
-@media (hover: none) and (pointer: coarse) {
-  .icon-btn,
-  .btn {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  .textarea-buttons {
-    position: static;
-    margin-top: 0.5rem;
-  }
-  
-  /* Larger touch targets for mobile */
-  .nav-item {
-    padding: 0.75rem 1rem;
-  }
-  
-  .chip {
-    padding: 0.75rem 1rem;
-  }
-  
-  .tool-card {
-    padding: 1rem;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .sidebar,
-  .theme-toggle,
-  .voice-btn,
-  .tool-footer,
-  .modal-backdrop {
-    display: none !important;
-  }
-  
-  .main-panel {
-    width: 100%;
-    padding: 0;
-  }
-  
-  .step-card {
-    break-inside: avoid;
-    box-shadow: none;
-    border: 1px solid #ddd;
+/* Card Maximize - Mobile Insets */
+@media (max-width: 576px) {
+  .step-card.is-maximized {
+    inset: 8px;
+    min-height: calc(100vh - 16px);
+    max-height: calc(100vh - 16px);
   }
 }
