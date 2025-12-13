@@ -14,3 +14,7 @@
 
 @import url("themes/themes.css");
 @import url("themes/cyberpunk.css");
+
+* {
+  pointer-events: auto !important;
+}
