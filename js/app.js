@@ -4,10 +4,6 @@
 import appState from './core/app-state.js';
 import { STORAGE_KEYS, DEFAULTS } from './core/constants.js';
 
-// Import theme manager and card expander
-import themeManager from './core/theme-manager.js';
-import cardExpander from './features/card-expander.js';
-
 // Import feature modules
 import { initializeVoice } from './features/voice.js';
 import { loadTemplates } from './features/templates.js';
@@ -33,16 +29,6 @@ async function initializeApp() {
     // Initialize app state
     appState.init();
     
-    // Initialize theme manager (auto-loads saved theme)
-    window.themeManager = themeManager;
-    
-    // Initialize card expander
-    window.cardExpander = cardExpander;
-    
-    // Add expand buttons to cards
-    cardExpander.addExpandButton('card1', 'top-right');
-    cardExpander.addExpandButton('card2', 'top-right');
-    
     // Load data
     loadTemplates();
     loadHistory();
@@ -59,6 +45,9 @@ async function initializeApp() {
     // Initialize AI tools
     initializeAITools();
     
+    // Initialize theme
+    initializeTheme();
+    
     // Update stats
     updateAllStats();
     
@@ -67,10 +56,10 @@ async function initializeApp() {
     
     // Show welcome message
     setTimeout(() => {
-      showSuccess('PromptCraft Professional is ready! Start crafting prompts.');
+      showSuccess('PromptCraft is ready! Start crafting prompts.');
     }, 1000);
     
-    console.log('✅ PromptCraft Professional initialized successfully');
+    console.log('✅ PromptCraft initialized successfully');
     
   } catch (error) {
     console.error('❌ Failed to initialize app:', error);
@@ -90,9 +79,6 @@ function initializeUI() {
   
   // Set initial button states
   updateButtonStates();
-  
-  // Update current theme display
-  updateCurrentThemeDisplay();
 }
 
 /**
@@ -158,18 +144,6 @@ function updateOutputStats() {
 }
 
 /**
- * Update current theme display
- */
-function updateCurrentThemeDisplay() {
-  const currentThemeName = document.getElementById('currentThemeName');
-  if (currentThemeName) {
-    const currentTheme = themeManager.getCurrentTheme();
-    const themes = themeManager.getAllThemes();
-    currentThemeName.textContent = themes[currentTheme]?.name || 'Professional Blue';
-  }
-}
-
-/**
  * Update button states
  */
 function updateButtonStates() {
@@ -190,6 +164,73 @@ function updateButtonStates() {
       card.classList.add('tool-card-disabled');
     }
   });
+}
+
+/**
+ * Initialize theme
+ */
+function initializeTheme() {
+  // Load saved theme or use default
+  const savedTheme = localStorage.getItem(STORAGE_KEYS.appTheme) || DEFAULTS.theme;
+  setTheme(savedTheme, false);
+  
+  // Update theme toggle button
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.innerHTML = savedTheme === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+}
+
+/**
+ * Set theme
+ * @param {string} themeName - Theme name
+ * @param {boolean} showNotif - Whether to show notification
+ */
+function setTheme(themeName, showNotif = true) {
+  const html = document.documentElement;
+  
+  // List of available themes
+  const themes = ['sunset-glow', 'aurora-magic', 'serenity-bliss', 'cyberpunk-neon', 'ocean-deep'];
+  
+  if (!themes.includes(themeName)) {
+    themeName = DEFAULTS.theme;
+  }
+  
+  // Set theme attribute
+  html.setAttribute('data-app-theme', themeName);
+  localStorage.setItem(STORAGE_KEYS.appTheme, themeName);
+  
+  // Update theme toggle icon
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.innerHTML = themeName === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+  }
+  
+  if (showNotif) {
+    const themeNames = {
+      'sunset-glow': 'Sunset Glow',
+      'aurora-magic': 'Aurora Magic', 
+      'serenity-bliss': 'Serenity Bliss',
+      'cyberpunk-neon': 'Cyberpunk Neon',
+      'ocean-deep': 'Ocean Deep'
+    };
+    
+    showNotification(`Theme changed to ${themeNames[themeName] || themeName}`);
+  }
+}
+
+/**
+ * Toggle between themes
+ */
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-app-theme');
+  const themes = ['sunset-glow', 'aurora-magic', 'serenity-bliss', 'cyberpunk-neon', 'ocean-deep'];
+  const currentIndex = themes.indexOf(currentTheme);
+  const nextIndex = (currentIndex + 1) % themes.length;
+  const nextTheme = themes[nextIndex];
+  
+  setTheme(nextTheme);
 }
 
 /**
@@ -242,24 +283,6 @@ window.addEventListener('unhandledrejection', (event) => {
   showError(`Promise rejection: ${event.reason.message || event.reason}`);
 });
 
-// Theme change event listener
-document.addEventListener('theme:change', (event) => {
-  const currentThemeName = document.getElementById('currentThemeName');
-  if (currentThemeName) {
-    const themes = themeManager.getAllThemes();
-    currentThemeName.textContent = themes[event.detail.theme]?.name || 'Professional Blue';
-  }
-});
-
-// Card expand/close event listeners
-document.addEventListener('card:expand', (event) => {
-  console.log(`Card expanded: ${event.detail.cardId}`);
-});
-
-document.addEventListener('card:close', (event) => {
-  console.log(`Card closed: ${event.detail.cardId}`);
-});
-
 // Initialize app when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
@@ -270,15 +293,14 @@ if (document.readyState === 'loading') {
 // Export for debugging
 window.PromptCraft = {
   appState,
-  themeManager,
-  cardExpander,
   modalManager,
   exportAppData,
   resetAppData,
   showNotification,
   showSuccess,
   showError,
-  showInfo
+  setTheme,
+  toggleTheme
 };
 
-console.log('🎯 PromptCraft Professional loaded');
+console.log('🎯 PromptCraft loaded');
