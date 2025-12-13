@@ -40,17 +40,6 @@
   .hero-badges {
     justify-content: flex-start;
   }
-  
-  .top-bar {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  
-  .top-right {
-    width: 100%;
-    justify-content: flex-start;
-  }
 }
 
 @media (max-width: 768px) {
@@ -241,8 +230,7 @@
 /* Print Styles */
 @media print {
   .sidebar,
-  .theme-toggle-btn,
-  .theme-modal-btn,
+  .theme-toggle,
   .voice-btn,
   .tool-footer,
   .modal-backdrop {
@@ -258,123 +246,5 @@
     break-inside: avoid;
     box-shadow: none;
     border: 1px solid #ddd;
-  }
-}
-
-/* Laptop Height Fixes */
-@media (min-width: 1024px) and (max-height: 820px) {
-  /* Reduce overall card height + padding slightly */
-  .step-card {
-    min-height: 520px !important;
-    padding: 16px !important;
-  }
-
-  /* Make the card a flex column where middle grows, footer/actions stay visible */
-  .step-card {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Tighten header spacing */
-  .step-header {
-    margin-bottom: 10px !important;
-  }
-
-  /* Reduce some vertical spacing rows */
-  .helper-row,
-  .stats-footer,
-  .features-footer {
-    margin-top: 10px !important;
-    padding-top: 10px !important;
-  }
-
-  /* Make textareas take the remaining space instead of fixed big height */
-  #requirement,
-  #output,
-  .textarea-idea,
-  .output-textarea {
-    min-height: 160px !important;
-    height: 100% !important;
-    flex: 1 1 auto !important;
-  }
-
-  /* Ensure textarea wrappers can stretch */
-  .textarea-wrapper {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 auto !important;
-  }
-
-  /* Keep the action buttons ALWAYS visible at the bottom */
-  .card__actions,
-  .prompt-actions {
-    margin-top: auto !important;
-    padding-top: 12px !important;
-  }
-
-  /* Compact preset row a bit */
-  .preset-row,
-  .auto-row {
-    margin-bottom: 8px !important;
-  }
-
-  /* Slightly smaller buttons so they fit without scroll */
-  .btn {
-    padding: 10px 12px !important;
-    font-size: 0.88rem !important;
-  }
-}
-
-/* Laptop height fix (1366x768 etc.) */
-@media (min-width: 1024px) and (max-height: 820px) {
-  /* Make each card fit the viewport better */
-  .cards-grid .step-card {
-    height: calc(100vh - 210px) !important;
-    min-height: 480px !important;
-    padding: 16px !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Let the textarea area grow/shrink */
-  .cards-grid .textarea-container {
-    flex: 1 1 auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-  }
-
-  .cards-grid .textarea-wrapper {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-  }
-
-  /* Reduce textarea height so buttons appear without scroll */
-  .cards-grid textarea.textarea-idea,
-  .cards-grid textarea.output-textarea {
-    flex: 1 1 auto !important;
-    min-height: 140px !important;
-    height: auto !important;
-  }
-
-  /* Slightly tighten helper row spacing */
-  .cards-grid .helper-row {
-    margin-top: 8px !important;
-  }
-
-  /* Keep buttons near the bottom but visible */
-  .cards-grid .elegant-convert-btn {
-    margin-top: 10px !important;
-    padding: 12px 14px !important;
-  }
-
-  .cards-grid .prompt-actions {
-    margin-top: 10px !important;
-  }
-
-  /* Optional: make action buttons a bit smaller on laptop height */
-  .cards-grid .prompt-actions button {
-    padding: 10px 12px !important;
-    font-size: 0.88rem !important;
   }
 }
