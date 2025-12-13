@@ -9,7 +9,9 @@ import { initializeVoice } from './features/voice.js';
 import { loadTemplates } from './features/templates.js';
 import { loadHistory } from './features/history.js';
 import { detectContextFromText } from './features/context-detective.js';
-import { initCardExpander } from './features/card-expander.js'; // ✅ ADDED
+
+// ✅ NEW: Card expander (maximize Card 1 & Card 2)
+import { initCardExpander } from './card-expander.js';
 
 // Import AI modules
 import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
@@ -26,45 +28,42 @@ async function initializeApp() {
   try {
     // Show loading state
     console.log('🚀 Initializing PromptCraft...');
-
+    
     // Initialize app state
     appState.init();
-
+    
     // Load data
     loadTemplates();
     loadHistory();
-
+    
     // Initialize voice features
     initializeVoice();
-
+    
     // Initialize event handlers
     initializeEventHandlers();
-
+    
     // Initialize UI
     initializeUI();
-
-    // ✅ Initialize card maximize/restore for Card 1 + Card 2 (does NOT touch Card 3)
-    initCardExpander();
-
+    
     // Initialize AI tools
     initializeAITools();
-
+    
     // Initialize theme
     initializeTheme();
-
+    
     // Update stats
     updateAllStats();
-
+    
     // Setup tool click handlers
     setupToolClickHandlers(showNotification);
-
+    
     // Show welcome message
     setTimeout(() => {
       showSuccess('PromptCraft is ready! Start crafting prompts.');
     }, 1000);
-
+    
     console.log('✅ PromptCraft initialized successfully');
-
+    
   } catch (error) {
     console.error('❌ Failed to initialize app:', error);
     showError('Failed to initialize application. Please refresh the page.');
@@ -77,12 +76,19 @@ async function initializeApp() {
 function initializeUI() {
   // Update usage count display
   updateUsageCount();
-
+  
   // Initialize modals
   initializeModals();
-
+  
   // Set initial button states
   updateButtonStates();
+
+  // ✅ NEW: Enable maximize/restore on Card 1 + Card 2 (safe, non-invasive)
+  try {
+    initCardExpander();
+  } catch (e) {
+    console.warn('Card expander init failed:', e);
+  }
 }
 
 /**
@@ -92,7 +98,7 @@ function initializeModals() {
   // Register all modals
   const templatesModal = document.getElementById('templatesModal');
   const historyModal = document.getElementById('historyModal');
-
+  
   if (templatesModal) modalManager.register('templatesModal', templatesModal);
   if (historyModal) modalManager.register('historyModal', historyModal);
 }
@@ -129,7 +135,7 @@ function updateUsageCount() {
 function updateInputStats() {
   const requirementEl = document.getElementById('requirement');
   const inputStats = document.getElementById('inputStats');
-
+  
   if (requirementEl && inputStats) {
     inputStats.textContent = `${requirementEl.value.length} chars`;
   }
@@ -141,7 +147,7 @@ function updateInputStats() {
 function updateOutputStats() {
   const outputEl = document.getElementById('output');
   const outputStats = document.getElementById('outputStats');
-
+  
   if (outputEl && outputStats) {
     outputStats.textContent = `${outputEl.value.length} chars`;
   }
@@ -154,11 +160,11 @@ function updateButtonStates() {
   const requirementEl = document.getElementById('requirement');
   const convertBtn = document.getElementById('convertBtn');
   const outputEl = document.getElementById('output');
-
+  
   if (convertBtn && requirementEl) {
     convertBtn.disabled = !requirementEl.value.trim();
   }
-
+  
   // Update launch buttons
   const toolCards = document.querySelectorAll('.tool-card');
   toolCards.forEach(card => {
@@ -177,7 +183,7 @@ function initializeTheme() {
   // Load saved theme or use default
   const savedTheme = localStorage.getItem(STORAGE_KEYS.appTheme) || DEFAULTS.theme;
   setTheme(savedTheme, false);
-
+  
   // Update theme toggle button
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
@@ -193,33 +199,33 @@ function initializeTheme() {
  */
 function setTheme(themeName, showNotif = true) {
   const html = document.documentElement;
-
+  
   // List of available themes
   const themes = ['sunset-glow', 'aurora-magic', 'serenity-bliss', 'cyberpunk-neon', 'ocean-deep'];
-
+  
   if (!themes.includes(themeName)) {
     themeName = DEFAULTS.theme;
   }
-
+  
   // Set theme attribute
   html.setAttribute('data-app-theme', themeName);
   localStorage.setItem(STORAGE_KEYS.appTheme, themeName);
-
+  
   // Update theme toggle icon
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.innerHTML = themeName === 'cyberpunk-neon' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
   }
-
+  
   if (showNotif) {
     const themeNames = {
       'sunset-glow': 'Sunset Glow',
-      'aurora-magic': 'Aurora Magic',
+      'aurora-magic': 'Aurora Magic', 
       'serenity-bliss': 'Serenity Bliss',
       'cyberpunk-neon': 'Cyberpunk Neon',
       'ocean-deep': 'Ocean Deep'
     };
-
+    
     showNotification(`Theme changed to ${themeNames[themeName] || themeName}`);
   }
 }
@@ -233,7 +239,7 @@ function toggleTheme() {
   const currentIndex = themes.indexOf(currentTheme);
   const nextIndex = (currentIndex + 1) % themes.length;
   const nextTheme = themes[nextIndex];
-
+  
   setTheme(nextTheme);
 }
 
@@ -252,15 +258,15 @@ function exportAppData() {
       usageCount: appState.usageCount
     }
   };
-
+  
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-
+  
   const a = document.createElement('a');
   a.href = url;
   a.download = `promptcraft-backup-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
-
+  
   URL.revokeObjectURL(url);
   showSuccess('App data exported successfully');
 }
