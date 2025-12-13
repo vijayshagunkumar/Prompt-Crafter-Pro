@@ -1,5 +1,8 @@
 // settings-manager.js - Settings Management System
-
+// In settings-manager.js, add this function
+function getSettingsModalHTML() {
+  return `/* PASTE THE ENTIRE settings-modal.html CONTENT HERE */`;
+}
 import { STORAGE_KEYS } from '../core/constants.js';
 import { showNotification, showSuccess, showError, showInfo } from './notifications.js';
 import modalManager from './modal-manager.js';
