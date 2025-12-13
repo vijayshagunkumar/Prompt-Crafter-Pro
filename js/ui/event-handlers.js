@@ -21,6 +21,7 @@ export function initializeEventHandlers() {
   setupModalHandlers();
   setupVoiceHandlers();
   setupUIHandlers();
+  setupCardMaximizeHandlers();
 }
 
 /**
@@ -411,4 +412,104 @@ function showTemplateSaveDialog(content) {
     appState.addTemplate({ name, description, category, content });
     showSuccess('Template saved');
   }
+}
+
+/**
+ * Setup card maximize / restore handlers (Card 1 + Card 2)
+ * - No DOM re-render (prevents blinking)
+ * - Only one card maximized at a time
+ * - ESC closes (unless a modal is active)
+ * - Backdrop click closes
+ */
+function setupCardMaximizeHandlers() {
+  const backdrop = getOrCreateCardMaxBackdrop();
+  const buttons = Array.from(document.querySelectorAll('[data-maximize-card]'));
+  if (!buttons.length) return;
+
+  let activeCardId = null;
+
+  const setBtnState = (cardId, isMax) => {
+    const btn = document.querySelector(`[data-maximize-card="${cardId}"]`);
+    if (!btn) return;
+    btn.title = isMax ? 'Restore' : 'Maximize';
+    const icon = btn.querySelector('i');
+    if (!icon) return;
+    icon.classList.toggle('fa-expand', !isMax);
+    icon.classList.toggle('fa-compress', isMax);
+  };
+
+  const restoreActive = () => {
+    if (!activeCardId) return;
+    const card = document.getElementById(activeCardId);
+    if (card) card.classList.remove('is-maximized');
+    setBtnState(activeCardId, false);
+    activeCardId = null;
+    document.body.classList.remove('card-max-open');
+  };
+
+  const maximize = (cardId) => {
+    if (!cardId) return;
+
+    // Toggle off if same card is already maximized
+    if (activeCardId === cardId) {
+      restoreActive();
+      return;
+    }
+
+    // Restore any other active card first
+    if (activeCardId && activeCardId !== cardId) {
+      restoreActive();
+    }
+
+    const card = document.getElementById(cardId);
+    if (!card) return;
+
+    card.classList.add('is-maximized');
+    document.body.classList.add('card-max-open');
+    setBtnState(cardId, true);
+    activeCardId = cardId;
+
+    // Focus textarea for convenience
+    const focusEl = card.querySelector('textarea');
+    if (focusEl) setTimeout(() => focusEl.focus(), 0);
+  };
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      maximize(btn.getAttribute('data-maximize-card'));
+    });
+  });
+
+  backdrop.addEventListener('click', () => {
+    restoreActive();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+
+    // If a modal is open, let modal manager handle ESC
+    if (modalManager && typeof modalManager.getActiveModal === 'function') {
+      const activeModal = modalManager.getActiveModal();
+      if (activeModal) return;
+    }
+
+    restoreActive();
+  });
+}
+
+/**
+ * Get or create the card maximize backdrop element
+ * @returns {HTMLElement}
+ */
+function getOrCreateCardMaxBackdrop() {
+  let backdrop = document.getElementById('cardMaxBackdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'cardMaxBackdrop';
+    backdrop.className = 'card-max-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(backdrop);
+  }
+  return backdrop;
 }
