@@ -21,7 +21,7 @@ export function initializeEventHandlers() {
   setupModalHandlers();
   setupVoiceHandlers();
   setupUIHandlers();
-  setupMaximizeHandlers();
+  setupCardMaximizeHandlers();
 }
 
 /**
@@ -98,8 +98,8 @@ function handleRequirementInput(requirementEl, contextChipsRow) {
     if (context && context.taskType && text.trim()) {
       contextChipsRow.innerHTML = createContextChipsHTML(context);
       contextChipsRow.style.display = 'flex';
-
-      // Update AI tools based on context - USE THE IMPORTED FUNCTION
+      
+      // Update AI tools based on context
       updateAIToolsGrid(context.taskType, text, false);
     } else {
       contextChipsRow.innerHTML = '';
@@ -111,10 +111,10 @@ function handleRequirementInput(requirementEl, contextChipsRow) {
   if (appState.isConverted && text !== appState.lastConvertedText) {
     outputEl.value = '';
     appState.isConverted = false;
-
+    
     const convertedBadge = document.getElementById('convertedBadge');
     if (convertedBadge) convertedBadge.style.display = 'none';
-
+    
     updateLaunchButtons(false);
   }
 
@@ -141,7 +141,7 @@ function setupOutputHandlers() {
     copyBtn.addEventListener('click', async () => {
       const outputEl = document.getElementById('output');
       const prompt = outputEl.value.trim();
-
+      
       if (!prompt) {
         showError('No prompt to copy');
         return;
@@ -162,7 +162,7 @@ function setupOutputHandlers() {
     exportBtn.addEventListener('click', () => {
       const outputEl = document.getElementById('output');
       const prompt = outputEl.value.trim();
-
+      
       if (!prompt) {
         showError('No prompt to export');
         return;
@@ -178,7 +178,7 @@ function setupOutputHandlers() {
     saveTemplateBtn.addEventListener('click', () => {
       const requirementEl = document.getElementById('requirement');
       const content = requirementEl.value.trim();
-
+      
       if (!content) {
         showError('Type something to save as a template');
         return;
@@ -204,7 +204,7 @@ async function handleConvert() {
   const outputEl = document.getElementById('output');
   const convertBtn = document.getElementById('convertBtn');
   const convertedBadge = document.getElementById('convertedBadge');
-
+  
   const raw = requirementEl.value.trim();
   if (!raw) {
     showError('Please enter a requirement first');
@@ -218,29 +218,33 @@ async function handleConvert() {
 
   try {
     const result = await generatePrompt(raw);
-
+    
     if (result.success) {
       outputEl.value = result.prompt;
-
+      
       // Show converted badge
       if (convertedBadge) {
         convertedBadge.style.display = 'inline-flex';
       }
-
+      
       // Update UI
       updateOutputStats();
       updateLaunchButtons(true);
-
-      // Update AI tools with new context - USE THE IMPORTED FUNCTION
+      
+      // Update AI tools with new context
       const context = detectContextFromText(raw);
       updateAIToolsGrid(context.taskType, result.prompt, true);
-
+      
       showSuccess('Prompt generated successfully');
     } else {
       showError('Generation failed, using offline mode');
       outputEl.value = result.prompt;
       updateOutputStats();
       updateLaunchButtons(true);
+      
+      // Still update AI tools
+      const context = detectContextFromText(raw);
+      updateAIToolsGrid(context.taskType, result.prompt, true);
     }
 
     // Update app state
@@ -261,8 +265,7 @@ async function handleConvert() {
  * Setup tool handlers
  */
 function setupToolHandlers() {
-  // Tool click handlers are now handled by ai-tools.js
-  // setupToolClickHandlers is called from app.js
+  // Tool click handlers are handled by ai-tools.js (called from app.js)
 }
 
 /**
@@ -323,7 +326,7 @@ function setupModalHandlers() {
 function setupVoiceHandlers() {
   const voiceBtn = document.getElementById('voiceBtn');
   const requirementEl = document.getElementById('requirement');
-
+  
   if (voiceBtn && requirementEl) {
     setupVoiceButton(voiceBtn, requirementEl, (transcript, error) => {
       if (error) {
@@ -339,93 +342,7 @@ function setupVoiceHandlers() {
  * Setup general UI handlers
  */
 function setupUIHandlers() {
-  // Update usage count display
   updateUsageCount();
-}
-
-/**
- * Setup maximize handlers for Card 1 and Card 2
- * - Click ⤢ to maximize/minimize
- * - Click backdrop or press ESC to exit
- */
-function setupMaximizeHandlers() {
-  const ideaCard = document.getElementById('cardIdea');
-  const promptCard = document.getElementById('cardPrompt');
-  const ideaBtn = document.getElementById('maximizeIdeaBtn');
-  const promptBtn = document.getElementById('maximizePromptBtn');
-
-  if (!ideaCard || !promptCard || (!ideaBtn && !promptBtn)) return;
-
-  const ensureBackdrop = () => {
-    let backdrop = document.getElementById('cardBackdrop');
-    if (!backdrop) {
-      backdrop = document.createElement('div');
-      backdrop.id = 'cardBackdrop';
-      backdrop.className = 'card-backdrop';
-      backdrop.style.display = 'none';
-      document.body.appendChild(backdrop);
-    }
-    return backdrop;
-  };
-
-  const setButtonIcon = (btn, isMax) => {
-    if (!btn) return;
-    btn.innerHTML = isMax ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
-    btn.title = isMax ? 'Restore' : 'Maximize';
-  };
-
-  const closeAll = () => {
-    const backdrop = ensureBackdrop();
-    ideaCard.classList.remove('is-maximized');
-    promptCard.classList.remove('is-maximized');
-    document.body.classList.remove('card-maximized');
-    backdrop.style.display = 'none';
-    setButtonIcon(ideaBtn, false);
-    setButtonIcon(promptBtn, false);
-  };
-
-  const openCard = (card, btnToToggle) => {
-    const backdrop = ensureBackdrop();
-    // Only one card at a time
-    ideaCard.classList.remove('is-maximized');
-    promptCard.classList.remove('is-maximized');
-    setButtonIcon(ideaBtn, false);
-    setButtonIcon(promptBtn, false);
-
-    card.classList.add('is-maximized');
-    document.body.classList.add('card-maximized');
-    backdrop.style.display = 'block';
-    setButtonIcon(btnToToggle, true);
-  };
-
-  const toggleCard = (card, btn) => {
-    const isMax = card.classList.contains('is-maximized');
-    if (isMax) closeAll();
-    else openCard(card, btn);
-  };
-
-  if (ideaBtn) {
-    ideaBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleCard(ideaCard, ideaBtn);
-    });
-  }
-
-  if (promptBtn) {
-    promptBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleCard(promptCard, promptBtn);
-    });
-  }
-
-  const backdrop = ensureBackdrop();
-  backdrop.addEventListener('click', closeAll);
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAll();
-  });
 }
 
 /**
@@ -489,13 +406,101 @@ function showTemplateSaveDialog(content) {
   const category = 'other';
 
   if (appState.editingTemplateId) {
-    // Update existing template
     appState.updateTemplate(appState.editingTemplateId, { name, description, content, category });
     appState.editingTemplateId = null;
     showSuccess('Template updated');
   } else {
-    // Create new template
     appState.addTemplate({ name, description, category, content });
     showSuccess('Template saved');
   }
+}
+
+/**
+ * Setup card maximize / restore handlers (Card 1 + Card 2)
+ */
+function setupCardMaximizeHandlers() {
+  const backdrop = getOrCreateCardMaxBackdrop();
+  const buttons = Array.from(document.querySelectorAll('[data-maximize-card]'));
+  if (!buttons.length) return;
+
+  let activeCardId = null;
+
+  const setBtnState = (cardId, isMax) => {
+    const btn = document.querySelector(`[data-maximize-card="${cardId}"]`);
+    if (!btn) return;
+    btn.title = isMax ? 'Restore' : 'Maximize';
+    const icon = btn.querySelector('i');
+    if (!icon) return;
+    icon.classList.toggle('fa-expand', !isMax);
+    icon.classList.toggle('fa-compress', isMax);
+  };
+
+  const restoreActive = () => {
+    if (!activeCardId) return;
+    const card = document.getElementById(activeCardId);
+    if (card) card.classList.remove('is-maximized');
+    setBtnState(activeCardId, false);
+    activeCardId = null;
+    document.body.classList.remove('card-max-open');
+  };
+
+  const maximize = (cardId) => {
+    if (!cardId) return;
+
+    if (activeCardId === cardId) {
+      restoreActive();
+      return;
+    }
+
+    if (activeCardId && activeCardId !== cardId) {
+      restoreActive();
+    }
+
+    const card = document.getElementById(cardId);
+    if (!card) return;
+
+    card.classList.add('is-maximized');
+    document.body.classList.add('card-max-open');
+    setBtnState(cardId, true);
+    activeCardId = cardId;
+
+    const focusEl = card.querySelector('textarea');
+    if (focusEl) setTimeout(() => focusEl.focus(), 0);
+  };
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      maximize(btn.getAttribute('data-maximize-card'));
+    });
+  });
+
+  backdrop.addEventListener('click', () => {
+    restoreActive();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+
+    try {
+      if (modalManager && typeof modalManager.getActiveModal === 'function') {
+        const activeModal = modalManager.getActiveModal();
+        if (activeModal) return;
+      }
+    } catch (_) {}
+
+    restoreActive();
+  });
+}
+
+function getOrCreateCardMaxBackdrop() {
+  let backdrop = document.getElementById('cardMaxBackdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'cardMaxBackdrop';
+    backdrop.className = 'card-max-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(backdrop);
+  }
+  return backdrop;
 }
