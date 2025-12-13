@@ -1,375 +1,44 @@
-// app.js - Main Application Entry Point (UPDATED & COMPLETE)
+import { detectContextFromText } from "./features/context-detective.js";
+import { initCardExpander } from "./features/card-expander.js";
+import { renderAITools } from "./ai/ai-tools.js";
 
-// Import core modules
-import appState from './core/app-state.js';
-import { STORAGE_KEYS, DEFAULTS } from './core/constants.js';
+// DOM references
+const ideaTextarea = document.querySelector("#cardIdea textarea");
+const promptTextarea = document.querySelector("#cardPrompt textarea");
+const convertBtn = document.querySelector("#cardIdea .primary-btn");
 
-// Import feature modules
-import { initializeVoice } from './features/voice.js';
-import { loadTemplates } from './features/templates.js';
-import { loadHistory } from './features/history.js';
-import { detectContextFromText } from './features/context-detective.js';
-import { initCardExpander } from './features/card-expander.js';
-
-// Import AI modules
-import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
-
-// Import UI modules
-import { initializeEventHandlers } from './ui/event-handlers.js';
-import { showNotification, showSuccess, showError, showInfo } from './ui/notifications.js';
-import modalManager from './ui/modal-manager.js';
-import themeManager from './ui/theme-manager.js';
-
-// Import Settings
-import { initializeSettings, openSettingsModal } from './ui/settings-manager.js';
-
-/**
- * Initialize the application
- */
-async function initializeApp() {
-  try {
-    // Show loading state
-    console.log('🚀 Initializing PromptCraft...');
-
-    // Initialize app state
-    appState.init();
-
-    // Initialize theme manager
-    themeManager.init();
-
-    // Load data
-    loadTemplates();
-    loadHistory();
-
-    // Initialize voice features
-    initializeVoice();
-
-    // Initialize event handlers
-    initializeEventHandlers();
-
-    // Initialize UI
-    initializeUI();
-
-    // Initialize card maximize/restore for Card 1 + Card 2
-    initCardExpander();
-
-    // Initialize AI tools
-    initializeAITools();
-
-    // Initialize settings
-    initializeSettings();
-
-    // Update stats
-    updateAllStats();
-
-    // Setup tool click handlers
-    setupToolClickHandlers(showNotification);
-
-    // Show welcome message
-    setTimeout(() => {
-      showSuccess('PromptCraft is ready! Start crafting prompts.');
-    }, 1000);
-
-    console.log('✅ PromptCraft initialized successfully');
-
-  } catch (error) {
-    console.error('❌ Failed to initialize app:', error);
-    showError('Failed to initialize application. Please refresh the page.');
-  }
-}
-
-/**
- * Initialize UI components
- */
-function initializeUI() {
-  // Update usage count display
-  updateUsageCount();
-
-  // Initialize modals
-  initializeModals();
-
-  // Set initial button states
-  updateButtonStates();
-
-  // Setup settings button
-  setupSettingsButton();
-}
-
-/**
- * Setup settings button in header
- */
-function setupSettingsButton() {
-  const settingsBtn = document.getElementById('settingsBtn');
-  if (settingsBtn) {
-    settingsBtn.addEventListener('click', openSettingsModal);
-  }
-}
-
-/**
- * Initialize modals
- */
-function initializeModals() {
-  // Register all modals
-  const templatesModal = document.getElementById('templatesModal');
-  const historyModal = document.getElementById('historyModal');
-  const settingsModal = document.getElementById('settingsModal');
-
-  if (templatesModal) modalManager.register('templatesModal', templatesModal);
-  if (historyModal) modalManager.register('historyModal', historyModal);
-  if (settingsModal) modalManager.register('settingsModal', settingsModal);
-}
-
-/**
- * Initialize AI tools grid
- */
-function initializeAITools() {
-  const requirementEl = document.getElementById('requirement');
-  const text = requirementEl ? requirementEl.value : '';
-  const context = detectContextFromText(text);
-  updateAIToolsGrid(context.taskType, text, false);
-}
-
-/**
- * Update all statistics
- */
-function updateAllStats() {
-  updateUsageCount();
-  updateInputStats();
-  updateOutputStats();
-}
-
-/**
- * Update usage count display
- */
-function updateUsageCount() {
-  const usageElement = document.getElementById('usageCount');
-  if (usageElement) {
-    usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts generated`;
-  }
-}
-
-/**
- * Update input statistics
- */
-function updateInputStats() {
-  const requirementEl = document.getElementById('requirement');
-  const inputStats = document.getElementById('inputStats');
-
-  if (requirementEl && inputStats) {
-    inputStats.textContent = `${requirementEl.value.length} chars`;
-  }
-}
-
-/**
- * Update output statistics
- */
-function updateOutputStats() {
-  const outputEl = document.getElementById('output');
-  const outputStats = document.getElementById('outputStats');
-
-  if (outputEl && outputStats) {
-    outputStats.textContent = `${outputEl.value.length} chars`;
-  }
-}
-
-/**
- * Update button states
- */
-function updateButtonStates() {
-  const requirementEl = document.getElementById('requirement');
-  const convertBtn = document.getElementById('convertBtn');
-  const outputEl = document.getElementById('output');
-
-  if (convertBtn && requirementEl) {
-    convertBtn.disabled = !requirementEl.value.trim();
-  }
-
-  // Update launch buttons
-  const toolCards = document.querySelectorAll('.tool-card');
-  toolCards.forEach(card => {
-    if (outputEl && outputEl.value.trim()) {
-      card.classList.remove('tool-card-disabled');
-    } else {
-      card.classList.add('tool-card-disabled');
-    }
-  });
-}
-
-/**
- * Export app data for backup
- */
-function exportAppData() {
-  const data = {
-    exportedAt: new Date().toISOString(),
-    appState: appState.export(),
-    templates: appState.templates,
-    history: appState.historyItems,
-    settings: {
-      theme: themeManager.getCurrentTheme(),
-      voiceLanguage: localStorage.getItem(STORAGE_KEYS.voiceLanguage),
-      usageCount: appState.usageCount,
-      apiKeyConfigured: !!localStorage.getItem('OPENAI_API_KEY')
-    }
-  };
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `promptcraft-backup-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-
-  URL.revokeObjectURL(url);
-  showSuccess('App data exported successfully');
-}
-
-/**
- * Reset app data
- */
-function resetAppData() {
-  if (confirm('Are you sure you want to reset all app data? This cannot be undone.')) {
-    localStorage.clear();
-    location.reload();
-  }
-}
-
-/**
- * Toggle sidebar on mobile
- */
-function toggleSidebar() {
-  const sidebar = document.querySelector('.sidebar');
-  const overlay = document.querySelector('.sidebar-overlay');
-  
-  if (sidebar && overlay) {
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('open');
-  }
-}
-
-// Global error handler
-window.addEventListener('error', (event) => {
-  console.error('Global error:', event.error);
-  showError(`An error occurred: ${event.message}`);
+// INIT APP
+document.addEventListener("DOMContentLoaded", () => {
+  initCardExpander();
+  bindConvert();
 });
 
-// Unhandled promise rejection handler
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-  showError(`Promise rejection: ${event.reason.message || event.reason}`);
-});
-
-// Initialize app when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-  initializeApp();
+function bindConvert() {
+  convertBtn.addEventListener("click", handleConvert);
 }
 
-// Export for debugging
-window.PromptCraft = {
-  appState,
-  modalManager,
-  themeManager,
-  exportAppData,
-  resetAppData,
-  showNotification,
-  showSuccess,
-  showError,
-  updateAllStats,
-  updateUsageCount,
-  updateInputStats,
-  updateOutputStats
-};
+function handleConvert() {
+  const rawText = ideaTextarea.value.trim();
+  if (!rawText) return;
 
-console.log('🎯 PromptCraft loaded');
-// Add this to your existing app.js file at the end:
+  const context = detectContextFromText(rawText);
 
-// ======================
-// SETTINGS MODAL HANDLER
-// ======================
+  const structuredPrompt = `
+# Role
+Expert Assistant
 
-// Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📱 App initialized');
-    
-    // Settings button handler
-    const settingsBtn = document.getElementById('settingsBtn');
-    if (settingsBtn) {
-        console.log('⚙️ Settings button found');
-        
-        settingsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('⚙️ Settings button clicked');
-            
-            // Open settings modal
-            import('./ui/settings-manager.js').then(module => {
-                module.openSettingsModal();
-            }).catch(error => {
-                console.error('Failed to open settings:', error);
-                // Fallback: try to show modal manually
-                const modal = document.getElementById('settingsModal');
-                const backdrop = document.getElementById('settingsBackdrop');
-                if (modal && backdrop) {
-                    backdrop.style.display = 'block';
-                    modal.style.display = 'block';
-                }
-            });
-        });
-        
-        // Add keyboard shortcut (Ctrl/Cmd + ,)
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === ',') {
-                e.preventDefault();
-                import('./ui/settings-manager.js').then(module => {
-                    module.openSettingsModal();
-                });
-            }
-        });
-    } else {
-        console.warn('⚠️ Settings button not found');
-    }
-});
+# Objective
+Carry out the following task and return the final result only.
 
-// ======================
-// DEBUG HELPERS
-// ======================
+${rawText}
 
-// Add this to test if settings is working
-window.debugSettings = function() {
-    console.log('🔧 Debug settings:');
-    console.log('1. Checking settings button:', document.getElementById('settingsBtn'));
-    console.log('2. Checking settings modal:', document.getElementById('settingsModal'));
-    console.log('3. Checking settings backdrop:', document.getElementById('settingsBackdrop'));
-    
-    const modal = document.getElementById('settingsModal');
-    const backdrop = document.getElementById('settingsBackdrop');
-    
-    if (modal && backdrop) {
-        console.log('✅ Modal elements found');
-        console.log('Modal display:', modal.style.display);
-        console.log('Backdrop display:', backdrop.style.display);
-        
-        // Try to show it
-        backdrop.style.display = 'block';
-        modal.style.display = 'block';
-        console.log('🟢 Modal shown manually');
-    } else {
-        console.log('❌ Modal elements not found');
-    }
-};
+# Instructions
+- Follow the task carefully
+- Do not explain the prompt
+- Return only the completed output
+  `.trim();
 
-// ======================
-// INITIALIZE APP
-// ======================
+  promptTextarea.value = structuredPrompt;
 
-// Initialize settings when app starts
-setTimeout(() => {
-    import('./ui/settings-manager.js').then(module => {
-        module.initializeSettings();
-        console.log('✅ Settings initialized');
-    }).catch(error => {
-        console.error('Failed to initialize settings:', error);
-    });
-}, 1000);
+  renderAITools(context.taskType);
+}
