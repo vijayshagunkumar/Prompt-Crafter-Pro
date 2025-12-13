@@ -1,4 +1,4 @@
-/* forms.css - Professional Form Components */
+/* forms.css - Form Components */
 
 /* Form Group */
 .form-group {
@@ -16,7 +16,7 @@
 .field-label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
   margin-bottom: var(--space-xs);
 }
@@ -26,7 +26,7 @@
   align-items: center;
   gap: var(--space-xs);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
   margin-bottom: var(--space-xs);
 }
@@ -37,13 +37,12 @@
 .input-email,
 .input-number {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
   transition: var(--transition-fast);
 }
 
@@ -52,8 +51,8 @@
 .input-email:focus,
 .input-number:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-soft);
+  border-color: var(--input-border-focus);
+  box-shadow: var(--input-shadow-focus);
 }
 
 /* Textareas */
@@ -61,22 +60,22 @@
   position: relative;
   flex: 1;
   display: flex;
-  flex-direction: column;
 }
 
 .textarea-idea,
 .output-textarea {
   width: 100%;
   flex: 1;
-  min-height: 160px;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
+  min-height: 140px;
+  max-height: 180px;
+  padding: var(--space-md);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-size: 0.875rem;
-  line-height: 1.6;
+  line-height: 1.5;
   resize: vertical;
   transition: var(--transition-fast);
 }
@@ -84,62 +83,40 @@
 .textarea-idea:focus,
 .output-textarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-soft);
+  border-color: var(--input-border-focus);
+  box-shadow: var(--input-shadow-focus);
 }
 
-.textarea-idea::placeholder,
-.output-textarea::placeholder {
-  color: var(--text-tertiary);
-}
-
-/* Expanded textarea styles */
-.step-card.expanded .textarea-idea,
-.step-card.expanded .output-textarea {
-  min-height: 300px;
-  font-size: 0.9375rem;
-  line-height: 1.7;
-}
-
-/* Textarea Buttons */
 .textarea-buttons {
   position: absolute;
   bottom: 0.75rem;
+  right: 0.75rem;
   display: flex;
   gap: 0.5rem;
   z-index: 10;
 }
 
-.clear-btn-left {
-  left: 0.75rem;
-}
-
-.mic-btn-right {
-  right: 0.75rem;
-}
-
 /* Select */
 select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394A3B8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 1rem center;
+  background-position: right 0.75rem center;
   background-size: 1.25rem;
 }
 
 select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-soft);
+  border-color: var(--input-border-focus);
+  box-shadow: var(--input-shadow-focus);
 }
 
 /* Checkbox & Radio */
@@ -147,7 +124,7 @@ select:focus {
 .radio-pill {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 0.875rem;
@@ -161,10 +138,10 @@ select:focus {
 .checkbox-pill span,
 .radio-pill span {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-light);
-  border-radius: 6px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-subtle);
+  border-radius: 4px;
   position: relative;
   transition: var(--transition-fast);
 }
@@ -187,7 +164,6 @@ select:focus {
   transform: translate(-50%, -50%);
   color: var(--text-on-primary);
   font-size: 0.75rem;
-  font-weight: bold;
 }
 
 .radio-pill input:checked + span::after {
@@ -217,10 +193,10 @@ select:focus {
 .toggle-slider {
   width: 44px;
   height: 24px;
-  background: var(--bg-secondary);
+  background: var(--input-bg);
   border-radius: var(--radius-full);
   position: relative;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border-subtle);
   transition: var(--transition-base);
 }
 
@@ -237,7 +213,7 @@ select:focus {
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: var(--primary-soft);
+  background: rgba(255, 94, 0, 0.2);
   border-color: var(--primary);
 }
 
@@ -249,7 +225,6 @@ select:focus {
 .toggle-label {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  font-weight: 500;
 }
 
 /* Form Helpers */
@@ -257,7 +232,7 @@ select:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   min-height: 20px;
 }
 
@@ -273,13 +248,12 @@ select:focus {
 .char-counter {
   color: var(--text-secondary);
   font-size: 0.75rem;
-  font-weight: 500;
 }
 
 .form-hint {
   margin-top: 0.375rem;
   font-size: 0.75rem;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -287,29 +261,23 @@ select:focus {
 
 /* Form Validation */
 .input-error {
-  border-color: var(--error) !important;
+  border-color: #FF4444 !important;
 }
 
 .input-success {
-  border-color: var(--accent) !important;
+  border-color: #00FF41 !important;
 }
 
 .error-message {
-  color: var(--error);
+  color: #FF4444;
   font-size: 0.75rem;
   margin-top: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
 }
 
 .success-message {
-  color: var(--accent);
+  color: #00FF41;
   font-size: 0.75rem;
   margin-top: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
 }
 
 /* Form Layouts */
@@ -324,47 +292,9 @@ select:focus {
   margin-bottom: 0;
 }
 
-/* Badge & Chip Styles */
-.badge,
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 600;
-  border: 1px solid var(--primary-light);
-}
-
-/* Responsive Forms */
 @media (max-width: 768px) {
-  .textarea-idea,
-  .output-textarea {
-    min-height: 140px;
-    padding: 0.875rem;
-    font-size: 0.8125rem;
-  }
-  
-  .textarea-buttons {
-    bottom: 0.5rem;
-  }
-  
-  .textarea-buttons .icon-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 0.875rem;
-  }
-  
   .form-row {
     flex-direction: column;
     gap: var(--space-sm);
-  }
-  
-  select {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.8125rem;
   }
 }
