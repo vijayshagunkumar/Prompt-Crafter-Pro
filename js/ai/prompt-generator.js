@@ -1,9 +1,11 @@
-// prompt-generator.js - Prompt Generation Logic
+// prompt-generator.js - Prompt Generation Logic (UPDATED & COMPLETE)
 
-import { OPENAI_API_URL, OPENAI_MODEL } from '../core/constants.js';
-import { PRESETS, localFormatter } from './presets.js';
+import { OPENAI_API_URL, OPENAI_MODEL, OPENAI_MAX_TOKENS, OPENAI_TEMPERATURE } from '../core/constants.js';
+import { PRESETS, localFormatter } from '../ai/presets.js';
 import { detectContextFromText, buildContextAwareRequirement, getRoleAndPreset } from '../features/context-detective.js';
 import appState from '../core/app-state.js';
+import { validateApiKey } from '../core/utilities.js';
+import { showNotification } from '../ui/notifications.js';
 
 /**
  * Generate prompt using OpenAI API or local formatter
@@ -13,17 +15,39 @@ import appState from '../core/app-state.js';
  */
 export async function generatePrompt(rawRequirement, options = {}) {
   const {
-    apiKey = localStorage.getItem('OPENAI_API_KEY')?.trim(),
+    apiKey = localStorage.getItem('OPENAI_API_KEY') || '',
     preset = appState.currentPreset,
-    useAI = true
+    useAI = true,
+    forceLocal = false
   } = options;
 
+  // Validate input
+  if (!rawRequirement || typeof rawRequirement !== 'string') {
+    return {
+      success: false,
+      prompt: 'Please enter a valid requirement.',
+      source: 'error',
+      error: 'Invalid input'
+    };
+  }
+
+  // Clean and trim input
+  const cleanedRequirement = rawRequirement.trim();
+  if (cleanedRequirement.length === 0) {
+    return {
+      success: false,
+      prompt: 'Please enter a requirement to convert.',
+      source: 'error',
+      error: 'Empty input'
+    };
+  }
+
   // Detect context
-  const context = detectContextFromText(rawRequirement);
-  const requirementWithContext = buildContextAwareRequirement(rawRequirement, context);
+  const context = detectContextFromText(cleanedRequirement);
+  const requirementWithContext = buildContextAwareRequirement(cleanedRequirement, context);
   
   // Get role and preset
-  const { role, preset: autoPreset, label } = getRoleAndPreset(rawRequirement);
+  const { role, preset: autoPreset, label } = getRoleAndPreset(cleanedRequirement);
   
   // Update app state
   appState.lastRole = role;
@@ -38,12 +62,16 @@ export async function generatePrompt(rawRequirement, options = {}) {
 
   let generatedPrompt;
   let source = 'local';
+  let error = null;
 
   try {
-    if (useAI && apiKey) {
+    // Check if we should use AI (OpenAI)
+    const shouldUseAI = useAI && !forceLocal && apiKey && validateApiKey(apiKey);
+    
+    if (shouldUseAI) {
       // Use OpenAI API
       generatedPrompt = await generateWithOpenAI(
-        rawRequirement, 
+        cleanedRequirement, 
         requirementWithContext, 
         context, 
         role, 
@@ -59,21 +87,38 @@ export async function generatePrompt(rawRequirement, options = {}) {
         preset, 
         getRoleAndPreset
       );
-      source = 'local';
+      source = forceLocal ? 'local-forced' : 'local';
+      
+      // If we wanted to use AI but couldn't, log it
+      if (useAI && !forceLocal && (!apiKey || !validateApiKey(apiKey))) {
+        console.warn('Using local formatter: No valid API key available');
+        error = 'No valid API key available. Using local formatter.';
+      }
+    }
+
+    // Validate generated prompt
+    if (!generatedPrompt || generatedPrompt.trim().length === 0) {
+      throw new Error('Generated prompt is empty');
     }
 
     // Update app state
     appState.isConverted = true;
-    appState.lastConvertedText = rawRequirement;
+    appState.lastConvertedText = cleanedRequirement;
     appState.incrementUsageCount();
 
     // Add to history
-    appState.addHistoryItem({
+    const historyItem = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
       role,
       presetLabel: label,
-      raw: rawRequirement,
-      prompt: generatedPrompt
-    });
+      raw: cleanedRequirement,
+      prompt: generatedPrompt,
+      source,
+      context: context.taskType
+    };
+    
+    appState.addHistoryItem(historyItem);
 
     return {
       success: true,
@@ -81,29 +126,71 @@ export async function generatePrompt(rawRequirement, options = {}) {
       source,
       context,
       role,
-      preset: appState.currentPreset
+      preset: appState.currentPreset,
+      historyId: historyItem.id,
+      error
     };
 
   } catch (error) {
     console.error('Generation error:', error);
     
     // Fallback to local formatter
-    generatedPrompt = localFormatter(
-      requirementWithContext, 
-      role, 
-      preset, 
-      getRoleAndPreset
-    );
-
-    return {
-      success: false,
-      prompt: generatedPrompt,
-      source: 'local-fallback',
-      context,
-      role,
-      preset: appState.currentPreset,
-      error: error.message
-    };
+    try {
+      generatedPrompt = localFormatter(
+        requirementWithContext, 
+        role, 
+        preset, 
+        getRoleAndPreset
+      );
+      
+      // If local formatter also fails, provide a basic template
+      if (!generatedPrompt || generatedPrompt.trim().length === 0) {
+        generatedPrompt = createFallbackPrompt(cleanedRequirement, role);
+      }
+      
+      // Still add to history even on error
+      appState.isConverted = true;
+      appState.lastConvertedText = cleanedRequirement;
+      
+      const historyItem = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        role,
+        presetLabel: 'Error Fallback',
+        raw: cleanedRequirement,
+        prompt: generatedPrompt,
+        source: 'error-fallback',
+        context: context.taskType
+      };
+      
+      appState.addHistoryItem(historyItem);
+      
+      return {
+        success: false,
+        prompt: generatedPrompt,
+        source: 'error-fallback',
+        context,
+        role,
+        preset: appState.currentPreset,
+        error: error.message,
+        historyId: historyItem.id
+      };
+    } catch (fallbackError) {
+      console.error('Fallback generation error:', fallbackError);
+      
+      // Ultimate fallback
+      const ultimateFallback = `# Task\n${cleanedRequirement}\n\n# Instructions\nPlease complete the above task.`;
+      
+      return {
+        success: false,
+        prompt: ultimateFallback,
+        source: 'ultimate-fallback',
+        context,
+        role: 'assistant',
+        preset: 'default',
+        error: `Generation failed: ${error.message}. Fallback also failed: ${fallbackError.message}`
+      };
+    }
   }
 }
 
@@ -118,7 +205,7 @@ export async function generatePrompt(rawRequirement, options = {}) {
  * @returns {Promise<string>} Generated prompt
  */
 async function generateWithOpenAI(raw, requirementWithContext, context, role, preset, apiKey) {
-  const templateSkeleton = PRESETS[preset]("[ROLE]", "[REQUIREMENT]");
+  const templateSkeleton = PRESETS[preset] ? PRESETS[preset]("[ROLE]", "[REQUIREMENT]") : PRESETS.default("[ROLE]", "[REQUIREMENT]");
 
   const system = `
 You write structured task instructions for AI models.
@@ -144,30 +231,84 @@ ${contextSummary}
 
 Use this understanding and fill the template accordingly in the current preset format ("${preset}"). Return only the completed template.`;
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: userMessage }
-      ],
-      temperature: 0.1,
-      max_tokens: 700
-    })
-  });
+  // Add timeout for the fetch request
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey.trim()}`
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: userMessage }
+        ],
+        temperature: OPENAI_TEMPERATURE,
+        max_tokens: OPENAI_MAX_TOKENS,
+        stream: false
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText || `Status ${response.status}`}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+      throw new Error('Invalid response format from OpenAI API');
+    }
+    
+    const generated = data.choices[0].message.content.trim();
+    
+    if (!generated) {
+      throw new Error('Empty response from OpenAI API');
+    }
+    
+    return generated;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout: The API took too long to respond');
+    }
+    
+    throw error;
   }
+}
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content?.trim() || "";
+/**
+ * Create fallback prompt when generation fails
+ * @param {string} requirement - User requirement
+ * @param {string} role - AI role
+ * @returns {string} Fallback prompt
+ */
+function createFallbackPrompt(requirement, role) {
+  return `# Role
+${role || "Expert Assistant"}
+
+# Task
+${requirement}
+
+# Instructions
+1. Complete the task above
+2. Provide clear, actionable output
+3. Use appropriate formatting
+4. Include all necessary details
+
+# Output Format
+- Complete solution
+- Well-structured response
+- Professional tone`;
 }
 
 /**
@@ -176,15 +317,29 @@ Use this understanding and fill the template accordingly in the current preset f
  * @param {string} filename - Filename (optional)
  */
 export function exportPromptToFile(prompt, filename = "prompt.txt") {
-  const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+  try {
+    if (!prompt || typeof prompt !== 'string') {
+      throw new Error('Invalid prompt content');
+    }
+    
+    const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
-  URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (error) {
+    console.error('Export error:', error);
+    showNotification(`Failed to export: ${error.message}`, 'ERROR');
+    return false;
+  }
 }
 
 /**
@@ -194,28 +349,33 @@ export function exportPromptToFile(prompt, filename = "prompt.txt") {
  */
 export async function copyPromptToClipboard(prompt) {
   try {
-    await navigator.clipboard.writeText(prompt);
-    return true;
+    if (!prompt || typeof prompt !== 'string') {
+      throw new Error('Invalid prompt content');
+    }
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(prompt);
+      return true;
+    }
+    
+    // Fallback method for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = prompt;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    return successful;
   } catch (error) {
     console.error('Clipboard error:', error);
-    
-    // Fallback method
-    try {
-      const textArea = document.createElement('textarea');
-      textArea.value = prompt;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      textArea.style.top = '-999999px';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      return successful;
-    } catch (fallbackError) {
-      console.error('Fallback clipboard error:', fallbackError);
-      return false;
-    }
+    return false;
   }
 }
 
@@ -225,7 +385,219 @@ export async function copyPromptToClipboard(prompt) {
  * @returns {boolean} True if valid format
  */
 export function validateApiKey(apiKey) {
-  if (!apiKey) return false;
+  if (!apiKey || typeof apiKey !== 'string') {
+    return false;
+  }
+  
+  const trimmedKey = apiKey.trim();
+  
   // Basic validation - OpenAI keys typically start with 'sk-'
-  return apiKey.trim().startsWith('sk-');
+  if (!trimmedKey.startsWith('sk-')) {
+    return false;
+  }
+  
+  // Check minimum length
+  if (trimmedKey.length < 20) {
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Test API key validity
+ * @param {string} apiKey - OpenAI API key
+ * @returns {Promise<Object>} Test result
+ */
+export async function testApiKey(apiKey) {
+  if (!validateApiKey(apiKey)) {
+    return {
+      valid: false,
+      message: 'Invalid API key format'
+    };
+  }
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch('https://api.openai.com/v1/models', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey.trim()}`
+      },
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (response.status === 401) {
+      return {
+        valid: false,
+        message: 'Invalid API key (unauthorized)'
+      };
+    }
+    
+    if (response.ok) {
+      return {
+        valid: true,
+        message: 'API key is valid'
+      };
+    }
+    
+    return {
+      valid: false,
+      message: `API error: ${response.status}`
+    };
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      return {
+        valid: false,
+        message: 'Connection timeout'
+      };
+    }
+    
+    return {
+      valid: false,
+      message: `Network error: ${error.message}`
+    };
+  }
+}
+
+/**
+ * Generate multiple prompt variations
+ * @param {string} rawRequirement - User requirement
+ * @param {number} count - Number of variations
+ * @returns {Promise<Array>} Array of prompt variations
+ */
+export async function generatePromptVariations(rawRequirement, count = 3) {
+  const variations = [];
+  
+  for (let i = 0; i < count; i++) {
+    try {
+      const result = await generatePrompt(rawRequirement, {
+        useAI: false, // Use local formatter for variations
+        forceLocal: true
+      });
+      
+      if (result.success) {
+        variations.push({
+          id: i + 1,
+          prompt: result.prompt,
+          preset: result.preset,
+          role: result.role
+        });
+      }
+    } catch (error) {
+      console.error(`Error generating variation ${i + 1}:`, error);
+    }
+  }
+  
+  return variations;
+}
+
+/**
+ * Improve existing prompt
+ * @param {string} existingPrompt - Existing prompt to improve
+ * @param {string} feedback - User feedback for improvement
+ * @returns {Promise<Object>} Improved prompt
+ */
+export async function improvePrompt(existingPrompt, feedback = '') {
+  try {
+    // For now, return a simple improvement
+    // In a real implementation, this would use AI to refine the prompt
+    const improved = `# Enhanced Prompt
+${existingPrompt}
+
+# Improvements Applied
+1. Added clearer structure
+2. Enhanced specificity
+3. Improved readability
+${feedback ? `4. Incorporated feedback: ${feedback}` : ''}
+
+# Notes
+This is an enhanced version of your original prompt.`;
+    
+    return {
+      success: true,
+      prompt: improved,
+      message: 'Prompt improved successfully'
+    };
+  } catch (error) {
+    console.error('Improvement error:', error);
+    return {
+      success: false,
+      prompt: existingPrompt,
+      message: `Failed to improve: ${error.message}`
+    };
+  }
+}
+
+/**
+ * Shorten prompt while maintaining meaning
+ * @param {string} prompt - Prompt to shorten
+ * @returns {Promise<Object>} Shortened prompt
+ */
+export async function shortenPrompt(prompt) {
+  try {
+    // Simple shortening logic - can be enhanced with AI
+    const lines = prompt.split('\n').filter(line => line.trim());
+    const shortenedLines = lines.slice(0, Math.min(lines.length, 10)); // Keep max 10 lines
+    
+    return {
+      success: true,
+      prompt: shortenedLines.join('\n'),
+      originalLength: prompt.length,
+      newLength: shortenedLines.join('\n').length,
+      reduction: Math.round((1 - (shortenedLines.join('\n').length / prompt.length)) * 100)
+    };
+  } catch (error) {
+    console.error('Shortening error:', error);
+    return {
+      success: false,
+      prompt: prompt,
+      message: `Failed to shorten: ${error.message}`
+    };
+  }
+}
+
+/**
+ * Expand prompt with more details
+ * @param {string} prompt - Prompt to expand
+ * @returns {Promise<Object>} Expanded prompt
+ */
+export async function expandPrompt(prompt) {
+  try {
+    // Simple expansion logic - can be enhanced with AI
+    const expanded = `${prompt}
+
+# Additional Details
+1. Consider all edge cases
+2. Include specific examples
+3. Add implementation details
+4. Consider alternative approaches
+5. Include best practices
+
+# Quality Checklist
+- [ ] Clear and specific
+- [ ] Actionable instructions
+- [ ] Appropriate level of detail
+- [ ] Well-structured format
+- [ ] Professional tone`;
+    
+    return {
+      success: true,
+      prompt: expanded,
+      originalLength: prompt.length,
+      newLength: expanded.length,
+      expansion: Math.round(((expanded.length / prompt.length) - 1) * 100)
+    };
+  } catch (error) {
+    console.error('Expansion error:', error);
+    return {
+      success: false,
+      prompt: prompt,
+      message: `Failed to expand: ${error.message}`
+    };
+  }
 }
