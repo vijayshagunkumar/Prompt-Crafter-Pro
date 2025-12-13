@@ -1,6 +1,6 @@
 // card-expander.js
 // Responsible ONLY for maximizing/restoring Card-1 and Card-2
-// Single source of truth for card maximize behavior (prevents double-binding / blinking)
+// Does NOT touch Card-3 or AI tools
 
 export function initCardExpander() {
   const cards = [
@@ -18,64 +18,48 @@ export function initCardExpander() {
     const header = card.querySelector('.step-header');
     if (!header) return;
 
-    // Prefer an existing maximize button from HTML, else create one.
-    let btn = header.querySelector('.card-max-btn');
+    // Prevent duplicate buttons
+    if (header.querySelector('.card-max-btn')) return;
 
-    if (!btn) {
-      btn = document.createElement('button');
-      btn.className = 'icon-btn card-max-btn';
-      btn.type = 'button';
-      btn.setAttribute('aria-label', 'Maximize card');
-      btn.innerHTML = '<i class="fas fa-expand"></i>';
-      header.appendChild(btn);
-    }
+    const btn = document.createElement('button');
+    btn.className = 'icon-btn card-max-btn';
+    btn.type = 'button';
+    btn.title = 'Maximize';
+    btn.innerHTML = '<i class="fas fa-expand"></i>';
 
-    // Avoid double-binding
-    if (btn.dataset.maxBound === '1') return;
-    btn.dataset.maxBound = '1';
+    header.appendChild(btn);
 
     btn.addEventListener('click', (e) => {
-      e.preventDefault();
       e.stopPropagation();
       toggle(card, btn);
     });
   });
 
-  // Backdrop click closes
-  if (backdrop.dataset.bound !== '1') {
-    backdrop.dataset.bound = '1';
-    backdrop.addEventListener('click', close);
-  }
-
-  // ESC closes
-  if (!document.body.dataset.cardExpanderEscBound) {
-    document.body.dataset.cardExpanderEscBound = '1';
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close();
-    });
-  }
+  backdrop.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
 
   function toggle(card, btn) {
-    if (activeCard === card) close();
-    else open(card, btn);
+    if (activeCard === card) {
+      close();
+    } else {
+      open(card, btn);
+    }
   }
 
   function open(card, btn) {
     close();
-
     card.classList.add('is-maximized');
     document.body.classList.add('card-max-open');
-
     btn.innerHTML = '<i class="fas fa-compress"></i>';
     btn.title = 'Restore';
-
-    backdrop.classList.add('show');
+    backdrop.style.display = 'block';
     activeCard = card;
   }
 
   function close() {
     if (!activeCard) return;
-
     activeCard.classList.remove('is-maximized');
     document.body.classList.remove('card-max-open');
 
@@ -85,7 +69,7 @@ export function initCardExpander() {
       btn.title = 'Maximize';
     }
 
-    backdrop.classList.remove('show');
+    backdrop.style.display = 'none';
     activeCard = null;
   }
 }
