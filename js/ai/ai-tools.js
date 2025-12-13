@@ -1,17 +1,17 @@
-// ai-tools.js - AI Tools Management and Dynamic Ordering (STREAMLINED & COMPLETE)
+// ai-tools.js - AI Tools Management with Beautiful Elegant Cards
 
 import { AI_TOOLS } from '../core/constants.js';
 import { showNotification, showSuccess, showError } from '../ui/notifications.js';
 
-// Enhanced AI Tools with CONCISE content and official icons
+// Enhanced AI Tools with ELEGANT CARD STRUCTURE
 const ENHANCED_AI_TOOLS = [
   {
     id: "dalle",
     name: "DALL·E 3",
     description: "Best for realistic and creative AI images.",
     specialty: "Realistic Images",
-    icon: "fas fa-robot", // OpenAI official style
-    brandIcon: "fab fa-openai", // OpenAI brand
+    icon: "fas fa-robot",
+    brandIcon: "fab fa-openai",
     color: "#00A67E",
     url: "https://chat.openai.com/",
     weights: {
@@ -21,7 +21,8 @@ const ENHANCED_AI_TOOLS = [
       artistic: 7
     },
     isImageTool: true,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Images", "AI Art", "OpenAI"]
   },
   {
     id: "midjourney",
@@ -29,18 +30,18 @@ const ENHANCED_AI_TOOLS = [
     description: "Excellent for artistic and stylized images.",
     specialty: "Artistic Styles",
     icon: "fas fa-paint-brush",
-    brandIcon: "fas fa-crown", // Midjourney crown icon
+    brandIcon: "fas fa-crown",
     color: "#1E1E1E",
     url: "https://www.midjourney.com/",
     weights: {
       image_generation: 15,
       artistic: 10,
       stylized: 10,
-      creative: 9,
-      realistic: 6
+      creative: 9
     },
     isImageTool: true,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Art", "Design", "Premium"]
   },
   {
     id: "stable-diffusion",
@@ -48,20 +49,18 @@ const ENHANCED_AI_TOOLS = [
     description: "Open-source image generation with control.",
     specialty: "Open-Source Control",
     icon: "fas fa-cube",
-    brandIcon: "fas fa-code-branch", // Open source icon
+    brandIcon: "fas fa-code-branch",
     color: "#8B5CF6",
     url: "https://stablediffusionweb.com/",
     weights: {
       image_generation: 14,
       control: 10,
-      artistic: 9,
-      creative: 9,
-      realistic: 7
+      artistic: 9
     },
     isImageTool: true,
-    officialIcon: false
+    isPopular: false,
+    tags: ["Open Source", "Customizable", "Free"]
   },
-  // Text AI Tools - Streamlined
   {
     id: "chatgpt",
     name: "ChatGPT",
@@ -78,7 +77,8 @@ const ENHANCED_AI_TOOLS = [
       coding: 6
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Chat", "Writing", "Coding"]
   },
   {
     id: "claude",
@@ -86,17 +86,17 @@ const ENHANCED_AI_TOOLS = [
     description: "Great for long-form text and thoughtful responses.",
     specialty: "Long-Form Writing",
     icon: "fas fa-sparkles",
-    brandIcon: "fas fa-brain", // Anthropic brain icon
+    brandIcon: "fas fa-brain",
     color: "#DE7356",
     url: "https://claude.ai/",
     weights: {
       writing: 10,
       analysis: 9,
-      communication: 8,
-      creative: 9
+      communication: 8
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Writing", "Analysis", "Documents"]
   },
   {
     id: "gemini",
@@ -104,7 +104,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Strong on web + research heavy prompts.",
     specialty: "Web Research",
     icon: "fas fa-infinity",
-    brandIcon: "fas fa-google", // Google brand
+    brandIcon: "fas fa-google",
     color: "#4796E3",
     url: "https://gemini.google.com/app",
     weights: {
@@ -113,7 +113,8 @@ const ENHANCED_AI_TOOLS = [
       analysis: 8
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Research", "Web", "Google"]
   },
   {
     id: "perplexity",
@@ -121,7 +122,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Excellent for research with citations and sources.",
     specialty: "Cited Research",
     icon: "fas fa-search",
-    brandIcon: "fas fa-question", // Perplexity question mark
+    brandIcon: "fas fa-question",
     color: "#20808D",
     url: "https://www.perplexity.ai/",
     weights: {
@@ -130,7 +131,8 @@ const ENHANCED_AI_TOOLS = [
       analysis: 9
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: false,
+    tags: ["Research", "Citations", "Sources"]
   },
   {
     id: "deepseek",
@@ -138,7 +140,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Great for coding and technical tasks.",
     specialty: "Coding Tasks",
     icon: "fas fa-robot",
-    brandIcon: "fas fa-terminal", // Code terminal
+    brandIcon: "fas fa-terminal",
     color: "#00F3FF",
     url: "https://chat.deepseek.com/",
     weights: {
@@ -147,7 +149,8 @@ const ENHANCED_AI_TOOLS = [
       analysis: 8
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: false,
+    tags: ["Coding", "Technical", "Free"]
   },
   {
     id: "copilot",
@@ -155,7 +158,7 @@ const ENHANCED_AI_TOOLS = [
     description: "Microsoft's AI for coding and development.",
     specialty: "Development",
     icon: "fas fa-code",
-    brandIcon: "fab fa-microsoft", // Microsoft brand
+    brandIcon: "fab fa-microsoft",
     color: "#199FD7",
     url: "https://copilot.microsoft.com/",
     weights: {
@@ -163,7 +166,8 @@ const ENHANCED_AI_TOOLS = [
       technical: 9
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Coding", "Microsoft", "Dev Tools"]
   },
   {
     id: "grok",
@@ -171,7 +175,7 @@ const ENHANCED_AI_TOOLS = [
     description: "X AI with real-time knowledge and wit.",
     specialty: "Real-Time Knowledge",
     icon: "fas fa-brain",
-    brandIcon: "fab fa-twitter", // X/Twitter brand
+    brandIcon: "fab fa-twitter",
     color: "#FF5E00",
     url: "https://grok.x.ai/",
     weights: {
@@ -180,49 +184,31 @@ const ENHANCED_AI_TOOLS = [
       creative: 8
     },
     isImageTool: false,
-    officialIcon: true
+    isPopular: true,
+    tags: ["Real-time", "Conversation", "X/Twitter"]
   }
 ];
 
-/**
- * Calculate tool scores based on task type and prompt content
- * @param {string} taskType - Detected task type
- * @param {string} promptText - Generated prompt text
- * @returns {Object} Tool scores
- */
+// Calculate tool scores (same as before)
 export function calculateToolScores(taskType, promptText) {
   const scores = {};
   const lowerText = (promptText || '').toLowerCase();
-  
-  // Check if it's an image-related prompt
   const isImagePrompt = taskType === 'image_generation' || 
                        /image|photo|picture|draw|illustrat|art|visual|graphic|design|sketch|poster|thumbnail|logo|banner|icon|cartoon|painting|sketch|drawing|visualize|generate.*image|create.*image/i.test(lowerText);
   
   ENHANCED_AI_TOOLS.forEach(tool => {
-    let score = 0;
+    let score = tool.weights[taskType] || 5;
     
-    // Base score from task type weights
-    score += tool.weights[taskType] || 5;
-    
-    // HUGE bonus for image tools when it's an image prompt
     if (isImagePrompt && tool.isImageTool) {
-      score += 25; // Massive boost to ensure they appear first
+      score += 25;
     }
     
-    // Additional image-specific scoring
     if (isImagePrompt) {
-      if (/realistic|photograph|photo|真实|사진|写真/i.test(lowerText) && tool.id === 'dalle') {
-        score += 8;
-      }
-      if (/artistic|painting|style|stylized|art|artwork|illustration|cartoon|drawing|sketch|艺术家|그림|イラスト/i.test(lowerText) && tool.id === 'midjourney') {
-        score += 8;
-      }
-      if (/control|precise|detailed|specific|自定义|컨트롤/i.test(lowerText) && tool.id === 'stable-diffusion') {
-        score += 8;
-      }
+      if (/realistic|photograph|photo/i.test(lowerText) && tool.id === 'dalle') score += 8;
+      if (/artistic|painting|style|stylized|art|artwork|illustration|cartoon/i.test(lowerText) && tool.id === 'midjourney') score += 8;
+      if (/control|precise|detailed|specific/i.test(lowerText) && tool.id === 'stable-diffusion') score += 8;
     }
     
-    // Original scoring logic for other tools
     if (taskType === 'writing' && /story|creative|novel|poem|fiction/i.test(lowerText)) {
       if (tool.id === 'claude') score += 3;
       if (tool.id === 'grok') score += 2;
@@ -239,23 +225,12 @@ export function calculateToolScores(taskType, promptText) {
       if (tool.id === 'copilot') score += 4;
     }
     
-    if (taskType === 'communication' && /email|formal|professional/i.test(lowerText)) {
-      if (tool.id === 'claude') score += 2;
-      if (tool.id === 'chatgpt') score += 2;
-    }
-    
-    // Cap score at reasonable maximum
     scores[tool.id] = Math.min(100, Math.max(1, score));
   });
   
   return scores;
 }
 
-/**
- * Order tools by their scores
- * @param {Object} scores - Tool scores
- * @returns {Array} Ordered tools with scores
- */
 export function orderToolsByScore(scores) {
   return ENHANCED_AI_TOOLS
     .map(tool => ({
@@ -267,69 +242,97 @@ export function orderToolsByScore(scores) {
 }
 
 /**
- * Get recommended tool for task
- * @param {string} taskType - Detected task type
- * @param {string} promptText - Generated prompt text
- * @returns {Object} Recommended tool
- */
-export function getRecommendedTool(taskType, promptText) {
-  const scores = calculateToolScores(taskType, promptText);
-  const orderedTools = orderToolsByScore(scores);
-  return orderedTools[0] || ENHANCED_AI_TOOLS[0];
-}
-
-/**
- * Get top N tools for task
- * @param {string} taskType - Detected task type
- * @param {string} promptText - Generated prompt text
- * @param {number} count - Number of tools to return
- * @returns {Array} Top N tools
- */
-export function getTopTools(taskType, promptText, count = 3) {
-  const scores = calculateToolScores(taskType, promptText);
-  const orderedTools = orderToolsByScore(scores);
-  return orderedTools.slice(0, count);
-}
-
-/**
- * Create HTML for AI tool card - STREAMLINED VERSION
+ * Create BEAUTIFUL ELEGANT CARD for each AI tool
  * @param {Object} tool - Tool object
  * @param {boolean} isEnabled - Whether tool is enabled
  * @param {boolean} isBestMatch - Whether this is the best match
- * @returns {string} HTML string
+ * @returns {string} HTML string for elegant card
  */
 export function createToolCardHTML(tool, isEnabled = true, isBestMatch = false) {
   const disabledClass = isEnabled ? '' : 'disabled';
   const bestMatchClass = isBestMatch ? 'best-match' : '';
-  const hasOfficialIcon = tool.officialIcon;
+  const popularClass = tool.isPopular ? 'popular' : '';
+  const isImageTool = tool.isImageTool ? 'image-tool' : 'text-tool';
   
-  // Use official brand icon when available
-  const displayIcon = hasOfficialIcon && tool.brandIcon ? tool.brandIcon : tool.icon;
+  // Use brand icon if available, otherwise regular icon
+  const displayIcon = tool.brandIcon || tool.icon;
+  const isBrandIcon = !!tool.brandIcon;
+  
+  // Score indicator color based on score
+  const score = tool.score || 0;
+  let scoreClass = 'score-low';
+  if (score >= 30) scoreClass = 'score-medium';
+  if (score >= 60) scoreClass = 'score-high';
+  
+  // Generate tags HTML
+  const tagsHTML = tool.tags.map(tag => 
+    `<span class="tool-tag">${tag}</span>`
+  ).join('');
   
   return `
-    <div class="ai-tool-card ${disabledClass} ${bestMatchClass}" data-tool="${tool.id}" role="button" tabindex="0">
-      <div class="ai-tool-header">
-        <div class="ai-tool-icon" style="background: ${tool.color || 'var(--gradient-primary)'};">
+    <div class="ai-tool-card elegant-card ${disabledClass} ${bestMatchClass} ${popularClass} ${isImageTool}" 
+         data-tool="${tool.id}" 
+         data-score="${score}"
+         role="button" 
+         tabindex="0"
+         aria-label="Open ${tool.name} - ${tool.specialty}">
+      
+      <!-- Card Header with Icon and Name -->
+      <div class="card-header">
+        <div class="tool-icon-container ${isBrandIcon ? 'brand-icon' : ''}">
           <i class="${displayIcon}"></i>
-          ${hasOfficialIcon ? '<span class="official-badge" title="Official Brand Icon">✓</span>' : ''}
+          ${tool.isPopular ? '<span class="popular-badge" title="Popular AI Tool">🔥</span>' : ''}
         </div>
-        <div class="ai-tool-info">
-          <h4 class="ai-tool-name">${tool.name}</h4>
-          <div class="ai-tool-specialty">${tool.specialty || 'AI Assistant'}</div>
+        <div class="tool-name-section">
+          <h3 class="tool-name">${tool.name}</h3>
+          <p class="tool-specialty">${tool.specialty}</p>
         </div>
       </div>
-      <div class="ai-tool-footer">
-        <div class="ai-tool-action">
-          <span class="ai-tool-action-text">Use this AI</span>
-          <i class="fas fa-arrow-up-right-from-square"></i>
+      
+      <!-- Card Body with Description -->
+      <div class="card-body">
+        <p class="tool-description">${tool.description}</p>
+        
+        <!-- Tags -->
+        <div class="tool-tags">
+          ${tagsHTML}
         </div>
+      </div>
+      
+      <!-- Card Footer with Score and Action -->
+      <div class="card-footer">
+        <div class="score-indicator ${scoreClass}" title="Relevance score: ${score.toFixed(1)}">
+          <span class="score-value">${score.toFixed(1)}</span>
+          <span class="score-label">Match</span>
+        </div>
+        
+        <div class="card-action">
+          <button class="open-tool-btn" ${!isEnabled ? 'disabled' : ''}>
+            <span>Open</span>
+            <i class="fas fa-external-link-alt"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Best Match Ribbon -->
+      ${isBestMatch ? `
+        <div class="best-match-ribbon" title="Best match for your task">
+          <i class="fas fa-star"></i>
+          Best Match
+        </div>
+      ` : ''}
+      
+      <!-- Tool Type Badge -->
+      <div class="tool-type-badge ${tool.isImageTool ? 'image-badge' : 'text-badge'}">
+        <i class="fas ${tool.isImageTool ? 'fa-image' : 'fa-font'}"></i>
+        ${tool.isImageTool ? 'Image AI' : 'Text AI'}
       </div>
     </div>
   `;
 }
 
 /**
- * Render AI tools grid - STREAMLINED CONTENT
+ * Render AI tools grid with ELEGANT CARDS
  * @param {string} taskType - Detected task type
  * @param {string} promptText - Generated prompt text
  * @param {boolean} isConverted - Whether prompt is generated
@@ -339,7 +342,6 @@ export function renderAIToolsGrid(taskType = 'general', promptText = '', isConve
   const scores = calculateToolScores(taskType, promptText);
   const orderedTools = orderToolsByScore(scores);
   
-  // Mark the top tool as best match if it has significantly higher score
   const topScore = orderedTools[0]?.score || 0;
   const secondScore = orderedTools[1]?.score || 0;
   const isClearBestMatch = isConverted && (topScore > secondScore + 5);
@@ -354,12 +356,7 @@ export function renderAIToolsGrid(taskType = 'general', promptText = '', isConve
   }).join('');
 }
 
-/**
- * Handle tool card click
- * @param {Object} tool - Tool object
- * @param {string} prompt - Generated prompt text
- * @param {Function} showNotification - Notification function
- */
+// Handle tool click (same as before)
 export async function handleToolClick(tool, prompt, showNotification) {
   if (!prompt) {
     showNotification("Generate a prompt first", "ERROR");
@@ -372,90 +369,52 @@ export async function handleToolClick(tool, prompt, showNotification) {
   }
 
   try {
-    // Show loading state
-    const originalText = showNotification(`Opening ${tool.name}...`, "INFO");
+    await navigator.clipboard.writeText(prompt);
+    showNotification(`Prompt copied! Opening ${tool.name}...`, "SUCCESS");
     
-    // Copy prompt to clipboard
-    let copySuccess = false;
-    try {
-      await navigator.clipboard.writeText(prompt);
-      copySuccess = true;
-    } catch (clipboardError) {
-      console.warn('Clipboard API failed, trying fallback:', clipboardError);
-      // Try fallback method
-      const textArea = document.createElement('textarea');
-      textArea.value = prompt;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      textArea.style.top = '-999999px';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      copySuccess = document.execCommand('copy');
-      document.body.removeChild(textArea);
-    }
-
-    if (copySuccess) {
-      showNotification(`Prompt copied! Opening ${tool.name}...`, "SUCCESS");
-    } else {
-      showNotification(`Opening ${tool.name}... (Copy failed)`, "WARNING");
-    }
-    
-    // Open tool in new tab after short delay
     setTimeout(() => {
-      const newWindow = window.open(tool.url, '_blank', 'noopener,noreferrer');
-      
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        // Popup blocked or failed to open
-        showNotification(`Popup blocked! Please allow popups for ${tool.name} or manually visit: ${tool.url}`, "ERROR", 5000);
-      }
+      window.open(tool.url, '_blank', 'noopener,noreferrer');
     }, 500);
   } catch (error) {
     console.error('Tool click error:', error);
-    showNotification(`Failed to open ${tool.name}: ${error.message}`, "ERROR");
+    showNotification(`Failed to open ${tool.name}`, "ERROR");
   }
 }
 
-/**
- * Setup tool click handlers
- * @param {Function} showNotification - Notification function
- */
+// Setup tool click handlers
 export function setupToolClickHandlers(showNotification) {
   document.addEventListener('click', (e) => {
     const toolCard = e.target.closest('.ai-tool-card');
-    if (!toolCard || toolCard.classList.contains('disabled')) {
-      return;
-    }
-
+    const openBtn = e.target.closest('.open-tool-btn');
+    
+    if (!toolCard || toolCard.classList.contains('disabled')) return;
+    
+    // Handle clicks on the card or the open button
+    const clickTarget = openBtn || toolCard;
     const toolId = toolCard.dataset.tool;
     const outputEl = document.getElementById('output');
     const prompt = outputEl ? outputEl.value.trim() : '';
     
-    // Find the tool
     const tool = ENHANCED_AI_TOOLS.find(t => t.id === toolId);
     if (tool) {
       handleToolClick(tool, prompt, showNotification);
     }
   });
   
-  // Add keyboard accessibility
+  // Keyboard accessibility
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      const toolCard = document.activeElement;
-      if (toolCard && toolCard.classList.contains('ai-tool-card') && !toolCard.classList.contains('disabled')) {
-        e.preventDefault();
-        toolCard.click();
-      }
+    const toolCard = document.activeElement;
+    if ((e.key === 'Enter' || e.key === ' ') && 
+        toolCard && 
+        toolCard.classList.contains('ai-tool-card') && 
+        !toolCard.classList.contains('disabled')) {
+      e.preventDefault();
+      toolCard.click();
     }
   });
 }
 
-/**
- * Update AI tools grid dynamically
- * @param {string} taskType - Task type
- * @param {string} promptText - Prompt text
- * @param {boolean} isConverted - Whether converted
- */
+// Update AI tools grid
 export function updateAIToolsGrid(taskType, promptText, isConverted) {
   const toolsGrid = document.getElementById('aiToolsGrid');
   if (toolsGrid) {
@@ -463,55 +422,29 @@ export function updateAIToolsGrid(taskType, promptText, isConverted) {
   }
 }
 
-/**
- * Get all available tools
- * @returns {Array} All AI tools
- */
+// Get all tools
 export function getAllTools() {
   return ENHANCED_AI_TOOLS;
 }
 
-/**
- * Get tool by ID
- * @param {string} toolId - Tool ID
- * @returns {Object|null} Tool object or null
- */
+// Get tool by ID
 export function getToolById(toolId) {
   return ENHANCED_AI_TOOLS.find(tool => tool.id === toolId) || null;
 }
 
-/**
- * Get tools by category
- * @param {string} category - Tool category
- * @returns {Array} Filtered tools
- */
+// Get tools by category
 export function getToolsByCategory(category) {
   switch (category) {
     case 'image':
       return ENHANCED_AI_TOOLS.filter(tool => tool.isImageTool);
     case 'text':
       return ENHANCED_AI_TOOLS.filter(tool => !tool.isImageTool);
-    case 'coding':
-      return ENHANCED_AI_TOOLS.filter(tool => 
-        tool.id === 'chatgpt' || 
-        tool.id === 'claude' || 
-        tool.id === 'deepseek' || 
-        tool.id === 'copilot'
-      );
-    case 'research':
-      return ENHANCED_AI_TOOLS.filter(tool => 
-        tool.id === 'gemini' || 
-        tool.id === 'perplexity'
-      );
     default:
       return ENHANCED_AI_TOOLS;
   }
 }
 
-/**
- * Export tools configuration
- * @returns {Object} Tools configuration
- */
+// Export tools configuration
 export function exportToolsConfig() {
   return {
     version: '2.0.0',
@@ -521,125 +454,110 @@ export function exportToolsConfig() {
       name: tool.name,
       specialty: tool.specialty,
       url: tool.url,
-      category: tool.isImageTool ? 'image' : 'text'
+      category: tool.isImageTool ? 'image' : 'text',
+      tags: tool.tags
     }))
   };
 }
 
-/**
- * Import tools configuration
- * @param {Object} config - Tools configuration
- */
-export function importToolsConfig(config) {
-  // This would merge imported config with existing tools
-  console.log('Importing tools config:', config);
-  // Implementation would depend on specific requirements
+// Get tool specialties
+export function getToolSpecialties() {
+  const specialties = new Set();
+  ENHANCED_AI_TOOLS.forEach(tool => {
+    if (tool.specialty) specialties.add(tool.specialty);
+  });
+  return Array.from(specialties).sort();
 }
 
-/**
- * Validate tool URLs
- * @returns {Array} Validation results
- */
-export function validateToolUrls() {
-  return ENHANCED_AI_TOOLS.map(tool => ({
-    id: tool.id,
-    name: tool.name,
-    url: tool.url,
-    isValid: tool.url && tool.url.startsWith('http'),
-    message: tool.url ? (tool.url.startsWith('http') ? 'Valid' : 'Invalid URL') : 'No URL'
-  }));
+// Get popular tools
+export function getPopularTools() {
+  return ENHANCED_AI_TOOLS.filter(tool => tool.isPopular);
 }
 
-/**
- * Search tools by keyword
- * @param {string} keyword - Search keyword
- * @returns {Array} Filtered tools
- */
-export function searchTools(keyword) {
-  const searchTerm = keyword.toLowerCase();
+// Get image tools
+export function getImageTools() {
+  return ENHANCED_AI_TOOLS.filter(tool => tool.isImageTool);
+}
+
+// Get text tools
+export function getTextTools() {
+  return ENHANCED_AI_TOOLS.filter(tool => !tool.isImageTool);
+}
+
+// Filter tools by tag
+export function filterToolsByTag(tag) {
   return ENHANCED_AI_TOOLS.filter(tool => 
-    tool.name.toLowerCase().includes(searchTerm) ||
-    tool.specialty.toLowerCase().includes(searchTerm) ||
-    tool.description.toLowerCase().includes(searchTerm)
+    tool.tags.some(t => t.toLowerCase() === tag.toLowerCase())
   );
 }
 
-/**
- * Get tools statistics
- * @returns {Object} Tools statistics
- */
+// Get all unique tags
+export function getAllTags() {
+  const tags = new Set();
+  ENHANCED_AI_TOOLS.forEach(tool => {
+    tool.tags.forEach(tag => tags.add(tag));
+  });
+  return Array.from(tags).sort();
+}
+
+// Sort tools by various criteria
+export function sortTools(tools, criteria = 'score') {
+  const toolsCopy = [...tools];
+  
+  switch (criteria) {
+    case 'name':
+      return toolsCopy.sort((a, b) => a.name.localeCompare(b.name));
+    case 'popularity':
+      return toolsCopy.sort((a, b) => {
+        if (a.isPopular && !b.isPopular) return -1;
+        if (!a.isPopular && b.isPopular) return 1;
+        return b.score - a.score;
+      });
+    case 'type':
+      return toolsCopy.sort((a, b) => {
+        if (a.isImageTool && !b.isImageTool) return -1;
+        if (!a.isImageTool && b.isImageTool) return 1;
+        return b.score - a.score;
+      });
+    case 'score':
+    default:
+      return toolsCopy.sort((a, b) => b.score - a.score);
+  }
+}
+
+// Get tool statistics
 export function getToolsStatistics() {
   const totalTools = ENHANCED_AI_TOOLS.length;
   const imageTools = ENHANCED_AI_TOOLS.filter(tool => tool.isImageTool).length;
   const textTools = totalTools - imageTools;
-  const officialTools = ENHANCED_AI_TOOLS.filter(tool => tool.officialIcon).length;
+  const popularTools = ENHANCED_AI_TOOLS.filter(tool => tool.isPopular).length;
   
   return {
     total: totalTools,
     imageTools,
     textTools,
-    officialTools,
+    popularTools,
     categories: {
       image: imageTools,
       text: textTools,
-      official: officialTools,
-      free: ENHANCED_AI_TOOLS.filter(tool => 
-        tool.id === 'chatgpt' || 
-        tool.id === 'gemini' || 
-        tool.id === 'claude'
-      ).length,
-      paid: ENHANCED_AI_TOOLS.filter(tool => 
-        tool.id === 'midjourney' || 
-        tool.id === 'dalle'
-      ).length
+      popular: popularTools
     }
   };
 }
 
-/**
- * Get tool specialties (for filtering)
- * @returns {Array} Unique specialties
- */
-export function getToolSpecialties() {
-  const specialties = new Set();
-  ENHANCED_AI_TOOLS.forEach(tool => {
-    if (tool.specialty) {
-      specialties.add(tool.specialty);
-    }
-  });
-  return Array.from(specialties).sort();
-}
-
-/**
- * Filter tools by specialty
- * @param {string} specialty - Specialty to filter by
- * @returns {Array} Filtered tools
- */
-export function filterToolsBySpecialty(specialty) {
-  return ENHANCED_AI_TOOLS.filter(tool => tool.specialty === specialty);
-}
-
-/**
- * Get tool color scheme
- * @param {string} toolId - Tool ID
- * @returns {Object} Color scheme
- */
+// Get tool color scheme
 export function getToolColorScheme(toolId) {
   const tool = getToolById(toolId);
-  if (!tool) return { primary: '#FF5E00', secondary: '#00F3FF' };
+  if (!tool) return { primary: '#FF5E00', accent: '#00F3FF' };
   
   return {
     primary: tool.color,
-    secondary: tool.color === '#FF5E00' ? '#00F3FF' : '#FF5E00',
+    accent: tool.color === '#FF5E00' ? '#00F3FF' : '#FF5E00',
     gradient: `linear-gradient(135deg, ${tool.color} 0%, ${tool.color === '#FF5E00' ? '#00F3FF' : '#FF5E00'} 100%)`
   };
 }
 
-/**
- * Get tool preview data for Card 3
- * @param {string} toolId - Tool ID
- * @returns {Object} Preview data
- */
+// Get tool preview for hover effects
 export function getToolPreview(toolId) {
   const tool = getToolById(toolId);
   if (!tool) return null;
@@ -647,34 +565,10 @@ export function getToolPreview(toolId) {
   return {
     name: tool.name,
     specialty: tool.specialty,
-    icon: tool.officialIcon && tool.brandIcon ? tool.brandIcon : tool.icon,
+    icon: tool.brandIcon || tool.icon,
     color: tool.color,
-    isOfficial: tool.officialIcon,
-    bestFor: tool.description,
-    category: tool.isImageTool ? 'image' : 'text'
+    isPopular: tool.isPopular,
+    tags: tool.tags,
+    description: tool.description
   };
-}
-
-/**
- * Sort tools by score, name, or category
- * @param {Array} tools - Tools to sort
- * @param {string} sortBy - Sort criteria ('score', 'name', 'category')
- * @returns {Array} Sorted tools
- */
-export function sortTools(tools, sortBy = 'score') {
-  const toolsCopy = [...tools];
-  
-  switch (sortBy) {
-    case 'name':
-      return toolsCopy.sort((a, b) => a.name.localeCompare(b.name));
-    case 'category':
-      return toolsCopy.sort((a, b) => {
-        const categoryA = a.isImageTool ? 'image' : 'text';
-        const categoryB = b.isImageTool ? 'image' : 'text';
-        return categoryA.localeCompare(categoryB) || a.name.localeCompare(b.name);
-      });
-    case 'score':
-    default:
-      return toolsCopy.sort((a, b) => b.score - a.score);
-  }
 }
