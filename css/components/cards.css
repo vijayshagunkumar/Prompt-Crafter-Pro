@@ -11,7 +11,7 @@
   height: 100%;
   min-height: 650px;
   position: relative;
-  overflow: visible; /* Changed from hidden to visible */
+  overflow: visible;
   box-shadow: var(--shadow-card);
   transition: var(--transition-base);
 }
@@ -52,7 +52,7 @@
 }
 
 .step-header-main p {
-  font-size: 0.875rem; /* Increased from 0.8125rem */
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
@@ -95,219 +95,90 @@
   gap: 0.25rem;
 }
 
-/* CHIP STYLES - FIXED FOR VISIBILITY */
-.chip {
-  padding: 8px 12px;
-  background: rgba(255, 94, 0, 0.1);
-  color: var(--primary); /* FIXED: Changed to primary color */
-  border-radius: 6px;
-  border: 1px solid rgba(255, 94, 0, 0.3);
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.chip:hover {
-  background: rgba(255, 94, 0, 0.2);
-  color: var(--primary-light);
-  transform: translateY(-2px);
-}
-
-.chip i {
-  font-size: 11px;
-  color: var(--primary);
-}
-
-.context-chip {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.6);
-  color: var(--secondary); /* FIXED: Blue text for context chips */
-}
-
-.context-chip i {
-  color: var(--secondary); /* FIXED: Blue icons for context chips */
-}
-
-/* Tool Cards - FIXED FOR CLICKABILITY */
-.tool-card {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--space-sm);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  text-align: left;
-}
-
-.tool-card:hover {
-  border-color: var(--primary);
-  background: rgba(255, 94, 0, 0.05);
-  transform: translateY(-2px);
-}
-
-.tool-card-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tool-card-disabled:hover {
-  transform: none;
-  border-color: var(--input-border);
-  background: var(--input-bg);
-}
-
-.tool-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: rgba(255, 94, 0, 0.1);
-  border: 1px solid rgba(255, 94, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary);
-  font-size: 1.125rem;
-}
-
-.tool-body h4 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.125rem;
-}
-
-.tool-body p {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin: 0;
-}
-
-.tool-footer {
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-/* Template Cards */
-.template-card {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  transition: var(--transition-fast);
-}
-
-.template-card:hover {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-soft);
-}
-
-.template-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-sm);
-}
-
-.template-badge {
-  font-size: 0.6875rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid;
-  border-radius: var(--radius-sm);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.template-card-body h4 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-}
-
-.template-card-body p {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* History Cards */
-.history-item {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.history-item:hover {
-  border-color: var(--primary);
-  background: rgba(255, 94, 0, 0.05);
-}
-
-.history-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.history-item-header h4 {
-  font-size: 0.8125rem;
-  margin: 0;
-}
-
-.history-meta {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-}
-
-.history-raw {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.history-prompt {
-  font-size: 0.75rem;
-  color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
-  max-height: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Responsive Cards */
+/* Responsive card adjustments */
 @media (max-width: 768px) {
   .step-card {
     min-height: 550px;
     padding: var(--space-md);
   }
   
+  .step-header {
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+  }
+  
+  .step-header-main h3 {
+    font-size: 1rem;
+  }
+  
   .step-header-main p {
-    font-size: 0.8125rem; /* Slightly smaller on mobile */
+    font-size: 0.75rem;
+  }
+  
+  .step-pill {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
   }
   
   .tool-card {
     padding: var(--space-sm);
   }
+}
+
+/* =========================
+   Card Maximize (Fullscreen)
+   ========================= */
+
+.step-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.card-max-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+}
+
+.card-max-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 1990;
+  display: none;
+}
+
+body.card-max-open {
+  overflow: hidden;
+}
+
+body.card-max-open .card-max-backdrop {
+  display: block;
+}
+
+.step-card.is-maximized {
+  position: fixed;
+  inset: 16px;
+  z-index: 2000;
+  width: auto;
+  height: auto;
+  min-height: calc(100vh - 32px);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 94, 0, 0.45);
+}
+
+.step-card.is-maximized:hover {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.step-card.is-maximized .textarea-idea,
+.step-card.is-maximized .output-textarea {
+  max-height: none;
+  min-height: 55vh;
 }
