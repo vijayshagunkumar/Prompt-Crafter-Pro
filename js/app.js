@@ -1,44 +1,50 @@
-import { detectContextFromText } from "./features/context-detective.js";
-import { initCardExpander } from "./features/card-expander.js";
-import { renderAITools } from "./ai/ai-tools.js";
+console.log("🔥 PromptCraft app.js LOADED");
 
-// DOM references
-const ideaTextarea = document.querySelector("#cardIdea textarea");
-const promptTextarea = document.querySelector("#cardPrompt textarea");
-const convertBtn = document.querySelector("#cardIdea .primary-btn");
-
-// INIT APP
 document.addEventListener("DOMContentLoaded", () => {
-  initCardExpander();
-  bindConvert();
-});
+  console.log("✅ DOMContentLoaded fired");
 
-function bindConvert() {
-  convertBtn.addEventListener("click", handleConvert);
-}
+  const ideaCard = document.getElementById("cardIdea");
+  const promptCard = document.getElementById("cardPrompt");
 
-function handleConvert() {
-  const rawText = ideaTextarea.value.trim();
-  if (!rawText) return;
+  if (!ideaCard || !promptCard) {
+    console.error("❌ Cards not found in DOM");
+    return;
+  }
 
-  const context = detectContextFromText(rawText);
+  const ideaTextarea = ideaCard.querySelector("textarea");
+  const promptTextarea = promptCard.querySelector("textarea");
+  const convertBtn = ideaCard.querySelector("button.primary-btn");
 
-  const structuredPrompt = `
-# Role
+  if (!ideaTextarea || !promptTextarea || !convertBtn) {
+    console.error("❌ Required elements missing", {
+      ideaTextarea,
+      promptTextarea,
+      convertBtn
+    });
+    return;
+  }
+
+  console.log("✅ Elements found, binding click");
+
+  convertBtn.addEventListener("click", () => {
+    console.log("👉 Convert clicked");
+
+    const text = ideaTextarea.value.trim();
+    if (!text) {
+      alert("Type something first");
+      return;
+    }
+
+    promptTextarea.value =
+`# Role
 Expert Assistant
 
-# Objective
-Carry out the following task and return the final result only.
-
-${rawText}
+# Task
+${text}
 
 # Instructions
-- Follow the task carefully
-- Do not explain the prompt
-- Return only the completed output
-  `.trim();
+Return only the final result.`;
 
-  promptTextarea.value = structuredPrompt;
-
-  renderAITools(context.taskType);
-}
+    console.log("✅ Prompt written");
+  });
+});
