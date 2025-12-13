@@ -380,31 +380,6 @@ export async function copyPromptToClipboard(prompt) {
 }
 
 /**
- * Validate API key format
- * @param {string} apiKey - OpenAI API key
- * @returns {boolean} True if valid format
- */
-export function validateApiKey(apiKey) {
-  if (!apiKey || typeof apiKey !== 'string') {
-    return false;
-  }
-  
-  const trimmedKey = apiKey.trim();
-  
-  // Basic validation - OpenAI keys typically start with 'sk-'
-  if (!trimmedKey.startsWith('sk-')) {
-    return false;
-  }
-  
-  // Check minimum length
-  if (trimmedKey.length < 20) {
-    return false;
-  }
-  
-  return true;
-}
-
-/**
  * Test API key validity
  * @param {string} apiKey - OpenAI API key
  * @returns {Promise<Object>} Test result
