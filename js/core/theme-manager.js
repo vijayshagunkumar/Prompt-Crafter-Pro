@@ -1,6 +1,7 @@
-// theme-manager.js - Theme Management System
+// theme-manager.js - Theme Management System (UPDATED & COMPLETE)
 
-import { STORAGE_KEYS } from './constants.js';
+import { STORAGE_KEYS } from '../core/constants.js';
+import { showNotification } from './notifications.js';
 
 /**
  * Theme Manager Class
@@ -11,27 +12,98 @@ class ThemeManager {
             'professional-blue': { 
                 name: 'Professional Blue', 
                 icon: 'fas fa-briefcase',
-                description: 'Clean corporate aesthetic perfect for business use'
+                description: 'Clean corporate aesthetic perfect for business use',
+                colors: {
+                    primary: '#4361ee',
+                    secondary: '#7209b7',
+                    background: '#0f172a',
+                    surface: '#1e293b',
+                    text: '#f8fafc'
+                }
             },
             'glassmorphism': { 
                 name: 'Glassmorphism', 
                 icon: 'fas fa-gem',
-                description: 'Frosted glass effects with modern gradients'
+                description: 'Frosted glass effects with modern gradients',
+                colors: {
+                    primary: '#8b5cf6',
+                    secondary: '#ec4899',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    surface: 'rgba(255, 255, 255, 0.1)',
+                    text: '#ffffff'
+                }
             },
             'modern-tech': { 
                 name: 'Modern Tech', 
                 icon: 'fas fa-rocket',
-                description: 'Dark mode with tech-forward cyan accents'
+                description: 'Dark mode with tech-forward cyan accents',
+                colors: {
+                    primary: '#00f3ff',
+                    secondary: '#ff5e00',
+                    background: '#0a0e17',
+                    surface: '#111827',
+                    text: '#f1f5f9'
+                }
             },
             'executive-dark': { 
                 name: 'Executive Dark', 
                 icon: 'fas fa-user-tie',
-                description: 'Premium dark theme for executive users'
+                description: 'Premium dark theme for executive users',
+                colors: {
+                    primary: '#10b981',
+                    secondary: '#8b5cf6',
+                    background: '#111827',
+                    surface: '#1f2937',
+                    text: '#f9fafb'
+                }
             },
             'corporate-green': { 
                 name: 'Corporate Green', 
                 icon: 'fas fa-building',
-                description: 'Enterprise green theme for corporate environments'
+                description: 'Enterprise green theme for corporate environments',
+                colors: {
+                    primary: '#059669',
+                    secondary: '#3b82f6',
+                    background: '#0f172a',
+                    surface: '#1e293b',
+                    text: '#f8fafc'
+                }
+            },
+            'cyberpunk-neon': {
+                name: 'Cyberpunk Neon',
+                icon: 'fas fa-gamepad',
+                description: 'Neon lights and futuristic cyberpunk style',
+                colors: {
+                    primary: '#ff5e00',
+                    secondary: '#00f3ff',
+                    background: '#0a0e17',
+                    surface: '#111827',
+                    text: '#f1f5f9'
+                }
+            },
+            'sunset-glow': {
+                name: 'Sunset Glow',
+                icon: 'fas fa-sun',
+                description: 'Warm sunset colors for creative work',
+                colors: {
+                    primary: '#ff6b6b',
+                    secondary: '#ffa726',
+                    background: '#1a1a2e',
+                    surface: '#16213e',
+                    text: '#f0f0f0'
+                }
+            },
+            'aurora-magic': {
+                name: 'Aurora Magic',
+                icon: 'fas fa-magic',
+                description: 'Northern lights inspired magical theme',
+                colors: {
+                    primary: '#00d4aa',
+                    secondary: '#667eea',
+                    background: '#0f0f23',
+                    surface: '#1a1a2e',
+                    text: '#e2e8f0'
+                }
             }
         };
         
@@ -40,7 +112,10 @@ class ThemeManager {
             'glassmorphism',
             'modern-tech',
             'executive-dark',
-            'corporate-green'
+            'corporate-green',
+            'cyberpunk-neon',
+            'sunset-glow',
+            'aurora-magic'
         ];
         
         this.init();
@@ -57,8 +132,10 @@ class ThemeManager {
         // Setup theme toggle button if exists
         this.setupThemeToggle();
         
-        // Setup theme modal button if exists
-        this.setupThemeModal();
+        // Setup theme selector in sidebar
+        this.setupThemeSelector();
+        
+        console.log('🎨 Theme manager initialized');
     }
     
     /**
@@ -76,14 +153,20 @@ class ThemeManager {
         // Update HTML attribute
         document.documentElement.setAttribute('data-theme', themeName);
         
+        // Update CSS variables
+        this.updateCSSVariables(themeName);
+        
         // Update UI elements
         this.updateThemeUI(themeName);
         
         // Save to localStorage
         localStorage.setItem(STORAGE_KEYS.appTheme, themeName);
         
+        // Update theme selector in sidebar
+        this.updateThemeSelector(themeName);
+        
         if (showNotification) {
-            this.showNotification(themeName);
+            this.showThemeNotification(themeName);
         }
         
         // Dispatch custom event for other components
@@ -92,6 +175,32 @@ class ThemeManager {
         }));
         
         return themeName;
+    }
+    
+    /**
+     * Update CSS variables for theme
+     * @param {string} themeName - Theme name
+     */
+    updateCSSVariables(themeName) {
+        const theme = this.themes[themeName];
+        const root = document.documentElement;
+        
+        // Update CSS variables
+        root.style.setProperty('--primary', theme.colors.primary);
+        root.style.setProperty('--secondary', theme.colors.secondary);
+        
+        // Handle gradient backgrounds
+        if (theme.colors.background.includes('gradient')) {
+            root.style.setProperty('--bg-body', theme.colors.background);
+        } else {
+            root.style.setProperty('--bg-body', theme.colors.background);
+        }
+        
+        root.style.setProperty('--bg-surface', theme.colors.surface);
+        root.style.setProperty('--text-primary', theme.colors.text);
+        
+        // Update gradients
+        root.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.secondary} 100%)`);
     }
     
     /**
@@ -117,6 +226,23 @@ class ThemeManager {
         document.querySelectorAll('.theme-option').forEach(option => {
             option.classList.toggle('active', option.dataset.theme === themeName);
         });
+        
+        // Update logo gradient
+        const logoElements = document.querySelectorAll('.brand-logo, .header-logo');
+        logoElements.forEach(logo => {
+            logo.style.background = `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`;
+        });
+    }
+    
+    /**
+     * Update theme selector in sidebar
+     * @param {string} themeName - Theme name
+     */
+    updateThemeSelector(themeName) {
+        const themeSelect = document.querySelector('.theme-select');
+        if (themeSelect) {
+            themeSelect.value = themeName;
+        }
     }
     
     /**
@@ -134,98 +260,51 @@ class ThemeManager {
             const nextTheme = this.themeOrder[nextIndex];
             
             this.setTheme(nextTheme);
-            
-            // Show modal button temporarily
-            this.showModalButton();
-        });
-        
-        // Show modal button on hover
-        toggleBtn.addEventListener('mouseenter', () => {
-            this.showModalButton();
         });
     }
     
     /**
-     * Setup theme modal button
+     * Setup theme selector in sidebar
      */
-    setupThemeModal() {
-        const modalBtn = document.getElementById('themeModalBtn');
-        if (!modalBtn) return;
+    setupThemeSelector() {
+        const themeSelect = document.querySelector('.theme-select');
+        if (!themeSelect) return;
         
-        modalBtn.addEventListener('click', () => {
-            this.showThemeSelectionModal();
+        // Populate theme options
+        themeSelect.innerHTML = '';
+        this.themeOrder.forEach(themeId => {
+            const theme = this.themes[themeId];
+            const option = document.createElement('option');
+            option.value = themeId;
+            option.textContent = theme.name;
+            themeSelect.appendChild(option);
         });
-    }
-    
-    /**
-     * Show theme modal button
-     */
-    showModalButton() {
-        const modalBtn = document.getElementById('themeModalBtn');
-        if (!modalBtn) return;
         
-        modalBtn.classList.add('show');
+        // Set current theme
+        const currentTheme = this.getCurrentTheme();
+        themeSelect.value = currentTheme;
         
-        // Hide after 3 seconds if not hovered
-        setTimeout(() => {
-            if (!modalBtn.matches(':hover') && 
-                !document.getElementById('themeToggleBtn')?.matches(':hover')) {
-                modalBtn.classList.remove('show');
-            }
-        }, 3000);
+        // Add change event
+        themeSelect.addEventListener('change', (e) => {
+            this.setTheme(e.target.value);
+        });
     }
     
     /**
      * Show theme change notification
      * @param {string} themeName - Theme name
      */
-    showNotification(themeName) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'theme-notification';
-        notification.style.cssText = `
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--bg-card);
-            color: var(--text-primary);
-            padding: 16px 24px;
-            border-radius: 16px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-            border: 2px solid var(--border-light);
-            backdrop-filter: blur(20px);
-            z-index: 1000;
-            opacity: 0;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-        `;
-        
+    showThemeNotification(themeName) {
         const theme = this.themes[themeName];
-        notification.innerHTML = `
-            <i class="${theme.icon}" style="color: var(--primary);"></i>
-            <span>Theme switched to ${theme.name}</span>
-        `;
         
-        document.body.appendChild(notification);
+        // Use the existing notification system
+        showNotification(`Theme switched to ${theme.name}`, 'SUCCESS');
         
-        // Show notification
+        // Add visual feedback
+        document.documentElement.classList.add('theme-changing');
         setTimeout(() => {
-            notification.classList.add('show');
-        }, 10);
-        
-        // Hide after 3 seconds
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 500);
-        }, 3000);
+            document.documentElement.classList.remove('theme-changing');
+        }, 500);
     }
     
     /**
@@ -234,6 +313,7 @@ class ThemeManager {
     showThemeSelectionModal() {
         // Create modal overlay
         const overlay = document.createElement('div');
+        overlay.className = 'modal-backdrop';
         overlay.style.cssText = `
             position: fixed;
             top: 0;
@@ -251,11 +331,12 @@ class ThemeManager {
         
         // Create modal
         const modal = document.createElement('div');
+        modal.className = 'modal theme-selection-modal';
         modal.style.cssText = `
-            background: var(--bg-card);
+            background: var(--bg-surface);
             border-radius: 24px;
             padding: 32px;
-            max-width: 500px;
+            max-width: 800px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -270,19 +351,21 @@ class ThemeManager {
                     <i class="fas fa-palette"></i> Select Theme
                 </h3>
                 <p style="color: var(--text-secondary); font-size: 0.875rem;">
-                    Choose a professional theme for your workspace
+                    Choose a theme that matches your style and workflow
                 </p>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
-                ${Object.entries(this.themes).map(([id, theme]) => {
-                    const isActive = document.documentElement.getAttribute('data-theme') === id;
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px;">
+                ${this.themeOrder.map(themeId => {
+                    const theme = this.themes[themeId];
+                    const isActive = this.getCurrentTheme() === themeId;
                     return `
-                        <div class="theme-card ${isActive ? 'active' : ''}" data-theme="${id}" 
-                             style="background: var(--bg-primary); border: 2px solid ${isActive ? 'var(--primary)' : 'var(--border-light)'}; 
-                                    border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.3s ease;">
+                        <div class="theme-card ${isActive ? 'active' : ''}" data-theme="${themeId}" 
+                             style="background: ${theme.colors.surface}; border: 2px solid ${isActive ? theme.colors.primary : 'var(--border-light)'}; 
+                                    border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.3s ease; position: relative;">
+                            ${isActive ? '<div style="position: absolute; top: 8px; right: 8px; background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fas fa-check"></i></div>' : ''}
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                                <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+                                <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary}); 
                                       display: flex; align-items: center; justify-content: center; color: white;">
                                     <i class="${theme.icon}"></i>
                                 </div>
@@ -291,16 +374,21 @@ class ThemeManager {
                                     <div style="font-size: 0.75rem; color: var(--text-tertiary);">Click to select</div>
                                 </div>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin-top: 8px;">
                                 ${theme.description}
+                            </div>
+                            <div style="display: flex; gap: 4px; margin-top: 12px;">
+                                <div style="width: 20px; height: 20px; border-radius: 4px; background: ${theme.colors.primary};"></div>
+                                <div style="width: 20px; height: 20px; border-radius: 4px; background: ${theme.colors.secondary};"></div>
+                                <div style="width: 20px; height: 20px; border-radius: 4px; background: ${theme.colors.background}; border: 1px solid var(--border-light);"></div>
                             </div>
                         </div>
                     `;
                 }).join('')}
             </div>
             
-            <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button id="closeModal" style="padding: 12px 24px; background: var(--bg-secondary); color: var(--text-secondary); 
+            <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+                <button id="closeThemeModal" style="padding: 12px 24px; background: var(--bg-secondary); color: var(--text-secondary); 
                        border: 1px solid var(--border-light); border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
                     Close
                 </button>
@@ -328,6 +416,11 @@ class ThemeManager {
                     transform: translateY(0);
                 }
             }
+            
+            .theme-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+            }
         `;
         document.head.appendChild(style);
         
@@ -339,33 +432,11 @@ class ThemeManager {
                 document.body.removeChild(overlay);
                 document.head.removeChild(style);
             });
-            
-            card.addEventListener('mouseenter', () => {
-                if (!card.classList.contains('active')) {
-                    card.style.transform = 'translateY(-4px)';
-                    card.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.15)';
-                }
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                if (!card.classList.contains('active')) {
-                    card.style.transform = 'translateY(0)';
-                    card.style.boxShadow = 'none';
-                }
-            });
         });
         
-        modal.querySelector('#closeModal').addEventListener('click', () => {
+        modal.querySelector('#closeThemeModal').addEventListener('click', () => {
             document.body.removeChild(overlay);
             document.head.removeChild(style);
-        });
-        
-        modal.querySelector('#closeModal').addEventListener('mouseenter', () => {
-            modal.querySelector('#closeModal').style.background = 'var(--bg-tertiary)';
-        });
-        
-        modal.querySelector('#closeModal').addEventListener('mouseleave', () => {
-            modal.querySelector('#closeModal').style.background = 'var(--bg-secondary)';
         });
         
         overlay.addEventListener('click', (e) => {
@@ -381,7 +452,7 @@ class ThemeManager {
      * @returns {string} Current theme
      */
     getCurrentTheme() {
-        return document.documentElement.getAttribute('data-theme');
+        return document.documentElement.getAttribute('data-theme') || 'professional-blue';
     }
     
     /**
@@ -398,6 +469,38 @@ class ThemeManager {
      */
     getThemeOrder() {
         return this.themeOrder;
+    }
+    
+    /**
+     * Get current theme object
+     * @returns {Object} Current theme
+     */
+    getCurrentThemeObject() {
+        return this.themes[this.getCurrentTheme()];
+    }
+    
+    /**
+     * Cycle to next theme
+     */
+    nextTheme() {
+        const currentTheme = this.getCurrentTheme();
+        const currentIndex = this.themeOrder.indexOf(currentTheme);
+        const nextIndex = (currentIndex + 1) % this.themeOrder.length;
+        const nextTheme = this.themeOrder[nextIndex];
+        
+        this.setTheme(nextTheme);
+    }
+    
+    /**
+     * Cycle to previous theme
+     */
+    previousTheme() {
+        const currentTheme = this.getCurrentTheme();
+        const currentIndex = this.themeOrder.indexOf(currentTheme);
+        const previousIndex = (currentIndex - 1 + this.themeOrder.length) % this.themeOrder.length;
+        const previousTheme = this.themeOrder[previousIndex];
+        
+        this.setTheme(previousTheme);
     }
 }
 
@@ -423,6 +526,18 @@ export function getThemeOrder() {
 
 export function showThemeSelectionModal() {
     return themeManager.showThemeSelectionModal();
+}
+
+export function nextTheme() {
+    return themeManager.nextTheme();
+}
+
+export function previousTheme() {
+    return themeManager.previousTheme();
+}
+
+export function getCurrentThemeObject() {
+    return themeManager.getCurrentThemeObject();
 }
 
 // Default export
