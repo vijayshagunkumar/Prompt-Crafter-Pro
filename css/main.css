@@ -1,16 +1,26 @@
 /* main.css - Main CSS file (UPDATED WITH FIXED IMPORTS) */
 
 /* Base Styles */
-/* Note: reset.css, variables.css, typography.css are now inlined in index.html */
+@import url('base/reset.css');
+@import url('base/variables.css');
+@import url('base/typography.css');
 
 /* Layouts */
-/* Note: grid.css, sidebar-layout.css, responsive.css styles are now inlined */
+@import url('layouts/grid.css');
+@import url('layouts/sidebar-layout.css');
+@import url('layouts/responsive.css');
 
 /* Components */
-/* Note: components are now inlined in index.html */
+@import url('components/sidebar.css');
+@import url('components/cards.css');
+@import url('components/buttons.css');
+@import url('components/forms.css');
+@import url('components/modals.css');
+@import url('components/tools-grid.css');
 
 /* Themes */
-/* Note: themes.css and cyberpunk.css are imported separately in index.html */
+@import url('themes/themes.css');
+@import url('themes/cyberpunk.css');
 
 /* ===========================================
    ENHANCED SETTINGS MODAL STYLES
