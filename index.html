@@ -1,1209 +1,511 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="professional-blue">
+<html lang="en" data-theme="cyberpunk-neon">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PromptCraft | AI Prompt Builder</title>
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="css/main.css" />
-
-  <!-- Theme CSS -->
-  <link rel="stylesheet" href="css/themes.css" />
-  <link rel="stylesheet" href="css/cyberpunk.css" />
-
-  <style>
-    /* ====== ENHANCED BASE STYLES ====== */
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptCraft | Professional AI Prompt Studio</title>
     
-    html, body { 
-      height: 100%; 
-      overflow-x: hidden;
-    }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg-body);
-      color: var(--text-primary);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* ====== ENHANCED THEME TOKENS ====== */
-    :root {
-      /* Professional Color Palette */
-      --primary: #4361ee;
-      --primary-dark: #3a56d4;
-      --primary-light: #5a7cff;
-      --secondary: #7209b7;
-      --accent: #f72585;
-      --success: #4cc9f0;
-      --warning: #f8961e;
-      --danger: #f94144;
-      
-      /* Gradient System */
-      --gradient-primary: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
-      --gradient-secondary: linear-gradient(135deg, #7209b7 0%, #f72585 100%);
-      --gradient-accent: linear-gradient(135deg, #f72585 0%, #f8961e 100%);
-      
-      /* Background Layers */
-      --bg-body: #0f172a;
-      --bg-surface: #1e293b;
-      --bg-card: #334155;
-      --bg-elevated: #475569;
-      
-      /* Text Colors */
-      --text-primary: #f8fafc;
-      --text-secondary: #cbd5e1;
-      --text-tertiary: #94a3b8;
-      --text-muted: #64748b;
-      
-      /* Border System */
-      --border-light: rgba(255, 255, 255, 0.1);
-      --border-medium: rgba(255, 255, 255, 0.2);
-      --border-strong: rgba(255, 255, 255, 0.3);
-      
-      /* Shadows */
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      
-      /* Animation */
-      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-      
-      /* Spacing */
-      --space-xs: 0.25rem;
-      --space-sm: 0.5rem;
-      --space-md: 1rem;
-      --space-lg: 1.5rem;
-      --space-xl: 2rem;
-      --space-2xl: 3rem;
-      
-      /* Border Radius */
-      --radius-sm: 0.375rem;
-      --radius-md: 0.5rem;
-      --radius-lg: 0.75rem;
-      --radius-xl: 1rem;
-      --radius-2xl: 1.5rem;
-    }
-
-    /* ====== ENHANCED LAYOUT ====== */
-    .app-container {
-      display: flex;
-      min-height: 100vh;
-      background: var(--bg-body);
-    }
-
-    /* Enhanced Sidebar */
-    .sidebar {
-      width: 280px;
-      background: var(--bg-surface);
-      border-right: 1px solid var(--border-light);
-      display: flex;
-      flex-direction: column;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      z-index: 40;
-    }
-
-    /* Main Content Area */
-    .main-content {
-      flex: 1;
-      padding: var(--space-xl);
-      overflow-y: auto;
-    }
-
-    /* ====== ENHANCED HEADER ====== */
-    .main-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-2xl);
-      padding-bottom: var(--space-lg);
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-    }
-
-    .header-logo {
-      width: 48px;
-      height: 48px;
-      background: var(--gradient-primary);
-      border-radius: var(--radius-lg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    .header-title h1 {
-      font-size: 1.875rem;
-      font-weight: 700;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 0.25rem;
-    }
-
-    .header-title p {
-      font-size: 0.875rem;
-      color: var(--text-tertiary);
-    }
-
-    /* Enhanced Header Actions */
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-    }
-
-    .header-action-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-md);
-      background: var(--bg-surface);
-      border: 1px solid var(--border-light);
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all var(--transition-base);
-    }
-
-    .header-action-btn:hover {
-      background: var(--bg-card);
-      color: var(--primary);
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
-
-    .usage-badge {
-      padding: 0.5rem 1rem;
-      background: var(--gradient-primary);
-      color: white;
-      border-radius: var(--radius-full);
-      font-size: 0.875rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    /* ====== ENHANCED CARDS GRID ====== */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-xl);
-      margin-top: var(--space-xl);
-    }
-
-    @media (max-width: 1280px) {
-      .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* ====== ENHANCED STEP CARD ====== */
-    .step-card {
-      background: var(--bg-surface);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-light);
-      padding: var(--space-xl);
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: 680px;
-      position: relative;
-      overflow: hidden;
-      transition: all var(--transition-base);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .step-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-xl);
-      border-color: var(--primary);
-    }
-
-    /* Enhanced Step Header */
-    .step-header {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--space-md);
-      margin-bottom: var(--space-xl);
-      padding-bottom: var(--space-lg);
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .step-number {
-      width: 40px;
-      height: 40px;
-      background: var(--gradient-primary);
-      color: white;
-      border-radius: var(--radius-lg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.125rem;
-      flex-shrink: 0;
-    }
-
-    .step-content {
-      flex: 1;
-    }
-
-    .step-content h3 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--text-primary);
-    }
-
-    .step-content p {
-      font-size: 0.875rem;
-      color: var(--text-tertiary);
-      line-height: 1.5;
-    }
-
-    .step-actions {
-      display: flex;
-      gap: var(--space-xs);
-    }
-
-    /* Enhanced Text Areas */
-    .textarea-container {
-      flex: 1;
-      margin-bottom: var(--space-lg);
-    }
-
-    .textarea-wrapper {
-      position: relative;
-      flex: 1;
-    }
-
-    .enhanced-textarea {
-      width: 100%;
-      min-height: 160px;
-      max-height: 240px;
-      padding: var(--space-lg);
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: var(--radius-lg);
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9375rem;
-      line-height: 1.6;
-      resize: vertical;
-      transition: all var(--transition-base);
-    }
-
-    .enhanced-textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-    }
-
-    .enhanced-textarea::placeholder {
-      color: var(--text-muted);
-    }
-
-    /* Enhanced Textarea Buttons */
-    .textarea-actions {
-      position: absolute;
-      bottom: var(--space-md);
-      display: flex;
-      gap: var(--space-xs);
-    }
-
-    .textarea-actions.left {
-      left: var(--space-md);
-    }
-
-    .textarea-actions.right {
-      right: var(--space-md);
-    }
-
-    .action-btn {
-      width: 36px;
-      height: 36px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--border-medium);
-      border-radius: var(--radius-md);
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      backdrop-filter: blur(10px);
-    }
-
-    .action-btn:hover {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-      transform: translateY(-1px);
-    }
-
-    .action-btn.recording {
-      background: var(--accent);
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    /* Enhanced Stats */
-    .text-stats {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: var(--space-md);
-      font-size: 0.8125rem;
-      color: var(--text-tertiary);
-    }
-
-    .text-hint {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-    }
-
-    .char-count {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 500;
-    }
-
-    /* Enhanced Convert Button */
-    .convert-button {
-      margin-top: auto;
-      background: var(--gradient-primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius-lg);
-      padding: var(--space-lg);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--transition-base);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-sm);
-      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-    }
-
-    .convert-button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
-    }
-
-    .convert-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    /* Enhanced Preset Selector */
-    .preset-selector {
-      margin: var(--space-lg) 0;
-    }
-
-    .preset-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: var(--space-sm);
-    }
-
-    .preset-select {
-      width: 100%;
-      padding: var(--space-md);
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: var(--radius-lg);
-      color: var(--text-primary);
-      font-size: 0.9375rem;
-      cursor: pointer;
-      transition: all var(--transition-base);
-    }
-
-    .preset-select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-    }
-
-    /* Enhanced Context Chips */
-    .context-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-xs);
-      margin: var(--space-md) 0;
-      min-height: 36px;
-    }
-
-    .context-chip {
-      padding: 0.375rem 0.75rem;
-      background: rgba(67, 97, 238, 0.1);
-      border: 1px solid rgba(67, 97, 238, 0.3);
-      border-radius: var(--radius-full);
-      color: var(--primary);
-      font-size: 0.75rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      transition: all var(--transition-fast);
-    }
-
-    .context-chip:hover {
-      background: rgba(67, 97, 238, 0.2);
-      transform: translateY(-1px);
-    }
-
-    /* Enhanced Auto-Convert Toggle */
-    .auto-convert-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: var(--space-lg) 0;
-      padding: var(--space-md);
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-medium);
-    }
-
-    .toggle-label {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-    }
-
-    .enhanced-toggle {
-      position: relative;
-      display: inline-block;
-      width: 52px;
-      height: 28px;
-    }
-
-    .enhanced-toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-medium);
-      border-radius: var(--radius-full;
-      transition: all var(--transition-base);
-    }
-
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 4px;
-      bottom: 3px;
-      background: var(--text-tertiary);
-      border-radius: 50%;
-      transition: all var(--transition-base);
-    }
-
-    input:checked + .toggle-slider {
-      background: var(--primary);
-      border-color: var(--primary);
-    }
-
-    input:checked + .toggle-slider:before {
-      transform: translateX(24px);
-      background: white;
-    }
-
-    /* ====== ENHANCED AI TOOLS CARD ====== */
-    .ai-tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--space-md);
-      margin-top: var(--space-lg);
-    }
-
-    .ai-tool-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: var(--radius-lg);
-      padding: var(--space-lg);
-      transition: all var(--transition-base);
-      cursor: pointer;
-    }
-
-    .ai-tool-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--primary);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .ai-tool-card.disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .ai-tool-card.disabled:hover {
-      transform: none;
-      border-color: var(--border-medium);
-      box-shadow: none;
-    }
-
-    .ai-tool-header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-      margin-bottom: var(--space-md);
-    }
-
-    .ai-tool-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-lg);
-      background: var(--gradient-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.25rem;
-    }
-
-    .ai-tool-info h4 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .ai-tool-info p {
-      font-size: 0.8125rem;
-      color: var(--text-tertiary);
-    }
-
-    .ai-tool-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: var(--space-md);
-      padding-top: var(--space-md);
-      border-top: 1px solid var(--border-light);
-    }
-
-    .ai-tool-score {
-      padding: 0.25rem 0.5rem;
-      background: rgba(67, 97, 238, 0.1);
-      color: var(--primary);
-      border-radius: var(--radius-full);
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .ai-tool-action {
-      color: var(--primary);
-      font-size: 0.875rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-    }
-
-    /* ====== RESPONSIVE ENHANCEMENTS ====== */
-    @media (max-width: 768px) {
-      .app-container {
-        flex-direction: column;
-      }
-      
-      .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-      }
-      
-      .main-content {
-        padding: var(--space-md);
-      }
-      
-      .main-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-md);
-      }
-      
-      .header-actions {
-        width: 100%;
-        justify-content: space-between;
-      }
-      
-      .step-card {
-        min-height: 560px;
-        padding: var(--space-lg);
-      }
-      
-      .enhanced-textarea {
-        min-height: 140px;
-        padding: var(--space-md);
-      }
-    }
-
-    /* ====== UTILITY CLASSES ====== */
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .gradient-text {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .status-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: var(--radius-full);
-      font-size: 0.75rem;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
-    }
-
-    .status-badge.success {
-      background: rgba(76, 201, 240, 0.1);
-      color: #4cc9f0;
-      border: 1px solid rgba(76, 201, 240, 0.3);
-    }
-
-    .status-badge.warning {
-      background: rgba(248, 150, 30, 0.1);
-      color: #f8961e;
-      border: 1px solid rgba(248, 150, 30, 0.3);
-    }
-
-    .status-badge.error {
-      background: rgba(249, 65, 68, 0.1);
-      color: #f94144;
-      border: 1px solid rgba(249, 65, 68, 0.3);
-    }
-
-    /* ====== ANIMATIONS ====== */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(-100%); }
-      to { transform: translateX(0); }
-    }
-
-    .animate-fadeIn {
-      animation: fadeIn 0.3s ease-out;
-    }
-
-    .animate-slideIn {
-      animation: slideIn 0.3s ease-out;
-    }
-
-    /* ====== SCROLLBAR STYLING ====== */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg-surface);
-      border-radius: var(--radius-full);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--bg-card);
-      border-radius: var(--radius-full);
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--primary);
-    }
-  </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/icons/logo.svg">
 </head>
-
 <body>
-  <div class="app-container">
-    
-    <!-- Enhanced Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="brand-section">
-          <div class="brand-logo">
-            <span>⚡</span>
-          </div>
-          <div class="brand-text">
-            <h2>PromptCraft</h2>
-            <p>Professional AI Prompt Studio</p>
-          </div>
-        </div>
-      </div>
-
-      <nav class="sidebar-nav">
-        <div class="nav-section">
-          <h3 class="nav-title">Workspace</h3>
-          <ul class="nav-menu">
-            <li class="nav-item active">
-              <i class="fas fa-magic"></i>
-              <span>Prompt Builder</span>
-            </li>
-            <li class="nav-item">
-              <i class="fas fa-history"></i>
-              <span>History</span>
-              <span class="nav-badge">24</span>
-            </li>
-            <li class="nav-item">
-              <i class="fas fa-layer-group"></i>
-              <span>Templates</span>
-              <span class="nav-badge">12</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="nav-section">
-          <h3 class="nav-title">AI Tools</h3>
-          <div class="ai-tags">
-            <span class="ai-tag">ChatGPT</span>
-            <span class="ai-tag">Claude</span>
-            <span class="ai-tag">Gemini</span>
-            <span class="ai-tag">DALL·E</span>
-            <span class="ai-tag">+8 more</span>
-          </div>
-        </div>
-
-        <div class="nav-section">
-          <h3 class="nav-title">Quick Stats</h3>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <span class="stat-value">1,248</span>
-              <span class="stat-label">Prompts</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value">89%</span>
-              <span class="stat-label">Accuracy</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value">42</span>
-              <span class="stat-label">Saved</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="theme-selector">
-          <i class="fas fa-palette"></i>
-          <span>Theme</span>
-          <select class="theme-select">
-            <option value="professional-blue">Professional Blue</option>
-            <option value="cyberpunk-neon">Cyberpunk Neon</option>
-            <option value="dark-modern">Dark Modern</option>
-            <option value="glass-morphism">Glass Morphism</option>
-          </select>
-        </div>
-        <div class="user-profile">
-          <div class="user-avatar">
-            <i class="fas fa-user"></i>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      
-      <!-- Enhanced Header -->
-      <header class="main-header">
-        <div class="header-left">
-          <div class="header-logo">
-            <span>P</span>
-          </div>
-          <div class="header-title">
-            <h1>PromptCraft Studio</h1>
-            <p>Transform ideas into perfect AI prompts</p>
-          </div>
-        </div>
-
-        <div class="header-actions">
-          <div class="usage-badge">
-            <i class="fas fa-bolt"></i>
-            <span id="usageCount">1,248 prompts</span>
-          </div>
-          
-          <button class="header-action-btn" id="templatesBtn" title="Templates">
-            <i class="fas fa-layer-group"></i>
-          </button>
-          
-          <button class="header-action-btn" id="historyBtn" title="History">
-            <i class="fas fa-history"></i>
-          </button>
-          
-          <button class="header-action-btn" id="exportBtn" title="Export">
-            <i class="fas fa-download"></i>
-          </button>
-          
-          <button class="header-action-btn" id="settingsBtn" title="Settings">
-            <i class="fas fa-cog"></i>
-          </button>
-        </div>
-      </header>
-
-      <!-- Cards Grid -->
-      <div class="cards-grid">
+    <!-- App Container -->
+    <div class="app-shell">
         
-        <!-- CARD 1: Enhanced Idea Input -->
-        <section class="step-card" id="cardIdea">
-          <div class="step-header">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h3>Your Idea</h3>
-              <p>Type or speak your requirement in any language</p>
-            </div>
-            <div class="step-actions">
-              <button class="action-btn card-max-btn" data-maximize-card="cardIdea" title="Maximize">
-                <i class="fas fa-expand"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Auto-convert Toggle -->
-          <div class="auto-convert-toggle">
-            <span class="toggle-label">
-              <i class="fas fa-bolt"></i>
-              Auto-convert as I type
-            </span>
-            <label class="enhanced-toggle">
-              <input type="checkbox" id="autoConvert" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <!-- Context Chips -->
-          <div class="context-chips" id="contextChipsRow"></div>
-
-          <!-- Enhanced Textarea -->
-          <div class="textarea-container">
-            <div class="textarea-wrapper">
-              <textarea 
-                id="requirement" 
-                class="enhanced-textarea"
-                placeholder="Describe your idea here... Example: 'Create a professional email about project updates' or 'Generate code for a login form'"
-                rows="4"
-              ></textarea>
-              
-              <div class="textarea-actions left">
-                <button class="action-btn" id="clearRequirementBtn" title="Clear">
-                  <i class="fas fa-xmark"></i>
-                </button>
-              </div>
-              
-              <div class="textarea-actions right">
-                <button class="action-btn" id="voiceBtn" title="Voice Input">
-                  <i class="fas fa-microphone"></i>
-                </button>
-              </div>
+        <!-- LEFT SIDEBAR - CLEANED UP -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Brand -->
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>PromptCraft</h1>
+                    <p>Professional AI Prompt Studio</p>
+                </div>
             </div>
 
-            <div class="text-stats">
-              <span class="text-hint">
-                <i class="fas fa-lightbulb"></i>
-                Supports English, Hindi, Hinglish & code
-              </span>
-              <span class="char-count" id="inputStats">0 chars</span>
+            <!-- Navigation - Streamlined -->
+            <nav class="nav-sections">
+                <!-- Workspace -->
+                <div class="nav-group">
+                    <div class="nav-label">Workspace</div>
+                    <button class="nav-item nav-item-active" id="promptBuilderBtn">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Prompt Builder</span>
+                    </button>
+                    <button class="nav-item" id="templatesBtn">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Templates</span>
+                        <span class="nav-pill">12</span>
+                    </button>
+                    <button class="nav-item" id="historyBtn">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span>History</span>
+                        <span class="nav-pill">24</span>
+                    </button>
+                </div>
+
+                <!-- AI Tools Quick Access -->
+                <div class="nav-group">
+                    <div class="nav-label">Quick Launch</div>
+                    <button class="nav-item" data-tool="chatgpt">
+                        <i class="fab fa-openai"></i>
+                        <span>ChatGPT</span>
+                    </button>
+                    <button class="nav-item" data-tool="claude">
+                        <i class="fas fa-sparkles"></i>
+                        <span>Claude</span>
+                    </button>
+                    <button class="nav-item" data-tool="gemini">
+                        <i class="fas fa-infinity"></i>
+                        <span>Gemini</span>
+                    </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="nav-group">
+                    <div class="nav-label">Quick Stats</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">1,248</div>
+                            <div class="stat-label">Prompts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">89%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">42</div>
+                            <div class="stat-label">Saved</div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer - Minimal -->
+            <div class="sidebar-footer">
+                <div class="usage-pill" id="usageCount">
+                    <i class="fas fa-bolt"></i>
+                    <span>0 prompts generated</span>
+                </div>
+                <!-- Settings Button moved to top bar -->
             </div>
-          </div>
+        </aside>
 
-          <!-- Enhanced Convert Button -->
-          <button class="convert-button" id="convertBtn" disabled>
-            <i class="fas fa-wand-magic-sparkles"></i>
-            Convert to AI Prompt
-          </button>
-        </section>
+        <!-- MAIN PANEL -->
+        <main class="main-panel">
+            <!-- TOP BAR with Settings and Theme -->
+            <header class="top-bar">
+                <div class="top-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="current-theme-display">
+                        <i class="fas fa-palette"></i>
+                        <span>Cyberpunk Neon</span>
+                    </div>
+                </div>
+                
+                <div class="top-center">
+                    <div class="header-title">
+                        <h2>AI Prompt Studio</h2>
+                        <p class="header-subtitle">Transform your ideas into powerful AI prompts</p>
+                    </div>
+                </div>
+                
+                <div class="top-right">
+                    <!-- Settings Button (fixes broken modal) -->
+                    <button class="icon-btn settings-btn" id="settingsBtn" aria-label="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    
+                    <!-- Theme Palette Icon (moved from sidebar) -->
+                    <button class="icon-btn theme-palette-btn" id="themePaletteBtn" aria-label="Change theme">
+                        <i class="fas fa-palette"></i>
+                    </button>
+                    
+                    <!-- Help Button -->
+                    <button class="icon-btn help-btn" id="helpBtn" aria-label="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </header>
 
-        <!-- CARD 2: Enhanced Structured Prompt -->
-        <section class="step-card" id="cardPrompt">
-          <div class="step-header">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Structured Prompt</h3>
-              <p>AI-ready formatted prompt</p>
+            <!-- 3-CARD GRID (Fixed for laptop screens) -->
+            <div class="cards-grid" id="cardsGrid">
+                
+                <!-- CARD 1: Your Idea -->
+                <div class="step-card" id="cardIdea">
+                    <div class="step-header">
+                        <div class="step-pill">1</div>
+                        <div class="step-header-main">
+                            <h3>Describe Your Idea</h3>
+                            <p>Type or speak your requirement in any language</p>
+                        </div>
+                        <button class="card-max-btn" data-maximize-card="cardIdea" aria-label="Maximize card">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+
+                    <div class="card-content">
+                        <!-- Context Chips Row -->
+                        <div class="context-chips-row" id="contextChipsRow"></div>
+
+                        <!-- Text Input with Controls -->
+                        <div class="textarea-container">
+                            <div class="textarea-header">
+                                <label for="requirement" class="textarea-label">
+                                    <i class="fas fa-lightbulb"></i>
+                                    What do you want to create?
+                                </label>
+                                <div class="textarea-actions">
+                                    <button class="icon-btn voice-btn" id="voiceBtn" aria-label="Voice input">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                    <button class="icon-btn clear-btn" id="clearRequirementBtn" aria-label="Clear text">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <textarea 
+                                id="requirement" 
+                                class="textarea-idea" 
+                                placeholder="Example: 'Create a professional email about project updates' or 'Generate code for a login form' 
+Supports English, Hindi, Hinglish & code"
+                                rows="8"
+                                aria-label="Describe your idea"
+                            ></textarea>
+                            
+                            <div class="textarea-footer">
+                                <div class="input-stats" id="inputStats">0 chars • 0 words</div>
+                                <div class="auto-convert-toggle">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="autoConvert" checked>
+                                        <span class="toggle-switch-slider"></span>
+                                        <span class="toggle-label">Auto-convert as I type</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preset Selection -->
+                        <div class="preset-selection">
+                            <div class="preset-header">
+                                <label for="presetSelect">
+                                    <i class="fas fa-sliders"></i>
+                                    Preset Style
+                                </label>
+                                <label class="lock-preset-toggle">
+                                    <input type="checkbox" id="lockPreset">
+                                    <span class="lock-label">Lock</span>
+                                </label>
+                            </div>
+                            <select id="presetSelect" class="preset-select">
+                                <option value="default">Default</option>
+                                <option value="communication">Communication</option>
+                                <option value="coding">Coding</option>
+                                <option value="writing">Writing</option>
+                                <option value="analysis">Analysis</option>
+                                <option value="creative">Creative</option>
+                            </select>
+                        </div>
+
+                        <!-- Convert Button -->
+                        <div class="convert-section">
+                            <button class="btn btn-primary btn-lg convert-btn" id="convertBtn" disabled>
+                                <i class="fas fa-bolt"></i>
+                                Convert to AI Prompt
+                            </button>
+                            <p class="convert-hint">
+                                Send to AI tools with one click
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: Structured Prompt -->
+                <div class="step-card" id="cardPrompt">
+                    <div class="step-header">
+                        <div class="step-pill">2</div>
+                        <div class="step-header-main">
+                            <h3>Structured Prompt</h3>
+                            <p>AI-ready prompt optimized for best results</p>
+                        </div>
+                        <div class="step-header-actions">
+                            <span class="converted-badge" id="convertedBadge" style="display: none;">
+                                <i class="fas fa-check"></i>
+                                Converted
+                            </span>
+                            <button class="card-max-btn" data-maximize-card="cardPrompt" aria-label="Maximize card">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <!-- Output Area -->
+                        <div class="output-container">
+                            <div class="output-header">
+                                <label for="output" class="output-label">
+                                    <i class="fas fa-code"></i>
+                                    Your AI-ready prompt
+                                </label>
+                                <div class="output-actions">
+                                    <button class="icon-btn copy-btn" id="copyOutputBtn" aria-label="Copy to clipboard">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="icon-btn export-btn" id="exportBtn" aria-label="Export as file">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="icon-btn save-template-btn" id="saveTemplateBtn" aria-label="Save as template">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <textarea 
+                                id="output" 
+                                class="output-textarea" 
+                                placeholder="Your generated prompt will appear here..."
+                                rows="10"
+                                readonly
+                                aria-label="Generated AI prompt"
+                            ></textarea>
+                            
+                            <div class="output-footer">
+                                <div class="output-stats" id="outputStats">0 chars • 0 words • 0 lines</div>
+                                <div class="output-actions-secondary">
+                                    <button class="btn btn-secondary btn-sm" id="regenerateBtn">
+                                        <i class="fas fa-sync-alt"></i>
+                                        Regenerate
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" id="improveBtn">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                        Improve
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tool Recommendation -->
+                        <div class="tool-recommendation" id="toolRecommendation">
+                            <div class="recommendation-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="recommendation-text">
+                                <strong>Recommended:</strong>
+                                <span id="bestToolRecommendation">Generate a prompt to see recommendations</span>
+                            </div>
+                        </div>
+
+                        <!-- Launch All Button -->
+                        <div class="launch-section">
+                            <button class="btn btn-secondary launch-all-btn" id="launchAllBtn" disabled>
+                                <i class="fas fa-rocket"></i>
+                                Launch All AI Tools
+                            </button>
+                            <p class="launch-hint">
+                                Compatible with ChatGPT, Claude, Gemini & more
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: AI Tools - ELEGANT CARDS -->
+                <div class="step-card" id="cardTools">
+                    <div class="step-header">
+                        <div class="step-pill">3</div>
+                        <div class="step-header-main">
+                            <h3>AI Tools</h3>
+                            <p>Launch your favorite AI tools with one click</p>
+                        </div>
+                        <div class="step-header-actions">
+                            <button class="icon-btn refresh-btn" id="refreshToolsBtn" aria-label="Refresh tools">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <!-- AI Tools Grid with Elegant Cards -->
+                        <div class="ai-tools-grid" id="aiToolsGrid">
+                            <!-- Dynamic content from ai-tools.js -->
+                            <!-- Each AI tool will be rendered as an elegant card -->
+                        </div>
+
+                        <!-- Best Match Highlight -->
+                        <div class="best-match-notice" id="bestMatchNotice">
+                            <i class="fas fa-star"></i>
+                            <span>The <strong>Best Match</strong> tool is highlighted based on your prompt content</span>
+                        </div>
+
+                        <!-- Tools Filter -->
+                        <div class="tools-filter">
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all">All Tools</button>
+                                <button class="filter-btn" data-filter="image">Image AI</button>
+                                <button class="filter-btn" data-filter="text">Text AI</button>
+                                <button class="filter-btn" data-filter="popular">Popular</button>
+                            </div>
+                            <div class="filter-search">
+                                <input type="text" id="toolsSearch" placeholder="Search tools..." aria-label="Search AI tools">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+
+                        <!-- Tools Stats -->
+                        <div class="tools-stats">
+                            <div class="stat-chip">
+                                <i class="fas fa-robot"></i>
+                                <span id="totalToolsCount">10</span> Tools
+                            </div>
+                            <div class="stat-chip">
+                                <i class="fas fa-image"></i>
+                                <span id="imageToolsCount">3</span> Image AI
+                            </div>
+                            <div class="stat-chip">
+                                <i class="fas fa-font"></i>
+                                <span id="textToolsCount">7</span> Text AI
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="step-actions">
-              <span class="status-badge success" id="convertedBadge" style="display: none;">
-                <i class="fas fa-check-circle"></i>
-                Ready
-              </span>
-              <button class="action-btn card-max-btn" data-maximize-card="cardPrompt" title="Maximize">
-                <i class="fas fa-expand"></i>
-              </button>
-            </div>
-          </div>
 
-          <!-- Enhanced Preset Selector -->
-          <div class="preset-selector">
-            <label class="preset-label">
-              <i class="fas fa-sliders"></i>
-              Preset Style
-            </label>
-            <select id="presetSelect" class="preset-select">
-              <option value="default">🤖 General Purpose</option>
-              <option value="communication">📧 Communication</option>
-              <option value="coding">💻 Coding & Development</option>
-              <option value="writing">✍️ Writing & Content</option>
-              <option value="analysis">📊 Analysis & Research</option>
-              <option value="creative">🎨 Creative & Design</option>
-            </select>
-          </div>
+            <!-- Footer -->
+            <footer class="main-footer">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <p class="footer-text">
+                            <i class="fas fa-code"></i>
+                            PromptCraft v2.0.0
+                        </p>
+                    </div>
+                    <div class="footer-center">
+                        <p class="footer-text">
+                            <i class="fas fa-clock"></i>
+                            <span id="currentTime">06:52 PM</span>
+                            <span id="currentDate">13-12-2025</span>
+                        </p>
+                    </div>
+                    <div class="footer-right">
+                        <p class="footer-text">
+                            <i class="fas fa-heart"></i>
+                            Crafted with passion for AI enthusiasts
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
 
-          <!-- Enhanced Output Textarea -->
-          <div class="textarea-container">
-            <div class="textarea-wrapper">
-              <textarea 
-                id="output" 
-                class="enhanced-textarea"
-                placeholder="Your AI-ready prompt will appear here..."
-                rows="6"
-                readonly
-              ></textarea>
-              
-              <div class="textarea-actions right">
-                <button class="action-btn" id="copyOutputBtn" title="Copy">
-                  <i class="fas fa-copy"></i>
-                </button>
-                <button class="action-btn" id="exportBtn" title="Export">
-                  <i class="fas fa-download"></i>
-                </button>
-                <button class="action-btn" id="saveTemplateBtn" title="Save as Template">
-                  <i class="fas fa-bookmark"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="text-stats">
-              <span class="text-hint">
-                <i class="fas fa-robot"></i>
-                Compatible with ChatGPT, Claude, Gemini & more
-              </span>
-              <span class="char-count" id="outputStats">0 chars</span>
-            </div>
-          </div>
-
-          <!-- Quick Actions -->
-          <div class="quick-actions">
-            <button class="action-btn" id="regenerateBtn" title="Regenerate">
-              <i class="fas fa-rotate"></i>
+    <!-- MODALS -->
+    
+    <!-- Settings Modal (Fixed - will show content) -->
+    <div class="modal modal-lg" id="settingsModal">
+        <div class="modal-header">
+            <h3><i class="fas fa-cog"></i> Settings</h3>
+            <button class="modal-close" aria-label="Close">
+                <i class="fas fa-times"></i>
             </button>
-            <button class="action-btn" id="improveBtn" title="Improve">
-              <i class="fas fa-star"></i>
-            </button>
-            <button class="action-btn" id="shortenBtn" title="Shorten">
-              <i class="fas fa-compress"></i>
-            </button>
-            <button class="action-btn" id="lengthenBtn" title="Expand">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
-        </section>
-
-        <!-- CARD 3: Enhanced AI Tools -->
-        <section class="step-card">
-          <div class="step-header">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Send to AI</h3>
-              <p>Launch your favorite AI tools with one click</p>
-            </div>
-            <div class="step-actions">
-              <button class="action-btn" id="refreshToolsBtn" title="Refresh Tools">
-                <i class="fas fa-sync-alt"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- AI Tools Recommendation -->
-          <div class="recommendation-banner">
-            <div class="recommendation-icon">
-              <i class="fas fa-robot"></i>
-            </div>
-            <div class="recommendation-content">
-              <h4>Best Match</h4>
-              <p id="bestToolRecommendation">Generate a prompt to see recommendations</p>
-            </div>
-          </div>
-
-          <!-- Enhanced AI Tools Grid -->
-          <div class="ai-tools-grid" id="aiToolsGrid">
-            <!-- AI tools will be dynamically inserted here -->
-            <div class="ai-tool-card disabled">
-              <div class="ai-tool-header">
-                <div class="ai-tool-icon" style="background: var(--gradient-primary);">
-                  <i class="fab fa-openai"></i>
-                </div>
-                <div class="ai-tool-info">
-                  <h4>ChatGPT</h4>
-                  <p>Best for general tasks and reasoning</p>
-                </div>
-              </div>
-              <div class="ai-tool-footer">
-                <span class="ai-tool-score">Score: 9.8</span>
-                <span class="ai-tool-action">
-                  Open
-                  <i class="fas fa-arrow-up-right-from-square"></i>
-                </span>
-              </div>
-            </div>
-
-            <div class="ai-tool-card disabled">
-              <div class="ai-tool-header">
-                <div class="ai-tool-icon" style="background: var(--gradient-secondary);">
-                  <i class="fas fa-sparkles"></i>
-                </div>
-                <div class="ai-tool-info">
-                  <h4>Claude</h4>
-                  <p>Great for long-form writing</p>
-                </div>
-              </div>
-              <div class="ai-tool-footer">
-                <span class="ai-tool-score">Score: 9.5</span>
-                <span class="ai-tool-action">
-                  Open
-                  <i class="fas fa-arrow-up-right-from-square"></i>
-                </span>
-              </div>
-            </div>
-
-            <div class="ai-tool-card disabled">
-              <div class="ai-tool-header">
-                <div class="ai-tool-icon" style="background: linear-gradient(135deg, #4796E3, #4361ee);">
-                  <i class="fas fa-infinity"></i>
-                </div>
-                <div class="ai-tool-info">
-                  <h4>Gemini</h4>
-                  <p>Strong on research and web content</p>
-                </div>
-              </div>
-              <div class="ai-tool-footer">
-                <span class="ai-tool-score">Score: 9.2</span>
-                <span class="ai-tool-action">
-                  Open
-                  <i class="fas fa-arrow-up-right-from-square"></i>
-                </span>
-              </div>
-            </div>
-
-            <div class="ai-tool-card disabled">
-              <div class="ai-tool-header">
-                <div class="ai-tool-icon" style="background: linear-gradient(135deg, #00A67E, #4361ee);">
-                  <i class="fas fa-palette"></i>
-                </div>
-                <div class="ai-tool-info">
-                  <h4>DALL·E 3</h4>
-                  <p>Best for AI image generation</p>
-                </div>
-              </div>
-              <div class="ai-tool-footer">
-                <span class="ai-tool-score">Score: 9.0</span>
-                <span class="ai-tool-action">
-                  Open
-                  <i class="fas fa-arrow-up-right-from-square"></i>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Launch Actions -->
-          <div class="quick-launch">
-            <button class="action-btn full-width" id="launchAllBtn" disabled>
-              <i class="fas fa-rocket"></i>
-              Launch All Compatible Tools
-            </button>
-            <div class="launch-hint">
-              <i class="fas fa-info-circle"></i>
-              Prompt will be automatically copied to clipboard
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Footer -->
-      <footer class="main-footer">
-        <div class="footer-left">
-          <span class="footer-text">
-            <i class="fas fa-code"></i>
-            Built with ❤️ by PromptCraft Studio
-          </span>
         </div>
-        <div class="footer-right">
-          <span class="footer-text">
-            <i class="fas fa-shield-alt"></i>
-            Your data stays private • No tracking
-          </span>
+        <div class="modal-body">
+            <!-- Settings content will be loaded by settings-manager.js -->
+            <div class="settings-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading settings...</p>
+            </div>
         </div>
-      </footer>
-    </main>
-  </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-action="close">Cancel</button>
+            <button class="btn btn-primary" id="saveSettingsBtn">Save Changes</button>
+        </div>
+    </div>
 
-  <!-- Backdrop for Maximized Cards -->
-  <div id="cardMaxBackdrop" class="card-max-backdrop"></div>
+    <!-- Templates Modal -->
+    <div class="modal modal-lg" id="templatesModal">
+        <div class="modal-header">
+            <h3><i class="fas fa-layer-group"></i> Templates</h3>
+            <button class="modal-close" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="templates-grid" id="templatesGrid">
+                <!-- Templates loaded by templates.js -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-action="close">Close</button>
+            <button class="btn btn-primary" id="createTemplateBtn">Create New Template</button>
+        </div>
+    </div>
 
-  <!-- Enhanced Modals (will be injected dynamically) -->
-  
-  <!-- Scripts -->
-  <script type="module" src="js/app.js"></script>
-  <script type="module" src="js/ui/theme-manager.js"></script>
-  <script type="module" src="js/ui/settings-manager.js"></script>
+    <!-- History Modal -->
+    <div class="modal modal-lg" id="historyModal">
+        <div class="modal-header">
+            <h3><i class="fas fa-clock-rotate-left"></i> History</h3>
+            <button class="modal-close" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="history-list" id="historyList">
+                <!-- History loaded by history.js -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-action="close">Close</button>
+            <button class="btn btn-danger" id="clearHistoryBtn">Clear All History</button>
+        </div>
+    </div>
+
+    <!-- Theme Selector Modal -->
+    <div class="modal modal-md" id="themeModal">
+        <div class="modal-header">
+            <h3><i class="fas fa-palette"></i> Select Theme</h3>
+            <button class="modal-close" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="theme-grid" id="themeGrid">
+                <!-- Themes loaded by theme-manager.js -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-action="close">Cancel</button>
+            <button class="btn btn-primary" id="applyThemeBtn">Apply Theme</button>
+        </div>
+    </div>
+
+    <!-- Card Maximize Backdrop -->
+    <div class="card-max-backdrop" id="cardMaxBackdrop"></div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- JavaScript Files -->
+    <script type="module" src="js/app.js"></script>
+    
+    <!-- Service Worker (optional) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.error);
+        }
+    </script>
 </body>
 </html>
