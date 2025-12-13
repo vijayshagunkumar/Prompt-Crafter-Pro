@@ -1,124 +1,99 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en" data-app-theme="sunset-glow">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PromptCraft | AI Prompt Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PromptCraft - Convert Ideas into Structured Prompts</title>
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-  <!-- Main CSS -->
+  <!-- App Styles -->
   <link rel="stylesheet" href="css/main.css" />
 
   <style>
-    /* ====== BASE RESET (Lightweight) ====== */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: #0A0E17;
-      color: #F1F5F9;
-      overflow-x: hidden;
-    }
-
-    /* ====== THEME TOKENS ====== */
     :root {
       --bg-body: #0A0E17;
-      --panel-bg: #111827;
-      --input-bg: #0A0E17;
-      --input-border: rgba(148, 163, 184, 0.25);
-      --border-subtle: rgba(148, 163, 184, 0.18);
+      --panel-bg: rgba(17, 24, 39, 0.85);
+      --input-bg: rgba(10, 14, 23, 0.9);
+      --input-border: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.08);
       --text-primary: #F1F5F9;
       --text-secondary: #94A3B8;
       --primary: #FF5E00;
-      --primary-light: #FF8C42;
-      --shadow-card: 0 6px 18px rgba(0,0,0,0.35);
-      --radius-lg: 14px;
-      --radius-md: 10px;
     }
 
-    /* ====== LAYOUT ====== */
-    .main-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1.25rem;
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1000px 500px at 20% 10%, rgba(255, 94, 0, 0.15), transparent 60%),
+                  radial-gradient(900px 500px at 80% 30%, rgba(0, 243, 255, 0.12), transparent 65%),
+                  var(--bg-body);
+      color: var(--text-primary);
+      margin: 0;
+      min-height: 100vh;
     }
 
-    /* Header */
-    .brand-header {
-      margin-bottom: 1rem;
+    /* Layout */
+    .app-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
     }
 
-    .brand-container {
+    .main-content {
+      padding: 1.5rem;
+    }
+
+    .page-header {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0.9rem;
-      background: rgba(17, 24, 39, 0.6);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      backdrop-filter: blur(10px);
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
     }
 
-    .brand-logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
-      color: #000;
-      font-size: 1.25rem;
-      flex-shrink: 0;
-    }
-
-    .brand-text h1 {
+    .page-header h1 {
+      margin: 0;
       font-size: 1.35rem;
-      line-height: 1.15;
-      margin-bottom: 0.1rem;
       letter-spacing: 0.2px;
     }
 
-    .brand-text p {
-      font-size: 0.85rem;
+    .usage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       color: var(--text-secondary);
+      font-size: 0.85rem;
     }
 
-    /* Cards Grid */
-    .cards-grid {
+    /* Two cards */
+    .two-card-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 1.25rem;
-      margin-top: 1rem;
+      align-items: start;
     }
 
-    @media (max-width: 980px) {
-      .cards-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ====== STEP CARD ====== */
+    /* Card */
     .step-card {
       background: var(--panel-bg);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
       padding: 1.25rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
       display: flex;
       flex-direction: column;
-      min-height: 650px;
-      box-shadow: var(--shadow-card);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: visible;
-    }
-
-    .step-card:hover {
-      border-color: rgba(255, 94, 0, 0.3);
-      box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
+      min-height: 540px;
+      overflow: hidden;
     }
 
     /* Step Header */
@@ -129,78 +104,197 @@
       margin-bottom: 1.25rem;
     }
 
+    /* Card header actions (maximize) */
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+    }
+
+    .maximize-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: var(--text-secondary);
+    }
+
+    .maximize-btn:hover {
+      background: rgba(255, 94, 0, 0.12);
+      border-color: rgba(255, 94, 0, 0.35);
+      color: var(--primary);
+    }
+
+    /* Maximize mode */
+    body.card-maximized {
+      overflow: hidden;
+    }
+
+    .card-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(2px);
+      z-index: 900;
+    }
+
+    .step-card.is-maximized {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
+      z-index: 1000;
+      overflow: hidden;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.55);
+    }
+
+    .step-card.is-maximized .textarea-idea,
+    .step-card.is-maximized .output-textarea {
+      max-height: none;
+      min-height: 280px;
+    }
+
+    .step-card.is-maximized .tools-container {
+      max-height: none;
+    }
+
     .step-pill {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      color: black;
-      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 0.875rem;
-      flex-shrink: 0;
+      font-weight: 700;
+      background: rgba(255, 94, 0, 0.12);
+      border: 1px solid rgba(255, 94, 0, 0.25);
+      color: var(--primary);
+      flex: 0 0 auto;
     }
 
     .step-header-main {
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
     }
 
     .step-header-main h3 {
-      font-size: 1.125rem;
-      margin-bottom: 0.25rem;
+      margin: 0;
+      font-size: 1.05rem;
     }
 
-    .step-header-main p {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
+    .step-subtitle {
       margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
     }
 
     .badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      background: rgba(0, 255, 65, 0.1);
-      color: #00FF41;
-      border-radius: 8px;
-      border: 1px solid rgba(0, 255, 65, 0.35);
+      margin-left: auto;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.4rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(0, 255, 65, 0.08);
+      border: 1px solid rgba(0, 255, 65, 0.18);
+      color: #7CFF9D;
+      font-size: 0.78rem;
+      white-space: nowrap;
     }
 
-    /* Elegant Convert Button */
-    .elegant-convert-btn {
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.875rem 1.25rem;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    /* Auto-convert Toggle */
+    .auto-row {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .toggle-switch {
+      display: inline-flex;
+      align-items: center;
       gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .toggle-slider {
+      width: 40px;
+      height: 22px;
+      background: var(--input-bg);
+      border-radius: 20px;
+      position: relative;
+      border: 1px solid var(--border-subtle);
+      transition: 0.3s;
+    }
+
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--text-secondary);
+      border-radius: 50%;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+
+    input:checked + .toggle-slider {
+      background: rgba(255, 94, 0, 0.2);
+      border-color: var(--primary);
+    }
+
+    input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+      background: var(--primary);
+    }
+
+    .toggle-label {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    /* Preset row */
+    .preset-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .preset-select {
       width: 100%;
-      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: 1rem;
+      padding: 0.65rem 0.75rem;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
     }
 
-    .elegant-convert-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 94, 0, 0.35);
-      background: linear-gradient(135deg, #FF4500 0%, #FF5E00 100%);
-    }
-
-    .elegant-convert-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
+    .lock-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0.65rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
     }
 
     /* Text Areas */
@@ -243,8 +337,13 @@
       z-index: 10;
     }
 
-    .clear-btn-left { left: 0.75rem; }
-    .mic-btn-right { right: 0.75rem; }
+    .clear-btn-left {
+      left: 0.75rem;
+    }
+
+    .mic-btn-right {
+      right: 0.75rem;
+    }
 
     .icon-btn {
       width: 36px;
@@ -287,255 +386,253 @@
       font-size: 0.75rem;
     }
 
-    /* Auto-convert Toggle */
-    .auto-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .toggle-switch {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+    /* Convert button */
+    .elegant-convert-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      background: linear-gradient(135deg, #FF5E00 0%, #FF9A3D 100%);
+      color: #0A0E17;
+      font-size: 0.9375rem;
+      font-weight: 600;
       cursor: pointer;
-    }
-
-    .toggle-switch input { display: none; }
-
-    .toggle-slider {
-      width: 40px;
-      height: 22px;
-      background: var(--input-bg);
-      border-radius: 20px;
-      position: relative;
-      border: 1px solid var(--border-subtle);
-      transition: 0.3s;
-    }
-
-    .toggle-slider::before {
-      content: "";
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: var(--text-secondary);
-      border-radius: 50%;
-      top: 1px;
-      left: 1px;
-      transition: 0.3s;
-    }
-
-    input:checked + .toggle-slider {
-      background: rgba(255, 94, 0, 0.2);
-      border-color: var(--primary);
-    }
-
-    input:checked + .toggle-slider::before {
-      transform: translateX(18px);
-      background: var(--primary);
-    }
-
-    .toggle-label {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-    }
-
-    /* Preset row (minimal styling) */
-    .preset-row {
-      margin-bottom: 1rem;
-    }
-    .field-label {
-      display: block;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-bottom: 0.4rem;
-    }
-    select#presetSelect {
-      width: 100%;
-      padding: 0.75rem 0.9rem;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 10px;
-      color: var(--text-primary);
-      outline: none;
-    }
-
-    /* Chips row placeholder */
-    .chip-row {
+      transition: all 0.3s ease;
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
       gap: 0.5rem;
-      margin-bottom: 0.75rem;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
+      margin-top: 1rem;
+    }
+
+    .elegant-convert-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 94, 0, 0.35);
+      background: linear-gradient(135deg, #FF4500 0%, #FF5E00 100%);
+    }
+
+    .elegant-convert-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Tools area (right card) */
+    .tools-container {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 240px;
+      overflow: auto;
+      padding-right: 0.25rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .two-card-grid { grid-template-columns: 1fr; }
+      .step-card { min-height: auto; }
+      .app-container { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="main-container">
+  <div class="app-container">
 
-    <!-- Header with Brand -->
-    <header class="brand-header">
-      <div class="brand-container">
-        <div class="brand-logo">
-          <span>⚡</span>
+    <!-- Sidebar (your existing sidebar.css should style this) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-mark">PC</span>
+          <span class="logo-text">PromptCraft</span>
         </div>
-        <div class="brand-text">
-          <h1>PromptCraft</h1>
-          <p>Studio-grade prompts</p>
+        <button class="icon-btn" id="themeToggle" title="Change Theme">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <button class="btn btn-secondary" id="openTemplatesBtn"><i class="fas fa-layer-group"></i> Templates</button>
+        <button class="btn btn-secondary" id="openHistoryBtn"><i class="fas fa-clock-rotate-left"></i> History</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <small style="color: var(--text-secondary);">v1.2</small>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Convert Ideas into Structured Prompts</h1>
+        <div class="usage-pill" id="usageCount"><i class="fas fa-bolt"></i>0 prompts generated</div>
+      </header>
+
+      <section class="two-card-grid">
+
+        <!-- CARD 1: Your Idea -->
+        <section class="step-card" id="cardIdea">
+          <div class="step-header">
+            <div class="step-pill">1</div>
+            <div class="step-header-main">
+              <h3>Your Idea</h3>
+              <p class="step-subtitle">Describe what you want. We’ll format it into a structured prompt.</p>
+            </div>
+
+            <div class="card-actions">
+              <button class="icon-btn maximize-btn" id="maximizeIdeaBtn" title="Maximize">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Auto-convert -->
+          <div class="auto-row">
+            <label class="toggle-switch" title="Auto-convert after you stop typing">
+              <input type="checkbox" id="autoConvert" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Auto-convert</span>
+            </label>
+
+            <div style="display:flex; align-items:center; gap:0.5rem; color: var(--text-secondary); font-size:0.8rem;">
+              <i class="fas fa-wand-magic-sparkles"></i>
+              <span id="contextChipsRow" style="display:none;"></span>
+            </div>
+          </div>
+
+          <!-- Idea textarea -->
+          <div class="textarea-container">
+            <div class="textarea-wrapper">
+              <textarea id="requirement" class="textarea-idea" placeholder="Example: Create a JIRA user story for integrating Fusion ERP invoice tax call with TR OneSource..."></textarea>
+
+              <div class="textarea-buttons clear-btn-left">
+                <button class="icon-btn" id="clearRequirementBtn" title="Clear">
+                  <i class="fas fa-eraser"></i>
+                </button>
+              </div>
+
+              <div class="textarea-buttons mic-btn-right">
+                <button class="icon-btn" id="voiceBtn" title="Voice Input">
+                  <i class="fas fa-microphone"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="helper-row">
+              <div class="helper-text">
+                <i class="fas fa-circle-info"></i>
+                <span>Tip: Include audience, constraints, tools, and output format.</span>
+              </div>
+              <div class="char-counter" id="inputStats">0 chars</div>
+            </div>
+
+            <button class="elegant-convert-btn" id="convertBtn" disabled>
+              <i class="fas fa-bolt"></i>
+              Convert to Structured Prompt
+            </button>
+          </div>
+        </section>
+
+        <!-- CARD 2: Structured Prompt -->
+        <section class="step-card" id="cardPrompt">
+          <div class="step-header">
+            <div class="step-pill">2</div>
+            <div class="step-header-main">
+              <h3>Structured Prompt</h3>
+              <p class="step-subtitle">Copy, export, save as template, or launch in tools.</p>
+            </div>
+
+            <span class="badge" id="convertedBadge" style="display:none;">
+              <i class="fas fa-check"></i> Converted
+            </span>
+
+            <div class="card-actions">
+              <button class="icon-btn maximize-btn" id="maximizePromptBtn" title="Maximize">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Preset Selector -->
+          <div class="preset-row">
+            <select class="preset-select" id="presetSelect">
+              <option value="default">Default</option>
+              <option value="jira">JIRA User Stories</option>
+              <option value="email">Professional Email</option>
+              <option value="image">Image Prompt</option>
+              <option value="study">Study Notes</option>
+            </select>
+
+            <label class="lock-wrap" title="Lock the preset selection">
+              <input type="checkbox" id="lockPreset" />
+              <i class="fas fa-lock"></i>
+              Lock
+            </label>
+          </div>
+
+          <!-- Output textarea -->
+          <div class="textarea-container">
+            <div class="textarea-wrapper">
+              <textarea id="output" class="output-textarea" placeholder="Your structured prompt will appear here..." readonly></textarea>
+
+              <div class="textarea-buttons clear-btn-left">
+                <button class="icon-btn" id="copyOutputBtn" title="Copy">
+                  <i class="fas fa-copy"></i>
+                </button>
+                <button class="icon-btn" id="exportBtn" title="Export">
+                  <i class="fas fa-file-export"></i>
+                </button>
+                <button class="icon-btn" id="saveTemplateBtn" title="Save as Template">
+                  <i class="fas fa-floppy-disk"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="helper-row">
+              <div class="helper-text">
+                <i class="fas fa-rocket"></i>
+                <span>Launch tools will enable after conversion.</span>
+              </div>
+              <div class="char-counter" id="outputStats">0 chars</div>
+            </div>
+
+            <!-- Tools grid container (your ai-tools.js populates) -->
+            <div class="tools-container" id="toolsGrid">
+              <!-- Cards injected by JS -->
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Modals -->
+      <div class="modal" id="templatesModal" style="display:none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Templates</h3>
+            <button class="icon-btn" id="closeTemplatesBtn"><i class="fas fa-xmark"></i></button>
+          </div>
+          <div class="modal-body" id="templatesGrid"></div>
         </div>
       </div>
-    </header>
 
-    <!-- Cards Grid -->
-    <div class="cards-grid">
-
-      <!-- CARD 1: Your Idea -->
-      <section class="step-card" id="cardIdea">
-        <div class="step-header">
-          <div class="step-pill">1</div>
-          <div class="step-header-main">
-            <h3>Your Idea</h3>
-            <p>Type or speak your rough requirement</p>
+      <div class="modal" id="historyModal" style="display:none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>History</h3>
+            <button class="icon-btn" id="closeHistoryBtn"><i class="fas fa-xmark"></i></button>
           </div>
-          <div class="step-header-actions">
-            <button class="icon-btn card-max-btn" type="button" data-maximize-card="cardIdea" title="Maximize">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
+          <div class="modal-body" id="historyList"></div>
         </div>
+      </div>
 
-        <!-- Auto-convert -->
-        <div class="auto-row">
-          <label class="toggle-switch">
-            <input type="checkbox" id="autoConvert" checked />
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">Auto-convert as I type</span>
-          </label>
-        </div>
-
-        <!-- Context Chips -->
-        <div class="chip-row" id="contextChipsRow" style="display:none;"></div>
-
-        <!-- Requirement textarea -->
-        <div class="textarea-container">
-          <div class="textarea-wrapper">
-            <textarea
-              id="requirement"
-              class="textarea-idea"
-              placeholder='Type your idea here... Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write professional email about project delay"'
-            ></textarea>
-
-            <!-- Clear button on LEFT -->
-            <div class="textarea-buttons clear-btn-left">
-              <button class="icon-btn" id="clearRequirementBtn" title="Clear">
-                <i class="fas fa-xmark"></i>
-              </button>
-            </div>
-
-            <!-- Mic button on RIGHT -->
-            <div class="textarea-buttons mic-btn-right">
-              <button class="icon-btn" id="voiceBtn" title="Voice input">
-                <i class="fas fa-microphone"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="helper-row">
-            <span class="helper-text">
-              <i class="fas fa-lightbulb"></i>
-              Mix Hindi, English, or Hinglish. Auto-detection understands.
-            </span>
-            <span class="char-counter" id="inputStats">0 chars</span>
-          </div>
-        </div>
-
-        <!-- Convert Button -->
-        <button class="elegant-convert-btn" id="convertBtn" disabled>
-          <i class="fas fa-magic"></i>
-          Convert Idea to Prompt
-        </button>
-      </section>
-
-      <!-- CARD 2: Structured Prompt -->
-      <section class="step-card" id="cardPrompt">
-        <div class="step-header">
-          <div class="step-pill">2</div>
-          <div class="step-header-main">
-            <h3>Structured Prompt</h3>
-            <p>AI-ready formatted prompt</p>
-          </div>
-          <span class="badge" id="convertedBadge" style="display:none;">
-            <i class="fas fa-check-circle"></i> Ready
-          </span>
-          <div class="step-header-actions">
-            <button class="icon-btn card-max-btn" type="button" data-maximize-card="cardPrompt" title="Maximize">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Preset Selector -->
-        <div class="preset-row">
-          <div class="preset-left">
-            <label class="field-label">Preset</label>
-            <select id="presetSelect">
-              <option value="default">Default – General Purpose</option>
-              <option value="communication">Communication – Emails, Messages</option>
-              <option value="coding">Coding – Dev Tasks</option>
-              <option value="writing">Writing – Blogs, Stories</option>
-              <option value="analysis">Analysis – Reviews & Comparisons</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Output textarea -->
-        <div class="textarea-container">
-          <div class="textarea-wrapper">
-            <textarea
-              id="output"
-              class="output-textarea"
-              placeholder="Your AI-ready prompt will appear here..."
-              readonly
-            ></textarea>
-            <div class="textarea-buttons mic-btn-right">
-              <button class="icon-btn" id="copyOutputBtn" title="Copy">
-                <i class="fas fa-copy"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="helper-row">
-            <span class="helper-text">
-              <i class="fas fa-circle-nodes"></i>
-              Compatible with ChatGPT, Claude, Gemini, DALL·E, Midjourney, and more.
-            </span>
-            <span class="char-counter" id="outputStats">0 chars</span>
-          </div>
-        </div>
-
-        <!-- (Your remaining content continues as-is in your project) -->
-      </section>
-
-      <!-- CARD 3: Send to AI -->
-      <section class="step-card">
-        <div class="step-header">
-          <div class="step-pill">3</div>
-          <div class="step-header-main">
-            <h3>Send to AI</h3>
-            <p>Launch your favorite AI tools</p>
-          </div>
-        </div>
-        <!-- (Card 3 content remains unchanged in your file) -->
-      </section>
-
-    </div>
+    </main>
   </div>
 
-  <!-- Backdrop for maximized cards -->
-  <div id="cardMaxBackdrop" class="card-max-backdrop" aria-hidden="true"></div>
-
-  <!-- Your scripts -->
+  <!-- App JS -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
