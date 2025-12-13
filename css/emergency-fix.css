@@ -1,4 +1,4 @@
-/* emergency-fix.css - COMPLETE UI FIX */
+/* emergency-fix.css - COMPLETE UI FIX (REVISED FOR YOUR HTML) */
 
 /* ===========================================
    BASE RESET & VARIABLES
@@ -102,7 +102,7 @@ p {
 }
 
 /* ===========================================
-   SIDEBAR (LEFT PANEL - CLEAN)
+   SIDEBAR (LEFT PANEL - FIXED)
    =========================================== */
 .sidebar {
     background: var(--bg-surface);
@@ -307,7 +307,7 @@ p {
 }
 
 /* ===========================================
-   TOP BAR
+   TOP BAR (FIXED)
    =========================================== */
 .top-bar {
     display: flex;
@@ -371,7 +371,7 @@ p {
     transform: translateY(-1px);
 }
 
-/* Icon Buttons */
+/* Icon Buttons - FIXED FOR YOUR HTML */
 .icon-btn {
     width: 44px;
     height: 44px;
@@ -385,9 +385,32 @@ p {
     cursor: pointer;
     transition: all var(--transition-fast);
     flex-shrink: 0;
+    font-size: 1rem;
 }
 
 .icon-btn:hover {
+    background: rgba(255, 94, 0, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
     background: rgba(255, 94, 0, 0.1);
     color: var(--primary);
     border-color: var(--primary);
@@ -490,6 +513,12 @@ p {
     transform: scale(1.1);
 }
 
+.step-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
 /* Card Content */
 .card-content {
     flex: 1;
@@ -500,7 +529,7 @@ p {
 }
 
 /* ===========================================
-   CARD 1: YOUR IDEA
+   CARD 1: YOUR IDEA (FIXED)
    =========================================== */
 /* Context Chips */
 .context-chips-row {
@@ -585,7 +614,7 @@ p {
     color: var(--text-muted);
 }
 
-/* Toggle Switch */
+/* Toggle Switch - FIXED */
 .toggle-switch {
     display: flex;
     align-items: center;
@@ -630,6 +659,13 @@ p {
     color: var(--text-secondary);
 }
 
+/* Auto-convert Toggle */
+.auto-convert-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
 /* Preset Selection */
 .preset-selection {
     margin-top: var(--space-lg);
@@ -660,6 +696,10 @@ p {
     color: var(--text-secondary);
 }
 
+.lock-label {
+    cursor: pointer;
+}
+
 .preset-select {
     width: 100%;
     padding: var(--space-sm) var(--space-md);
@@ -670,6 +710,7 @@ p {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all var(--transition-fast);
+    border: 1px solid var(--border-subtle);
 }
 
 .preset-select:focus {
@@ -678,12 +719,77 @@ p {
     box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.2);
 }
 
-/* Convert Button */
+/* Convert Button - FIXED FOR YOUR HTML */
 .convert-section {
     margin-top: auto;
     padding-top: var(--space-lg);
     border-top: 1px solid var(--border-subtle);
     text-align: center;
+}
+
+/* BUTTON STYLES - ADDED FOR YOUR HTML */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    outline: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--text-on-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(255, 94, 0, 0.3);
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 94, 0, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-lg {
+    padding: var(--space-md) var(--space-xl);
+    font-size: 1rem;
+}
+
+.btn-sm {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.75rem;
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
 }
 
 .convert-btn {
@@ -721,7 +827,7 @@ p {
 }
 
 /* ===========================================
-   CARD 2: STRUCTURED PROMPT
+   CARD 2: STRUCTURED PROMPT (FIXED)
    =========================================== */
 .converted-badge {
     display: inline-flex;
@@ -882,7 +988,7 @@ p {
 }
 
 /* ===========================================
-   CARD 3: AI TOOLS - ELEGANT CARDS
+   CARD 3: AI TOOLS - ELEGANT CARDS (FIXED)
    =========================================== */
 /* AI Tools Grid */
 .ai-tools-grid {
@@ -1125,6 +1231,10 @@ p {
     color: var(--matrix-green);
 }
 
+.best-match-notice strong {
+    color: var(--matrix-green);
+}
+
 /* Tools Filter */
 .tools-filter {
     display: flex;
@@ -1173,6 +1283,7 @@ p {
     border-radius: var(--radius-md);
     color: var(--text-primary);
     font-size: 0.75rem;
+    border: 1px solid var(--border-subtle);
 }
 
 .filter-search i {
@@ -1207,6 +1318,27 @@ p {
 
 .stat-chip i {
     color: var(--primary);
+}
+
+.refresh-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.refresh-btn:hover {
+    background: rgba(255, 94, 0, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: rotate(90deg);
 }
 
 /* ===========================================
@@ -1246,6 +1378,153 @@ p {
     align-items: center;
     gap: var(--space-xs);
     margin: 0;
+}
+
+/* ===========================================
+   MODAL STYLES (ADDED FOR YOUR HTML)
+   =========================================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-lg .modal-container {
+    max-width: 800px;
+    width: 90%;
+}
+
+.modal-md .modal-container {
+    max-width: 500px;
+    width: 90%;
+}
+
+.modal-container {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal.active .modal-container {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: var(--space-xl);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.modal-close {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+    background: rgba(255, 94, 0, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: var(--space-xl);
+}
+
+.modal-footer {
+    padding: var(--space-xl);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 94, 0, 0.1);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--space-md);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.settings-loading {
+    text-align: center;
+    padding: var(--space-2xl);
+}
+
+/* Card Maximize Backdrop */
+.card-max-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 999;
+    display: none;
+}
+
+.card-max-backdrop.active {
+    display: block;
+}
+
+/* Notification Container */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
 }
 
 /* ===========================================
@@ -1433,37 +1712,6 @@ p {
 }
 
 /* ===========================================
-   DARK THEME ENHANCEMENTS
-   =========================================== */
-[data-theme="cyberpunk-neon"] .step-card {
-    border: 1px solid rgba(255, 94, 0, 0.3);
-    box-shadow: 0 0 20px rgba(255, 94, 0, 0.1);
-}
-
-[data-theme="cyberpunk-neon"] .step-card:hover {
-    border-color: var(--primary);
-    box-shadow: 0 0 30px rgba(255, 94, 0, 0.3);
-}
-
-[data-theme="cyberpunk-neon"] .ai-tool-card:hover {
-    box-shadow: 0 0 25px rgba(255, 94, 0, 0.3);
-}
-
-[data-theme="cyberpunk-neon"] .sidebar {
-    background: rgba(17, 24, 39, 0.95);
-    backdrop-filter: blur(10px);
-    border-right: 1px solid rgba(255, 94, 0, 0.3);
-}
-
-[data-theme="cyberpunk-neon"] .top-bar {
-    border-bottom: 1px solid rgba(255, 94, 0, 0.3);
-}
-
-[data-theme="cyberpunk-neon"] .main-footer {
-    border-top: 1px solid rgba(255, 94, 0, 0.3);
-}
-
-/* ===========================================
    ACCESSIBILITY
    =========================================== */
 :focus-visible {
@@ -1483,7 +1731,10 @@ p {
     .card-max-btn,
     .convert-btn,
     .launch-all-btn,
-    .open-tool-btn {
+    .open-tool-btn,
+    .modal,
+    .card-max-backdrop,
+    .notification-container {
         display: none !important;
     }
     
