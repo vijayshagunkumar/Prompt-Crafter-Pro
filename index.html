@@ -14,11 +14,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- =========================================== -->
-    <!-- EMERGENCY CSS FIX - REPLACE ONLY THIS LINK -->
+    <!-- EMERGENCY FIX - COMPLETE STYLING           -->
     <!-- =========================================== -->
     <link rel="stylesheet" href="css/emergency-fix.css">
-    <!-- DELETE THE OLD LINK BELOW -->
-    <!-- <link rel="stylesheet" href="css/main.css"> -->
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/icons/logo.svg">
@@ -130,12 +128,12 @@
                 </div>
                 
                 <div class="top-right">
-                    <!-- Settings Button (fixes broken modal) -->
+                    <!-- Settings Button -->
                     <button class="icon-btn settings-btn" id="settingsBtn" aria-label="Settings">
                         <i class="fas fa-cog"></i>
                     </button>
                     
-                    <!-- Theme Palette Icon (moved from sidebar) -->
+                    <!-- Theme Palette Icon -->
                     <button class="icon-btn theme-palette-btn" id="themePaletteBtn" aria-label="Change theme">
                         <i class="fas fa-palette"></i>
                     </button>
@@ -346,8 +344,8 @@ Supports English, Hindi, Hinglish & code"
                     <div class="card-content">
                         <!-- AI Tools Grid with Elegant Cards -->
                         <div class="ai-tools-grid" id="aiToolsGrid">
-                            <!-- Dynamic content from ai-tools.js -->
-                            <!-- Each AI tool will be rendered as an elegant card -->
+                            <!-- Dynamic content from emergency-fix.js -->
+                            <!-- AI Tools will load automatically -->
                         </div>
 
                         <!-- Best Match Highlight -->
@@ -374,15 +372,15 @@ Supports English, Hindi, Hinglish & code"
                         <div class="tools-stats">
                             <div class="stat-chip">
                                 <i class="fas fa-robot"></i>
-                                <span id="totalToolsCount">10</span> Tools
+                                <span id="totalToolsCount">0</span> Tools
                             </div>
                             <div class="stat-chip">
                                 <i class="fas fa-image"></i>
-                                <span id="imageToolsCount">3</span> Image AI
+                                <span id="imageToolsCount">0</span> Image AI
                             </div>
                             <div class="stat-chip">
                                 <i class="fas fa-font"></i>
-                                <span id="textToolsCount">7</span> Text AI
+                                <span id="textToolsCount">0</span> Text AI
                             </div>
                         </div>
                     </div>
@@ -401,8 +399,8 @@ Supports English, Hindi, Hinglish & code"
                     <div class="footer-center">
                         <p class="footer-text">
                             <i class="fas fa-clock"></i>
-                            <span id="currentTime">06:52 PM</span>
-                            <span id="currentDate">13-12-2025</span>
+                            <span id="currentTime">Loading...</span>
+                            <span id="currentDate">Loading...</span>
                         </p>
                     </div>
                     <div class="footer-right">
@@ -418,7 +416,7 @@ Supports English, Hindi, Hinglish & code"
 
     <!-- MODALS -->
     
-    <!-- Settings Modal (Fixed - will show content) -->
+    <!-- Settings Modal -->
     <div class="modal modal-lg" id="settingsModal">
         <div class="modal-header">
             <h3><i class="fas fa-cog"></i> Settings</h3>
@@ -427,7 +425,7 @@ Supports English, Hindi, Hinglish & code"
             </button>
         </div>
         <div class="modal-body">
-            <!-- Settings content will be loaded by settings-manager.js -->
+            <!-- Settings content will be loaded by emergency-fix.js -->
             <div class="settings-loading">
                 <div class="loading-spinner"></div>
                 <p>Loading settings...</p>
@@ -449,7 +447,12 @@ Supports English, Hindi, Hinglish & code"
         </div>
         <div class="modal-body">
             <div class="templates-grid" id="templatesGrid">
-                <!-- Templates loaded by templates.js -->
+                <!-- Templates will be loaded here -->
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <i class="fas fa-layer-group" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <h4>No templates yet</h4>
+                    <p>Save your first prompt as a template to see it here</p>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -468,7 +471,12 @@ Supports English, Hindi, Hinglish & code"
         </div>
         <div class="modal-body">
             <div class="history-list" id="historyList">
-                <!-- History loaded by history.js -->
+                <!-- History will be loaded here -->
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <i class="fas fa-clock-rotate-left" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <h4>No history yet</h4>
+                    <p>Your converted prompts will appear here</p>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -487,7 +495,33 @@ Supports English, Hindi, Hinglish & code"
         </div>
         <div class="modal-body">
             <div class="theme-grid" id="themeGrid">
-                <!-- Themes loaded by theme-manager.js -->
+                <!-- Themes will be loaded here -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px;">
+                    <div class="theme-option selected" data-theme="cyberpunk-neon">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #FF5E00, #00F3FF);"></div>
+                        <div class="theme-name">Cyberpunk Neon</div>
+                    </div>
+                    <div class="theme-option" data-theme="dark-neutral">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #3B82F6, #8B5CF6);"></div>
+                        <div class="theme-name">Dark Neutral</div>
+                    </div>
+                    <div class="theme-option" data-theme="matrix">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #00FF41, #003B00);"></div>
+                        <div class="theme-name">Matrix</div>
+                    </div>
+                    <div class="theme-option" data-theme="sunset">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #F97316, #F59E0B);"></div>
+                        <div class="theme-name">Sunset</div>
+                    </div>
+                    <div class="theme-option" data-theme="ocean">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #06B6D4, #0EA5E9);"></div>
+                        <div class="theme-name">Ocean</div>
+                    </div>
+                    <div class="theme-option" data-theme="twilight">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #8B5CF6, #EC4899);"></div>
+                        <div class="theme-name">Twilight</div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -502,8 +536,13 @@ Supports English, Hindi, Hinglish & code"
     <!-- Notification Container -->
     <div class="notification-container" id="notificationContainer"></div>
 
-    <!-- JavaScript Files -->
-    <script type="module" src="js/app.js"></script>
+    <!-- =========================================== -->
+    <!-- EMERGENCY FIX - COMPLETE FUNCTIONALITY     -->
+    <!-- =========================================== -->
+    <script src="js/emergency-fix.js"></script>
+    
+    <!-- Original app.js (optional - can be disabled if causing issues) -->
+    <!-- <script type="module" src="js/app.js"></script> -->
     
     <!-- Service Worker (optional) -->
     <script>
