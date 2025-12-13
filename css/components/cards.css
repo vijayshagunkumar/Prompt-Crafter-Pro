@@ -1,7 +1,34 @@
+.card {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.card * {
+  pointer-events: auto;
+}
+
+.card-header,
+.card-textarea,
+.card-actions,
+.primary-btn,
+.ghost-btn {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* Kill invisible overlays */
+.card::before,
+.card::after {
+  content: none !important;
+}
+
+/* Maximize safe */
 .card.is-maximized {
   position: fixed;
   inset: 16px;
-  z-index: 999;
+  z-index: 9999;
   background: var(--panel-bg);
 }
 
