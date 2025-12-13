@@ -580,6 +580,26 @@
         font-size: 0.625rem;
       }
     }
+
+    /* ===== DEBUG: CSS VARIABLES TEST ===== */
+    .debug-test {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: var(--bg-primary, #ff0000);
+      border: 2px solid var(--primary, #00ff00);
+      color: var(--text-primary, #0000ff);
+      padding: 10px;
+      z-index: 9999;
+      font-family: monospace;
+      font-size: 12px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    
+    .debug-test::before {
+      content: "CSS Test | BG: " var(--bg-primary, "MISSING") " | Color: " var(--primary, "MISSING");
+    }
   </style>
 </head>
 <body>
@@ -765,6 +785,9 @@
       </div>
     </footer>
   </div>
+
+  <!-- DEBUG: CSS Variables Test -->
+  <div class="debug-test"></div>
 
   <!-- Scripts -->
   <script type="module" src="js/app.js"></script>
