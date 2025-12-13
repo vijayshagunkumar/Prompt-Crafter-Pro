@@ -108,7 +108,7 @@ class SettingsManager {
                 <div class="modal settings-modal" id="settingsModal" style="display: none;">
                     <div class="modal-header">
                         <h3><i class="fas fa-cog"></i> Settings</h3>
-                        <button class="modal-close">&times;</button>
+                        <button class="modal-close" id="settingsCloseBtn">&times;</button>
                     </div>
                     
                     <div class="modal-body">
@@ -382,7 +382,7 @@ class SettingsManager {
         // Insert modal HTML
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
-        // Initialize the UI components AFTER DOM is ready
+        // Initialize the UI components
         setTimeout(() => {
             this.initializeSettingsUI();
             this.modalInitialized = true;
@@ -420,7 +420,7 @@ class SettingsManager {
     setupModalHandlers() {
         const modal = document.getElementById('settingsModal');
         const backdrop = document.getElementById('settingsBackdrop');
-        const closeBtn = modal?.querySelector('.modal-close');
+        const closeBtn = document.getElementById('settingsCloseBtn');
         
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -473,8 +473,6 @@ class SettingsManager {
      */
     loadCurrentValues() {
         try {
-            // Theme selection - will be handled by setupThemePreviews
-            
             // Font size
             const fontSizeInput = document.querySelector(`input[name="fontSize"][value="${this.settings.fontSize}"]`);
             if (fontSizeInput) {
@@ -987,7 +985,7 @@ class SettingsManager {
             // Wait for modal to be initialized
             setTimeout(() => {
                 this.showModal();
-            }, 150);
+            }, 200);
         } else {
             this.showModal();
         }
