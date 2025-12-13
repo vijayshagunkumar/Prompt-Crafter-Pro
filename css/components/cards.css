@@ -1,37 +1,10 @@
-.card {
+.card.is-maximized {
+  position: fixed;
+  inset: 16px;
+  z-index: 999;
   background: var(--panel-bg);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  min-height: 480px;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.card-header h2 {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.card-textarea {
-  flex: 1;
-  resize: none;
-  background: var(--input-bg);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 10px;
-  color: var(--text-primary);
-}
-
-.card-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
+body.card-max-open {
+  overflow: hidden;
 }
