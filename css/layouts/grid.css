@@ -1,36 +1,15 @@
-.app-shell {
-  min-height: 100vh;
-  background: var(--bg-body);
-  color: var(--text-primary);
+.app-shell,
+.workspace,
+.tools-panel {
+  position: relative;
+  z-index: 0;
+  pointer-events: auto;
 }
 
-.app-header {
-  height: 56px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-}
-
-.workspace {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 320px;
-  gap: 16px;
-  align-items: stretch;
-}
-
-/* Prevent global scroll */
-body {
-  overflow-x: hidden;
+/* Kill any full-screen overlay */
+.app-shell::before,
+.app-shell::after,
+.workspace::before,
+.workspace::after {
+  content: none !important;
 }
