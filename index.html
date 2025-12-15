@@ -105,11 +105,97 @@
       height: 650px;
       overflow: hidden;
       transition: all 0.3s ease;
+      position: relative; /* Added for maximize positioning */
     }
     
     .step-card:hover {
       border-color: rgba(255, 94, 0, 0.3);
       box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
+    }
+    
+    /* NEW: Maximized card styles */
+    .step-card.is-maximized {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 90vw !important;
+      height: 90vh !important;
+      max-width: 1400px !important;
+      max-height: 90vh !important;
+      z-index: 9999 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+      backdrop-filter: blur(10px) !important;
+      background: var(--panel-bg) !important;
+      animation: cardMaximize 0.3s ease-out !important;
+      overflow: auto !important;
+    }
+    
+    /* NEW: Minimized card styles */
+    .step-card.is-minimized {
+      height: 60px !important;
+      min-height: 60px !important;
+      overflow: hidden !important;
+      animation: cardMinimize 0.2s ease-out !important;
+      cursor: pointer;
+    }
+    
+    .step-card.is-minimized .step-body,
+    .step-card.is-minimized .textarea-container,
+    .step-card.is-minimized .auto-row,
+    .step-card.is-minimized .elegant-convert-btn,
+    .step-card.is-minimized .preset-row,
+    .step-card.is-minimized .prompt-actions,
+    .step-card.is-minimized .tools-container {
+      display: none !important;
+    }
+    
+    .step-card.is-minimized .step-header {
+      margin-bottom: 0 !important;
+    }
+    
+    /* NEW: Body with maximized card */
+    body.card-max-open {
+      overflow: hidden !important;
+    }
+    
+    body.card-max-open::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9998;
+      animation: fadeIn 0.2s ease-out;
+    }
+    
+    /* NEW: Animations */
+    @keyframes cardMaximize {
+      from {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0.8;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes cardMinimize {
+      from {
+        height: 650px;
+      }
+      to {
+        height: 60px;
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     
     /* Step Header */
@@ -118,6 +204,7 @@
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1.25rem;
+      position: relative;
     }
     
     .step-pill {
@@ -147,6 +234,44 @@
       font-size: 0.8125rem;
       color: var(--text-secondary);
       margin: 0;
+    }
+    
+    /* NEW: Card actions (maximize/minimize buttons) */
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-left: auto;
+      padding-left: 0.5rem;
+    }
+    
+    .card-expand-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(255, 94, 0, 0.1);
+      border: 1px solid rgba(255, 94, 0, 0.3);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    
+    .card-expand-btn:hover {
+      background: rgba(255, 94, 0, 0.2);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.2);
+    }
+    
+    .step-card.is-maximized .card-expand-btn,
+    .step-card.is-minimized .card-expand-btn {
+      background: rgba(255, 94, 0, 0.2);
+      border-color: var(--primary);
     }
     
     /* Elegant Convert Button - Smaller and beautiful */
@@ -629,6 +754,23 @@
         bottom: 1rem;
         right: 1rem;
       }
+      
+      /* Mobile maximize adjustments */
+      .step-card.is-maximized {
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        max-width: none !important;
+        max-height: none !important;
+      }
+      
+      .card-expand-btn {
+        width: 36px;
+        height: 36px;
+      }
     }
   </style>
 </head>
@@ -653,12 +795,20 @@
     <div class="cards-grid">
       
       <!-- CARD 1: Your Idea -->
-      <section class="step-card">
+      <section class="step-card" id="card-1">
         <div class="step-header">
           <div class="step-pill">1</div>
           <div class="step-header-main">
             <h3>Your Idea</h3>
             <p>Type or speak your rough requirement</p>
+          </div>
+          <!-- NEW: Maximize/Minimize Button -->
+          <div class="card-actions">
+            <button class="card-expand-btn" data-card="card-1" title="Maximize">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -714,16 +864,24 @@
       </section>
 
       <!-- CARD 2: Structured Prompt -->
-      <section class="step-card">
+      <section class="step-card" id="card-2">
         <div class="step-header">
           <div class="step-pill">2</div>
           <div class="step-header-main">
             <h3>Structured Prompt</h3>
             <p>AI-ready formatted prompt</p>
           </div>
-          <span class="badge" id="convertedBadge" style="display:none;">
-            <i class="fas fa-check-circle"></i> Ready
-          </span>
+          <!-- NEW: Maximize/Minimize Button -->
+          <div class="card-actions">
+            <span class="badge" id="convertedBadge" style="display:none;">
+              <i class="fas fa-check-circle"></i> Ready
+            </span>
+            <button class="card-expand-btn" data-card="card-2" title="Maximize">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Preset Selector -->
@@ -776,7 +934,7 @@
       </section>
 
       <!-- CARD 3: Send to AI -->
-      <section class="step-card">
+      <section class="step-card" id="card-3">
         <div class="step-header">
           <div class="step-pill">3</div>
           <div class="step-header-main">
