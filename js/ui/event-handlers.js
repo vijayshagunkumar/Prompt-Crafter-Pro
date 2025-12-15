@@ -1,34 +1,39 @@
-// In your event-handlers.js, add this simple function:
+// In your existing event-handlers.js, ADD THESE FUNCTIONS:
+
 let cardExpanderInstance = null;
 
 export function initializeCardExpander() {
   if (cardExpanderInstance) {
-    console.log('✅ Card Expander already initialized in event-handlers');
+    console.log('✅ Card expander already initialized');
     return cardExpanderInstance;
   }
   
-  console.log('🔧 Event Handlers: Initializing Card Expander...');
+  console.log('🔧 Initializing card expander from event handlers...');
   
-  // Import and initialize
   import('../features/card-expander.js').then(module => {
     const CardExpander = module.CardExpander;
     cardExpanderInstance = new CardExpander();
     cardExpanderInstance.initialize();
     window.cardExpander = cardExpanderInstance;
     
-    console.log('✅ Event Handlers: Card Expander initialized');
+    console.log('✅ Card expander initialized successfully');
   }).catch(error => {
-    console.error('❌ Failed to load CardExpander:', error);
+    console.error('❌ Failed to load card expander:', error);
   });
   
   return cardExpanderInstance;
 }
 
-// In your initializeEventHandlers function:
+// Then in your main initializeEventHandlers function, call it:
 export function initializeEventHandlers(appState) {
-  // Initialize card expander
+  // Initialize card expander FIRST
   initializeCardExpander();
   
-  // ... keep your existing code below
-  // DON'T add any other card expander code here
+  // ... rest of your existing code stays here
+  setupRequirementHandlers();
+  setupOutputHandlers();
+  setupToolHandlers();
+  setupModalHandlers();
+  setupVoiceHandlers();
+  setupUIHandlers();
 }
