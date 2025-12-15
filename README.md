@@ -2,7 +2,70 @@
 Innovation
 
 A tool to transform ideas into structured AI prompts.
+@vijayshagunkumar ➜ /workspaces/Prompt-Crafter-Pro (main) $ tree -L 3
+.
+.
+├── README.md
+├── assets
+│   ├── icons
+│   │   ├── abc.ico
+│   │   └── favicon.ico
+│   └── images
+│       ├── img.jpg
+│       └── logo.png
+├── css
+│   ├── base
+│   │   ├── reset.css
+│   │   ├── typography.css
+│   │   ├── variable-mapping.css
+│   │   └── variables.css
+│   ├── components
+│   │   ├── ai-tools-cards.css
+│   │   ├── buttons.css
+│   │   ├── cards.css
+│   │   ├── forms.css
+│   │   ├── modals.css
+│   │   ├── notifications.css
+│   │   ├── sidebar.css
+│   │   └── tools-grid.css
+│   ├── emergency-fix.css
+│   ├── layouts
+│   │   ├── grid-system.css
+│   │   ├── grid.css
+│   │   ├── responsive.css
+│   │   └── sidebar-layout.css
+│   ├── main.css
+│   └── themes
+│       ├── cyberpunk.css
+│       └── themes.css
+├── index.html
+├── js
+│   ├── ai
+│   │   ├── ai-tools.js
+│   │   ├── presets.js
+│   │   └── prompt-generator.js
+│   ├── app.js
+│   ├── core
+│   │   ├── app-state.js
+│   │   ├── constants.js
+│   │   └── utilities.js
+│   ├── emergency-fix.js
+│   ├── features
+│   │   ├── card-expander.js
+│   │   ├── context-detective.js
+│   │   ├── history.js
+│   │   ├── templates.js
+│   │   └── voice.js
+│   └── ui
+│       ├── event-handlers.js
+│       ├── modal-manager.js
+│       ├── notifications.js
+│       ├── settings-manager.js
+│       └── theme-manager.js
+└── settings-modal.html
 
+14 directories, 45 files
+bash: .: filename argument required
 ## Features
 - Convert natural language requirements to structured prompts
 - Multiple preset styles (Standard, Claude, ChatGPT, Detailed)
