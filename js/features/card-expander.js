@@ -1,12 +1,11 @@
-// js/features/card-expander.js - FINAL FIXED VERSION
-// This handles ALL card maximize/minimize logic in ONE place
+// js/features/card-expander.js - COMPLETE WORKING VERSION
 
 export class CardExpander {
   constructor() {
     this.maximizedCard = null;
     this.minimizedCards = new Set();
     this.isInitialized = false;
-    console.log('🔧 CardExpander: Created instance');
+    console.log('🔧 CardExpander: Created');
   }
 
   initialize() {
@@ -15,48 +14,46 @@ export class CardExpander {
       return;
     }
     
-    console.log('🔧 CardExpander: Starting initialization...');
+    console.log('🔧 CardExpander: Initializing...');
     
-    // Create buttons first
+    // Create buttons immediately
     this.createButtons();
     
-    // Bind events once
+    // Bind events
     this.bindEvents();
     
     // Load saved state
     this.loadState();
     
     this.isInitialized = true;
-    console.log('✅ CardExpander: Initialization complete');
+    console.log('✅ CardExpander: Ready');
     
-    // Test buttons are working
-    this.testButtons();
+    // Test that buttons work
+    setTimeout(() => this.testButtons(), 100);
   }
 
   createButtons() {
-    console.log('🔧 CardExpander: Creating/updating buttons...');
+    console.log('🔧 CardExpander: Creating buttons for card-1 and card-2...');
     
-    // Clear any duplicate buttons first
-    const existingButtons = document.querySelectorAll('.card-expand-btn');
-    existingButtons.forEach(btn => btn.remove());
+    // Remove any existing buttons first
+    const oldButtons = document.querySelectorAll('.card-expand-btn');
+    oldButtons.forEach(btn => btn.remove());
     
-    // Add buttons to Card 1 and Card 2
-    [1, 2].forEach(num => {
-      const cardId = `card-${num}`;
+    // Create buttons for both cards
+    ['card-1', 'card-2'].forEach(cardId => {
       const card = document.getElementById(cardId);
-      
       if (!card) {
-        console.warn(`⚠️ CardExpander: ${cardId} not found`);
+        console.warn(`⚠️ ${cardId} not found`);
         return;
       }
       
       const header = card.querySelector('.step-header');
       if (!header) {
-        console.warn(`⚠️ CardExpander: No header in ${cardId}`);
+        console.warn(`⚠️ No header in ${cardId}`);
         return;
       }
       
-      // Create actions container if not exists
+      // Create actions container
       let actions = header.querySelector('.card-actions');
       if (!actions) {
         actions = document.createElement('div');
@@ -64,7 +61,7 @@ export class CardExpander {
         header.appendChild(actions);
       }
       
-      // Create the maximize button
+      // Create maximize button
       const button = document.createElement('button');
       button.className = 'card-expand-btn';
       button.setAttribute('data-card', cardId);
@@ -75,36 +72,31 @@ export class CardExpander {
         </svg>
       `;
       
-      // Store reference for direct access
-      button._cardExpander = this;
-      button._cardId = cardId;
-      
       actions.appendChild(button);
-      console.log(`✅ CardExpander: Button added to ${cardId}`);
+      console.log(`✅ Added maximize button to ${cardId}`);
     });
   }
 
   bindEvents() {
-    console.log('🔧 CardExpander: Binding global events...');
+    console.log('🔧 CardExpander: Binding events...');
     
-    // SINGLE global click handler for ALL card buttons
+    // Single event listener for all maximize buttons
     document.addEventListener('click', (e) => {
       const button = e.target.closest('.card-expand-btn');
       if (!button) return;
       
-      e.preventDefault();
       e.stopPropagation();
       
       const cardId = button.getAttribute('data-card');
-      console.log(`🖱️ CardExpander: Button clicked for ${cardId}`);
+      console.log(`🖱️ Maximize button clicked: ${cardId}`);
       
-      this.handleButtonClick(cardId);
+      this.handleMaximizeClick(cardId);
     });
     
-    // ESC key handler
+    // ESC key to restore
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.maximizedCard) {
-        console.log('⎋ CardExpander: ESC pressed, restoring card');
+        console.log('⎋ ESC pressed, restoring card');
         this.restoreCard(this.maximizedCard);
       }
     });
@@ -112,21 +104,19 @@ export class CardExpander {
     console.log('✅ CardExpander: Events bound');
   }
 
-  handleButtonClick(cardId) {
+  handleMaximizeClick(cardId) {
     const card = document.getElementById(cardId);
     if (!card) {
-      console.error(`❌ CardExpander: Card ${cardId} not found`);
+      console.error(`❌ Card ${cardId} not found`);
       return;
     }
     
     const isMaximized = card.classList.contains('is-maximized');
     const isMinimized = card.classList.contains('is-minimized');
     
-    console.log(`🔄 CardExpander: ${cardId} state - maximized:${isMaximized}, minimized:${isMinimized}`);
+    console.log(`🔄 Card ${cardId}: maximized=${isMaximized}, minimized=${isMinimized}`);
     
-    if (isMaximized) {
-      this.restoreCard(cardId);
-    } else if (isMinimized) {
+    if (isMaximized || isMinimized) {
       this.restoreCard(cardId);
     } else {
       this.maximizeCard(cardId);
@@ -134,17 +124,13 @@ export class CardExpander {
   }
 
   maximizeCard(cardId) {
-    console.log(`🔍 CardExpander: Maximizing ${cardId}`);
+    console.log(`🔍 Maximizing ${cardId}...`);
     
     const card = document.getElementById(cardId);
-    if (!card) {
-      console.error(`❌ CardExpander: Cannot maximize, ${cardId} not found`);
-      return false;
-    }
+    if (!card) return false;
     
     // If another card is maximized, restore it first
     if (this.maximizedCard && this.maximizedCard !== cardId) {
-      console.log(`🔄 CardExpander: First restoring ${this.maximizedCard}`);
       this.restoreCard(this.maximizedCard);
     }
     
@@ -168,12 +154,12 @@ export class CardExpander {
     this.maximizedCard = cardId;
     this.saveState();
     
-    console.log(`✅ CardExpander: ${cardId} maximized`);
+    console.log(`✅ ${cardId} maximized`);
     return true;
   }
 
   minimizeCard(cardId) {
-    console.log(`🔍 CardExpander: Minimizing ${cardId}`);
+    console.log(`🔍 Minimizing ${cardId}...`);
     
     const card = document.getElementById(cardId);
     if (!card) return false;
@@ -198,12 +184,12 @@ export class CardExpander {
     this.minimizedCards.add(cardId);
     this.saveState();
     
-    console.log(`✅ CardExpander: ${cardId} minimized`);
+    console.log(`✅ ${cardId} minimized`);
     return true;
   }
 
   restoreCard(cardId) {
-    console.log(`🔍 CardExpander: Restoring ${cardId}`);
+    console.log(`🔍 Restoring ${cardId}...`);
     
     const card = document.getElementById(cardId);
     if (!card) return false;
@@ -230,7 +216,7 @@ export class CardExpander {
     this.minimizedCards.delete(cardId);
     this.saveState();
     
-    console.log(`✅ CardExpander: ${cardId} restored`);
+    console.log(`✅ ${cardId} restored`);
     return true;
   }
 
@@ -249,7 +235,7 @@ export class CardExpander {
 
       const state = JSON.parse(saved);
       
-      // Apply states after a short delay
+      // Apply after a delay
       setTimeout(() => {
         if (state.maximizedCardId) {
           this.maximizeCard(state.maximizedCardId);
@@ -258,26 +244,24 @@ export class CardExpander {
         state.minimizedCardIds?.forEach(cardId => {
           this.minimizeCard(cardId);
         });
-      }, 100);
+      }, 200);
     } catch (e) {
-      console.error('❌ CardExpander: Failed to load state:', e);
+      console.error('❌ Failed to load card state:', e);
     }
   }
 
   testButtons() {
-    // Simple test to verify buttons work
-    setTimeout(() => {
-      const buttons = document.querySelectorAll('.card-expand-btn');
-      console.log(`🧪 CardExpander: Found ${buttons.length} buttons`);
-      
-      buttons.forEach((btn, i) => {
-        const cardId = btn.getAttribute('data-card');
-        console.log(`🧪 Button ${i + 1}: ${cardId}, has listener: ${!!btn.onclick}`);
-      });
-    }, 500);
+    console.log('🧪 Testing buttons...');
+    const buttons = document.querySelectorAll('.card-expand-btn');
+    console.log(`Found ${buttons.length} maximize buttons`);
+    
+    buttons.forEach((btn, i) => {
+      const cardId = btn.getAttribute('data-card');
+      console.log(`Button ${i + 1}: ${cardId}`);
+    });
   }
 
-  // Public API
+  // Public methods
   getMaximizedCard() {
     return this.maximizedCard;
   }
@@ -285,23 +269,9 @@ export class CardExpander {
   getMinimizedCards() {
     return Array.from(this.minimizedCards);
   }
-
-  reset() {
-    // Restore all cards
-    if (this.maximizedCard) {
-      this.restoreCard(this.maximizedCard);
-    }
-    
-    this.getMinimizedCards().forEach(cardId => {
-      this.restoreCard(cardId);
-    });
-    
-    localStorage.removeItem('cardExpanderState');
-    console.log('🔄 CardExpander: Reset complete');
-  }
 }
 
-// Simple initialization function
+// Simple initialization
 export function initCardExpander() {
   const expander = new CardExpander();
   expander.initialize();
