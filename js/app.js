@@ -18,6 +18,9 @@ import { initializeEventHandlers } from './ui/event-handlers.js';
 import { showNotification, showSuccess, showError, showInfo } from './ui/notifications.js';
 import modalManager from './ui/modal-manager.js';
 
+// NEW: Import Card Expander
+import { CardExpander } from './features/card-expander.js';
+
 /**
  * Initialize the application
  */
@@ -36,8 +39,11 @@ async function initializeApp() {
     // Initialize voice features
     initializeVoice();
     
-    // Initialize event handlers
+    // Initialize event handlers (includes card expander)
     initializeEventHandlers();
+    
+    // NEW: Initialize card expander separately for direct access
+    initializeCardExpander();
     
     // Initialize UI
     initializeUI();
@@ -68,6 +74,36 @@ async function initializeApp() {
 }
 
 /**
+ * NEW: Initialize card expander functionality
+ */
+function initializeCardExpander() {
+  try {
+    const cardExpander = new CardExpander();
+    cardExpander.initialize();
+    
+    // Store globally for debugging/access
+    window.cardExpander = cardExpander;
+    
+    // Listen for ESC key to restore maximized card
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && cardExpander.getMaximizedCard()) {
+        const maximizedCardId = cardExpander.getMaximizedCard();
+        const card = document.getElementById(maximizedCardId);
+        const btn = card?.querySelector('.card-expand-btn');
+        if (card && btn) {
+          cardExpander.restore(card, btn);
+          showInfo('Card restored (ESC)');
+        }
+      }
+    });
+    
+    console.log('✅ Card expander initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize card expander:', error);
+  }
+}
+
+/**
  * Initialize UI components
  */
 function initializeUI() {
@@ -79,6 +115,71 @@ function initializeUI() {
   
   // Set initial button states
   updateButtonStates();
+  
+  // NEW: Ensure card expander buttons are created
+  ensureCardExpanderButtons();
+}
+
+/**
+ * NEW: Ensure card expander buttons are created
+ */
+function ensureCardExpanderButtons() {
+  // This ensures buttons exist even if JS runs before DOM is fully ready
+  setTimeout(() => {
+    const card1 = document.getElementById('card-1');
+    const card2 = document.getElementById('card-2');
+    
+    // Check if buttons exist
+    if (card1 && !card1.querySelector('.card-expand-btn')) {
+      createCardExpanderButton(card1, 1);
+    }
+    
+    if (card2 && !card2.querySelector('.card-expand-btn')) {
+      createCardExpanderButton(card2, 2);
+    }
+  }, 500);
+}
+
+/**
+ * NEW: Create card expander button for a card
+ */
+function createCardExpanderButton(card, cardNumber) {
+  const header = card.querySelector('.step-header');
+  if (!header) return;
+  
+  // Create actions container
+  let actions = header.querySelector('.card-actions');
+  if (!actions) {
+    actions = document.createElement('div');
+    actions.className = 'card-actions';
+    header.appendChild(actions);
+  }
+  
+  // Create button
+  const expandBtn = document.createElement('button');
+  expandBtn.className = 'card-expand-btn';
+  expandBtn.setAttribute('data-card', card.id);
+  expandBtn.setAttribute('title', 'Maximize');
+  expandBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>
+  `;
+  actions.appendChild(expandBtn);
+  
+  // Add click handler
+  expandBtn.addEventListener('click', () => {
+    if (window.cardExpander) {
+      const isMaximized = card.classList.contains('is-maximized');
+      const isMinimized = card.classList.contains('is-minimized');
+      
+      if (isMaximized || isMinimized) {
+        window.cardExpander.restore(card, expandBtn);
+      } else {
+        window.cardExpander.maximize(card, expandBtn);
+      }
+    }
+  });
 }
 
 /**
@@ -234,6 +335,64 @@ function toggleTheme() {
 }
 
 /**
+ * NEW: Toggle card maximize/minimize
+ * @param {string} cardId - ID of card to toggle
+ */
+function toggleCard(cardId) {
+  if (window.cardExpander) {
+    const card = document.getElementById(cardId);
+    const btn = card?.querySelector('.card-expand-btn');
+    if (card && btn) {
+      window.cardExpander.toggle(card, btn);
+    }
+  }
+}
+
+/**
+ * NEW: Maximize specific card
+ * @param {string} cardId - ID of card to maximize
+ */
+function maximizeCard(cardId) {
+  if (window.cardExpander) {
+    window.cardExpander.maximizeCard(cardId);
+  }
+}
+
+/**
+ * NEW: Minimize specific card
+ * @param {string} cardId - ID of card to minimize
+ */
+function minimizeCard(cardId) {
+  if (window.cardExpander) {
+    window.cardExpander.minimizeCard(cardId);
+  }
+}
+
+/**
+ * NEW: Restore specific card
+ * @param {string} cardId - ID of card to restore
+ */
+function restoreCard(cardId) {
+  if (window.cardExpander) {
+    window.cardExpander.restoreCard(cardId);
+  }
+}
+
+/**
+ * NEW: Get card states
+ */
+function getCardStates() {
+  if (window.cardExpander) {
+    return {
+      maximized: window.cardExpander.getMaximizedCard(),
+      minimized: window.cardExpander.getMinimizedCards(),
+      hasMaximizedCard: window.cardExpander.getMaximizedCard() !== null
+    };
+  }
+  return null;
+}
+
+/**
  * Export app data for backup
  */
 function exportAppData() {
@@ -300,7 +459,13 @@ window.PromptCraft = {
   showSuccess,
   showError,
   setTheme,
-  toggleTheme
+  toggleTheme,
+  // NEW: Card expander methods
+  toggleCard,
+  maximizeCard,
+  minimizeCard,
+  restoreCard,
+  getCardStates
 };
 
 console.log('🎯 PromptCraft loaded');
