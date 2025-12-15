@@ -13,52 +13,11 @@
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
 
-  <!-- Styles -->
+  <!-- Styles - IMPORTANT: Link to the fixed CSS files -->
   <link rel="stylesheet" href="css/main.css" />
   
 <style>
-    /* Global Styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      background: var(--bg-body);
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    
-    /* Main Container - Full width */
-    .main-container {
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    
-    /* Header with Brand - Moved above cards */
-    .brand-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-    
-    .brand-container {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    
-    /* CUSTOM LOGO */
+    /* ONLY Custom Logo Styles - Keep this minimal */
     .brand-logo {
       width: 48px;
       height: 48px;
@@ -173,7 +132,7 @@
       }
     }
     
-    /* Brand Text */
+    /* Brand Text - Keep only brand-specific styles */
     .brand-text h1 {
       font-size: 1.75rem;
       margin-bottom: 0.25rem;
@@ -189,1122 +148,281 @@
       margin: 0;
     }
     
-    /* Three Cards Grid - Full width */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      align-items: stretch;
-      flex: 1;
-      margin-bottom: 1.5rem;
-    }
-    
-    /* FIX: OPTIMIZED CARD HEIGHTS */
-    .step-card {
-      background: var(--panel-bg);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      height: 580px; /* OPTIMIZED HEIGHT */
-      overflow: hidden;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    
-    .step-card:hover {
-      border-color: rgba(255, 94, 0, 0.3);
-      box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
-    }
-    
-    /* FIXED: Maximized card styles */
-    .step-card.is-maximized {
-      position: fixed !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      width: 95vw !important;
-      height: 95vh !important;
-      max-width: 1600px !important;
-      max-height: 95vh !important;
-      z-index: 9999 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-      backdrop-filter: blur(10px) !important;
-      background: var(--panel-bg) !important;
-      animation: cardMaximize 0.3s ease-out !important;
-      overflow: auto !important;
-      padding: 2rem !important;
-    }
-    
-    /* FIX: Keep elegant button normal size when maximized */
-    .step-card.is-maximized .elegant-convert-btn {
-      width: auto !important;
-      padding: 0.875rem 1.25rem !important;
-      font-size: 0.9375rem !important;
-      margin-top: 1rem !important;
-      position: static !important;
-      transform: none !important;
-    }
-    
-    /* FIX: Better layout for maximized third card */
-    .step-card.is-maximized .tools-container {
-      max-height: 60vh !important;
-      min-height: 400px !important;
-    }
-    
-    /* Step Header */
-    .step-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      position: relative;
-    }
-    
-    .step-pill {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      color: black;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 0.875rem;
-      flex-shrink: 0;
-    }
-    
-    .step-header-main {
-      flex: 1;
-    }
-    
-    .step-header-main h3 {
-      font-size: 1.125rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    .step-header-main p {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-      margin: 0;
-    }
-    
-    /* Card actions */
-    .card-actions {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-left: auto;
-      padding-left: 0.5rem;
-    }
-    
-    .card-expand-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      padding: 0;
-      flex-shrink: 0;
-    }
-    
-    .card-expand-btn:hover {
-      background: rgba(255, 94, 0, 0.2);
-      border-color: var(--primary);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.2);
-    }
-    
-    /* Card content wrapper - FIXED LAYOUT */
-    .card-content-wrapper {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-    
-    .card-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-    
-    /* FIX: Auto-convert Toggle - compact */
-    .auto-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 0.5rem 0;
-    }
-    
-    .toggle-switch {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-    }
-    
-    .toggle-switch input {
-      display: none;
-    }
-    
-    .toggle-slider {
-      width: 40px;
-      height: 22px;
-      background: var(--input-bg);
-      border-radius: 20px;
-      position: relative;
-      border: 1px solid var(--border-subtle);
-      transition: 0.3s;
-    }
-    
-    .toggle-slider::before {
-      content: "";
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: var(--text-secondary);
-      border-radius: 50%;
-      top: 1px;
-      left: 1px;
-      transition: 0.3s;
-    }
-    
-    input:checked + .toggle-slider {
-      background: rgba(255, 94, 0, 0.2);
-      border-color: var(--primary);
-    }
-    
-    input:checked + .toggle-slider::before {
-      transform: translateX(18px);
-      background: var(--primary);
-    }
-    
-    .toggle-label {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-    }
-    
-    /* Context Chips */
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
-    }
-    
-    /* Text Areas - COMPACT */
-    .textarea-container {
-      flex: 1;
-      margin-bottom: 0.75rem;
-      position: relative;
-      min-height: 180px;
-    }
-    
-    .textarea-wrapper {
-      position: relative;
-      height: 100%;
-      border: 1px solid var(--input-border);
-      border-radius: 8px;
-      background: var(--input-bg);
-      padding-top: 2.5rem;
-      overflow: hidden;
-    }
-    
-    /* FIXED: Buttons positioned at top inside the box */
-    .textarea-buttons-top {
-      position: absolute;
-      top: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem;
-      background: var(--input-bg);
-      border-bottom: 1px solid var(--input-border);
-      z-index: 10;
-      border-radius: 8px 8px 0 0;
-    }
-    
-    .top-left-buttons {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    
-    .top-right-buttons {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    
-    .language-text {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      margin-left: 0.5rem;
-    }
-    
-    .textarea-idea, .output-textarea {
-      width: 100%;
-      height: calc(100% - 2.5rem);
-      min-height: 140px;
-      padding: 1rem;
-      background: transparent;
-      border: none;
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      resize: vertical;
-      transition: all 0.3s ease;
-      box-sizing: border-box;
-      outline: none;
-    }
-    
-    /* Textarea Buttons */
-    .icon-btn {
-      width: 32px;
-      height: 32px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      border-radius: 6px;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex-shrink: 0;
-    }
-    
-    .icon-btn:hover {
-      background: rgba(255, 94, 0, 0.2);
-      transform: translateY(-1px);
-    }
-    
-    /* Helper Text */
-    .helper-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.25rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    .helper-text {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      line-height: 1.4;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.375rem;
-      flex: 1;
-    }
-    
-    .char-counter {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      flex-shrink: 0;
-      margin-left: 1rem;
-    }
-    
-    /* Elegant Convert Button - FIXED POSITION */
-    .elegant-convert-btn {
-      background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.875rem 1.25rem;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      width: 100%;
-      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: 0.75rem; /* REDUCED */
-      margin-bottom: 0;
-      flex-shrink: 0;
-    }
-    
-    .elegant-convert-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 94, 0, 0.35);
-      background: linear-gradient(135deg, #FF4500 0%, #FF5E00 100%);
-    }
-    
-    .elegant-convert-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-    
-    /* Preset Selector */
-    .preset-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 0.5rem 0;
-    }
-    
-    .preset-left {
-      flex: 1;
-    }
-    
-    .field-label {
-      display: block;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      margin-bottom: 0.375rem;
-      color: var(--text-primary);
-    }
-    
-    select {
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 6px;
-      color: var(--text-primary);
-      font-size: 0.8125rem;
-      cursor: pointer;
-    }
-    
-    /* FIX: Action Buttons - BETTER VISIBILITY */
-    .prompt-actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 0.75rem; /* REDUCED */
-      margin-bottom: 0;
-      flex-shrink: 0;
-    }
-    
-    .ghost-btn, .secondary-btn {
-      flex: 1;
-      padding: 0.75rem 0.5rem;
-      font-size: 0.8125rem;
-      font-weight: 600; /* ADDED */
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      text-align: center;
-      min-height: 42px;
-    }
-    
-    .ghost-btn {
-      background: transparent;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-    }
-    
-    .secondary-btn {
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      color: var(--primary);
-    }
-    
-    .ghost-btn:hover, .secondary-btn:hover {
-      background: rgba(255, 94, 0, 0.15);
-      transform: translateY(-1px);
-    }
-    
-    .ghost-btn:disabled, .secondary-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
-      transform: none !important;
-    }
-    
-    /* FIX: Card 3 - OPTIMIZED TOOLS CONTAINER */
-    .tools-container {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 0.5rem;
-      margin: 0.25rem 0;
-      min-height: 300px; /* REDUCED */
-      max-height: 320px;
-    }
-    
-    .tools-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    
-    .tool-card {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 8px;
-      padding: 0.875rem;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex-shrink: 0;
-    }
-    
-    .tool-card:hover {
-      border-color: var(--primary);
-      background: rgba(255, 94, 0, 0.05);
-      transform: translateY(-2px);
-    }
-    
-    .tool-card.best-match {
-      border-color: var(--primary);
-      background: rgba(255, 94, 0, 0.1);
-      position: relative;
-    }
-    
-    .tool-card.best-match::before {
-      content: '🎯 Best Match';
-      position: absolute;
-      top: -8px;
-      left: 10px;
-      background: var(--primary);
-      color: black;
-      font-size: 0.625rem;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    
-    .tool-icon {
-      width: 36px;
-      height: 36px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary);
-      font-size: 1rem;
-    }
-    
-    .tool-info h4 {
-      font-size: 0.875rem;
-      margin-bottom: 0.125rem;
-    }
-    
-    .tool-info p {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      margin: 0;
-    }
-    
-    /* Footer with Features and Stats */
-    .main-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-subtle);
-    }
-    
-    .features-footer {
-      display: flex;
-      gap: 1.5rem;
-    }
-    
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      color: var(--text-secondary);
-      font-size: 0.8125rem;
-    }
-    
-    .feature-item i {
-      color: var(--primary);
-      font-size: 0.875rem;
-    }
-    
-    .stats-footer {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--text-secondary);
-      font-size: 0.8125rem;
-    }
-    
-    .stats-footer i {
-      color: var(--primary);
-    }
-    
-    /* Theme Toggle */
-    .theme-toggle-fixed {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
-      border-radius: 50%;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-    
-    .theme-toggle-fixed:hover {
-      background: rgba(255, 94, 0, 0.2);
-      transform: rotate(15deg);
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 1200px) {
-      .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .step-card {
-        height: 560px;
-      }
-    }
-    
-    @media (max-width: 900px) {
-      .main-container {
-        padding: 1rem;
-      }
-      
-      .cards-grid {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
-      }
-      
-      .step-card {
-        height: 540px;
-      }
-      
-      .brand-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-      
-      .main-footer {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-      }
-      
-      .features-footer {
-        flex-wrap: wrap;
-        gap: 1rem;
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .step-card {
-        height: 520px;
-        padding: 1.25rem;
-      }
-      
-      .elegant-convert-btn {
-        padding: 0.75rem 1rem;
-      }
-      
-      .tools-container {
-        min-height: 280px;
-        max-height: 280px;
-      }
-      
-      /* Mobile maximize adjustments */
-      .step-card.is-maximized {
-        top: 0 !important;
-        left: 0 !important;
-        transform: none !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        border-radius: 0 !important;
-        max-width: none !important;
-        max-height: none !important;
-        padding: 1rem !important;
-      }
-      
-      .step-card.is-maximized .tools-container {
-        max-height: 50vh !important;
-        min-height: 300px !important;
-      }
-      
-      .prompt-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-    }
+    /* REMOVE ALL OTHER STYLES - They should be in the CSS files */
 </style>
 </head>
 <body>
   <!-- Main Container - Full Width -->
-  <div class="main-container">
+  <div class="app-shell"> <!-- Changed from main-container to app-shell -->
     
-    <!-- Header with Brand - Above cards -->
-    <header class="brand-header">
-      <div class="brand-container">
-        <div class="brand-logo">
-          <!-- Your Custom Logo -->
-          <div class="logo-container">
-            <div class="diamond">
-              <div class="circuit-line horizontal"></div>
-              <div class="circuit-line vertical"></div>
-              <div class="circuit-node node1"></div>
-              <div class="circuit-node node2"></div>
-              <div class="circuit-node node3"></div>
-              <div class="circuit-node node4"></div>
-              <div class="sparkle s1"></div>
-              <div class="sparkle s2"></div>
-              <div class="sparkle s3"></div>
-            </div>
-          </div>
-        </div>
-        <div class="brand-text">
-          <h1>PromptCraft</h1>
-          <p>Craft smarter prompts. Get better AI results.</p>
-        </div>
-      </div>
-    </header>
-
-    <!-- Three Cards Grid -->
-    <div class="cards-grid">
+    <!-- Sidebar (if you have one, otherwise remove) -->
+    <aside class="sidebar">
+      <!-- Sidebar content here -->
+    </aside>
+    
+    <!-- Main Panel -->
+    <main class="main-panel">
       
-      <!-- CARD 1: Your Idea - FIXED LAYOUT -->
-      <section class="step-card" id="card-1">
-        <div class="step-header">
-          <div class="step-pill">1</div>
-          <div class="step-header-main">
-            <h3>Your Idea</h3>
-            <p>Type or speak your rough requirement</p>
-          </div>
-          <div class="card-actions">
-            <button class="card-expand-btn" title="Maximize">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="card-content-wrapper">
-          <div class="card-body">
-            <!-- Auto-convert -->
-            <div class="auto-row">
-              <label class="toggle-switch">
-                <input type="checkbox" id="autoConvert" checked />
-                <span class="toggle-slider"></span>
-                <span class="toggle-label">Auto-convert as I type</span>
-              </label>
-            </div>
-
-            <!-- Context Chips -->
-            <div class="chip-row" id="contextChipsRow" style="display:none;"></div>
-
-            <!-- Requirement textarea with FIXED button positioning -->
-            <div class="textarea-container">
-              <div class="textarea-wrapper">
-                <!-- Top buttons inside the textarea box -->
-                <div class="textarea-buttons-top">
-                  <div class="top-left-buttons">
-                    <button class="icon-btn" id="clearRequirementBtn" title="Clear">
-                      <i class="fas fa-xmark"></i>
-                    </button>
-                    <span class="language-text">
-                      <i class="fas fa-language"></i>
-                      Mix Hindi, English, or Hinglish
-                    </span>
-                  </div>
-                  <div class="top-right-buttons">
-                    <button class="icon-btn" id="voiceBtn" title="Voice input">
-                      <i class="fas fa-microphone"></i>
-                    </button>
-                  </div>
+      <!-- Header with Brand -->
+      <header class="top-bar">
+        <div class="page-title">
+          <div class="brand-container">
+            <div class="brand-logo">
+              <!-- Your Custom Logo -->
+              <div class="logo-container">
+                <div class="diamond">
+                  <div class="circuit-line horizontal"></div>
+                  <div class="circuit-line vertical"></div>
+                  <div class="circuit-node node1"></div>
+                  <div class="circuit-node node2"></div>
+                  <div class="circuit-node node3"></div>
+                  <div class="circuit-node node4"></div>
+                  <div class="sparkle s1"></div>
+                  <div class="sparkle s2"></div>
+                  <div class="sparkle s3"></div>
                 </div>
-                
-                <textarea
-                  id="requirement"
-                  class="textarea-idea"
-                  placeholder='Type your idea here... Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write professional email about project delay"'
-                ></textarea>
-              </div>
-              <div class="helper-row">
-                <span class="helper-text">
-                  <i class="fas fa-lightbulb"></i>
-                  Auto-detection understands mixed languages and context.
-                </span>
-                <span class="char-counter" id="inputStats">0 chars</span>
               </div>
             </div>
-            
-            <!-- Elegant Convert Button - Positioned for easy access -->
-            <button class="elegant-convert-btn" id="convertBtn" disabled>
-              <i class="fas fa-magic"></i>
-              Convert Idea to Prompt
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- CARD 2: Structured Prompt - FIXED LAYOUT -->
-      <section class="step-card" id="card-2">
-        <div class="step-header">
-          <div class="step-pill">2</div>
-          <div class="step-header-main">
-            <h3>Structured Prompt</h3>
-            <p>AI-ready formatted prompt</p>
-          </div>
-          <div class="card-actions">
-            <button class="card-expand-btn" title="Maximize">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="card-content-wrapper">
-          <div class="card-body">
-            <!-- Preset Selector -->
-            <div class="preset-row">
-              <div class="preset-left">
-                <label class="field-label">Preset</label>
-                <select id="presetSelect">
-                  <option value="default">Default – General Purpose</option>
-                  <option value="communication">Communication – Emails, Messages</option>
-                  <option value="coding">Coding – Dev Tasks</option>
-                  <option value="writing">Writing – Blogs, Stories</option>
-                  <option value="analysis">Analysis – Reviews & Comparisons</option>
-                </select>
-              </div>
+            <div class="brand-text">
+              <h1>PromptCraft</h1>
+              <p>Craft smarter prompts. Get better AI results.</p>
             </div>
+          </div>
+        </div>
+        <div class="top-right">
+          <!-- Optional: Add settings or other buttons here -->
+        </div>
+      </header>
 
-            <!-- Output textarea with copy button -->
-            <div class="textarea-container">
-              <div class="textarea-wrapper">
-                <!-- Top buttons inside the textarea box -->
-                <div class="textarea-buttons-top">
-                  <div class="top-left-buttons">
-                    <span class="language-text">
-                      <i class="fas fa-code"></i>
-                      AI-ready formatted prompt
-                    </span>
+      <!-- Three Cards Grid -->
+      <div class="cards-grid">
+        
+        <!-- CARD 1: Your Idea -->
+        <section class="step-card" id="card-1">
+          <div class="step-header">
+            <div class="step-pill">1</div>
+            <div class="step-header-main">
+              <h3>Your Idea</h3>
+              <p>Type or speak your rough requirement</p>
+            </div>
+            <div class="card-actions">
+              <button class="card-expand-btn" title="Maximize">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="card-content-wrapper">
+            <div class="card-body">
+              <!-- Auto-convert -->
+              <div class="auto-row">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="autoConvert" checked />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Auto-convert as I type</span>
+                </label>
+              </div>
+
+              <!-- Context Chips -->
+              <div class="chip-row" id="contextChipsRow"></div>
+
+              <!-- Requirement textarea -->
+              <div class="textarea-container">
+                <div class="textarea-wrapper">
+                  <!-- Top buttons inside the textarea box -->
+                  <div class="textarea-buttons-top">
+                    <div class="top-left-buttons">
+                      <button class="icon-btn" id="clearRequirementBtn" title="Clear">
+                        <i class="fas fa-xmark"></i>
+                      </button>
+                      <span class="language-text">
+                        <i class="fas fa-language"></i>
+                        Mix Hindi, English, or Hinglish
+                      </span>
+                    </div>
+                    <div class="top-right-buttons">
+                      <button class="icon-btn" id="voiceBtn" title="Voice input">
+                        <i class="fas fa-microphone"></i>
+                      </button>
+                    </div>
                   </div>
-                  <div class="top-right-buttons">
-                    <button class="icon-btn" id="copyOutputBtn" title="Copy">
-                      <i class="fas fa-copy"></i>
-                    </button>
-                  </div>
+                  
+                  <textarea
+                    id="requirement"
+                    class="textarea-idea"
+                    placeholder='Type your idea here... Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write professional email about project delay"'
+                  ></textarea>
                 </div>
-                
-                <textarea
-                  id="output"
-                  class="output-textarea"
-                  placeholder="Your AI-ready prompt will appear here..."
-                  readonly
-                ></textarea>
+                <div class="helper-row">
+                  <span class="helper-text">
+                    <i class="fas fa-lightbulb"></i>
+                    Auto-detection understands mixed languages and context.
+                  </span>
+                  <span class="char-counter" id="inputStats">0 chars</span>
+                </div>
               </div>
-              <div class="helper-row">
-                <span class="helper-text">
-                  <i class="fas fa-circle-nodes"></i>
-                  Compatible with ChatGPT, Claude, Gemini, DALL·E, Midjourney, and more.
-                </span>
-                <span class="char-counter" id="outputStats">0 chars</span>
+              
+              <!-- Elegant Convert Button -->
+              <button class="elegant-convert-btn" id="convertBtn" disabled>
+                <i class="fas fa-magic"></i>
+                Convert Idea to Prompt
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- CARD 2: Structured Prompt -->
+        <section class="step-card" id="card-2">
+          <div class="step-header">
+            <div class="step-pill">2</div>
+            <div class="step-header-main">
+              <h3>Structured Prompt</h3>
+              <p>AI-ready formatted prompt</p>
+            </div>
+            <div class="card-actions">
+              <button class="card-expand-btn" title="Maximize">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="card-content-wrapper">
+            <div class="card-body">
+              <!-- Preset Selector -->
+              <div class="preset-row">
+                <div class="preset-left">
+                  <label class="field-label">Preset</label>
+                  <select id="presetSelect">
+                    <option value="default">Default – General Purpose</option>
+                    <option value="communication">Communication – Emails, Messages</option>
+                    <option value="coding">Coding – Dev Tasks</option>
+                    <option value="writing">Writing – Blogs, Stories</option>
+                    <option value="analysis">Analysis – Reviews & Comparisons</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Output textarea with copy button -->
+              <div class="textarea-container">
+                <div class="textarea-wrapper">
+                  <!-- Top buttons inside the textarea box -->
+                  <div class="textarea-buttons-top">
+                    <div class="top-left-buttons">
+                      <span class="language-text">
+                        <i class="fas fa-code"></i>
+                        AI-ready formatted prompt
+                      </span>
+                    </div>
+                    <div class="top-right-buttons">
+                      <button class="icon-btn" id="copyOutputBtn" title="Copy">
+                        <i class="fas fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <textarea
+                    id="output"
+                    class="output-textarea"
+                    placeholder="Your AI-ready prompt will appear here..."
+                    readonly
+                  ></textarea>
+                </div>
+                <div class="helper-row">
+                  <span class="helper-text">
+                    <i class="fas fa-circle-nodes"></i>
+                    Compatible with ChatGPT, Claude, Gemini, DALL·E, Midjourney, and more.
+                  </span>
+                  <span class="char-counter" id="outputStats">0 chars</span>
+                </div>
+              </div>
+              
+              <!-- Action buttons - FIXED: Using btn classes -->
+              <div class="prompt-actions">
+                <button class="btn btn-secondary export-btn">
+                  <i class="fas fa-download"></i> Export Prompt
+                </button>
+                <button class="btn btn-secondary save-template-btn">
+                  <i class="fas fa-save"></i> Save as Template
+                </button>
               </div>
             </div>
-            
-            <!-- Action buttons - Positioned for easy access -->
-      <div class="prompt-actions">
-  <button class="btn btn-secondary export-btn">
-    <i class="fas fa-download"></i> Export Prompt
-  </button>
-  <button class="btn btn-secondary save-template-btn">
-    <i class="fas fa-save"></i> Save as Template
-  </button>
-</div>
-      </section>
-
-      <!-- CARD 3: Send to AI -->
-      <section class="step-card" id="card-3">
-        <div class="step-header">
-          <div class="step-pill">3</div>
-          <div class="step-header-main">
-            <h3>Send to AI</h3>
-            <p>Open with your preferred tool</p>
           </div>
-          <div class="card-actions">
-            <button class="card-expand-btn" title="Maximize">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
-        </div>
+        </section>
 
-        <div class="card-content-wrapper">
-          <div class="card-body">
-            <!-- Scrollable tools container -->
-            <div class="tools-container">
-              <div class="tools-grid" id="aiToolsGrid">
-                <!-- AI tools will be dynamically rendered here -->
-              </div>
+        <!-- CARD 3: Send to AI -->
+        <section class="step-card" id="card-3">
+          <div class="step-header">
+            <div class="step-pill">3</div>
+            <div class="step-header-main">
+              <h3>Send to AI</h3>
+              <p>Open with your preferred tool</p>
             </div>
+            <div class="card-actions">
+              <button class="card-expand-btn" title="Maximize">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
 
-            <p class="helper-text">
-              <i class="fas fa-sort"></i>
-              Tools are ordered by relevance. Image tools appear first for image prompts.
-            </p>
+          <div class="card-content-wrapper">
+            <div class="card-body">
+              <!-- Scrollable tools container -->
+              <div class="tools-container">
+                <div class="tools-grid" id="aiToolsGrid">
+                  <!-- AI tools will be dynamically rendered here -->
+                </div>
+              </div>
+
+              <p class="helper-text">
+                <i class="fas fa-sort"></i>
+                Tools are ordered by relevance. Image tools appear first for image prompts.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <footer class="main-footer">
+        <div class="features-footer">
+          <div class="feature-item">
+            <i class="fas fa-microphone"></i>
+            <span>Voice input</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <span>Smart restructuring</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-brain"></i>
+            <span>Auto-context detection</span>
           </div>
         </div>
-      </section>
-    </div>
-
-    <!-- Footer with Features and Stats -->
-    <footer class="main-footer">
-      <div class="features-footer">
-        <div class="feature-item">
-          <i class="fas fa-microphone"></i>
-          <span>Voice input</span>
+        
+        <div class="stats-footer" id="usageCount">
+          <i class="fas fa-bolt"></i>
+          <span>0 prompts generated</span>
         </div>
-        <div class="feature-item">
-          <i class="fas fa-wand-magic-sparkles"></i>
-          <span>Smart restructuring</span>
-        </div>
-        <div class="feature-item">
-          <i class="fas fa-brain"></i>
-          <span>Auto-context detection</span>
-        </div>
-      </div>
-      
-      <div class="stats-footer" id="usageCount">
-        <i class="fas fa-bolt"></i>
-        <span>0 prompts generated</span>
-      </div>
-    </footer>
-
-    <!-- Theme Toggle - Bottom Right Corner -->
-    <button id="themeToggle" class="theme-toggle-fixed" title="Change theme">
-      <i class="fas fa-moon"></i>
-    </button>
+      </footer>
+    </main>
   </div>
+
+  <!-- Theme Toggle - Bottom Right Corner -->
+  <button id="themeToggle" class="theme-toggle-fixed" title="Change theme">
+    <i class="fas fa-moon"></i>
+  </button>
 
   <!-- Scripts -->
   <script type="module" src="js/app.js"></script>
   
-  <script>
-    // Card maximize/minimize functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      const cards = document.querySelectorAll('.step-card');
-      const expandButtons = document.querySelectorAll('.card-expand-btn');
-      
-      // Add event listeners to expand buttons
-      expandButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const card = this.closest('.step-card');
-          toggleCardSize(card, this);
-        });
-      });
-      
-      // Add click event to minimized cards
-      cards.forEach(card => {
-        card.addEventListener('click', function(e) {
-          if (this.classList.contains('is-minimized') && 
-              !e.target.closest('.card-actions')) {
-            const button = this.querySelector('.card-expand-btn');
-            toggleCardSize(this, button);
-          }
-        });
-      });
-      
-      // Function to toggle card size
-      function toggleCardSize(card, button) {
-        const isMaximized = card.classList.contains('is-maximized');
-        const isMinimized = card.classList.contains('is-minimized');
-        
-        if (isMaximized) {
-          // Currently maximized, minimize it
-          card.classList.remove('is-maximized');
-          card.classList.add('is-minimized');
-          button.innerHTML = '<i class="fas fa-expand"></i>';
-          button.title = 'Maximize';
-          document.body.classList.remove('card-max-open');
-        } else if (isMinimized) {
-          // Currently minimized, restore to normal
-          card.classList.remove('is-minimized');
-          button.innerHTML = '<i class="fas fa-expand"></i>';
-          button.title = 'Maximize';
-        } else {
-          // Currently normal, maximize it
-          // First, minimize any other maximized card
-          const otherMaximized = document.querySelector('.step-card.is-maximized');
-          if (otherMaximized && otherMaximized !== card) {
-            const otherBtn = otherMaximized.querySelector('.card-expand-btn');
-            otherMaximized.classList.remove('is-maximized');
-            if (otherBtn) {
-              otherBtn.innerHTML = '<i class="fas fa-expand"></i>';
-              otherBtn.title = 'Maximize';
-            }
-          }
-          
-          card.classList.add('is-maximized');
-          button.innerHTML = '<i class="fas fa-compress"></i>';
-          button.title = 'Minimize';
-          document.body.classList.add('card-max-open');
-          
-          // Prevent horizontal overflow
-          card.style.overflowX = 'hidden';
-          card.style.maxWidth = '100%';
-          
-          // Scroll to top of card
-          card.scrollTop = 0;
-          
-          // Close on Escape key
-          const escapeHandler = function(e) {
-            if (e.key === 'Escape' && card.classList.contains('is-maximized')) {
-              card.classList.remove('is-maximized');
-              button.innerHTML = '<i class="fas fa-expand"></i>';
-              button.title = 'Maximize';
-              document.body.classList.remove('card-max-open');
-              document.removeEventListener('keydown', escapeHandler);
-            }
-          };
-          
-          document.addEventListener('keydown', escapeHandler);
-          
-          // Remove event listener when card is minimized
-          const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-              if (!card.classList.contains('is-maximized')) {
-                document.removeEventListener('keydown', escapeHandler);
-                observer.disconnect();
-              }
-            });
-          });
-          
-          observer.observe(card, { attributes: true, attributeFilter: ['class'] });
-        }
-      }
-      
-      // Close maximized card when clicking on overlay
-      document.addEventListener('click', function(e) {
-        const maximizedCard = document.querySelector('.step-card.is-maximized');
-        if (maximizedCard && 
-            !maximizedCard.contains(e.target) && 
-            !e.target.closest('.card-expand-btn') &&
-            document.body.classList.contains('card-max-open')) {
-          
-          const button = maximizedCard.querySelector('.card-expand-btn');
-          maximizedCard.classList.remove('is-maximized');
-          if (button) {
-            button.innerHTML = '<i class="fas fa-expand"></i>';
-            button.title = 'Maximize';
-          }
-          document.body.classList.remove('card-max-open');
-        }
-      });
-    });
-    
-    // Enable/disable action buttons based on prompt generation
-    function updateActionButtons() {
-      const outputTextarea = document.getElementById('output');
-      const exportBtn = document.getElementById('exportBtn');
-      const saveBtn = document.getElementById('saveTemplateBtn');
-      
-      const hasPrompt = outputTextarea && outputTextarea.value.trim().length > 0;
-      
-      if (exportBtn) exportBtn.disabled = !hasPrompt;
-      if (saveBtn) saveBtn.disabled = !hasPrompt;
-    }
-    
-    // Update buttons on load and when output changes
-    document.addEventListener('DOMContentLoaded', function() {
-      updateActionButtons();
-      
-      const outputTextarea = document.getElementById('output');
-      if (outputTextarea) {
-        outputTextarea.addEventListener('input', updateActionButtons);
-      }
-      
-      // Update when convert button is clicked
-      const convertBtn = document.getElementById('convertBtn');
-      if (convertBtn) {
-        const originalClick = convertBtn.onclick;
-        convertBtn.onclick = function(e) {
-          if (originalClick) originalClick.call(this, e);
-          setTimeout(updateActionButtons, 800);
-        };
-      }
-    });
-  </script>
-  <script>
-// Add this JavaScript to fix layout on load
-document.addEventListener('DOMContentLoaded', function() {
-  // Force layout recalculation
-  setTimeout(function() {
-    // Fix card heights
-    const cards = document.querySelectorAll('.step-card');
-    cards.forEach(card => {
-      if (!card.classList.contains('is-maximized') && 
-          !card.classList.contains('is-minimized')) {
-        card.style.height = '620px';
-        card.style.minHeight = '620px';
-      }
-    });
-    
-    // Ensure buttons are visible
-    const convertBtn = document.querySelector('.elegant-convert-btn');
-    const actionBtns = document.querySelector('.prompt-actions');
-    
-    if (convertBtn) {
-      convertBtn.style.marginTop = '0.5rem';
-      convertBtn.style.marginBottom = '0.5rem';
-    }
-    
-    if (actionBtns) {
-      actionBtns.style.marginTop = '0.5rem';
-      actionBtns.style.marginBottom = '0.5rem';
-    }
-    
-    // Fix textarea heights
-    const textareas = document.querySelectorAll('.textarea-idea, .output-textarea');
-    textareas.forEach(textarea => {
-      textarea.style.minHeight = '120px';
-      textarea.style.maxHeight = '180px';
-    });
-    
-    console.log('✅ Layout fixes applied');
-  }, 100);
-});
-</script>
   <!-- Templates Modal (will be injected by JavaScript) -->
-<div id="templates-modal-container"></div>
+  <div id="templates-modal-container"></div>
 
-<!-- Template Editor Modal (will be injected by JavaScript) -->
-<div id="template-editor-container"></div>
+  <!-- Template Editor Modal (will be injected by JavaScript) -->
+  <div id="template-editor-container"></div>
 
-<!-- Notifications Container -->
-<div class="notification-container"></div>
-</body>  <!-- This should already exist -->
+  <!-- Notifications Container -->
+  <div class="notification-container"></div>
+
 </body>
 </html>
