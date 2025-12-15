@@ -1,288 +1,243 @@
 // notifications.js - Notification System
 
-import { NOTIFICATION_TYPES, ANIMATION_DURATIONS } from '../core/constants.js';
+/**
+ * Notification types and styles
+ */
+const NOTIFICATION_TYPES = {
+  SUCCESS: {
+    icon: 'fa-check-circle',
+    color: '#00FF41',
+    background: 'rgba(0, 255, 65, 0.1)',
+    border: 'rgba(0, 255, 65, 0.3)'
+  },
+  ERROR: {
+    icon: 'fa-exclamation-circle',
+    color: '#FF4444',
+    background: 'rgba(255, 68, 68, 0.1)',
+    border: 'rgba(255, 68, 68, 0.3)'
+  },
+  INFO: {
+    icon: 'fa-info-circle',
+    color: '#00F3FF',
+    background: 'rgba(0, 243, 255, 0.1)',
+    border: 'rgba(0, 243, 255, 0.3)'
+  },
+  WARNING: {
+    icon: 'fa-triangle-exclamation',
+    color: '#FFA726',
+    background: 'rgba(255, 167, 38, 0.1)',
+    border: 'rgba(255, 167, 38, 0.3)'
+  }
+};
 
 /**
- * Notification Manager
+ * Show notification
+ * @param {string} message - Notification message
+ * @param {string} type - Notification type
+ * @param {number} duration - Duration in milliseconds
  */
-class NotificationManager {
-  constructor() {
-    this.container = null;
-    this.notifications = new Map();
-    this.nextId = 1;
-    this.init();
-  }
-
-  /**
-   * Initialize notification container
-   */
-  init() {
-    // Create container if it doesn't exist
-    this.container = document.getElementById('notification-container');
-    if (!this.container) {
-      this.container = document.createElement('div');
-      this.container.id = 'notification-container';
-      this.container.className = 'notification-container';
-      document.body.appendChild(this.container);
-    }
-  }
-
-  /**
-   * Show notification
-   * @param {string} message - Notification message
-   * @param {string} type - Notification type (success, error, info, warning)
-   * @param {number} duration - Auto-close duration in ms (0 for manual close)
-   * @returns {string} Notification ID
-   */
-  show(message, type = NOTIFICATION_TYPES.INFO, duration = 3000) {
-    const id = `notification-${this.nextId++}`;
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.id = id;
-    notification.className = `notification ${type}`;
-    notification.setAttribute('role', 'alert');
-    notification.setAttribute('aria-live', 'polite');
-    
-    // Get icon based on type
-    const icon = this.getIconForType(type);
-    
-    notification.innerHTML = `
-      <div class="notification-icon">
-        <i class="${icon}"></i>
-      </div>
-      <div class="notification-content">
-        <div class="notification-title">${this.getTitleForType(type)}</div>
-        <div class="notification-message">${message}</div>
-      </div>
-      <button class="notification-close" aria-label="Close notification">
-        <i class="fas fa-times"></i>
-      </button>
-    `;
-    
-    // Add to container and DOM
-    this.container.appendChild(notification);
-    this.notifications.set(id, { element: notification, timeout: null });
-    
-    // Add close handler
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.addEventListener('click', () => this.close(id));
-    
-    // Auto-close if duration specified
-    if (duration > 0) {
-      const timeout = setTimeout(() => this.close(id), duration);
-      this.notifications.get(id).timeout = timeout;
-    }
-    
-    // Trigger animation
+export function showNotification(message, type = 'INFO', duration = 3000) {
+  const notificationType = NOTIFICATION_TYPES[type] || NOTIFICATION_TYPES.INFO;
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: ${notificationType.background};
+    color: ${notificationType.color};
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 0 20px ${notificationType.border};
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 1080;
+    border: 1px solid ${notificationType.border};
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  `;
+  
+  notification.innerHTML = `
+    <i class="fas ${notificationType.icon}"></i>
+    <span>${message}</span>
+  `;
+  
+  // Add to body
+  document.body.appendChild(notification);
+  
+  // Show notification with animation
+  setTimeout(() => {
+    notification.style.display = 'flex';
     setTimeout(() => {
-      notification.classList.add('show');
+      notification.style.opacity = '1';
     }, 10);
-    
-    return id;
-  }
-
-  /**
-   * Close notification
-   * @param {string} id - Notification ID
-   */
-  close(id) {
-    const notificationData = this.notifications.get(id);
-    if (!notificationData) return;
-    
-    const { element, timeout } = notificationData;
-    
-    // Clear timeout if exists
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-    
-    // Add hide animation
-    element.classList.add('hide');
-    
-    // Remove from DOM after animation
+  }, 10);
+  
+  // Remove after duration
+  setTimeout(() => {
+    notification.style.opacity = '0';
     setTimeout(() => {
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
       }
-      this.notifications.delete(id);
-    }, ANIMATION_DURATIONS.BASE);
-  }
-
-  /**
-   * Close all notifications
-   */
-  closeAll() {
-    for (const id of this.notifications.keys()) {
-      this.close(id);
-    }
-  }
-
-  /**
-   * Get icon for notification type
-   * @param {string} type - Notification type
-   * @returns {string} Icon class
-   */
-  getIconForType(type) {
-    switch (type) {
-      case NOTIFICATION_TYPES.SUCCESS:
-        return 'fas fa-check-circle';
-      case NOTIFICATION_TYPES.ERROR:
-        return 'fas fa-exclamation-circle';
-      case NOTIFICATION_TYPES.WARNING:
-        return 'fas fa-exclamation-triangle';
-      case NOTIFICATION_TYPES.INFO:
-      default:
-        return 'fas fa-info-circle';
-    }
-  }
-
-  /**
-   * Get title for notification type
-   * @param {string} type - Notification type
-   * @returns {string} Title
-   */
-  getTitleForType(type) {
-    switch (type) {
-      case NOTIFICATION_TYPES.SUCCESS:
-        return 'Success';
-      case NOTIFICATION_TYPES.ERROR:
-        return 'Error';
-      case NOTIFICATION_TYPES.WARNING:
-        return 'Warning';
-      case NOTIFICATION_TYPES.INFO:
-      default:
-        return 'Information';
-    }
-  }
-
-  /**
-   * Show success notification
-   * @param {string} message - Message
-   * @param {number} duration - Duration
-   * @returns {string} Notification ID
-   */
-  success(message, duration = 3000) {
-    return this.show(message, NOTIFICATION_TYPES.SUCCESS, duration);
-  }
-
-  /**
-   * Show error notification
-   * @param {string} message - Message
-   * @param {number} duration - Duration
-   * @returns {string} Notification ID
-   */
-  error(message, duration = 5000) {
-    return this.show(message, NOTIFICATION_TYPES.ERROR, duration);
-  }
-
-  /**
-   * Show info notification
-   * @param {string} message - Message
-   * @param {number} duration - Duration
-   * @returns {string} Notification ID
-   */
-  info(message, duration = 3000) {
-    return this.show(message, NOTIFICATION_TYPES.INFO, duration);
-  }
-
-  /**
-   * Show warning notification
-   * @param {string} message - Message
-   * @param {number} duration - Duration
-   * @returns {string} Notification ID
-   */
-  warning(message, duration = 4000) {
-    return this.show(message, NOTIFICATION_TYPES.WARNING, duration);
-  }
-
-  /**
-   * Update existing notification
-   * @param {string} id - Notification ID
-   * @param {string} message - New message
-   * @param {string} type - New type
-   */
-  update(id, message, type) {
-    const notificationData = this.notifications.get(id);
-    if (!notificationData) return;
-    
-    const { element } = notificationData;
-    const icon = this.getIconForType(type);
-    const title = this.getTitleForType(type);
-    
-    element.className = `notification ${type}`;
-    element.querySelector('.notification-icon i').className = icon;
-    element.querySelector('.notification-title').textContent = title;
-    element.querySelector('.notification-message').textContent = message;
-  }
-
-  /**
-   * Get notification count
-   * @returns {number} Number of active notifications
-   */
-  getCount() {
-    return this.notifications.size;
-  }
-
-  /**
-   * Check if notification exists
-   * @param {string} id - Notification ID
-   * @returns {boolean} True if exists
-   */
-  has(id) {
-    return this.notifications.has(id);
-  }
-
-  /**
-   * Destroy notification system
-   */
-  destroy() {
-    this.closeAll();
-    if (this.container && this.container.parentNode) {
-      this.container.parentNode.removeChild(this.container);
-    }
-    this.notifications.clear();
-  }
+    }, 300);
+  }, duration);
+  
+  return notification;
 }
 
-// Create singleton instance
-const notificationManager = new NotificationManager();
-
-// Export functions
-export function showNotification(message, type = NOTIFICATION_TYPES.INFO, duration = 3000) {
-  return notificationManager.show(message, type, duration);
-}
-
+/**
+ * Show success notification
+ * @param {string} message - Success message
+ * @param {number} duration - Duration in milliseconds
+ */
 export function showSuccess(message, duration = 3000) {
-  return notificationManager.success(message, duration);
+  return showNotification(message, 'SUCCESS', duration);
 }
 
-export function showError(message, duration = 5000) {
-  return notificationManager.error(message, duration);
+/**
+ * Show error notification
+ * @param {string} message - Error message
+ * @param {number} duration - Duration in milliseconds
+ */
+export function showError(message, duration = 4000) {
+  return showNotification(message, 'ERROR', duration);
 }
 
+/**
+ * Show info notification
+ * @param {string} message - Info message
+ * @param {number} duration - Duration in milliseconds
+ */
 export function showInfo(message, duration = 3000) {
-  return notificationManager.info(message, duration);
+  return showNotification(message, 'INFO', duration);
 }
 
-export function showWarning(message, duration = 4000) {
-  return notificationManager.warning(message, duration);
+/**
+ * Show warning notification
+ * @param {string} message - Warning message
+ * @param {number} duration - Duration in milliseconds
+ */
+export function showWarning(message, duration = 3500) {
+  return showNotification(message, 'WARNING', duration);
 }
 
-export function closeNotification(id) {
-  return notificationManager.close(id);
+/**
+ * Show loading notification
+ * @param {string} message - Loading message
+ * @returns {Function} Function to hide the loading notification
+ */
+export function showLoading(message = 'Loading...') {
+  const notification = document.createElement('div');
+  notification.className = 'notification loading';
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 243, 255, 0.1);
+    color: #00F3FF;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1080;
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+  `;
+  
+  notification.innerHTML = `
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>${message}</span>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Return function to hide the loading notification
+  return () => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  };
 }
 
-export function closeAllNotifications() {
-  return notificationManager.closeAll();
+/**
+ * Show confirmation dialog
+ * @param {string} message - Confirmation message
+ * @param {Function} onConfirm - Callback when confirmed
+ * @param {Function} onCancel - Callback when cancelled
+ */
+export function showConfirmation(message, onConfirm, onCancel = () => {}) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-backdrop';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1040;
+    backdrop-filter: blur(4px);
+  `;
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal confirmation-modal';
+  modal.style.cssText = `
+    background: var(--panel-bg);
+    border-radius: 8px;
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 30px rgba(255, 94, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    overflow: hidden;
+  `;
+  
+  modal.innerHTML = `
+    <div class="modal-header">
+      <h3><i class="fas fa-question-circle"></i> Confirm Action</h3>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--text-secondary); margin-bottom: 20px;">${message}</p>
+      <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn-secondary" id="cancelBtn">Cancel</button>
+        <button class="btn-primary" id="confirmBtn">Confirm</button>
+      </div>
+    </div>
+  `;
+  
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  
+  // Add event listeners
+  modal.querySelector('#confirmBtn').addEventListener('click', () => {
+    document.body.removeChild(overlay);
+    if (onConfirm) onConfirm();
+  });
+  
+  modal.querySelector('#cancelBtn').addEventListener('click', () => {
+    document.body.removeChild(overlay);
+    if (onCancel) onCancel();
+  });
+  
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+      if (onCancel) onCancel();
+    }
+  });
 }
-
-export function updateNotification(id, message, type) {
-  return notificationManager.update(id, message, type);
-}
-
-export function getNotificationCount() {
-  return notificationManager.getCount();
-}
-
-export default notificationManager;
