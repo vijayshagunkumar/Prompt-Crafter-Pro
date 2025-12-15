@@ -6,13 +6,12 @@ import { STORAGE_KEYS, DEFAULTS } from './core/constants.js';
 
 // Import feature modules
 import { initializeVoice } from './features/voice.js';
-import { loadTemplates, setupTemplateEventHandlers } from './features/templates.js';
+import { loadTemplates } from './features/templates.js';
 import { loadHistory } from './features/history.js';
 import { detectContextFromText } from './features/context-detective.js';
-import { initCardExpander } from './features/card-expander.js';
 
 // Import AI modules
-import { setupToolClickHandlers, updateAIToolsGrid, loadBrandIcons } from './ai/ai-tools.js';
+import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
 
 // Import UI modules
 import { initializeEventHandlers } from './ui/event-handlers.js';
@@ -24,39 +23,26 @@ import modalManager from './ui/modal-manager.js';
  */
 async function initializeApp() {
   try {
-    console.log('🚀 PromptCraft Pro Initializing...');
-    
     // Show loading state
-    document.body.classList.add('loading');
+    console.log('🚀 Initializing PromptCraft...');
     
     // Initialize app state
     appState.init();
     
-    // Load AI tool brand icons
-    loadBrandIcons();
-    
-    // Initialize card expander
-    initCardExpander();
-    
     // Load data
-    await Promise.all([
-      loadTemplates(),
-      loadHistory()
-    ]);
+    loadTemplates();
+    loadHistory();
     
     // Initialize voice features
     initializeVoice();
     
-    // Initialize UI components
-    initializeUI();
-    
     // Initialize event handlers (includes card expander)
     initializeEventHandlers();
     
-    // Setup tool click handlers
-    setupToolClickHandlers(showNotification);
+    // Initialize UI
+    initializeUI();
     
-    // Initialize AI tools grid
+    // Initialize AI tools
     initializeAITools();
     
     // Initialize theme
@@ -65,18 +51,19 @@ async function initializeApp() {
     // Update stats
     updateAllStats();
     
+    // Setup tool click handlers
+    setupToolClickHandlers(showNotification);
+    
     // Show welcome message
     setTimeout(() => {
       showSuccess('PromptCraft is ready! Start crafting prompts.');
     }, 1000);
     
-    console.log('✅ App initialized successfully');
+    console.log('✅ PromptCraft initialized successfully');
     
   } catch (error) {
     console.error('❌ Failed to initialize app:', error);
     showError('Failed to initialize application. Please refresh the page.');
-  } finally {
-    document.body.classList.remove('loading');
   }
 }
 
