@@ -1,4 +1,4 @@
-// js/features/card-expander.js - COMPLETE WORKING VERSION
+// js/features/card-expander.js - FIXED VERSION WITH HORIZONTAL OVERFLOW PREVENTION
 
 export class CardExpander {
   constructor() {
@@ -33,14 +33,10 @@ export class CardExpander {
   }
 
   createButtons() {
-    console.log('🔧 CardExpander: Creating buttons for card-1 and card-2...');
+    console.log('🔧 CardExpander: Creating buttons for all cards...');
     
-    // Remove any existing buttons first
-    const oldButtons = document.querySelectorAll('.card-expand-btn');
-    oldButtons.forEach(btn => btn.remove());
-    
-    // Create buttons for both cards
-    ['card-1', 'card-2'].forEach(cardId => {
+    // Create buttons for all cards
+    ['card-1', 'card-2', 'card-3'].forEach(cardId => {
       const card = document.getElementById(cardId);
       if (!card) {
         console.warn(`⚠️ ${cardId} not found`);
@@ -60,6 +56,9 @@ export class CardExpander {
         actions.className = 'card-actions';
         header.appendChild(actions);
       }
+      
+      // Clear existing buttons
+      actions.innerHTML = '';
       
       // Create maximize button
       const button = document.createElement('button');
@@ -98,6 +97,13 @@ export class CardExpander {
       if (e.key === 'Escape' && this.maximizedCard) {
         console.log('⎋ ESC pressed, restoring card');
         this.restoreCard(this.maximizedCard);
+      }
+    });
+    
+    // Handle window resize for maximized cards
+    window.addEventListener('resize', () => {
+      if (this.maximizedCard) {
+        this.adjustMaximizedCard(this.maximizedCard);
       }
     });
     
@@ -144,9 +150,17 @@ export class CardExpander {
     card.classList.add('is-maximized');
     document.body.classList.add('card-max-open');
     
-    // Update button title
+    // Apply horizontal overflow prevention
+    this.applyMaximizedStyles(card);
+    
+    // Update button icon and title
     const button = card.querySelector('.card-expand-btn');
     if (button) {
+      button.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3m0 18h3a2 2 0 0 0 2-2v-3m-6 0V8m11 8v3a2 2 0 0 1-2 2h-3m0-18h-3a2 2 0 0 0-2 2v3"/>
+        </svg>
+      `;
       button.setAttribute('title', 'Restore');
     }
     
@@ -177,6 +191,11 @@ export class CardExpander {
     // Update button title
     const button = card.querySelector('.card-expand-btn');
     if (button) {
+      button.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      `;
       button.setAttribute('title', 'Restore');
     }
     
@@ -203,9 +222,17 @@ export class CardExpander {
       document.body.classList.remove('card-max-open');
     }
     
-    // Update button title
+    // Remove maximized styles
+    this.removeMaximizedStyles(card);
+    
+    // Update button icon and title
     const button = card.querySelector('.card-expand-btn');
     if (button) {
+      button.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      `;
       button.setAttribute('title', 'Maximize');
     }
     
@@ -218,6 +245,77 @@ export class CardExpander {
     
     console.log(`✅ ${cardId} restored`);
     return true;
+  }
+
+  applyMaximizedStyles(card) {
+    // Apply styles to prevent horizontal overflow
+    card.style.overflowX = 'hidden';
+    card.style.maxWidth = '100%';
+    card.style.boxSizing = 'border-box';
+    
+    // Ensure all child elements don't cause horizontal overflow
+    const elements = card.querySelectorAll('*');
+    elements.forEach(el => {
+      el.style.maxWidth = '100%';
+      el.style.boxSizing = 'border-box';
+    });
+    
+    // Specifically handle textareas and containers
+    const textareas = card.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+      textarea.style.maxWidth = '100%';
+      textarea.style.boxSizing = 'border-box';
+    });
+    
+    const containers = card.querySelectorAll('.textarea-container, .tools-container');
+    containers.forEach(container => {
+      container.style.maxWidth = '100%';
+      container.style.boxSizing = 'border-box';
+      container.style.overflowX = 'hidden';
+    });
+  }
+
+  removeMaximizedStyles(card) {
+    // Remove inline styles
+    card.style.overflowX = '';
+    card.style.maxWidth = '';
+    card.style.boxSizing = '';
+    
+    const elements = card.querySelectorAll('*');
+    elements.forEach(el => {
+      el.style.maxWidth = '';
+      el.style.boxSizing = '';
+    });
+    
+    const textareas = card.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+      textarea.style.maxWidth = '';
+      textarea.style.boxSizing = '';
+    });
+    
+    const containers = card.querySelectorAll('.textarea-container, .tools-container');
+    containers.forEach(container => {
+      container.style.maxWidth = '';
+      container.style.boxSizing = '';
+      container.style.overflowX = '';
+    });
+  }
+
+  adjustMaximizedCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card || !card.classList.contains('is-maximized')) return;
+    
+    // Reapply maximized styles on resize
+    this.applyMaximizedStyles(card);
+    
+    // Ensure card stays within viewport
+    const viewportWidth = window.innerWidth;
+    const cardWidth = card.offsetWidth;
+    
+    if (cardWidth > viewportWidth) {
+      card.style.width = '95vw';
+      card.style.maxWidth = '95vw';
+    }
   }
 
   saveState() {
