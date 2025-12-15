@@ -10,6 +10,7 @@ import { setupVoiceButton } from '../features/voice.js';
 import { renderTemplatesGrid } from '../features/templates.js';
 import { renderHistoryList } from '../features/history.js';
 import { copyPromptToClipboard, exportPromptToFile } from '../ai/prompt-generator.js';
+import { CardExpander } from '../features/card-expander.js';
 
 /**
  * Initialize all event handlers
@@ -21,6 +22,67 @@ export function initializeEventHandlers() {
   setupModalHandlers();
   setupVoiceHandlers();
   setupUIHandlers();
+  initializeCardExpander(); // NEW: Initialize card expander
+}
+
+// Card expander instance
+let cardExpanderInstance = null;
+
+/**
+ * Initialize card expander functionality
+ */
+export function initializeCardExpander() {
+  if (!cardExpanderInstance) {
+    cardExpanderInstance = new CardExpander();
+    cardExpanderInstance.initialize();
+    setupCardExpanderHandlers(); // NEW: Setup additional handlers
+  }
+  return cardExpanderInstance;
+}
+
+/**
+ * Get card expander instance
+ */
+export function getCardExpander() {
+  if (!cardExpanderInstance) {
+    cardExpanderInstance = new CardExpander();
+    cardExpanderInstance.initialize();
+  }
+  return cardExpanderInstance;
+}
+
+/**
+ * Setup card expander specific handlers
+ */
+function setupCardExpanderHandlers() {
+  // Click outside maximized card to restore
+  document.addEventListener('click', (e) => {
+    const maximizedCard = document.querySelector('.step-card.is-maximized');
+    if (!maximizedCard || !cardExpanderInstance) return;
+    
+    const isClickInsideCard = maximizedCard.contains(e.target);
+    const isClickOnExpandBtn = e.target.closest('.card-expand-btn');
+    const isClickOnModal = e.target.closest('.modal');
+    
+    if (!isClickInsideCard && !isClickOnExpandBtn && !isClickOnModal) {
+      const btn = maximizedCard.querySelector('.card-expand-btn');
+      cardExpanderInstance.restore(maximizedCard, btn);
+      showInfo('Card restored');
+    }
+  });
+  
+  // Handle window resize for maximized cards
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      const maximizedCard = document.querySelector('.step-card.is-maximized');
+      if (maximizedCard && cardExpanderInstance) {
+        // Force reflow to fix positioning
+        maximizedCard.style.transform = 'translate(-50%, -50%)';
+      }
+    }, 150);
+  });
 }
 
 /**
@@ -235,6 +297,15 @@ async function handleConvert() {
       updateAIToolsGrid(context.taskType, result.prompt, true);
       
       showSuccess('Prompt generated successfully');
+      
+      // NEW: If Card 2 is minimized, restore it to show the output
+      const card2 = document.getElementById('card-2');
+      if (card2 && card2.classList.contains('is-minimized')) {
+        const btn = card2.querySelector('.card-expand-btn');
+        if (btn && cardExpanderInstance) {
+          cardExpanderInstance.restore(card2, btn);
+        }
+      }
     } else {
       showError('Generation failed, using offline mode');
       outputEl.value = result.prompt;
@@ -279,6 +350,16 @@ function setupModalHandlers() {
     openTemplatesBtn.addEventListener('click', () => {
       templatesGrid.innerHTML = renderTemplatesGrid();
       openModal('templatesModal');
+      
+      // NEW: If a card is maximized, restore it before opening modal
+      if (cardExpanderInstance && cardExpanderInstance.getMaximizedCard()) {
+        const maximizedCardId = cardExpanderInstance.getMaximizedCard();
+        const card = document.getElementById(maximizedCardId);
+        const btn = card?.querySelector('.card-expand-btn');
+        if (card && btn) {
+          cardExpanderInstance.restore(card, btn);
+        }
+      }
     });
   }
 
@@ -293,6 +374,16 @@ function setupModalHandlers() {
     openHistoryBtn.addEventListener('click', () => {
       historyList.innerHTML = renderHistoryList();
       openModal('historyModal');
+      
+      // NEW: If a card is maximized, restore it before opening modal
+      if (cardExpanderInstance && cardExpanderInstance.getMaximizedCard()) {
+        const maximizedCardId = cardExpanderInstance.getMaximizedCard();
+        const card = document.getElementById(maximizedCardId);
+        const btn = card?.querySelector('.card-expand-btn');
+        if (card && btn) {
+          cardExpanderInstance.restore(card, btn);
+        }
+      }
     });
   }
 
