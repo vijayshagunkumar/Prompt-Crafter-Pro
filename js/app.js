@@ -1,24 +1,18 @@
 // app.js - Main Application Entry Point
 
 // Import core modules
-// Import all modules
-import initEventHandlers from './ui/event-handlers.js';
-import { loadBrandIcons } from './ai/ai-tools.js';
-import { initCardExpander } from './features/card-expander.js';
-import { loadTemplates, setupTemplateEventHandlers } from './features/templates.js';
-
-
 import appState from './core/app-state.js';
 import { STORAGE_KEYS, DEFAULTS } from './core/constants.js';
 
 // Import feature modules
 import { initializeVoice } from './features/voice.js';
-import { loadTemplates } from './features/templates.js';
+import { loadTemplates, setupTemplateEventHandlers } from './features/templates.js';
 import { loadHistory } from './features/history.js';
 import { detectContextFromText } from './features/context-detective.js';
+import { initCardExpander } from './features/card-expander.js';
 
 // Import AI modules
-import { setupToolClickHandlers, updateAIToolsGrid } from './ai/ai-tools.js';
+import { setupToolClickHandlers, updateAIToolsGrid, loadBrandIcons } from './ai/ai-tools.js';
 
 // Import UI modules
 import { initializeEventHandlers } from './ui/event-handlers.js';
@@ -28,46 +22,41 @@ import modalManager from './ui/modal-manager.js';
 /**
  * Initialize the application
  */
-// Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 PromptCraft Pro Initializing...');
-  
-  // Load AI tool brand icons
-  loadBrandIcons();
-  
-  // Initialize card expander
-  initCardExpander();
-  
-  // Load templates
-  loadTemplates();
-  
-  // Initialize event handlers
-  initEventHandlers();
-  
-  console.log('✅ App initialized successfully');
-});
 async function initializeApp() {
   try {
+    console.log('🚀 PromptCraft Pro Initializing...');
+    
     // Show loading state
-    console.log('🚀 Initializing PromptCraft...');
+    document.body.classList.add('loading');
     
     // Initialize app state
     appState.init();
     
+    // Load AI tool brand icons
+    loadBrandIcons();
+    
+    // Initialize card expander
+    initCardExpander();
+    
     // Load data
-    loadTemplates();
-    loadHistory();
+    await Promise.all([
+      loadTemplates(),
+      loadHistory()
+    ]);
     
     // Initialize voice features
     initializeVoice();
     
+    // Initialize UI components
+    initializeUI();
+    
     // Initialize event handlers (includes card expander)
     initializeEventHandlers();
     
-    // Initialize UI
-    initializeUI();
+    // Setup tool click handlers
+    setupToolClickHandlers(showNotification);
     
-    // Initialize AI tools
+    // Initialize AI tools grid
     initializeAITools();
     
     // Initialize theme
@@ -76,19 +65,18 @@ async function initializeApp() {
     // Update stats
     updateAllStats();
     
-    // Setup tool click handlers
-    setupToolClickHandlers(showNotification);
-    
     // Show welcome message
     setTimeout(() => {
       showSuccess('PromptCraft is ready! Start crafting prompts.');
     }, 1000);
     
-    console.log('✅ PromptCraft initialized successfully');
+    console.log('✅ App initialized successfully');
     
   } catch (error) {
     console.error('❌ Failed to initialize app:', error);
     showError('Failed to initialize application. Please refresh the page.');
+  } finally {
+    document.body.classList.remove('loading');
   }
 }
 
