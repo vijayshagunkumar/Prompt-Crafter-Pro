@@ -1,4 +1,4 @@
-/* main.css - Main CSS file that imports all modules */
+/* main.css - Main CSS file that imports all modules - FIXED VERSION */
 
 /* Base Styles */
 @import url('base/reset.css');
@@ -111,9 +111,11 @@
   align-items: stretch;
 }
 
-/* Step Cards */
+/* Step Cards - FIXED HEIGHTS */
 .step-card {
-  min-height: 700px;
+  height: 680px; /* Fixed height */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Auto-row */
@@ -158,12 +160,28 @@
   margin: var(--space-xl) 0;
 }
 
-/* Actions Row */
+/* Actions Row - FIXED POSITIONING */
 .actions-row {
   margin-top: var(--space-xl);
 }
 
-/* Helper Text Sizes - FIXED FOR CONSISTENCY */
+/* FIX: Remove conflicting textarea button styles */
+.textarea-buttons {
+  position: static !important;
+  display: none !important; /* Hide old buttons */
+}
+
+.clear-btn-left,
+.mic-btn-right {
+  display: none !important;
+}
+
+/* NEW: Textarea top buttons */
+.textarea-buttons-top {
+  display: flex !important;
+}
+
+/* Helper Text Sizes */
 .helper-text {
   font-size: 0.8125rem !important;
   line-height: 1.4;
@@ -282,7 +300,7 @@
   }
   
   .step-card {
-    min-height: 650px;
+    height: 650px;
   }
 }
 
@@ -293,7 +311,7 @@
   
   .step-card:nth-child(3) {
     grid-column: span 2;
-    min-height: 550px;
+    height: 600px;
   }
 }
 
@@ -355,10 +373,11 @@
   
   .step-card:nth-child(3) {
     grid-column: span 1;
+    height: 620px;
   }
   
   .step-card {
-    min-height: 550px;
+    height: 600px;
   }
   
   .hero-top h1 {
@@ -384,6 +403,16 @@
   .footer-right {
     justify-content: center;
   }
+  
+  /* FIX: Mobile button positioning */
+  .textarea-buttons-top {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+  
+  .language-text {
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -393,7 +422,7 @@
   
   .step-card {
     padding: var(--space-md);
-    min-height: 500px;
+    height: 580px;
   }
   
   .hero-top h1 {
@@ -410,17 +439,6 @@
     justify-content: center;
   }
   
-  .textarea-buttons {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--space-xs);
-  }
-  
-  .textarea-buttons .icon-btn {
-    width: 32px;
-    height: 32px;
-  }
-  
   .tools-grid {
     gap: var(--space-xs);
   }
@@ -433,5 +451,23 @@
     left: var(--space-sm);
     right: var(--space-sm);
     bottom: var(--space-sm);
+  }
+  
+  /* FIX: Small mobile adjustments */
+  .textarea-buttons-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .top-left-buttons,
+  .top-right-buttons {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .icon-btn {
+    width: 32px;
+    height: 32px;
   }
 }
