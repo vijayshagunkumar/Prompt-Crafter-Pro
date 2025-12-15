@@ -1,4 +1,4 @@
-/* main.css - Main CSS file that imports all modules - FIXED VERSION */
+/* main.css - Main CSS file that imports all modules */
 
 /* Base Styles */
 @import url('base/reset.css');
@@ -111,11 +111,9 @@
   align-items: stretch;
 }
 
-/* Step Cards - FIXED HEIGHTS */
+/* Step Cards */
 .step-card {
-  height: 600px; /* Reduced from 680px */
-  display: flex;
-  flex-direction: column;
+  min-height: 700px;
 }
 
 /* Auto-row */
@@ -123,7 +121,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: var(--space-md) 0; /* Reduced */
+  margin: var(--space-lg) 0;
 }
 
 /* Chip Row */
@@ -131,7 +129,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.625rem;
-  margin-bottom: var(--space-sm); /* Reduced */
+  margin-bottom: var(--space-md);
 }
 
 /* Preset Row */
@@ -139,7 +137,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-md); /* Reduced */
+  margin-bottom: var(--space-lg);
   gap: var(--space-md);
 }
 
@@ -157,34 +155,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  margin: var(--space-md) 0; /* Reduced */
+  margin: var(--space-xl) 0;
 }
 
-/* Actions Row - FIXED POSITIONING */
+/* Actions Row */
 .actions-row {
-  margin-top: var(--space-md); /* Reduced */
+  margin-top: var(--space-xl);
 }
 
-/* FIX: Remove conflicting textarea button styles */
-.textarea-buttons {
-  position: static !important;
-  display: none !important;
-}
-
-.clear-btn-left,
-.mic-btn-right {
-  display: none !important;
-}
-
-/* NEW: Textarea top buttons */
-.textarea-buttons-top {
-  display: flex !important;
-}
-
-/* Helper Text Sizes */
+/* Helper Text Sizes - FIXED FOR CONSISTENCY */
 .helper-text {
-  font-size: 0.75rem !important; /* Smaller */
-  line-height: 1.3;
+  font-size: 0.8125rem !important;
+  line-height: 1.4;
 }
 
 /* Notification */
@@ -300,7 +282,7 @@
   }
   
   .step-card {
-    height: 580px;
+    min-height: 650px;
   }
 }
 
@@ -311,7 +293,7 @@
   
   .step-card:nth-child(3) {
     grid-column: span 2;
-    height: 600px;
+    min-height: 550px;
   }
 }
 
@@ -373,11 +355,10 @@
   
   .step-card:nth-child(3) {
     grid-column: span 1;
-    height: 580px;
   }
   
   .step-card {
-    height: 560px;
+    min-height: 550px;
   }
   
   .hero-top h1 {
@@ -403,16 +384,6 @@
   .footer-right {
     justify-content: center;
   }
-  
-  /* FIX: Mobile button positioning */
-  .textarea-buttons-top {
-    flex-wrap: wrap;
-    padding: 0.5rem;
-  }
-  
-  .language-text {
-    font-size: 0.75rem;
-  }
 }
 
 @media (max-width: 576px) {
@@ -422,7 +393,7 @@
   
   .step-card {
     padding: var(--space-md);
-    height: 540px;
+    min-height: 500px;
   }
   
   .hero-top h1 {
@@ -439,6 +410,17 @@
     justify-content: center;
   }
   
+  .textarea-buttons {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-xs);
+  }
+  
+  .textarea-buttons .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
   .tools-grid {
     gap: var(--space-xs);
   }
@@ -452,174 +434,4 @@
     right: var(--space-sm);
     bottom: var(--space-sm);
   }
-  
-  /* FIX: Small mobile adjustments */
-  .textarea-buttons-top {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-  
-  .top-left-buttons,
-  .top-right-buttons {
-    justify-content: space-between;
-    width: 100%;
-  }
-  
-  .icon-btn {
-    width: 32px;
-    height: 32px;
-  }
-}
-/* ===========================================
-   URGENT FIXES FOR CARD LAYOUT ISSUES
-   =========================================== */
-
-/* FIX 1: Reduce card heights to prevent scrolling */
-.step-card {
-  height: 600px !important;
-  min-height: 600px !important;
-}
-
-/* FIX 2: Position Convert button higher */
-.elegant-convert-btn {
-  margin-top: 0.5rem !important;
-  margin-bottom: 0.5rem !important;
-}
-
-/* FIX 3: Position action buttons higher */
-.prompt-actions {
-  margin-top: 0.5rem !important;
-  margin-bottom: 0.5rem !important;
-}
-
-/* FIX 4: Fix helper text layout */
-.helper-row {
-  margin: 0.25rem 0 !important;
-  padding: 0.25rem 0 !important;
-  min-height: auto !important;
-}
-
-.helper-text {
-  font-size: 0.7rem !important;
-  line-height: 1.3 !important;
-  max-width: 70% !important;
-}
-
-.char-counter {
-  font-size: 0.7rem !important;
-  min-width: 60px !important;
-  text-align: right !important;
-}
-
-/* FIX 5: Reduce textarea heights to create more space */
-.textarea-idea, .output-textarea {
-  min-height: 120px !important;
-  max-height: 180px !important;
-}
-
-/* FIX 6: Fix tools container spacing */
-.tools-container {
-  max-height: 240px !important;
-  min-height: 180px !important;
-  margin: 0.25rem 0 !important;
-}
-
-/* FIX 7: Improve responsive design */
-@media (max-width: 1200px) {
-  .step-card {
-    height: 580px !important;
-    min-height: 580px !important;
-  }
-}
-
-@media (max-width: 900px) {
-  .step-card {
-    height: 560px !important;
-    min-height: 560px !important;
-  }
-}
-
-@media (max-width: 576px) {
-  .step-card {
-    height: 540px !important;
-    min-height: 540px !important;
-    padding: 1rem !important;
-  }
-  
-  .textarea-idea, .output-textarea {
-    min-height: 100px !important;
-    max-height: 150px !important;
-  }
-  
-  .helper-text {
-    max-width: 60% !important;
-  }
-}
-
-/* FIX 8: Ensure proper button visibility without scrolling */
-.card-body {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  height: 100% !important;
-}
-
-/* FIX 9: Create proper spacing for all elements */
-.auto-row,
-.preset-row,
-.chip-row {
-  margin: 0.5rem 0 !important;
-}
-
-/* FIX 10: Last helper text in card 3 */
-.step-card:nth-child(3) .helper-text {
-  margin-top: 0.5rem !important;
-  padding-top: 0.5rem !important;
-  border-top: 1px solid var(--border-subtle) !important;
-}
-
-/* FIX 11: Make sure tools are properly displayed */
-.tools-grid {
-  gap: 0.5rem !important;
-}
-
-.tool-card {
-  padding: 0.75rem !important;
-  margin: 0.125rem 0 !important;
-}
-
-.tool-icon {
-  width: 32px !important;
-  height: 32px !important;
-  font-size: 0.875rem !important;
-}
-
-.tool-info h4 {
-  font-size: 0.8125rem !important;
-  margin-bottom: 0.125rem !important;
-}
-
-.tool-info p {
-  font-size: 0.7rem !important;
-  line-height: 1.2 !important;
-}
-
-/* FIX 12: Language text positioning */
-.language-text {
-  font-size: 0.7rem !important;
-  max-width: 180px !important;
-  white-space: normal !important;
-  line-height: 1.2 !important;
-}
-
-/* FIX 13: Prevent text overlap */
-.top-left-buttons {
-  gap: 0.25rem !important;
-  align-items: flex-start !important;
-}
-
-/* FIX 14: Add more padding to textareas */
-.textarea-idea, .output-textarea {
-  padding: 0.75rem !important;
 }
