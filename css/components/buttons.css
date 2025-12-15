@@ -1,4 +1,4 @@
-/* buttons.css - Button Components - FIXED VERSION */
+/* buttons.css - Button Components */
 
 /* Base Button */
 .btn {
@@ -15,9 +15,6 @@
   border: 1px solid transparent;
   text-align: center;
   white-space: nowrap;
-  background: var(--gradient-brand);
-  color: var(--text-on-primary);
-  font-weight: 600;
 }
 
 /* Button Sizes */
@@ -57,7 +54,6 @@
 .btn-secondary:hover {
   background: rgba(255, 94, 0, 0.2);
   border-color: var(--primary);
-  transform: translateY(-1px);
 }
 
 .btn-ghost {
@@ -68,7 +64,6 @@
 
 .btn-ghost:hover {
   background: rgba(255, 94, 0, 0.1);
-  transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -80,32 +75,6 @@
 .btn-danger:hover {
   background: rgba(255, 68, 68, 0.2);
   border-color: #FF4444;
-  transform: translateY(-1px);
-}
-
-/* NEW: Export and Save buttons styling */
-.export-btn,
-.save-template-btn {
-  background: rgba(255, 94, 0, 0.1) !important;
-  color: var(--primary) !important;
-  border: 1px solid rgba(255, 94, 0, 0.3) !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: var(--radius-md) !important;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-  cursor: pointer !important;
-}
-
-.export-btn:hover,
-.save-template-btn:hover {
-  background: rgba(255, 94, 0, 0.2) !important;
-  border-color: var(--primary) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(255, 94, 0, 0.2) !important;
 }
 
 /* Icon Button */
@@ -127,7 +96,6 @@
   background: rgba(255, 94, 0, 0.1);
   color: var(--primary);
   border-color: var(--primary);
-  transform: translateY(-1px);
 }
 
 .icon-btn-sm {
@@ -216,74 +184,4 @@
 .fab:hover {
   transform: scale(1.1);
   box-shadow: 0 12px 24px rgba(255, 94, 0, 0.4);
-}
-
-/* NEW: Copy button embedded in textarea */
-.copy-btn-embedded {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 94, 0, 0.1);
-  border: 1px solid rgba(255, 94, 0, 0.3);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 2;
-}
-
-.copy-btn-embedded:hover {
-  background: rgba(255, 94, 0, 0.2);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-}
-
-/* NEW: Elegant convert button */
-.elegant-convert-btn {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background: var(--gradient-brand);
-  color: var(--text-on-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.elegant-convert-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 94, 0, 0.3);
-}
-
-.elegant-convert-btn:active {
-  transform: translateY(0);
-}
-
-/* NEW: Prompt actions row */
-.prompt-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-top: 0.5rem;
-}
-
-/* Dark theme adjustments */
-[data-theme="cyberpunk-neon"] .btn-primary {
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.4);
-}
-
-[data-theme="cyberpunk-neon"] .btn-secondary {
-  box-shadow: 0 0 10px rgba(255, 94, 0, 0.2);
 }
