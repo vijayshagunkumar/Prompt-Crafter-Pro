@@ -5,6 +5,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 0 var(--space-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (min-width: 640px) {
@@ -65,6 +66,85 @@
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
+/* Grid with maximized card */
+.grid.has-maximized-card {
+  position: relative;
+  z-index: 1;
+  animation: gridShrink 0.3s ease-out forwards;
+}
+
+.grid.has-maximized-card .card:not(.is-maximized) {
+  opacity: 0.3;
+  filter: blur(2px);
+  pointer-events: none;
+  transform: scale(0.98);
+  transition: all 0.3s ease;
+}
+
+/* When card is maximized, adjust grid layout */
+body.card-max-open .grid.grid-cols-3 {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+}
+
+body.card-max-open .grid.grid-cols-3 .card:not(.is-maximized) {
+  display: none;
+}
+
+/* Card positioning in grid */
+#card-1 {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+#card-2 {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Adjust when card 1 is maximized */
+#card-1.is-maximized {
+  grid-column: 1 / -1 !important;
+}
+
+/* Adjust when card 2 is maximized */
+#card-2.is-maximized {
+  grid-column: 1 / -1 !important;
+}
+
+/* Ensure other cards maintain layout when one is minimized */
+.card.is-minimized {
+  grid-row: span 1;
+  height: fit-content;
+}
+
+/* Grid animations */
+@keyframes gridShrink {
+  from {
+    gap: var(--space-lg);
+    opacity: 1;
+  }
+  to {
+    gap: var(--space-xs);
+    opacity: 0.3;
+  }
+}
+
+@keyframes gridExpand {
+  from {
+    gap: var(--space-xs);
+    opacity: 0.3;
+  }
+  to {
+    gap: var(--space-lg);
+    opacity: 1;
+  }
+}
+
+.grid:not(.has-maximized-card) {
+  animation: gridExpand 0.3s ease-out forwards;
+}
+
 /* Responsive Grid */
 @media (max-width: 768px) {
   .md\:grid-cols-1 {
@@ -74,11 +154,64 @@
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  
+  /* Responsive card maximize adjustments */
+  .grid.grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  #card-1,
+  #card-2 {
+    grid-column: auto;
+  }
+  
+  /* On mobile, maximized card takes full viewport */
+  .card.is-maximized {
+    grid-column: 1 / -1 !important;
+  }
+  
+  body.card-max-open .grid.grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
   .sm\:grid-cols-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .grid.grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  #card-1 {
+    grid-row: 1;
+  }
+  
+  #card-2 {
+    grid-row: 2;
+  }
+  
+  /* On small mobile, maximized card is full screen */
+  .card.is-maximized {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+  }
+  
+  body.card-max-open .grid.grid-cols-3 {
+    display: block;
+  }
+  
+  body.card-max-open .grid.grid-cols-3 .card:not(.is-maximized) {
+    display: none;
   }
 }
 
@@ -216,3 +349,26 @@
 .z-40 { z-index: 40; }
 .z-50 { z-index: 50; }
 .z-auto { z-index: auto; }
+.z-max { z-index: 9999; }
+
+/* Card maximize specific utilities */
+.card-max-overlay {
+  display: none;
+}
+
+body.card-max-open .card-max-overlay {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
