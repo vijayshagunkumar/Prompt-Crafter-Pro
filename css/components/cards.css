@@ -13,12 +13,158 @@
   position: relative;
   overflow: visible; /* Changed from hidden to visible */
   box-shadow: var(--shadow-card);
-  transition: var(--transition-base);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .step-card:hover {
   box-shadow: var(--shadow-elevated);
   border-color: rgba(255, 94, 0, 0.3);
+}
+
+/* Maximized Card State */
+.step-card.is-maximized {
+  position: fixed !important;
+  top: 20px !important;
+  left: 20px !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  width: calc(100vw - 40px) !important;
+  height: calc(100vh - 40px) !important;
+  min-height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  z-index: 9999 !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  background: var(--panel-bg) !important;
+  animation: cardMaximize 0.3s ease-out !important;
+  overflow: auto !important;
+}
+
+/* Minimized Card State */
+.step-card.is-minimized {
+  min-height: 60px !important;
+  height: 60px !important;
+  overflow: hidden !important;
+  animation: cardMinimize 0.2s ease-out !important;
+}
+
+.step-card.is-minimized .card-body,
+.step-card.is-minimized .step-body {
+  display: none !important;
+}
+
+.step-card.is-minimized .card-header,
+.step-card.is-minimized .step-header {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Body with maximized card */
+body.card-max-open {
+  overflow: hidden !important;
+}
+
+body.card-max-open::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Animations */
+@keyframes cardMaximize {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cardMinimize {
+  from {
+    height: var(--original-height, 650px);
+  }
+  to {
+    height: 60px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+  position: relative;
+  z-index: 1;
+}
+
+.step-card.is-maximized .card-header {
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-lg);
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.card-actions {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+/* Expand Button */
+.card-expand-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 94, 0, 0.1);
+  border: 1px solid rgba(255, 94, 0, 0.3);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.card-expand-btn:hover {
+  background: rgba(255, 94, 0, 0.2);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 94, 0, 0.2);
+}
+
+.card-expand-btn:active {
+  transform: translateY(0);
+}
+
+.step-card.is-maximized .card-expand-btn,
+.step-card.is-minimized .card-expand-btn {
+  background: rgba(255, 94, 0, 0.2);
+  border-color: var(--primary);
 }
 
 .step-header {
@@ -309,5 +455,21 @@
   
   .tool-card {
     padding: var(--space-sm);
+  }
+  
+  /* Mobile maximize adjustments */
+  .step-card.is-maximized {
+    top: 10px !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+    width: calc(100vw - 20px) !important;
+    height: calc(100vh - 20px) !important;
+    border-radius: var(--radius-lg) !important;
+  }
+  
+  .card-expand-btn {
+    width: 36px;
+    height: 36px;
   }
 }
