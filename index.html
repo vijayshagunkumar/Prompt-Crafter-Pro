@@ -58,7 +58,7 @@
       gap: 1rem;
     }
     
-    /* CUSTOM LOGO - Your custom diamond circuit logo */
+    /* CUSTOM LOGO - Your diamond circuit logo */
     .brand-logo {
       width: 48px;
       height: 48px;
@@ -205,10 +205,10 @@
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      height: 720px; /* Increased for better space usage */
+      height: 650px;
       overflow: hidden;
       transition: all 0.3s ease;
-      position: relative;
+      position: relative; /* Added for maximize positioning */
     }
     
     .step-card:hover {
@@ -216,16 +216,16 @@
       box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
     }
     
-    /* Maximized card styles - FILLS SPACE BETTER */
+    /* NEW: Maximized card styles */
     .step-card.is-maximized {
       position: fixed !important;
       top: 50% !important;
       left: 50% !important;
       transform: translate(-50%, -50%) !important;
-      width: 95vw !important;
-      height: 95vh !important;
-      max-width: 1600px !important;
-      max-height: 95vh !important;
+      width: 90vw !important;
+      height: 90vh !important;
+      max-width: 1400px !important;
+      max-height: 90vh !important;
       z-index: 9999 !important;
       border-radius: 16px !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
@@ -233,37 +233,15 @@
       background: var(--panel-bg) !important;
       animation: cardMaximize 0.3s ease-out !important;
       overflow: auto !important;
-      padding: 2rem !important; /* More padding when maximized */
     }
     
-    /* When maximized, make textareas MUCH larger */
-    .step-card.is-maximized .textarea-container {
-      flex: 1.5 !important; /* Take more space */
-      margin-bottom: 1.5rem !important;
+    /* When 3rd card is maximized, show more tools */
+    .step-card.is-maximized .tools-container {
+      max-height: 70vh !important; /* Show more tools when maximized */
+      flex: 1.5 !important;
     }
     
-    .step-card.is-maximized .textarea-idea,
-    .step-card.is-maximized .output-textarea {
-      height: 400px !important; /* Much larger when maximized */
-      min-height: 400px !important;
-      max-height: 700px !important;
-      font-size: 0.9375rem !important; /* Slightly larger text */
-      line-height: 1.6 !important;
-    }
-    
-    /* Adjust button positions when maximized */
-    .step-card.is-maximized .prompt-actions {
-      margin-top: 1.5rem !important;
-      gap: 1rem !important;
-    }
-    
-    .step-card.is-maximized .elegant-convert-btn {
-      margin-top: 1.5rem !important;
-      padding: 1rem 1.5rem !important;
-      font-size: 1rem !important;
-    }
-    
-    /* Minimized card styles */
+    /* NEW: Minimized card styles */
     .step-card.is-minimized {
       height: 60px !important;
       min-height: 60px !important;
@@ -286,7 +264,7 @@
       margin-bottom: 0 !important;
     }
     
-    /* Body with maximized card */
+    /* NEW: Body with maximized card */
     body.card-max-open {
       overflow: hidden !important;
     }
@@ -303,7 +281,7 @@
       animation: fadeIn 0.2s ease-out;
     }
     
-    /* Animations */
+    /* NEW: Animations */
     @keyframes cardMaximize {
       from {
         transform: translate(-50%, -50%) scale(0.95);
@@ -317,7 +295,7 @@
     
     @keyframes cardMinimize {
       from {
-        height: 720px;
+        height: 650px;
       }
       to {
         height: 60px;
@@ -367,7 +345,7 @@
       margin: 0;
     }
     
-    /* Card actions (maximize/minimize buttons) */
+    /* NEW: Card actions (maximize/minimize buttons) */
     .card-actions {
       display: flex;
       gap: 0.5rem;
@@ -405,7 +383,7 @@
       border-color: var(--primary);
     }
     
-    /* Elegant Convert Button - Better positioned */
+    /* Elegant Convert Button - Smaller and beautiful */
     .elegant-convert-btn {
       background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
       color: white;
@@ -422,7 +400,7 @@
       gap: 0.5rem;
       width: 100%;
       box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: auto; /* Pushes to bottom of available space - NO SCROLL NEEDED */
+      margin-top: 1rem;
     }
     
     .elegant-convert-btn:hover:not(:disabled) {
@@ -438,25 +416,22 @@
       box-shadow: none !important;
     }
     
-    /* Text Areas - IMPROVED SPACE USAGE */
+    /* FIXED: Text Areas - Now properly resizable */
     .textarea-container {
       flex: 1;
       margin-bottom: 1rem;
-      position: relative;
     }
     
     .textarea-wrapper {
       position: relative;
-      height: 100%;
     }
     
     .textarea-idea, .output-textarea {
       width: 100%;
-      min-height: 200px; /* Increased for better visibility */
-      height: 240px; /* Better initial height */
-      max-height: 600px; /* Allow generous resize */
+      min-height: 160px; /* Increased from 140px */
+      height: 180px; /* Set initial height */
+      max-height: 500px; /* FIXED: Increased from 160px to allow proper resize */
       padding: 1rem;
-      padding-bottom: 2rem; /* Extra space for resize handle */
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       border-radius: 8px;
@@ -464,57 +439,30 @@
       font-family: inherit;
       font-size: 0.875rem;
       line-height: 1.5;
-      resize: vertical; /* Enable resize */
+      resize: vertical; /* This enables drag resize */
       transition: all 0.3s ease;
       box-sizing: border-box;
     }
     
-    /* FIX: UNIQUE RESIZE HANDLE COLOR (Different from mic/copy buttons) */
+    /* Better resize handle - TEAL COLOR to differentiate from buttons */
     .textarea-idea::-webkit-resizer,
     .output-textarea::-webkit-resizer {
-      background-color: #00C9A7 !important; /* Teal color - DIFFERENT from orange buttons */
-      border-radius: 3px;
+      background-color: #00C9A7 !important; /* TEAL - Different from orange buttons */
+      border-radius: 2px;
       border: 2px solid var(--panel-bg);
-      padding: 4px;
-      cursor: ns-resize;
+      padding: 3px;
     }
     
-    /* Firefox */
-    .textarea-idea::-moz-resizer,
-    .output-textarea::-moz-resizer {
-      background-color: #00C9A7 !important;
-      border-radius: 3px;
-      border: 2px solid var(--panel-bg);
-    }
-    
-    /* Add visual indicator for resize handle */
-    .textarea-wrapper::after {
-      content: '↕';
-      position: absolute;
-      bottom: 8px;
-      right: 12px;
-      font-size: 0.75rem;
-      color: #00C9A7; /* Same teal color */
-      opacity: 0.7;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    
-    .textarea-wrapper:hover::after {
-      opacity: 1;
-    }
-    
-    /* When textarea is focused or resizing */
-    .textarea-idea:focus, .output-textarea:focus,
-    .textarea-idea:active, .output-textarea:active {
+    .textarea-idea:focus, .output-textarea:focus {
+      outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.1);
     }
     
-    /* Textarea Buttons */
+    /* Textarea Buttons - MOVED BACK TO TOP RIGHT CORNER */
     .textarea-buttons {
       position: absolute;
-      bottom: 0.75rem;
+      top: 0.75rem; /* Changed from bottom to top */
       display: flex;
       gap: 0.5rem;
       z-index: 10;
@@ -531,10 +479,10 @@
     .icon-btn {
       width: 36px;
       height: 36px;
-      background: rgba(255, 94, 0, 0.1); /* Orange background */
-      border: 1px solid rgba(255, 94, 0, 0.3); /* Orange border */
+      background: rgba(255, 94, 0, 0.1);
+      border: 1px solid rgba(255, 94, 0, 0.3);
       border-radius: 6px;
-      color: var(--primary); /* Orange color */
+      color: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -547,13 +495,17 @@
       transform: translateY(-1px);
     }
     
+    /* NEW: Better clear icon - broom/mop icon */
+    .clear-icon {
+      font-size: 0.9rem;
+    }
+    
     /* Helper Text */
     .helper-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
     }
     
     .helper-text {
@@ -670,22 +622,25 @@
       gap: 0.25rem;
     }
     
-    /* Action Buttons - BETTER POSITIONED (no scroll needed) */
+    /* Action Buttons - MADE VISIBLE */
     .prompt-actions {
       display: flex;
       gap: 0.75rem;
       margin-top: 1rem;
-      margin-bottom: 0.5rem; /* Reduced margin */
     }
     
     .ghost-btn, .secondary-btn {
       flex: 1;
       padding: 0.75rem;
       font-size: 0.8125rem;
-      font-weight: 500;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
     
     .ghost-btn {
@@ -702,23 +657,54 @@
     
     .ghost-btn:hover, .secondary-btn:hover {
       background: rgba(255, 94, 0, 0.15);
-      transform: translateY(-1px);
     }
     
     .ghost-btn:disabled, .secondary-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       pointer-events: none;
-      transform: none !important;
     }
     
-    /* Card 3 - Scrollable Tools */
+    /* Card 3 - Scrollable Tools - NOW RESIZABLE */
     .tools-container {
       flex: 1;
       overflow-y: auto;
       padding-right: 0.5rem;
       margin: 0.75rem 0;
-      max-height: 380px; /* Limit height */
+      min-height: 200px;
+      max-height: 380px;
+      resize: vertical;
+      position: relative;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    
+    /* Resize handle for tools container */
+    .tools-container::-webkit-resizer {
+      background-color: #00C9A7 !important; /* TEAL - Different from orange buttons */
+      border-radius: 2px;
+      border: 2px solid var(--panel-bg);
+      padding: 3px;
+      bottom: 5px;
+      right: 5px;
+    }
+    
+    /* Visual indicator for resize handle */
+    .tools-container::after {
+      content: '↕';
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.75rem;
+      color: #00C9A7; /* Same teal color */
+      opacity: 0.7;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    
+    .tools-container:hover::after {
+      opacity: 1;
     }
     
     .tools-grid {
@@ -869,7 +855,7 @@
       }
       
       .step-card {
-        height: 680px;
+        height: 620px;
       }
     }
     
@@ -884,7 +870,7 @@
       }
       
       .step-card {
-        height: 650px;
+        height: 580px;
       }
       
       .brand-header {
@@ -904,21 +890,11 @@
         flex-wrap: wrap;
         gap: 1rem;
       }
-      
-      .step-card.is-maximized {
-        padding: 1.5rem !important;
-      }
-      
-      .step-card.is-maximized .textarea-idea,
-      .step-card.is-maximized .output-textarea {
-        height: 350px !important;
-        min-height: 350px !important;
-      }
     }
     
     @media (max-width: 576px) {
       .step-card {
-        height: 620px;
+        height: 550px;
         padding: 1.25rem;
       }
       
@@ -965,23 +941,11 @@
         border-radius: 0 !important;
         max-width: none !important;
         max-height: none !important;
-        padding: 1rem !important;
-      }
-      
-      .step-card.is-maximized .textarea-idea,
-      .step-card.is-maximized .output-textarea {
-        height: 300px !important;
-        min-height: 300px !important;
       }
       
       .card-expand-btn {
         width: 36px;
         height: 36px;
-      }
-      
-      .prompt-actions {
-        flex-direction: column;
-        gap: 0.5rem;
       }
     }
   </style>
@@ -993,8 +957,8 @@
     <!-- Header with Brand - Above cards -->
     <header class="brand-header">
       <div class="brand-container">
+        <!-- YOUR CUSTOM LOGO IS HERE NOW -->
         <div class="brand-logo">
-          <!-- Your Custom Logo -->
           <div class="logo-container">
             <div class="diamond">
               <div class="circuit-line horizontal"></div>
@@ -1027,6 +991,7 @@
             <h3>Your Idea</h3>
             <p>Type or speak your rough requirement</p>
           </div>
+          <!-- Card Actions for Maximize/Minimize -->
           <div class="card-actions">
             <button class="card-expand-btn" title="Maximize">
               <i class="fas fa-expand"></i>
@@ -1055,14 +1020,14 @@
               placeholder='Type your idea here... Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write professional email about project delay"'
             ></textarea>
 
-            <!-- Clear button on LEFT -->
+            <!-- Clear button on LEFT - MOVED TO TOP, BETTER ICON -->
             <div class="textarea-buttons clear-btn-left">
-              <button class="icon-btn" id="clearRequirementBtn" title="Clear">
-                <i class="fas fa-xmark"></i>
+              <button class="icon-btn" id="clearRequirementBtn" title="Clear text">
+                <i class="fas fa-broom clear-icon"></i>
               </button>
             </div>
             
-            <!-- Mic button on RIGHT -->
+            <!-- Mic button on RIGHT - MOVED TO TOP -->
             <div class="textarea-buttons mic-btn-right">
               <button class="icon-btn" id="voiceBtn" title="Voice input">
                 <i class="fas fa-microphone"></i>
@@ -1083,6 +1048,16 @@
           <i class="fas fa-magic"></i>
           Convert Idea to Prompt
         </button>
+        
+        <!-- History and Template Buttons - NOW VISIBLE -->
+        <div class="prompt-actions">
+          <button class="ghost-btn" id="historyBtn">
+            <i class="fas fa-history"></i> History
+          </button>
+          <button class="secondary-btn" id="templatesBtn">
+            <i class="fas fa-layer-group"></i> Templates
+          </button>
+        </div>
       </section>
 
       <!-- CARD 2: Structured Prompt -->
@@ -1093,6 +1068,7 @@
             <h3>Structured Prompt</h3>
             <p>AI-ready formatted prompt</p>
           </div>
+          <!-- Card Actions for Maximize/Minimize -->
           <div class="card-actions">
             <button class="card-expand-btn" title="Maximize">
               <i class="fas fa-expand"></i>
@@ -1157,6 +1133,7 @@
             <h3>Send to AI</h3>
             <p>Open with your preferred tool</p>
           </div>
+          <!-- Card Actions for Maximize/Minimize -->
           <div class="card-actions">
             <button class="card-expand-btn" title="Maximize">
               <i class="fas fa-expand"></i>
@@ -1164,7 +1141,7 @@
           </div>
         </div>
 
-        <!-- Scrollable tools container -->
+        <!-- Scrollable tools container - NOW RESIZABLE -->
         <div class="tools-container">
           <div class="tools-grid" id="aiToolsGrid">
             <!-- AI tools will be dynamically rendered here -->
@@ -1213,27 +1190,36 @@
   <script>
     // Card maximize/minimize functionality
     document.addEventListener('DOMContentLoaded', function() {
+      // Add maximize/minimize buttons to all cards
       const cards = document.querySelectorAll('.step-card');
-      const expandButtons = document.querySelectorAll('.card-expand-btn');
       
-      // Add event listeners to expand buttons
-      expandButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const card = this.closest('.step-card');
-          toggleCardSize(card, this);
-        });
-      });
-      
-      // Add click event to minimized cards
       cards.forEach(card => {
-        card.addEventListener('click', function(e) {
-          if (this.classList.contains('is-minimized') && 
-              !e.target.closest('.card-actions')) {
-            const button = this.querySelector('.card-expand-btn');
-            toggleCardSize(this, button);
-          }
-        });
+        const stepHeader = card.querySelector('.step-header');
+        if (stepHeader && !card.querySelector('.card-actions')) {
+          const cardActions = document.createElement('div');
+          cardActions.className = 'card-actions';
+          
+          const expandBtn = document.createElement('button');
+          expandBtn.className = 'card-expand-btn';
+          expandBtn.title = 'Maximize';
+          expandBtn.innerHTML = '<i class="fas fa-expand"></i>';
+          
+          cardActions.appendChild(expandBtn);
+          stepHeader.appendChild(cardActions);
+          
+          expandBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleCardSize(card, expandBtn);
+          });
+          
+          // Click minimized card header to maximize
+          card.addEventListener('click', function(e) {
+            if (this.classList.contains('is-minimized') && 
+                !e.target.closest('.card-actions')) {
+              toggleCardSize(this, expandBtn);
+            }
+          });
+        }
       });
       
       // Function to toggle card size
@@ -1349,6 +1335,39 @@
           if (originalClick) originalClick.call(this, e);
           setTimeout(updateActionButtons, 800);
         };
+      }
+      
+      // Demo AI tools for card 3
+      const aiToolsGrid = document.getElementById('aiToolsGrid');
+      if (aiToolsGrid) {
+        const aiTools = [
+          { name: 'Midjourney', description: 'Excellent for artistic and stylized images.', icon: 'fas fa-palette' },
+          { name: 'ChatGPT', description: 'Best for general tasks, writing, and reasoning.', icon: 'fas fa-comment' },
+          { name: 'Claude', description: 'Great for long-form text and thoughtful responses.', icon: 'fas fa-brain' },
+          { name: 'DALL·E', description: 'Create realistic images and art from descriptions.', icon: 'fas fa-image' },
+          { name: 'Stable Diffusion', description: 'Open-source image generation model.', icon: 'fas fa-cube' },
+          { name: 'Gemini', description: 'Google\'s multimodal AI for text and images.', icon: 'fas fa-gem' },
+          { name: 'Perplexity', description: 'AI-powered search and research assistant.', icon: 'fas fa-search' },
+          { name: 'Copilot', description: 'AI pair programmer for coding tasks.', icon: 'fas fa-code' }
+        ];
+        
+        aiTools.forEach((tool, index) => {
+          const toolCard = document.createElement('div');
+          toolCard.className = 'tool-card' + (index === 0 ? ' best-match' : '');
+          toolCard.innerHTML = `
+            <div class="tool-icon">
+              <i class="${tool.icon}"></i>
+            </div>
+            <div class="tool-info">
+              <h4>${tool.name}</h4>
+              <p>${tool.description}</p>
+            </div>
+            <button class="ghost-btn" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;">
+              Open
+            </button>
+          `;
+          aiToolsGrid.appendChild(toolCard);
+        });
       }
     });
   </script>
