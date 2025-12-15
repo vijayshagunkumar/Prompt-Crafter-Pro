@@ -10,14 +10,22 @@ export const STORAGE_KEYS = {
   history: "promptCrafterHistory",
   appTheme: "appTheme",
   voiceLanguage: "voiceLanguage",
-  usageCount: "promptCrafterUsage"
+  usageCount: "promptCrafterUsage",
+  // NEW: Card expander state storage
+  cardExpander: "promptcraft_card_expander_state"
 };
 
 // Default Values
 export const DEFAULTS = {
   theme: "sunset-glow",
   autoConvertDelay: 60,
-  voiceLanguage: "en-US"
+  voiceLanguage: "en-US",
+  // NEW: Card expander defaults
+  cardExpander: {
+    maximizedCardId: null,
+    minimizedCardIds: [],
+    cardStates: {}
+  }
 };
 
 // AI Tools Configuration - ALL TOOLS INCLUDED
@@ -135,6 +143,113 @@ export const AI_TOOLS = [
     }
   }
 ];
+
+// NEW: Card Configuration
+export const CARD_CONFIG = {
+  // Card 1: Your Idea / Input
+  card1: {
+    id: "card-1",
+    title: "Your Idea",
+    description: "Type or speak your rough requirement",
+    allowMaximize: true,
+    allowMinimize: true,
+    defaultHeight: 650
+  },
+  
+  // Card 2: Structured Prompt / Output
+  card2: {
+    id: "card-2",
+    title: "Structured Prompt",
+    description: "AI-ready formatted prompt",
+    allowMaximize: true,
+    allowMinimize: true,
+    defaultHeight: 650
+  },
+  
+  // Card 3: Send to AI
+  card3: {
+    id: "card-3",
+    title: "Send to AI",
+    description: "Open with your preferred tool",
+    allowMaximize: false,
+    allowMinimize: false,
+    defaultHeight: 650
+  },
+  
+  // Maximized state configuration
+  maximized: {
+    width: "90vw",
+    height: "90vh",
+    maxWidth: "1400px",
+    maxHeight: "90vh",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    borderRadius: "16px",
+    zIndex: 9999,
+    animationDuration: "0.3s"
+  },
+  
+  // Minimized state configuration
+  minimized: {
+    height: "60px",
+    minHeight: "60px",
+    animationDuration: "0.2s"
+  }
+};
+
+// NEW: Card Expander Constants
+export const CARD_EXPANDER = {
+  // Button configuration
+  button: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "6px",
+    background: "rgba(255, 94, 0, 0.1)",
+    borderColor: "rgba(255, 94, 0, 0.3)",
+    hoverBackground: "rgba(255, 94, 0, 0.2)",
+    transitionDuration: "0.2s"
+  },
+  
+  // Icons (SVG paths)
+  icons: {
+    maximize: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>`,
+    minimize: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M19 9L5 9M19 15L5 15" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+    restore: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 8V4H8M20 8V4H16M4 16V20H8M20 16V20H16"/>
+    </svg>`
+  },
+  
+  // Titles/tooltips
+  titles: {
+    maximize: "Maximize",
+    minimize: "Minimize",
+    restore: "Restore"
+  },
+  
+  // Keyboard shortcuts
+  shortcuts: {
+    escape: "Escape",
+    maximizeCard1: "Ctrl+1",
+    maximizeCard2: "Ctrl+2",
+    restoreAll: "Ctrl+0"
+  },
+  
+  // Local storage version (for migrations)
+  version: "1.0.0",
+  
+  // Animation timing
+  animations: {
+    maximize: 300,
+    minimize: 200,
+    fadeIn: 200,
+    fadeOut: 150
+  }
+};
 
 // Template Categories
 export const TEMPLATE_CATEGORIES = {
