@@ -1,7 +1,23 @@
-// In your existing event-handlers.js, ADD THESE FUNCTIONS:
+// event-handlers.js - UI Event Handlers
 
+// IMPORT YOUR EXISTING IMPORTS HERE
+import appState from '../core/app-state.js';
+import { detectContextFromText, createContextChipsHTML } from '../features/context-detective.js';
+import { generatePrompt } from '../ai/prompt-generator.js';
+import { updateAIToolsGrid, setupToolClickHandlers } from '../ai/ai-tools.js';
+import { showNotification, showSuccess, showError, showInfo } from './notifications.js';
+import modalManager, { openModal, closeModal } from './modal-manager.js';
+import { setupVoiceButton } from '../features/voice.js';
+import { renderTemplatesGrid } from '../features/templates.js';
+import { renderHistoryList } from '../features/history.js';
+import { copyPromptToClipboard, exportPromptToFile } from '../ai/prompt-generator.js';
+
+// 🔧 ADD THIS AT THE TOP (ONCE!)
 let cardExpanderInstance = null;
 
+/**
+ * Initialize card expander
+ */
 export function initializeCardExpander() {
   if (cardExpanderInstance) {
     console.log('✅ Card expander already initialized');
@@ -10,6 +26,7 @@ export function initializeCardExpander() {
   
   console.log('🔧 Initializing card expander from event handlers...');
   
+  // Import and initialize card expander
   import('../features/card-expander.js').then(module => {
     const CardExpander = module.CardExpander;
     cardExpanderInstance = new CardExpander();
@@ -24,12 +41,14 @@ export function initializeCardExpander() {
   return cardExpanderInstance;
 }
 
-// Then in your main initializeEventHandlers function, call it:
-export function initializeEventHandlers(appState) {
-  // Initialize card expander FIRST
+/**
+ * Initialize all event handlers
+ */
+export function initializeEventHandlers() {
+  // 🔧 ADD THIS LINE - Initialize card expander FIRST
   initializeCardExpander();
   
-  // ... rest of your existing code stays here
+  // ... KEEP ALL YOUR EXISTING CODE BELOW EXACTLY AS IS
   setupRequirementHandlers();
   setupOutputHandlers();
   setupToolHandlers();
@@ -37,3 +56,47 @@ export function initializeEventHandlers(appState) {
   setupVoiceHandlers();
   setupUIHandlers();
 }
+
+/**
+ * Setup requirement textarea handlers
+ */
+function setupRequirementHandlers() {
+  // ... KEEP YOUR EXISTING CODE HERE
+}
+
+/**
+ * Setup output handlers
+ */
+function setupOutputHandlers() {
+  // ... KEEP YOUR EXISTING CODE HERE
+}
+
+/**
+ * Setup tool handlers
+ */
+function setupToolHandlers() {
+  // ... KEEP YOUR EXISTING CODE HERE
+}
+
+/**
+ * Setup modal handlers
+ */
+function setupModalHandlers() {
+  // ... KEEP YOUR EXISTING CODE HERE
+}
+
+/**
+ * Setup voice handlers
+ */
+function setupVoiceHandlers() {
+  // ... KEEP YOUR EXISTING CODE HERE
+}
+
+/**
+ * Setup general UI handlers
+ */
+function setupUIHandlers() {
+  // ... KEEP YOUR EXISTING CODE HERE
+}
+
+// ... KEEP ALL YOUR OTHER EXISTING FUNCTIONS BELOW
