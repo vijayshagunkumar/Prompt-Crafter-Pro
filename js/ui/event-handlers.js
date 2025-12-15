@@ -1,197 +1,342 @@
-// event-handlers.js - DOM Event Handlers - FIXED VERSION
+// event-handlers.js - UI Event Handlers
 
 import appState from '../core/app-state.js';
-import { generatePrompt, copyPromptToClipboard, exportPromptToFile } from '../ai/prompt-generator.js';
-import { setupToolClickHandlers } from '../ai/ai-tools.js';
-import { setupTemplateEventHandlers, openTemplatesModal } from '../features/templates.js';
-import { loadHistory, addToHistory } from '../features/history.js';
 import { detectContextFromText, createContextChipsHTML } from '../features/context-detective.js';
-import { startVoiceRecognition, stopVoiceRecognition } from '../features/voice.js';
+import { generatePrompt } from '../ai/prompt-generator.js';
+import { updateAIToolsGrid, setupToolClickHandlers } from '../ai/ai-tools.js';
+import { showNotification, showSuccess, showError, showInfo } from './notifications.js';
+import modalManager, { openModal, closeModal } from './modal-manager.js';
+import { setupVoiceButton } from '../features/voice.js';
+import { renderTemplatesGrid } from '../features/templates.js';
+import { renderHistoryList } from '../features/history.js';
+import { copyPromptToClipboard, exportPromptToFile } from '../ai/prompt-generator.js';
+
+// 🔧 CARD EXPANDER
+let cardExpanderInstance = null;
+
+export function initializeCardExpander() {
+  if (cardExpanderInstance) {
+    console.log('✅ Card expander already initialized');
+    return cardExpanderInstance;
+  }
+  
+  console.log('🔧 Initializing card expander from event handlers...');
+  
+  import('../features/card-expander.js').then(module => {
+    const CardExpander = module.CardExpander;
+    cardExpanderInstance = new CardExpander();
+    cardExpanderInstance.initialize();
+    window.cardExpander = cardExpanderInstance;
+    
+    console.log('✅ Card expander initialized successfully');
+  }).catch(error => {
+    console.error('❌ Failed to load card expander:', error);
+  });
+  
+  return cardExpanderInstance;
+}
 
 /**
  * Initialize all event handlers
  */
-export function initEventHandlers() {
-  console.log('🔧 Initializing event handlers...');
+export function initializeEventHandlers() {
+  // Initialize card expander FIRST
+  initializeCardExpander();
   
-  // Setup textarea and button handlers
-  setupTextareaHandlers();
-  setupButtonHandlers();
-  setupTemplateHandlers();
+  setupRequirementHandlers();
+  setupOutputHandlers();
   setupToolHandlers();
-  setupHistoryHandlers();
+  setupModalHandlers();
   setupVoiceHandlers();
-  
-  // Initialize from saved state
-  initFromSavedState();
-  
-  console.log('✅ Event handlers initialized');
+  setupUIHandlers();
 }
 
 /**
- * Setup textarea handlers
+ * Setup requirement textarea handlers
  */
-function setupTextareaHandlers() {
-  // Card 1: Idea textarea
-  const ideaTextarea = document.getElementById('idea');
-  const outputTextarea = document.getElementById('output');
-  
-  if (ideaTextarea) {
-    // Auto-convert timer
-    ideaTextarea.addEventListener('input', debounce(() => {
-      const text = ideaTextarea.value.trim();
-      if (text && appState.autoConvertEnabled && !appState.isConverted) {
-        console.log('Auto-convert triggered');
-        convertIdeaToPrompt();
-      }
-      
-      // Update character counter
-      updateCharCounter(ideaTextarea, 'idea-char-count');
-      
-      // Update context chips
-      updateContextChips(text);
-    }, 300));
-    
-    // Clear button handler
-    const clearBtn = document.querySelector('.clear-btn-left');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        ideaTextarea.value = '';
-        ideaTextarea.focus();
-        updateCharCounter(ideaTextarea, 'idea-char-count');
-        updateContextChips('');
-      });
-    }
-  }
-  
-  if (outputTextarea) {
-    // Update character counter for output
-    outputTextarea.addEventListener('input', () => {
-      updateCharCounter(outputTextarea, 'output-char-count');
+function setupRequirementHandlers() {
+  const requirementEl = document.getElementById('requirement');
+  const clearBtn = document.getElementById('clearRequirementBtn');
+  const autoConvertCheckbox = document.getElementById('autoConvert');
+  const presetSelect = document.getElementById('presetSelect');
+  const lockPresetCheckbox = document.getElementById('lockPreset');
+  const contextChipsRow = document.getElementById('contextChipsRow');
+
+  if (!requirementEl) return;
+
+  // Input handler with debouncing
+  let inputTimeout;
+  requirementEl.addEventListener('input', () => {
+    clearTimeout(inputTimeout);
+    inputTimeout = setTimeout(() => {
+      handleRequirementInput(requirementEl, contextChipsRow);
+    }, 300);
+  });
+
+  // Clear button
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      requirementEl.value = '';
+      handleRequirementInput(requirementEl, contextChipsRow);
+      showInfo('Input cleared');
     });
-    
-    // Copy button handler (embedded version)
-    const copyBtn = document.querySelector('.copy-btn-embedded');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', async () => {
-        const text = outputTextarea.value;
-        if (!text) return;
-        
-        const success = await copyPromptToClipboard(text);
-        if (success) {
-          showNotification('Prompt copied to clipboard!');
-        } else {
-          showNotification('Failed to copy prompt');
-        }
-      });
-    }
+  }
+
+  // Auto-convert toggle
+  if (autoConvertCheckbox) {
+    autoConvertCheckbox.addEventListener('change', (e) => {
+      appState.autoConvertEnabled = e.target.checked;
+      if (!appState.autoConvertEnabled) {
+        appState.clearAutoConvertTimers();
+      }
+    });
+  }
+
+  // Preset selection
+  if (presetSelect) {
+    presetSelect.addEventListener('change', (e) => {
+      appState.currentPreset = e.target.value;
+      appState.userPresetLocked = lockPresetCheckbox?.checked || false;
+      appState.lastPresetSource = "manual";
+    });
+  }
+
+  // Lock preset
+  if (lockPresetCheckbox) {
+    lockPresetCheckbox.addEventListener('change', (e) => {
+      appState.userPresetLocked = e.target.checked;
+    });
   }
 }
 
 /**
- * Setup button handlers
+ * Handle requirement input
  */
-function setupButtonHandlers() {
-  // Convert button
-  const convertBtn = document.querySelector('.elegant-convert-btn');
-  if (convertBtn) {
-    convertBtn.addEventListener('click', convertIdeaToPrompt);
+function handleRequirementInput(requirementEl, contextChipsRow) {
+  const text = requirementEl.value;
+  const convertBtn = document.getElementById('convertBtn');
+  const outputEl = document.getElementById('output');
+
+  // Update context chips
+  if (contextChipsRow) {
+    const context = detectContextFromText(text);
+    if (context && context.taskType && text.trim()) {
+      contextChipsRow.innerHTML = createContextChipsHTML(context);
+      contextChipsRow.style.display = 'flex';
+      
+      // Update AI tools based on context
+      updateAIToolsGrid(context.taskType, text, false);
+    } else {
+      contextChipsRow.innerHTML = '';
+      contextChipsRow.style.display = 'none';
+    }
   }
-  
-  // Export button
-  const exportBtn = document.querySelector('.export-btn');
+
+  // Clear output if user is typing new requirement
+  if (appState.isConverted && text !== appState.lastConvertedText) {
+    outputEl.value = '';
+    appState.isConverted = false;
+    
+    const convertedBadge = document.getElementById('convertedBadge');
+    if (convertedBadge) convertedBadge.style.display = 'none';
+    
+    updateLaunchButtons(false);
+  }
+
+  // Update convert button state
+  if (convertBtn) {
+    convertBtn.disabled = !text.trim();
+  }
+
+  // Update stats
+  updateInputStats(text);
+}
+
+/**
+ * Setup output handlers
+ */
+function setupOutputHandlers() {
+  const copyBtn = document.getElementById('copyOutputBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+  const convertBtn = document.getElementById('convertBtn');
+
+  // Copy to clipboard
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const outputEl = document.getElementById('output');
+      const prompt = outputEl.value.trim();
+      
+      if (!prompt) {
+        showError('No prompt to copy');
+        return;
+      }
+
+      const success = await copyPromptToClipboard(prompt);
+
+      if (success) {
+        showSuccess('Prompt copied to clipboard');
+      } else {
+        showError('Failed to copy to clipboard');
+      }
+    });
+  }
+
+  // Export prompt
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      const output = document.getElementById('output');
-      if (output && output.value.trim()) {
-        exportPromptToFile(output.value.trim(), 'prompt.txt');
-        showNotification('Prompt exported as prompt.txt');
-      } else {
-        showNotification('Generate a prompt first');
+      const outputEl = document.getElementById('output');
+      const prompt = outputEl.value.trim();
+      
+      if (!prompt) {
+        showError('No prompt to export');
+        return;
       }
+
+      exportPromptToFile(prompt);
+      showSuccess('Prompt exported as prompt.txt');
     });
   }
-  
-  // Save as Template button
-  const saveTemplateBtn = document.querySelector('.save-template-btn');
+
+  // Save as template
   if (saveTemplateBtn) {
     saveTemplateBtn.addEventListener('click', () => {
-      const output = document.getElementById('output');
-      if (output && output.value.trim()) {
-        // This will be handled by setupTemplateEventHandlers
-        // But we need to ensure the modal opens
-        openTemplatesModal();
-      } else {
-        showNotification('Generate a prompt first');
+      const requirementEl = document.getElementById('requirement');
+      const content = requirementEl.value.trim();
+      
+      if (!content) {
+        showError('Type something to save as a template');
+        return;
       }
+
+      showTemplateSaveDialog(content);
     });
   }
-  
-  // Clear output button
-  const clearOutputBtn = document.querySelector('.clear-output-btn');
-  if (clearOutputBtn) {
-    clearOutputBtn.addEventListener('click', () => {
-      const output = document.getElementById('output');
-      if (output) {
-        output.value = '';
-        updateCharCounter(output, 'output-char-count');
-        appState.isConverted = false;
-        showNotification('Output cleared');
-      }
+
+  // Convert button
+  if (convertBtn) {
+    convertBtn.addEventListener('click', async () => {
+      await handleConvert();
     });
   }
-  
-  // Preset buttons
-  const presetButtons = document.querySelectorAll('.preset-btn');
-  presetButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const preset = btn.dataset.preset;
-      if (preset) {
-        setActivePreset(preset);
-      }
-    });
-  });
 }
 
 /**
- * Setup template handlers
+ * Handle convert button click
  */
-function setupTemplateHandlers() {
-  // Setup template event handlers
-  setupTemplateEventHandlers(
-    showNotification,
-    (content) => {
-      const ideaTextarea = document.getElementById('idea');
-      if (ideaTextarea) {
-        ideaTextarea.value = content;
-        ideaTextarea.dispatchEvent(new Event('input'));
+async function handleConvert() {
+  const requirementEl = document.getElementById('requirement');
+  const outputEl = document.getElementById('output');
+  const convertBtn = document.getElementById('convertBtn');
+  const convertedBadge = document.getElementById('convertedBadge');
+  
+  const raw = requirementEl.value.trim();
+  if (!raw) {
+    showError('Please enter a requirement first');
+    return;
+  }
+
+  // Disable button and show loading
+  convertBtn.disabled = true;
+  const originalText = convertBtn.innerHTML;
+  convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+
+  try {
+    const result = await generatePrompt(raw);
+    
+    if (result.success) {
+      outputEl.value = result.prompt;
+      
+      // Show converted badge
+      if (convertedBadge) {
+        convertedBadge.style.display = 'inline-flex';
       }
+      
+      // Update UI
+      updateOutputStats();
+      updateLaunchButtons(true);
+      
+      // Update AI tools with new context
+      const context = detectContextFromText(raw);
+      updateAIToolsGrid(context.taskType, result.prompt, true);
+      
+      showSuccess('Prompt generated successfully');
+    } else {
+      showError('Generation failed, using offline mode');
+      outputEl.value = result.prompt;
+      updateOutputStats();
+      updateLaunchButtons(true);
+      
+      // Still update AI tools
+      const context = detectContextFromText(raw);
+      updateAIToolsGrid(context.taskType, result.prompt, true);
     }
-  );
+  } catch (error) {
+    console.error('Conversion error:', error);
+    showError('Failed to generate prompt');
+  } finally {
+    // Restore button
+    convertBtn.disabled = false;
+    convertBtn.innerHTML = originalText;
+  }
 }
 
 /**
  * Setup tool handlers
  */
 function setupToolHandlers() {
-  // Setup AI tool click handlers
-  setupToolClickHandlers(showNotification);
+  // Tool click handlers are now handled by ai-tools.js
 }
 
 /**
- * Setup history handlers
+ * Setup modal handlers
  */
-function setupHistoryHandlers() {
-  // Load history on page load
-  loadHistory();
-  
-  // View history button
-  const viewHistoryBtn = document.querySelector('.view-history-btn');
-  if (viewHistoryBtn) {
-    viewHistoryBtn.addEventListener('click', () => {
-      // Open history modal (you'll need to implement this)
-      showNotification('History feature coming soon');
+function setupModalHandlers() {
+  const openTemplatesBtn = document.getElementById('openTemplatesBtn');
+  const closeTemplatesBtn = document.getElementById('closeTemplatesBtn');
+  const openHistoryBtn = document.getElementById('openHistoryBtn');
+  const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+  const templatesGrid = document.getElementById('templatesGrid');
+  const historyList = document.getElementById('historyList');
+
+  // Templates modal
+  if (openTemplatesBtn) {
+    openTemplatesBtn.addEventListener('click', () => {
+      templatesGrid.innerHTML = renderTemplatesGrid();
+      openModal('templatesModal');
     });
+  }
+
+  if (closeTemplatesBtn) {
+    closeTemplatesBtn.addEventListener('click', () => {
+      closeModal('templatesModal');
+    });
+  }
+
+  // History modal
+  if (openHistoryBtn) {
+    openHistoryBtn.addEventListener('click', () => {
+      historyList.innerHTML = renderHistoryList();
+      openModal('historyModal');
+    });
+  }
+
+  if (closeHistoryBtn) {
+    closeHistoryBtn.addEventListener('click', () => {
+      closeModal('historyModal');
+    });
+  }
+
+  // Register modals
+  const templatesModal = document.getElementById('templatesModal');
+  const historyModal = document.getElementById('historyModal');
+
+  if (templatesModal) {
+    modalManager.register('templatesModal', templatesModal);
+  }
+
+  if (historyModal) {
+    modalManager.register('historyModal', historyModal);
   }
 }
 
@@ -199,276 +344,93 @@ function setupHistoryHandlers() {
  * Setup voice handlers
  */
 function setupVoiceHandlers() {
-  const micBtn = document.querySelector('.mic-btn-right');
-  if (micBtn) {
-    let isRecording = false;
-    
-    micBtn.addEventListener('click', async () => {
-      const ideaTextarea = document.getElementById('idea');
-      
-      if (!isRecording) {
-        // Start recording
-        const success = await startVoiceRecognition((text) => {
-          if (ideaTextarea) {
-            ideaTextarea.value = text;
-            ideaTextarea.dispatchEvent(new Event('input'));
-          }
-        });
-        
-        if (success) {
-          isRecording = true;
-          micBtn.classList.add('recording');
-          micBtn.innerHTML = '<i class="fas fa-stop"></i>';
-          showNotification('Listening... Speak now');
-        } else {
-          showNotification('Voice recognition not supported');
-        }
-      } else {
-        // Stop recording
-        stopVoiceRecognition();
-        isRecording = false;
-        micBtn.classList.remove('recording');
-        micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-        showNotification('Voice input stopped');
+  const voiceBtn = document.getElementById('voiceBtn');
+  const requirementEl = document.getElementById('requirement');
+  
+  if (voiceBtn && requirementEl) {
+    setupVoiceButton(voiceBtn, requirementEl, (transcript, error) => {
+      if (error) {
+        showError(error);
+      } else if (transcript) {
+        showSuccess('Voice input captured');
       }
     });
   }
 }
 
 /**
- * Convert idea to prompt
+ * Setup general UI handlers
  */
-async function convertIdeaToPrompt() {
-  const ideaTextarea = document.getElementById('idea');
-  const outputTextarea = document.getElementById('output');
-  
-  if (!ideaTextarea || !outputTextarea) return;
-  
-  const idea = ideaTextarea.value.trim();
-  if (!idea) {
-    showNotification('Please enter an idea first');
-    return;
-  }
-  
-  // Show loading state
-  const convertBtn = document.querySelector('.elegant-convert-btn');
-  const originalText = convertBtn?.innerHTML;
-  if (convertBtn) {
-    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
-    convertBtn.disabled = true;
-  }
-  
-  try {
-    // Generate prompt
-    const result = await generatePrompt(idea, {
-      useAI: appState.autoConvertEnabled
-    });
-    
-    if (result.success) {
-      // Update output
-      outputTextarea.value = result.prompt;
-      outputTextarea.dispatchEvent(new Event('input'));
-      
-      // Update context chips
-      updateContextChips(idea);
-      
-      // Update AI tools grid with new context
-      const toolsGrid = document.getElementById('aiToolsGrid');
-      if (toolsGrid) {
-        // You'll need to import and call updateAIToolsGrid here
-        // updateAIToolsGrid(result.context?.taskType, result.prompt, true);
-      }
-      
-      // Add to history
-      addToHistory({
-        role: result.role,
-        presetLabel: appState.currentPreset,
-        raw: idea,
-        prompt: result.prompt
-      });
-      
-      showNotification('Prompt generated successfully!');
-    } else {
-      showNotification('Generation failed, using fallback');
-    }
-  } catch (error) {
-    console.error('Conversion error:', error);
-    showNotification('Error generating prompt');
-  } finally {
-    // Restore button
-    if (convertBtn) {
-      convertBtn.innerHTML = originalText;
-      convertBtn.disabled = false;
-    }
-  }
+function setupUIHandlers() {
+  // Update usage count display
+  updateUsageCount();
 }
 
 /**
- * Update character counter
- * @param {HTMLTextAreaElement} textarea - Textarea element
- * @param {string} counterId - Counter element ID
+ * Update launch buttons state
  */
-function updateCharCounter(textarea, counterId) {
-  const counter = document.getElementById(counterId);
-  if (counter) {
-    const charCount = textarea.value.length;
-    counter.textContent = `${charCount} chars`;
-    
-    // Update color based on count
-    if (charCount === 0) {
-      counter.style.color = 'var(--text-muted)';
-    } else if (charCount > 0 && charCount <= 100) {
-      counter.style.color = 'var(--matrix-green)';
-    } else if (charCount > 100 && charCount <= 500) {
-      counter.style.color = 'var(--primary)';
+function updateLaunchButtons(enabled) {
+  const toolCards = document.querySelectorAll('.tool-card');
+  toolCards.forEach(card => {
+    if (enabled) {
+      card.classList.remove('tool-card-disabled');
+      card.disabled = false;
     } else {
-      counter.style.color = 'var(--warning)';
-    }
-  }
-}
-
-/**
- * Update context chips
- * @param {string} text - Input text
- */
-function updateContextChips(text) {
-  const chipsContainer = document.querySelector('.chip-row');
-  if (!chipsContainer) return;
-  
-  if (!text.trim()) {
-    chipsContainer.innerHTML = '';
-    return;
-  }
-  
-  const context = detectContextFromText(text);
-  const chipsHTML = createContextChipsHTML(context);
-  chipsContainer.innerHTML = chipsHTML;
-}
-
-/**
- * Set active preset
- * @param {string} preset - Preset name
- */
-function setActivePreset(preset) {
-  appState.currentPreset = preset;
-  
-  // Update UI
-  const presetButtons = document.querySelectorAll('.preset-btn');
-  presetButtons.forEach(btn => {
-    if (btn.dataset.preset === preset) {
-      btn.classList.add('active');
-      btn.style.background = 'rgba(255, 94, 0, 0.2)';
-      btn.style.borderColor = 'var(--primary)';
-    } else {
-      btn.classList.remove('active');
-      btn.style.background = '';
-      btn.style.borderColor = '';
+      card.classList.add('tool-card-disabled');
+      card.disabled = true;
     }
   });
-  
-  showNotification(`Preset changed to: ${preset}`);
 }
 
 /**
- * Show notification
- * @param {string} message - Notification message
- * @param {string} type - Notification type (success, error, info, warning)
+ * Update input stats
  */
-function showNotification(message, type = 'info') {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.innerHTML = `
-    <i class="fas fa-${getNotificationIcon(type)}"></i>
-    <span>${message}</span>
-    <button class="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
-  
-  // Add to container or create one
-  let container = document.querySelector('.notification-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'notification-container';
-    document.body.appendChild(container);
-  }
-  
-  container.appendChild(notification);
-  
-  // Show with animation
-  setTimeout(() => notification.classList.add('show'), 10);
-  
-  // Auto remove after 3 seconds
-  setTimeout(() => {
-    notification.classList.remove('show');
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
-  
-  // Close button
-  const closeBtn = notification.querySelector('.notification-close');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      notification.classList.remove('show');
-      setTimeout(() => notification.remove(), 300);
-    });
+function updateInputStats(text) {
+  const inputStats = document.getElementById('inputStats');
+  if (inputStats) {
+    inputStats.textContent = `${text.length} chars`;
   }
 }
 
 /**
- * Get notification icon based on type
- * @param {string} type - Notification type
- * @returns {string} Icon class name
+ * Update output stats
  */
-function getNotificationIcon(type) {
-  const icons = {
-    success: 'check-circle',
-    error: 'exclamation-circle',
-    warning: 'exclamation-triangle',
-    info: 'info-circle'
-  };
-  return icons[type] || 'info-circle';
-}
-
-/**
- * Initialize from saved state
- */
-function initFromSavedState() {
-  // Set active preset
-  if (appState.currentPreset) {
-    setActivePreset(appState.currentPreset);
-  }
-  
-  // Update character counters
-  const ideaTextarea = document.getElementById('idea');
-  const outputTextarea = document.getElementById('output');
-  
-  if (ideaTextarea) {
-    updateCharCounter(ideaTextarea, 'idea-char-count');
-  }
-  
-  if (outputTextarea && outputTextarea.value) {
-    updateCharCounter(outputTextarea, 'output-char-count');
+function updateOutputStats() {
+  const outputEl = document.getElementById('output');
+  const outputStats = document.getElementById('outputStats');
+  if (outputStats && outputEl) {
+    outputStats.textContent = `${outputEl.value.length} chars`;
   }
 }
 
 /**
- * Debounce function
- * @param {Function} func - Function to debounce
- * @param {number} wait - Wait time
- * @returns {Function} Debounced function
+ * Update usage count display
  */
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+function updateUsageCount() {
+  const usageElement = document.getElementById('usageCount');
+  if (usageElement) {
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${appState.usageCount} prompts generated`;
+  }
 }
 
-// Export initialization function
-export default initEventHandlers;
+/**
+ * Show template save dialog
+ */
+function showTemplateSaveDialog(content) {
+  const name = prompt('Template name:');
+  if (!name) return;
+
+  const description = prompt('Short description (optional):') || 'Custom template';
+  const category = 'other';
+
+  if (appState.editingTemplateId) {
+    // Update existing template
+    appState.updateTemplate(appState.editingTemplateId, { name, description, content, category });
+    appState.editingTemplateId = null;
+    showSuccess('Template updated');
+  } else {
+    // Create new template
+    appState.addTemplate({ name, description, category, content });
+    showSuccess('Template saved');
+  }
+}
