@@ -471,3 +471,155 @@
     height: 32px;
   }
 }
+/* ===========================================
+   URGENT FIXES FOR CARD LAYOUT ISSUES
+   =========================================== */
+
+/* FIX 1: Reduce card heights to prevent scrolling */
+.step-card {
+  height: 620px !important; /* Reduced from 680px */
+  min-height: 620px !important;
+}
+
+/* FIX 2: Position Convert button higher */
+.elegant-convert-btn {
+  margin-top: 0.5rem !important; /* Brought way up */
+  margin-bottom: 0.5rem !important;
+}
+
+/* FIX 3: Position action buttons higher */
+.prompt-actions {
+  margin-top: 0.5rem !important; /* Brought way up */
+  margin-bottom: 0.5rem !important;
+}
+
+/* FIX 4: Fix helper text layout */
+.helper-row {
+  margin: 0.25rem 0 !important;
+  padding: 0.25rem 0 !important;
+  min-height: auto !important;
+}
+
+.helper-text {
+  font-size: 0.7rem !important;
+  line-height: 1.3 !important;
+  max-width: 70% !important;
+}
+
+.char-counter {
+  font-size: 0.7rem !important;
+  min-width: 60px !important;
+  text-align: right !important;
+}
+
+/* FIX 5: Reduce textarea heights to create more space */
+.textarea-idea, .output-textarea {
+  min-height: 120px !important;
+  max-height: 180px !important;
+}
+
+/* FIX 6: Fix tools container spacing */
+.tools-container {
+  max-height: 280px !important;
+  min-height: 200px !important;
+  margin: 0.25rem 0 !important;
+}
+
+/* FIX 7: Improve responsive design */
+@media (max-width: 1200px) {
+  .step-card {
+    height: 600px !important;
+    min-height: 600px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .step-card {
+    height: 580px !important;
+    min-height: 580px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .step-card {
+    height: 550px !important;
+    min-height: 550px !important;
+    padding: 1rem !important;
+  }
+  
+  .textarea-idea, .output-textarea {
+    min-height: 100px !important;
+    max-height: 150px !important;
+  }
+  
+  .helper-text {
+    max-width: 60% !important;
+  }
+}
+
+/* FIX 8: Ensure proper button visibility without scrolling */
+.card-body {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+}
+
+/* FIX 9: Create proper spacing for all elements */
+.auto-row,
+.preset-row,
+.chip-row {
+  margin: 0.5rem 0 !important;
+}
+
+/* FIX 10: Last helper text in card 3 */
+.step-card:nth-child(3) .helper-text {
+  margin-top: 0.5rem !important;
+  padding-top: 0.5rem !important;
+  border-top: 1px solid var(--border-subtle) !important;
+}
+
+/* FIX 11: Make sure tools are properly displayed */
+.tools-grid {
+  gap: 0.5rem !important;
+}
+
+.tool-card {
+  padding: 0.75rem !important;
+  margin: 0.125rem 0 !important;
+}
+
+.tool-icon {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 0.875rem !important;
+}
+
+.tool-info h4 {
+  font-size: 0.8125rem !important;
+  margin-bottom: 0.125rem !important;
+}
+
+.tool-info p {
+  font-size: 0.7rem !important;
+  line-height: 1.2 !important;
+}
+
+/* FIX 12: Language text positioning */
+.language-text {
+  font-size: 0.7rem !important;
+  max-width: 180px !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+
+/* FIX 13: Prevent text overlap */
+.top-left-buttons {
+  gap: 0.25rem !important;
+  align-items: flex-start !important;
+}
+
+/* FIX 14: Add more padding to textareas */
+.textarea-idea, .output-textarea {
+  padding: 0.75rem !important;
+}
