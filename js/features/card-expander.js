@@ -1,20 +1,40 @@
+// js/features/card-expander.js
 // Card expander for maximize/minimize functionality
-// Handles Card 1 (Your Idea/Input) and Card 2 (Structured Prompt/Output)
 
 export class CardExpander {
   constructor() {
     this.maximizedCard = null;
     this.minimizedCards = new Set();
     this.isInitialized = false;
+    this.buttonsAdded = false; // Track if buttons are already added
   }
 
   initialize() {
     if (this.isInitialized) return;
     
-    this.createExpandButtons();
+    console.log('🔧 Initializing Card Expander...');
+    
+    // Check if buttons already exist
+    this.checkAndCreateButtons();
     this.bindEvents();
     this.loadState();
     this.isInitialized = true;
+    
+    console.log('✅ Card Expander initialized');
+  }
+
+  checkAndCreateButtons() {
+    // Only add buttons if they don't exist
+    const existingButtons = document.querySelectorAll('.card-expand-btn');
+    
+    if (existingButtons.length === 0) {
+      console.log('🔄 Creating maximize buttons for cards...');
+      this.createExpandButtons();
+      this.buttonsAdded = true;
+    } else {
+      console.log('✅ Maximize buttons already exist');
+      this.buttonsAdded = true;
+    }
   }
 
   createExpandButtons() {
@@ -23,31 +43,26 @@ export class CardExpander {
     const card2 = document.getElementById('card-2');
 
     [card1, card2].forEach((card, index) => {
-      if (!card) return;
-
-      // Ensure card has ID
-      if (!card.id) {
-        card.id = `card-${index + 1}`;
+      if (!card) {
+        console.warn(`⚠️ Card ${index + 1} not found`);
+        return;
       }
 
       // Find or create card header
-      let header = card.querySelector('.card-header');
+      let header = card.querySelector('.step-header');
       if (!header) {
-        header = document.createElement('div');
-        header.className = 'card-header';
-        card.insertBefore(header, card.firstChild);
+        console.warn(`⚠️ Header not found for Card ${index + 1}`);
+        return;
       }
 
-      // Add title if missing
-      let title = header.querySelector('.card-title');
-      if (!title) {
-        title = document.createElement('h3');
-        title.className = 'card-title';
-        title.textContent = index === 0 ? 'Your Idea / Input' : 'Structured Prompt / Output';
-        header.appendChild(title);
+      // Check if button already exists
+      const existingBtn = header.querySelector('.card-expand-btn');
+      if (existingBtn) {
+        console.log(`✅ Button already exists on Card ${index + 1}`);
+        return;
       }
 
-      // Add actions container
+      // Create actions container
       let actions = header.querySelector('.card-actions');
       if (!actions) {
         actions = document.createElement('div');
@@ -55,13 +70,9 @@ export class CardExpander {
         header.appendChild(actions);
       }
 
-      // Clear existing expand buttons
-      const existingBtns = actions.querySelectorAll('.card-expand-btn');
-      existingBtns.forEach(btn => btn.remove());
-
-      // Add maximize/minimize button
+      // Create maximize/minimize button
       const expandBtn = document.createElement('button');
-      expandBtn.className = 'btn-icon card-expand-btn';
+      expandBtn.className = 'card-expand-btn';
       expandBtn.setAttribute('data-card', card.id);
       expandBtn.setAttribute('title', 'Maximize');
       expandBtn.innerHTML = `
@@ -69,39 +80,59 @@ export class CardExpander {
           <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
         </svg>
       `;
+      
       actions.appendChild(expandBtn);
+      console.log(`✅ Added maximize button to ${card.id}`);
     });
   }
 
   bindEvents() {
-    // Delegate clicks to card expand buttons
-    document.addEventListener('click', (e) => {
-      const expandBtn = e.target.closest('.card-expand-btn');
-      if (!expandBtn) return;
-
-      const cardId = expandBtn.getAttribute('data-card');
-      const card = document.getElementById(cardId);
-      
-      if (card) {
-        this.toggle(card, expandBtn);
-      }
-    });
+    console.log('🔗 Binding card expander events...');
+    
+    // Remove any existing listeners first
+    document.removeEventListener('click', this.handleClick);
+    
+    // Add new event listener
+    this.handleClick = this.handleClick.bind(this);
+    document.addEventListener('click', this.handleClick);
 
     // ESC key to restore maximized card
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.maximizedCard) {
-        const card = document.getElementById(this.maximizedCard);
-        if (card) {
-          const btn = card.querySelector('.card-expand-btn');
-          this.restore(card, btn);
-        }
+    document.removeEventListener('keydown', this.handleKeydown);
+    this.handleKeydown = this.handleKeydown.bind(this);
+    document.addEventListener('keydown', this.handleKeydown);
+    
+    console.log('✅ Events bound successfully');
+  }
+
+  handleClick(e) {
+    const expandBtn = e.target.closest('.card-expand-btn');
+    if (!expandBtn) return;
+
+    const cardId = expandBtn.getAttribute('data-card');
+    const card = document.getElementById(cardId);
+    
+    if (card) {
+      console.log(`🔄 Toggling ${cardId}`);
+      this.toggle(card, expandBtn);
+    }
+  }
+
+  handleKeydown(e) {
+    if (e.key === 'Escape' && this.maximizedCard) {
+      console.log('⎋ ESC pressed, restoring maximized card');
+      const card = document.getElementById(this.maximizedCard);
+      if (card) {
+        const btn = card.querySelector('.card-expand-btn');
+        this.restore(card, btn);
       }
-    });
+    }
   }
 
   toggle(card, btn) {
     const isMaximized = card.classList.contains('is-maximized');
     const isMinimized = card.classList.contains('is-minimized');
+
+    console.log(`🔄 Card state: maximized=${isMaximized}, minimized=${isMinimized}`);
 
     if (isMaximized) {
       this.restore(card, btn);
@@ -113,6 +144,8 @@ export class CardExpander {
   }
 
   maximize(card, btn) {
+    console.log(`🔍 Maximizing ${card.id}`);
+    
     // Store original state
     card.dataset.originalPosition = card.style.position || '';
     card.dataset.originalTop = card.style.top || '';
@@ -122,6 +155,7 @@ export class CardExpander {
 
     // Restore currently maximized card if any
     if (this.maximizedCard) {
+      console.log(`🔄 Restoring previously maximized card ${this.maximizedCard}`);
       const otherCard = document.getElementById(this.maximizedCard);
       const otherBtn = otherCard?.querySelector('.card-expand-btn');
       if (otherCard && otherBtn) {
@@ -150,7 +184,7 @@ export class CardExpander {
     }
 
     // Update grid layout
-    const grid = card.closest('.grid');
+    const grid = card.closest('.cards-grid');
     if (grid) {
       grid.classList.add('has-maximized-card');
     }
@@ -158,9 +192,13 @@ export class CardExpander {
     // Update state
     this.maximizedCard = card.id;
     this.saveState();
+    
+    console.log(`✅ ${card.id} maximized`);
   }
 
   minimize(card, btn) {
+    console.log(`🔍 Minimizing ${card.id}`);
+    
     // Store original height
     card.dataset.originalHeight = card.offsetHeight + 'px';
 
@@ -170,7 +208,7 @@ export class CardExpander {
       document.body.classList.remove('card-max-open');
       this.maximizedCard = null;
       
-      const grid = card.closest('.grid');
+      const grid = card.closest('.cards-grid');
       if (grid) {
         grid.classList.remove('has-maximized-card');
       }
@@ -192,14 +230,18 @@ export class CardExpander {
     // Update state
     this.minimizedCards.add(card.id);
     this.saveState();
+    
+    console.log(`✅ ${card.id} minimized`);
   }
 
   restore(card, btn) {
+    console.log(`🔍 Restoring ${card.id}`);
+    
     // Remove both states
     card.classList.remove('is-maximized', 'is-minimized');
     
     // Remove body class if no other maximized cards
-    if (document.querySelectorAll('.card.is-maximized').length === 0) {
+    if (document.querySelectorAll('.step-card.is-maximized').length === 0) {
       document.body.classList.remove('card-max-open');
     }
 
@@ -221,7 +263,7 @@ export class CardExpander {
     }
 
     // Update grid layout
-    const grid = card.closest('.grid');
+    const grid = card.closest('.cards-grid');
     if (grid) {
       grid.classList.remove('has-maximized-card');
     }
@@ -242,6 +284,8 @@ export class CardExpander {
     }
     this.minimizedCards.delete(card.id);
     this.saveState();
+    
+    console.log(`✅ ${card.id} restored`);
   }
 
   saveState() {
@@ -250,34 +294,45 @@ export class CardExpander {
       minimizedCardIds: Array.from(this.minimizedCards)
     };
     localStorage.setItem('cardExpanderState', JSON.stringify(state));
+    console.log('💾 Card state saved:', state);
   }
 
   loadState() {
     try {
       const saved = localStorage.getItem('cardExpanderState');
-      if (!saved) return;
+      if (!saved) {
+        console.log('📭 No saved card state found');
+        return;
+      }
 
       const state = JSON.parse(saved);
+      console.log('📂 Loading saved card state:', state);
       
       // Restore maximized card
       if (state.maximizedCardId) {
-        const card = document.getElementById(state.maximizedCardId);
-        const btn = card?.querySelector('.card-expand-btn');
-        if (card && btn) {
-          this.maximize(card, btn);
-        }
+        setTimeout(() => {
+          const card = document.getElementById(state.maximizedCardId);
+          const btn = card?.querySelector('.card-expand-btn');
+          if (card && btn) {
+            console.log(`📂 Restoring maximized card: ${state.maximizedCardId}`);
+            this.maximize(card, btn);
+          }
+        }, 100);
       }
 
       // Restore minimized cards
       state.minimizedCardIds?.forEach(cardId => {
-        const card = document.getElementById(cardId);
-        const btn = card?.querySelector('.card-expand-btn');
-        if (card && btn) {
-          this.minimize(card, btn);
-        }
+        setTimeout(() => {
+          const card = document.getElementById(cardId);
+          const btn = card?.querySelector('.card-expand-btn');
+          if (card && btn) {
+            console.log(`📂 Restoring minimized card: ${cardId}`);
+            this.minimize(card, btn);
+          }
+        }, 100);
       });
     } catch (e) {
-      console.error('Failed to load card expander state:', e);
+      console.error('❌ Failed to load card expander state:', e);
     }
   }
 
@@ -287,7 +342,9 @@ export class CardExpander {
     const btn = card?.querySelector('.card-expand-btn');
     if (card && btn) {
       this.maximize(card, btn);
+      return true;
     }
+    return false;
   }
 
   minimizeCard(cardId) {
@@ -295,7 +352,9 @@ export class CardExpander {
     const btn = card?.querySelector('.card-expand-btn');
     if (card && btn) {
       this.minimize(card, btn);
+      return true;
     }
+    return false;
   }
 
   restoreCard(cardId) {
@@ -303,7 +362,9 @@ export class CardExpander {
     const btn = card?.querySelector('.card-expand-btn');
     if (card && btn) {
       this.restore(card, btn);
+      return true;
     }
+    return false;
   }
 
   getMaximizedCard() {
@@ -327,6 +388,7 @@ export class CardExpander {
     this.maximizedCard = null;
     this.minimizedCards.clear();
     localStorage.removeItem('cardExpanderState');
+    console.log('🔄 Card expander reset');
   }
 }
 
