@@ -307,7 +307,7 @@
       box-shadow: none !important;
     }
     
-    /* Text Areas */
+    /* FIXED: Text Areas - Now properly resizable */
     .textarea-container {
       flex: 1;
       margin-bottom: 1rem;
@@ -319,8 +319,9 @@
     
     .textarea-idea, .output-textarea {
       width: 100%;
-      min-height: 140px;
-      max-height: 160px;
+      min-height: 160px; /* Increased from 140px */
+      height: 180px; /* Set initial height */
+      max-height: 500px; /* FIXED: Increased from 160px to allow proper resize */
       padding: 1rem;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
@@ -329,7 +330,18 @@
       font-family: inherit;
       font-size: 0.875rem;
       line-height: 1.5;
-      resize: vertical;
+      resize: vertical; /* This enables drag resize */
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    
+    /* Better resize handle */
+    .textarea-idea::-webkit-resizer,
+    .output-textarea::-webkit-resizer {
+      background-color: var(--primary);
+      border-radius: 2px;
+      border: 2px solid var(--panel-bg);
+      padding: 3px;
     }
     
     .textarea-idea:focus, .output-textarea:focus {
