@@ -1,6 +1,13 @@
 // app.js - Main Application Entry Point
 
 // Import core modules
+// Import all modules
+import initEventHandlers from './ui/event-handlers.js';
+import { loadBrandIcons } from './ai/ai-tools.js';
+import { initCardExpander } from './features/card-expander.js';
+import { loadTemplates, setupTemplateEventHandlers } from './features/templates.js';
+
+
 import appState from './core/app-state.js';
 import { STORAGE_KEYS, DEFAULTS } from './core/constants.js';
 
@@ -21,6 +28,24 @@ import modalManager from './ui/modal-manager.js';
 /**
  * Initialize the application
  */
+// Initialize the app
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 PromptCraft Pro Initializing...');
+  
+  // Load AI tool brand icons
+  loadBrandIcons();
+  
+  // Initialize card expander
+  initCardExpander();
+  
+  // Load templates
+  loadTemplates();
+  
+  // Initialize event handlers
+  initEventHandlers();
+  
+  console.log('✅ App initialized successfully');
+});
 async function initializeApp() {
   try {
     // Show loading state
