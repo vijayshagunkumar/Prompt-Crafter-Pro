@@ -1411,5 +1411,46 @@
       }
     });
   </script>
+  <script>
+// Add this JavaScript to fix layout on load
+document.addEventListener('DOMContentLoaded', function() {
+  // Force layout recalculation
+  setTimeout(function() {
+    // Fix card heights
+    const cards = document.querySelectorAll('.step-card');
+    cards.forEach(card => {
+      if (!card.classList.contains('is-maximized') && 
+          !card.classList.contains('is-minimized')) {
+        card.style.height = '620px';
+        card.style.minHeight = '620px';
+      }
+    });
+    
+    // Ensure buttons are visible
+    const convertBtn = document.querySelector('.elegant-convert-btn');
+    const actionBtns = document.querySelector('.prompt-actions');
+    
+    if (convertBtn) {
+      convertBtn.style.marginTop = '0.5rem';
+      convertBtn.style.marginBottom = '0.5rem';
+    }
+    
+    if (actionBtns) {
+      actionBtns.style.marginTop = '0.5rem';
+      actionBtns.style.marginBottom = '0.5rem';
+    }
+    
+    // Fix textarea heights
+    const textareas = document.querySelectorAll('.textarea-idea, .output-textarea');
+    textareas.forEach(textarea => {
+      textarea.style.minHeight = '120px';
+      textarea.style.maxHeight = '180px';
+    });
+    
+    console.log('✅ Layout fixes applied');
+  }, 100);
+});
+</script>
+</body>  <!-- This should already exist -->
 </body>
 </html>
