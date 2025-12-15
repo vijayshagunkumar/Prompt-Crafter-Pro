@@ -1,4 +1,4 @@
-/* grid-system.css - Grid Layout System */
+/* grid-system.css - Grid Layout System - FIXED VERSION */
 
 /* App Shell */
 .app-shell {
@@ -20,13 +20,21 @@
   min-height: 100vh;
 }
 
-/* Cards Grid - FIXED 3-COLUMN LAYOUT */
+/* Cards Grid - FIXED 3-COLUMN LAYOUT with better height control */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-lg);
   margin: var(--space-lg) 0;
   flex: 1;
+  align-items: stretch; /* Ensure all cards same height */
+}
+
+/* Ensure cards fill grid cells properly */
+.cards-grid .step-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Top Bar */
@@ -123,6 +131,21 @@
   gap: var(--space-xs);
 }
 
+/* NEW: Textarea button positioning fixes */
+.textarea-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+}
+
+.textarea-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Responsive Grid Adjustments */
 @media (max-width: 1200px) {
   .app-shell {
@@ -141,6 +164,7 @@
   
   .cards-grid .step-card:nth-child(3) {
     grid-column: span 2;
+    height: 600px;
   }
 }
 
@@ -155,6 +179,7 @@
   
   .cards-grid .step-card:nth-child(3) {
     grid-column: 1;
+    height: 680px;
   }
   
   .top-bar {
@@ -213,16 +238,6 @@
   flex-direction: column;
   gap: var(--space-md);
   height: 100%;
-}
-
-/* Form sections */
-.textarea-container,
-.output-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  flex: 1;
-  min-height: 0;
 }
 
 /* AI Tools Grid */
