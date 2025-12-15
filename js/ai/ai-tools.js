@@ -1,16 +1,144 @@
-// ai-tools.js - AI Tools Management and Dynamic Ordering
+// ai-tools.js - AI Tools Management and Dynamic Ordering - FIXED VERSION
 
 import { AI_TOOLS } from '../core/constants.js';
 
-// Add DALL-E and Midjourney to the tools with CORRECT URLs
+// Enhanced AI Tools with IMAGE TOOLS and BRAND ICONS
 const ENHANCED_AI_TOOLS = [
+  {
+    id: "chatgpt",
+    name: "ChatGPT",
+    description: "Best for general tasks, writing, and reasoning.",
+    icon: "fa-brands fa-openai",
+    color: "#74AA9C",
+    url: "https://chat.openai.com/",
+    brandIcon: "chatgpt", // SVG filename in assets/icons/
+    weights: {
+      general: 10,
+      writing: 9,
+      communication: 8,
+      analysis: 7,
+      coding: 6,
+      creative: 7,
+      image_generation: 3
+    }
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    description: "Great for long-form text and thoughtful responses.",
+    icon: "fa-brands fa-anthropic",
+    color: "#DE7356",
+    url: "https://claude.ai/",
+    brandIcon: "claude", // SVG filename in assets/icons/
+    weights: {
+      writing: 10,
+      analysis: 9,
+      communication: 8,
+      general: 7,
+      coding: 6,
+      creative: 9,
+      image_generation: 2
+    }
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    description: "Strong on web + research heavy prompts.",
+    icon: "fa-brands fa-google",
+    color: "#4796E3",
+    url: "https://gemini.google.com/app",
+    brandIcon: "gemini", // SVG filename in assets/icons/
+    weights: {
+      analysis: 10,
+      research: 9,
+      web: 8,
+      general: 7,
+      coding: 6,
+      creative: 7,
+      image_generation: 4
+    }
+  },
+  {
+    id: "perplexity",
+    name: "Perplexity",
+    description: "Excellent for research with citations and sources.",
+    icon: "fas fa-search",
+    color: "#20808D",
+    url: "https://www.perplexity.ai/",
+    brandIcon: "perplexity", // SVG filename in assets/icons/
+    weights: {
+      research: 10,
+      analysis: 9,
+      web: 10,
+      general: 7,
+      writing: 6,
+      creative: 5,
+      image_generation: 2
+    }
+  },
+  {
+    id: "deepseek",
+    name: "DeepSeek",
+    description: "Great for coding and technical tasks.",
+    icon: "fas fa-robot",
+    color: "#00F3FF",
+    url: "https://chat.deepseek.com/",
+    brandIcon: "deepseek", // SVG filename in assets/icons/
+    weights: {
+      coding: 10,
+      analysis: 8,
+      technical: 9,
+      general: 7,
+      writing: 6,
+      creative: 6,
+      image_generation: 2
+    }
+  },
+  {
+    id: "copilot",
+    name: "Copilot",
+    description: "Microsoft's AI for coding and development.",
+    icon: "fa-brands fa-microsoft",
+    color: "#199FD7",
+    url: "https://copilot.microsoft.com/",
+    brandIcon: "copilot", // SVG filename in assets/icons/
+    weights: {
+      coding: 10,
+      technical: 9,
+      analysis: 7,
+      general: 6,
+      writing: 5,
+      creative: 6,
+      image_generation: 3
+    }
+  },
+  {
+    id: "grok",
+    name: "Grok",
+    description: "X AI with real-time knowledge and wit.",
+    icon: "fa-brands fa-x-twitter",
+    color: "#FF5E00",
+    url: "https://grok.x.ai/",
+    brandIcon: "grok", // SVG filename in assets/icons/
+    weights: {
+      general: 9,
+      creative: 8,
+      writing: 7,
+      analysis: 6,
+      coding: 5,
+      conversation: 9,
+      image_generation: 3
+    }
+  },
+  // IMAGE GENERATION TOOLS - Added with proper URLs
   {
     id: "dalle",
     name: "DALL·E 3",
     description: "Best for realistic and creative AI images.",
     icon: "fas fa-palette",
     color: "#00A67E",
-    url: "https://chat.openai.com", // CORRECT DALL-E URL
+    url: "https://chat.openai.com/", // ChatGPT has DALL-E built in
+    brandIcon: "dalle", // SVG filename in assets/icons/
     weights: {
       general: 5,
       writing: 3,
@@ -30,7 +158,8 @@ const ENHANCED_AI_TOOLS = [
     description: "Excellent for artistic and stylized images.",
     icon: "fas fa-paint-brush",
     color: "#1E1E1E",
-    url: "https://www.midjourney.com/", // CORRECT Midjourney URL
+    url: "https://www.midjourney.com/",
+    brandIcon: "midjourney", // SVG filename in assets/icons/
     weights: {
       general: 4,
       writing: 2,
@@ -44,18 +173,39 @@ const ENHANCED_AI_TOOLS = [
       realistic: 6
     },
     isImageTool: true
-  },
-  ...AI_TOOLS.map(tool => {
-    // Ensure ChatGPT has correct URL
-    if (tool.id === "chatgpt") {
-      return {
-        ...tool,
-        url: "https://chat.openai.com/"
-      };
-    }
-    return tool;
-  })
+  }
 ];
+
+// NEW: SVG icon mapping for brand icons
+const SVG_ICONS = {
+  chatgpt: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#74AA9C">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`,
+  claude: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#DE7356">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+  </svg>`,
+  gemini: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#4796E3">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`,
+  perplexity: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#20808D">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+  </svg>`,
+  deepseek: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#00F3FF">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`,
+  copilot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#199FD7">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`,
+  grok: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#FF5E00">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`,
+  dalle: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#00A67E">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`,
+  midjourney: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#1E1E1E">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v2h-4zm0 4h4v2h-4z"/>
+  </svg>`
+};
 
 /**
  * Calculate tool scores based on task type and prompt content
@@ -154,7 +304,7 @@ export function getRecommendedTool(taskType, promptText) {
 }
 
 /**
- * Create HTML for AI tool card
+ * Create HTML for AI tool card with BRAND ICONS
  * @param {Object} tool - Tool object
  * @param {boolean} isEnabled - Whether tool is enabled
  * @param {boolean} isBestMatch - Whether this is the best match
@@ -165,10 +315,15 @@ export function createToolCardHTML(tool, isEnabled = true, isBestMatch = false) 
   const bestMatchClass = isBestMatch ? 'best-match' : '';
   const toolDescription = tool.description || 'Open this AI tool with your prompt';
   
+  // Use SVG brand icon if available, fallback to Font Awesome
+  const iconHTML = SVG_ICONS[tool.brandIcon] 
+    ? `<div class="tool-icon-svg">${SVG_ICONS[tool.brandIcon]}</div>`
+    : `<i class="${tool.icon}"></i>`;
+  
   return `
     <button class="tool-card ${disabledClass} ${bestMatchClass}" data-tool="${tool.id}" ${!isEnabled ? 'disabled' : ''}>
       <div class="tool-icon" style="border-color: ${tool.color}; color: ${tool.color}">
-        <i class="${tool.icon}"></i>
+        ${iconHTML}
       </div>
       <div class="tool-body">
         <h4>${tool.name}</h4>
@@ -255,7 +410,7 @@ export function setupToolClickHandlers(showNotification) {
 
     const toolId = toolCard.dataset.tool;
     const outputEl = document.getElementById('output');
-    const prompt = outputEl.value.trim();
+    const prompt = outputEl ? outputEl.value.trim() : '';
     
     // Find the tool
     const tool = ENHANCED_AI_TOOLS.find(t => t.id === toolId);
@@ -276,4 +431,36 @@ export function updateAIToolsGrid(taskType, promptText, isConverted) {
   if (toolsGrid) {
     toolsGrid.innerHTML = renderAIToolsGrid(taskType, promptText, isConverted);
   }
+}
+
+/**
+ * Get all AI tools
+ * @returns {Array} All AI tools
+ */
+export function getAllAITools() {
+  return ENHANCED_AI_TOOLS;
+}
+
+/**
+ * Load SVG icons for tool cards
+ * This should be called once on page load
+ */
+export function loadBrandIcons() {
+  // Add CSS for SVG icons
+  const style = document.createElement('style');
+  style.textContent = `
+    .tool-icon-svg {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .tool-icon-svg svg {
+      width: 16px;
+      height: 16px;
+    }
+  `;
+  document.head.appendChild(style);
 }
