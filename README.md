@@ -83,15 +83,6 @@ bash: .: filename argument required
 
 ## File Structure
 
-Perfect 👍
-I’ll add **two high-value sections** that fit your repo and look professional on GitHub:
-
-1️⃣ **High-Level Architecture**
-2️⃣ **Tech Stack**
-
-You can paste these **directly below the Project Structure section** in `README.md`.
-
----
 
 ## 🏗 High-Level Architecture
 
@@ -176,13 +167,3 @@ Structured Prompt Output
 
 ---
 
-## 🚀 What I recommend adding next (optional but powerful)
-
-You can choose **one** and I’ll write it fully:
-
-1️⃣ **Features Overview** (bullet list of what PromptCraft does)
-2️⃣ **How It Works** (step-by-step user flow)
-3️⃣ **Future Roadmap** (AI integrations, mobile, monetization)
-4️⃣ **Screenshots / GIF section** (very strong for GitHub stars ⭐)
-
-Just tell me the number 👉 **1 / 2 / 3 / 4**
