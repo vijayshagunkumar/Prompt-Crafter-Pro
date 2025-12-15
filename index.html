@@ -196,6 +196,7 @@
       gap: 1.5rem;
       align-items: stretch;
       flex: 1;
+      margin-bottom: 1.5rem;
     }
     
     .step-card {
@@ -205,7 +206,7 @@
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      height: 720px; /* Increased for better space usage */
+      height: 680px;
       overflow: hidden;
       transition: all 0.3s ease;
       position: relative;
@@ -216,7 +217,7 @@
       box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
     }
     
-    /* Maximized card styles - FILLS SPACE BETTER */
+    /* FIXED: Maximized card styles - No horizontal overflow */
     .step-card.is-maximized {
       position: fixed !important;
       top: 50% !important;
@@ -233,34 +234,38 @@
       background: var(--panel-bg) !important;
       animation: cardMaximize 0.3s ease-out !important;
       overflow: auto !important;
-      padding: 2rem !important; /* More padding when maximized */
+      padding: 2rem !important;
     }
     
-    /* When maximized, make textareas MUCH larger */
+    /* FIX: Prevent horizontal overflow in maximized state */
+    .step-card.is-maximized .textarea-container,
+    .step-card.is-maximized .tools-container,
+    .step-card.is-maximized .preset-row,
+    .step-card.is-maximized .prompt-actions {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    .step-card.is-maximized .textarea-idea,
+    .step-card.is-maximized .output-textarea {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* When maximized, make textareas larger but contained */
     .step-card.is-maximized .textarea-container {
-      flex: 1.5 !important; /* Take more space */
+      flex: 1.5 !important;
       margin-bottom: 1.5rem !important;
     }
     
     .step-card.is-maximized .textarea-idea,
     .step-card.is-maximized .output-textarea {
-      height: 400px !important; /* Much larger when maximized */
+      height: 400px !important;
       min-height: 400px !important;
       max-height: 700px !important;
-      font-size: 0.9375rem !important; /* Slightly larger text */
+      font-size: 0.9375rem !important;
       line-height: 1.6 !important;
-    }
-    
-    /* Adjust button positions when maximized */
-    .step-card.is-maximized .prompt-actions {
-      margin-top: 1.5rem !important;
-      gap: 1rem !important;
-    }
-    
-    .step-card.is-maximized .elegant-convert-btn {
-      margin-top: 1.5rem !important;
-      padding: 1rem 1.5rem !important;
-      font-size: 1rem !important;
     }
     
     /* Minimized card styles */
@@ -317,7 +322,7 @@
     
     @keyframes cardMinimize {
       from {
-        height: 720px;
+        height: 680px;
       }
       to {
         height: 60px;
@@ -405,7 +410,7 @@
       border-color: var(--primary);
     }
     
-    /* Elegant Convert Button - Better positioned */
+    /* Elegant Convert Button - FIXED POSITION (no scrolling needed) */
     .elegant-convert-btn {
       background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
       color: white;
@@ -422,7 +427,9 @@
       gap: 0.5rem;
       width: 100%;
       box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: auto; /* Pushes to bottom of available space - NO SCROLL NEEDED */
+      margin-top: 1rem; /* Reduced from auto to bring button up */
+      margin-bottom: 0; /* Ensure no extra bottom margin */
+      flex-shrink: 0; /* Prevent button from shrinking */
     }
     
     .elegant-convert-btn:hover:not(:disabled) {
@@ -438,108 +445,95 @@
       box-shadow: none !important;
     }
     
-    /* Text Areas - IMPROVED SPACE USAGE */
+    /* Text Areas - IMPROVED LAYOUT WITH BETTER BUTTON PLACEMENT */
     .textarea-container {
       flex: 1;
       margin-bottom: 1rem;
       position: relative;
+      min-height: 200px;
     }
     
     .textarea-wrapper {
       position: relative;
       height: 100%;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      padding-top: 2.5rem; /* Space for top buttons */
+      overflow: hidden;
+    }
+    
+    /* FIXED: Buttons positioned at top inside the box */
+    .textarea-buttons-top {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      background: var(--input-bg);
+      border-bottom: 1px solid var(--input-border);
+      z-index: 10;
+      border-radius: 8px 8px 0 0;
+    }
+    
+    .top-left-buttons {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    
+    .top-right-buttons {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    
+    /* Language text positioned next to clear button */
+    .language-text {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-left: 0.5rem;
     }
     
     .textarea-idea, .output-textarea {
       width: 100%;
-      min-height: 200px; /* Increased for better visibility */
-      height: 240px; /* Better initial height */
-      max-height: 600px; /* Allow generous resize */
+      height: calc(100% - 2.5rem); /* Account for top buttons */
+      min-height: 150px;
       padding: 1rem;
-      padding-bottom: 2rem; /* Extra space for resize handle */
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 8px;
+      background: transparent;
+      border: none;
       color: var(--text-primary);
       font-family: inherit;
       font-size: 0.875rem;
       line-height: 1.5;
-      resize: vertical; /* Enable resize */
+      resize: vertical;
       transition: all 0.3s ease;
       box-sizing: border-box;
+      outline: none;
     }
     
-    /* FIX: UNIQUE RESIZE HANDLE COLOR (Different from mic/copy buttons) */
-    .textarea-idea::-webkit-resizer,
-    .output-textarea::-webkit-resizer {
-      background-color: #00C9A7 !important; /* Teal color - DIFFERENT from orange buttons */
-      border-radius: 3px;
-      border: 2px solid var(--panel-bg);
-      padding: 4px;
-      cursor: ns-resize;
-    }
-    
-    /* Firefox */
-    .textarea-idea::-moz-resizer,
-    .output-textarea::-moz-resizer {
-      background-color: #00C9A7 !important;
-      border-radius: 3px;
-      border: 2px solid var(--panel-bg);
-    }
-    
-    /* Add visual indicator for resize handle */
-    .textarea-wrapper::after {
-      content: '↕';
-      position: absolute;
-      bottom: 8px;
-      right: 12px;
-      font-size: 0.75rem;
-      color: #00C9A7; /* Same teal color */
-      opacity: 0.7;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    
-    .textarea-wrapper:hover::after {
-      opacity: 1;
-    }
-    
-    /* When textarea is focused or resizing */
-    .textarea-idea:focus, .output-textarea:focus,
-    .textarea-idea:active, .output-textarea:active {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.1);
-    }
-    
-    /* Textarea Buttons */
-    .textarea-buttons {
-      position: absolute;
-      bottom: 0.75rem;
-      display: flex;
-      gap: 0.5rem;
-      z-index: 10;
-    }
-    
-    .clear-btn-left {
-      left: 0.75rem;
-    }
-    
+    /* Remove old bottom buttons */
+    .clear-btn-left,
     .mic-btn-right {
-      right: 0.75rem;
+      display: none;
     }
     
+    /* Textarea Buttons inside the box */
     .icon-btn {
-      width: 36px;
-      height: 36px;
-      background: rgba(255, 94, 0, 0.1); /* Orange background */
-      border: 1px solid rgba(255, 94, 0, 0.3); /* Orange border */
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 94, 0, 0.1);
+      border: 1px solid rgba(255, 94, 0, 0.3);
       border-radius: 6px;
-      color: var(--primary); /* Orange color */
+      color: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
     
     .icon-btn:hover {
@@ -563,11 +557,14 @@
       display: flex;
       align-items: flex-start;
       gap: 0.375rem;
+      flex: 1;
     }
     
     .char-counter {
       color: var(--text-secondary);
       font-size: 0.75rem;
+      flex-shrink: 0;
+      margin-left: 1rem;
     }
     
     /* Auto-convert Toggle */
@@ -576,6 +573,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
+      margin-top: 0.5rem;
     }
     
     .toggle-switch {
@@ -632,6 +630,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
+      margin-top: 0.5rem;
     }
     
     .preset-left {
@@ -670,12 +669,13 @@
       gap: 0.25rem;
     }
     
-    /* Action Buttons - BETTER POSITIONED (no scroll needed) */
+    /* Action Buttons - FIXED POSITION (no scroll needed) */
     .prompt-actions {
       display: flex;
       gap: 0.75rem;
       margin-top: 1rem;
-      margin-bottom: 0.5rem; /* Reduced margin */
+      margin-bottom: 0.5rem;
+      flex-shrink: 0; /* Prevent buttons from causing overflow */
     }
     
     .ghost-btn, .secondary-btn {
@@ -686,6 +686,7 @@
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
     
     .ghost-btn {
@@ -717,8 +718,9 @@
       flex: 1;
       overflow-y: auto;
       padding-right: 0.5rem;
-      margin: 0.75rem 0;
-      max-height: 380px; /* Limit height */
+      margin: 0.5rem 0;
+      max-height: 320px;
+      min-height: 0;
     }
     
     .tools-grid {
@@ -738,6 +740,7 @@
       gap: 0.75rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
     
     .tool-card:hover {
@@ -787,6 +790,22 @@
       font-size: 0.75rem;
       color: var(--text-secondary);
       margin: 0;
+    }
+    
+    /* Card content wrapper for better layout control */
+    .card-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
     
     /* Footer with Features and Stats */
@@ -869,7 +888,7 @@
       }
       
       .step-card {
-        height: 680px;
+        height: 660px;
       }
     }
     
@@ -884,7 +903,7 @@
       }
       
       .step-card {
-        height: 650px;
+        height: 640px;
       }
       
       .brand-header {
@@ -983,6 +1002,16 @@
         flex-direction: column;
         gap: 0.5rem;
       }
+      
+      .textarea-buttons-top {
+        flex-wrap: wrap;
+        padding: 0.375rem;
+      }
+      
+      .language-text {
+        font-size: 0.7rem;
+        margin-left: 0.25rem;
+      }
     }
   </style>
 </head>
@@ -1019,7 +1048,7 @@
     <!-- Three Cards Grid -->
     <div class="cards-grid">
       
-      <!-- CARD 1: Your Idea -->
+      <!-- CARD 1: Your Idea - FIXED LAYOUT -->
       <section class="step-card" id="card-1">
         <div class="step-header">
           <div class="step-pill">1</div>
@@ -1034,58 +1063,66 @@
           </div>
         </div>
 
-        <!-- Auto-convert -->
-        <div class="auto-row">
-          <label class="toggle-switch">
-            <input type="checkbox" id="autoConvert" checked />
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">Auto-convert as I type</span>
-          </label>
-        </div>
+        <div class="card-content-wrapper">
+          <div class="card-body">
+            <!-- Auto-convert -->
+            <div class="auto-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoConvert" checked />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Auto-convert as I type</span>
+              </label>
+            </div>
 
-        <!-- Context Chips -->
-        <div class="chip-row" id="contextChipsRow" style="display:none;"></div>
+            <!-- Context Chips -->
+            <div class="chip-row" id="contextChipsRow" style="display:none;"></div>
 
-        <!-- Requirement textarea -->
-        <div class="textarea-container">
-          <div class="textarea-wrapper">
-            <textarea
-              id="requirement"
-              class="textarea-idea"
-              placeholder='Type your idea here... Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write professional email about project delay"'
-            ></textarea>
-
-            <!-- Clear button on LEFT -->
-            <div class="textarea-buttons clear-btn-left">
-              <button class="icon-btn" id="clearRequirementBtn" title="Clear">
-                <i class="fas fa-xmark"></i>
-              </button>
+            <!-- Requirement textarea with FIXED button positioning -->
+            <div class="textarea-container">
+              <div class="textarea-wrapper">
+                <!-- Top buttons inside the textarea box -->
+                <div class="textarea-buttons-top">
+                  <div class="top-left-buttons">
+                    <button class="icon-btn" id="clearRequirementBtn" title="Clear">
+                      <i class="fas fa-xmark"></i>
+                    </button>
+                    <span class="language-text">
+                      <i class="fas fa-language"></i>
+                      Mix Hindi, English, or Hinglish
+                    </span>
+                  </div>
+                  <div class="top-right-buttons">
+                    <button class="icon-btn" id="voiceBtn" title="Voice input">
+                      <i class="fas fa-microphone"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <textarea
+                  id="requirement"
+                  class="textarea-idea"
+                  placeholder='Type your idea here... Example: "ek female girl cartoon banao uske hath mein paani ki bottle ho aur peeche library ho" or "Write professional email about project delay"'
+                ></textarea>
+              </div>
+              <div class="helper-row">
+                <span class="helper-text">
+                  <i class="fas fa-lightbulb"></i>
+                  Auto-detection understands mixed languages and context.
+                </span>
+                <span class="char-counter" id="inputStats">0 chars</span>
+              </div>
             </div>
             
-            <!-- Mic button on RIGHT -->
-            <div class="textarea-buttons mic-btn-right">
-              <button class="icon-btn" id="voiceBtn" title="Voice input">
-                <i class="fas fa-microphone"></i>
-              </button>
-            </div>
-          </div>
-          <div class="helper-row">
-            <span class="helper-text">
-              <i class="fas fa-lightbulb"></i>
-              Mix Hindi, English, or Hinglish. Auto-detection understands.
-            </span>
-            <span class="char-counter" id="inputStats">0 chars</span>
+            <!-- Elegant Convert Button - Positioned for easy access -->
+            <button class="elegant-convert-btn" id="convertBtn" disabled>
+              <i class="fas fa-magic"></i>
+              Convert Idea to Prompt
+            </button>
           </div>
         </div>
-        
-        <!-- Elegant Convert Button -->
-        <button class="elegant-convert-btn" id="convertBtn" disabled>
-          <i class="fas fa-magic"></i>
-          Convert Idea to Prompt
-        </button>
       </section>
 
-      <!-- CARD 2: Structured Prompt -->
+      <!-- CARD 2: Structured Prompt - FIXED LAYOUT -->
       <section class="step-card" id="card-2">
         <div class="step-header">
           <div class="step-pill">2</div>
@@ -1100,52 +1137,66 @@
           </div>
         </div>
 
-        <!-- Preset Selector -->
-        <div class="preset-row">
-          <div class="preset-left">
-            <label class="field-label">Preset</label>
-            <select id="presetSelect">
-              <option value="default">Default – General Purpose</option>
-              <option value="communication">Communication – Emails, Messages</option>
-              <option value="coding">Coding – Dev Tasks</option>
-              <option value="writing">Writing – Blogs, Stories</option>
-              <option value="analysis">Analysis – Reviews & Comparisons</option>
-            </select>
-          </div>
-        </div>
+        <div class="card-content-wrapper">
+          <div class="card-body">
+            <!-- Preset Selector -->
+            <div class="preset-row">
+              <div class="preset-left">
+                <label class="field-label">Preset</label>
+                <select id="presetSelect">
+                  <option value="default">Default – General Purpose</option>
+                  <option value="communication">Communication – Emails, Messages</option>
+                  <option value="coding">Coding – Dev Tasks</option>
+                  <option value="writing">Writing – Blogs, Stories</option>
+                  <option value="analysis">Analysis – Reviews & Comparisons</option>
+                </select>
+              </div>
+            </div>
 
-        <!-- Output textarea -->
-        <div class="textarea-container">
-          <div class="textarea-wrapper">
-            <textarea
-              id="output"
-              class="output-textarea"
-              placeholder="Your AI-ready prompt will appear here..."
-              readonly
-            ></textarea>
-            <div class="textarea-buttons mic-btn-right">
-              <button class="icon-btn" id="copyOutputBtn" title="Copy">
-                <i class="fas fa-copy"></i>
+            <!-- Output textarea with copy button -->
+            <div class="textarea-container">
+              <div class="textarea-wrapper">
+                <!-- Top buttons inside the textarea box -->
+                <div class="textarea-buttons-top">
+                  <div class="top-left-buttons">
+                    <span class="language-text">
+                      <i class="fas fa-code"></i>
+                      AI-ready formatted prompt
+                    </span>
+                  </div>
+                  <div class="top-right-buttons">
+                    <button class="icon-btn" id="copyOutputBtn" title="Copy">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <textarea
+                  id="output"
+                  class="output-textarea"
+                  placeholder="Your AI-ready prompt will appear here..."
+                  readonly
+                ></textarea>
+              </div>
+              <div class="helper-row">
+                <span class="helper-text">
+                  <i class="fas fa-circle-nodes"></i>
+                  Compatible with ChatGPT, Claude, Gemini, DALL·E, Midjourney, and more.
+                </span>
+                <span class="char-counter" id="outputStats">0 chars</span>
+              </div>
+            </div>
+            
+            <!-- Action buttons - Positioned for easy access -->
+            <div class="prompt-actions">
+              <button class="ghost-btn" id="exportBtn" disabled>
+                <i class="fas fa-file-export"></i> Export Prompt
+              </button>
+              <button class="secondary-btn" id="saveTemplateBtn" disabled>
+                <i class="fas fa-bookmark"></i> Save as Template
               </button>
             </div>
           </div>
-          <div class="helper-row">
-            <span class="helper-text">
-              <i class="fas fa-circle-nodes"></i>
-              Compatible with ChatGPT, Claude, Gemini, DALL·E, Midjourney, and more.
-            </span>
-            <span class="char-counter" id="outputStats">0 chars</span>
-          </div>
-        </div>
-        
-        <!-- Action buttons -->
-        <div class="prompt-actions">
-          <button class="ghost-btn" id="exportBtn" disabled>
-            <i class="fas fa-file-export"></i> Export Prompt
-          </button>
-          <button class="secondary-btn" id="saveTemplateBtn" disabled>
-            <i class="fas fa-bookmark"></i> Save as Template
-          </button>
         </div>
       </section>
 
@@ -1164,17 +1215,21 @@
           </div>
         </div>
 
-        <!-- Scrollable tools container -->
-        <div class="tools-container">
-          <div class="tools-grid" id="aiToolsGrid">
-            <!-- AI tools will be dynamically rendered here -->
+        <div class="card-content-wrapper">
+          <div class="card-body">
+            <!-- Scrollable tools container -->
+            <div class="tools-container">
+              <div class="tools-grid" id="aiToolsGrid">
+                <!-- AI tools will be dynamically rendered here -->
+              </div>
+            </div>
+
+            <p class="helper-text">
+              <i class="fas fa-sort"></i>
+              Tools are ordered by relevance. Image tools appear first for image prompts.
+            </p>
           </div>
         </div>
-
-        <p class="helper-text">
-          <i class="fas fa-sort"></i>
-          Tools are ordered by relevance. Image tools appear first for image prompts.
-        </p>
       </section>
     </div>
 
@@ -1270,6 +1325,10 @@
           button.innerHTML = '<i class="fas fa-compress"></i>';
           button.title = 'Minimize';
           document.body.classList.add('card-max-open');
+          
+          // Prevent horizontal overflow
+          card.style.overflowX = 'hidden';
+          card.style.maxWidth = '100%';
           
           // Scroll to top of card
           card.scrollTop = 0;
