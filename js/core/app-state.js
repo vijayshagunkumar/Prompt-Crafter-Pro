@@ -28,6 +28,11 @@ class AppState {
     
     this.lastDetectedContext = null;
     
+    // NEW: Card expander states
+    this.maximizedCardId = null;
+    this.minimizedCardIds = [];
+    this.cardStates = {}; // For individual card state
+    
     // Initialize state from storage
     this.init();
   }
@@ -39,6 +44,9 @@ class AppState {
     this.usageCount = parseInt(localStorage.getItem(STORAGE_KEYS.usageCount) || "0", 10);
     this.templates = loadJSON(STORAGE_KEYS.templates, []);
     this.historyItems = loadJSON(STORAGE_KEYS.history, []);
+    
+    // NEW: Load card expander states
+    this.loadCardStates();
   }
   
   /**
@@ -53,6 +61,38 @@ class AppState {
    */
   saveHistory() {
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(this.historyItems));
+  }
+  
+  /**
+   * NEW: Save card expander states
+   */
+  saveCardStates() {
+    const cardState = {
+      maximizedCardId: this.maximizedCardId,
+      minimizedCardIds: this.minimizedCardIds,
+      cardStates: this.cardStates
+    };
+    localStorage.setItem(STORAGE_KEYS.cardExpander, JSON.stringify(cardState));
+  }
+  
+  /**
+   * NEW: Load card expander states
+   */
+  loadCardStates() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.cardExpander);
+      if (saved) {
+        const state = JSON.parse(saved);
+        this.maximizedCardId = state.maximizedCardId || null;
+        this.minimizedCardIds = state.minimizedCardIds || [];
+        this.cardStates = state.cardStates || {};
+      }
+    } catch (e) {
+      console.error('Failed to load card states:', e);
+      this.maximizedCardId = null;
+      this.minimizedCardIds = [];
+      this.cardStates = {};
+    }
   }
   
   /**
@@ -129,6 +169,108 @@ class AppState {
   }
   
   /**
+   * NEW: Save card state
+   * @param {string} cardId - Card ID (card-1, card-2)
+   * @param {string} state - State to save ('maximized', 'minimized', 'restored')
+   */
+  saveCardState(cardId, state) {
+    if (state === 'maximized') {
+      this.maximizedCardId = cardId;
+      // Remove from minimized if present
+      this.minimizedCardIds = this.minimizedCardIds.filter(id => id !== cardId);
+    } else if (state === 'minimized') {
+      if (!this.minimizedCardIds.includes(cardId)) {
+        this.minimizedCardIds.push(cardId);
+      }
+      // Remove from maximized if present
+      if (this.maximizedCardId === cardId) {
+        this.maximizedCardId = null;
+      }
+    } else if (state === 'restored') {
+      if (this.maximizedCardId === cardId) {
+        this.maximizedCardId = null;
+      }
+      this.minimizedCardIds = this.minimizedCardIds.filter(id => id !== cardId);
+    }
+    
+    // Update individual card state
+    this.cardStates[cardId] = {
+      lastState: state,
+      timestamp: new Date().toISOString()
+    };
+    
+    this.saveCardStates();
+  }
+  
+  /**
+   * NEW: Get current card states
+   * @returns {Object} Card states object
+   */
+  getCardStates() {
+    return {
+      maximizedCardId: this.maximizedCardId,
+      minimizedCardIds: this.minimizedCardIds,
+      cardStates: this.cardStates
+    };
+  }
+  
+  /**
+   * NEW: Get maximized card ID
+   * @returns {string|null} Maximized card ID or null
+   */
+  getMaximizedCard() {
+    return this.maximizedCardId;
+  }
+  
+  /**
+   * NEW: Get minimized card IDs
+   * @returns {Array} Array of minimized card IDs
+   */
+  getMinimizedCards() {
+    return this.minimizedCardIds;
+  }
+  
+  /**
+   * NEW: Check if any card is maximized
+   * @returns {boolean} True if a card is maximized
+   */
+  hasMaximizedCard() {
+    return this.maximizedCardId !== null;
+  }
+  
+  /**
+   * NEW: Check if card is minimized
+   * @param {string} cardId - Card ID to check
+   * @returns {boolean} True if card is minimized
+   */
+  isCardMinimized(cardId) {
+    return this.minimizedCardIds.includes(cardId);
+  }
+  
+  /**
+   * NEW: Clear all card states
+   */
+  clearCardStates() {
+    this.maximizedCardId = null;
+    this.minimizedCardIds = [];
+    this.cardStates = {};
+    this.saveCardStates();
+  }
+  
+  /**
+   * NEW: Get card statistics
+   * @returns {Object} Card statistics
+   */
+  getCardStats() {
+    return {
+      totalCards: 2, // Card 1 and Card 2
+      maximized: this.maximizedCardId ? 1 : 0,
+      minimized: this.minimizedCardIds.length,
+      normal: 2 - (this.maximizedCardId ? 1 : 0) - this.minimizedCardIds.length
+    };
+  }
+  
+  /**
    * Clear auto-convert timers
    */
   clearAutoConvertTimers() {
@@ -174,6 +316,9 @@ class AppState {
     
     this.editingTemplateId = null;
     this.lastDetectedContext = null;
+    
+    // NEW: Clear card states on reset
+    this.clearCardStates();
   }
   
   /**
@@ -189,10 +334,18 @@ class AppState {
       isConverted: this.isConverted,
       templatesCount: this.templates.length,
       historyCount: this.historyItems.length,
-      lastDetectedContext: this.lastDetectedContext
+      lastDetectedContext: this.lastDetectedContext,
+      // NEW: Include card states in export
+      cardStats: this.getCardStats(),
+      maximizedCardId: this.maximizedCardId,
+      minimizedCardIds: this.minimizedCardIds
     };
   }
 }
+
+// Update STORAGE_KEYS in constants.js to include:
+// Add this to your constants.js file:
+// STORAGE_KEYS.cardExpander = 'promptcraft_card_expander_state';
 
 // Create singleton instance
 const appState = new AppState();
