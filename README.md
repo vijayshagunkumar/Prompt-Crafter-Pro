@@ -1,3 +1,4 @@
+
 ## 📁 Project Structure
 
 The project follows a modular and scalable folder structure to ensure clean separation of concerns, easier maintenance, and future extensibility.
@@ -164,6 +165,89 @@ Structured Prompt Output
 * **GitHub** – source control
 * **GitHub Codespaces** – browser-based development
 * **Netlify** (optional) – deployment & hosting
+
+Excellent choice 👍
+Here’s a **clean, powerful “Features Overview” section** tailored specifically for **Prompt-Crafter-Pro**, written in a way that looks **professional, product-grade, and GitHub-ready**.
+
+You can paste this **directly after Tech Stack** in `README.md`.
+
+---
+
+## ✨ Features Overview
+
+Prompt-Crafter-Pro is an intelligent prompt-engineering assistant designed to help users convert raw ideas into **clear, structured, high-quality prompts** for multiple AI tools.
+
+### 🧠 Core Prompt Intelligence
+
+* Converts free-form user ideas into **structured prompts**
+* Enforces clear sections such as **Role, Objective, Context, Instructions, and Output Format**
+* Improves clarity, completeness, and AI response quality
+
+### 🤖 Multi-AI Tool Support
+
+* Tool-agnostic prompt generation
+* Supports prompts optimized for multiple AI platforms
+* Centralized mapping of AI tools and prompt presets
+
+### 🧩 Auto Context Detection
+
+* Automatically detects the **use-case and intent** from user input
+* Suggests relevant structure and prompt style
+* Reduces manual effort and prompt guesswork
+
+### 📚 Prompt Templates & Presets
+
+* Pre-built prompt templates for common scenarios
+* Reusable presets to speed up prompt creation
+* Easy extension for new templates
+
+### 🎙 Voice Input & Output
+
+* Voice-to-text input using Web Speech API
+* Optional text-to-speech output for generated prompts
+* Hands-free prompt creation experience
+
+### 🖼 Interactive Card-Based UI
+
+* Clean, modern card layout for input and output
+* Maximize / minimize cards for focused work
+* Responsive design across screen sizes
+
+### 🌓 Theme & UI Customization
+
+* Theme switching (Cyberpunk and future themes)
+* Persistent user preferences via local storage
+* Modular styling for easy UI evolution
+
+### 🕘 Prompt History & Reusability
+
+* Automatically stores generated prompts
+* Allows users to revisit and reuse past prompts
+* Improves productivity over time
+
+### 🔔 UI Notifications & Feedback
+
+* Real-time feedback for user actions
+* Non-intrusive notifications for better UX
+* Clear visual cues for state changes
+
+### ⚙️ Settings & Configuration
+
+* Centralized settings modal
+* Manage themes, voice options, and preferences
+* Clean separation between settings and core logic
+
+---
+
+### 🎯 Who Is This For?
+
+* Prompt engineers
+* Developers & product managers
+* Content creators
+* AI power users and beginners
+
+
+
 
 ---
 
