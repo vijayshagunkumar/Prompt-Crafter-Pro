@@ -240,9 +240,15 @@ function toggleTheme() {
 function toggleCard(cardId) {
   if (window.cardExpander) {
     const card = document.getElementById(cardId);
-    const btn = card?.querySelector('.card-expand-btn');
-    if (card && btn) {
-      window.cardExpander.toggle(card, btn);
+    if (card) {
+      const isMaximized = card.classList.contains('is-maximized');
+      const isMinimized = card.classList.contains('is-minimized');
+      
+      if (isMaximized || isMinimized) {
+        window.cardExpander.restoreCard(cardId);
+      } else {
+        window.cardExpander.maximizeCard(cardId);
+      }
     }
   }
 }
@@ -348,7 +354,7 @@ if (document.readyState === 'loading') {
   initializeApp();
 }
 
-// Export for debugging
+// ✅ FIXED: Add this global object for debugging
 window.PromptCraft = {
   appState,
   modalManager,
@@ -357,6 +363,7 @@ window.PromptCraft = {
   showNotification,
   showSuccess,
   showError,
+  showInfo,
   setTheme,
   toggleTheme,
   // Card expander methods
