@@ -5,13 +5,16 @@ export class CardExpander {
   constructor() {
     this.maximizedCard = null;
     this.minimizedCards = new Set();
-    this.initialize();
+    this.isInitialized = false;
   }
 
   initialize() {
+    if (this.isInitialized) return;
+    
     this.createExpandButtons();
     this.bindEvents();
     this.loadState();
+    this.isInitialized = true;
   }
 
   createExpandButtons() {
@@ -105,13 +108,18 @@ export class CardExpander {
     } else if (isMinimized) {
       this.restore(card, btn);
     } else {
-      // Ask user: maximize or minimize?
-      // Default to maximize for now, can add UI later
       this.maximize(card, btn);
     }
   }
 
   maximize(card, btn) {
+    // Store original state
+    card.dataset.originalPosition = card.style.position || '';
+    card.dataset.originalTop = card.style.top || '';
+    card.dataset.originalLeft = card.style.left || '';
+    card.dataset.originalWidth = card.style.width || '';
+    card.dataset.originalHeight = card.style.height || '';
+
     // Restore currently maximized card if any
     if (this.maximizedCard) {
       const otherCard = document.getElementById(this.maximizedCard);
@@ -153,6 +161,9 @@ export class CardExpander {
   }
 
   minimize(card, btn) {
+    // Store original height
+    card.dataset.originalHeight = card.offsetHeight + 'px';
+
     // Remove maximized state if present
     if (this.maximizedCard === card.id) {
       card.classList.remove('is-maximized');
@@ -172,7 +183,7 @@ export class CardExpander {
     if (btn) {
       btn.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 15h14M5 9h14"/>
+          <path d="M19 9L5 9M19 15L5 15" stroke-width="2" stroke-linecap="round"/>
         </svg>
       `;
       btn.setAttribute('title', 'Restore');
@@ -192,12 +203,27 @@ export class CardExpander {
       document.body.classList.remove('card-max-open');
     }
 
+    // Restore original styles
+    if (card.dataset.originalPosition) {
+      card.style.position = card.dataset.originalPosition;
+    }
+    if (card.dataset.originalTop) {
+      card.style.top = card.dataset.originalTop;
+    }
+    if (card.dataset.originalLeft) {
+      card.style.left = card.dataset.originalLeft;
+    }
+    if (card.dataset.originalWidth) {
+      card.style.width = card.dataset.originalWidth;
+    }
+    if (card.dataset.originalHeight) {
+      card.style.height = card.dataset.originalHeight;
+    }
+
     // Update grid layout
-    if (card.classList.contains('is-maximized')) {
-      const grid = card.closest('.grid');
-      if (grid) {
-        grid.classList.remove('has-maximized-card');
-      }
+    const grid = card.closest('.grid');
+    if (grid) {
+      grid.classList.remove('has-maximized-card');
     }
 
     // Update button icon and title
@@ -254,10 +280,59 @@ export class CardExpander {
       console.error('Failed to load card expander state:', e);
     }
   }
+
+  // Public API methods
+  maximizeCard(cardId) {
+    const card = document.getElementById(cardId);
+    const btn = card?.querySelector('.card-expand-btn');
+    if (card && btn) {
+      this.maximize(card, btn);
+    }
+  }
+
+  minimizeCard(cardId) {
+    const card = document.getElementById(cardId);
+    const btn = card?.querySelector('.card-expand-btn');
+    if (card && btn) {
+      this.minimize(card, btn);
+    }
+  }
+
+  restoreCard(cardId) {
+    const card = document.getElementById(cardId);
+    const btn = card?.querySelector('.card-expand-btn');
+    if (card && btn) {
+      this.restore(card, btn);
+    }
+  }
+
+  getMaximizedCard() {
+    return this.maximizedCard;
+  }
+
+  getMinimizedCards() {
+    return Array.from(this.minimizedCards);
+  }
+
+  reset() {
+    // Restore all cards
+    if (this.maximizedCard) {
+      this.restoreCard(this.maximizedCard);
+    }
+    
+    this.getMinimizedCards().forEach(cardId => {
+      this.restoreCard(cardId);
+    });
+    
+    this.maximizedCard = null;
+    this.minimizedCards.clear();
+    localStorage.removeItem('cardExpanderState');
+  }
 }
 
 // Legacy function for backward compatibility
 export function initCardExpander() {
   const expander = new CardExpander();
+  expander.initialize();
   return expander;
 }
