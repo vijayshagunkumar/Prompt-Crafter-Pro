@@ -58,6 +58,7 @@
       gap: 1rem;
     }
     
+    /* CUSTOM LOGO - Your custom diamond circuit logo */
     .brand-logo {
       width: 48px;
       height: 48px;
@@ -66,11 +67,113 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: black;
-      font-size: 1.5rem;
-      font-weight: bold;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(255, 94, 0, 0.2);
     }
     
+    .logo-container {
+      width: 32px;
+      height: 32px;
+      position: relative;
+    }
+    
+    .diamond {
+      width: 24px;
+      height: 24px;
+      background: #000;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      transform: rotate(45deg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .circuit-line {
+      position: absolute;
+      background: #FF8C42;
+    }
+    
+    .circuit-line.horizontal {
+      width: 100%;
+      height: 2px;
+      top: 50%;
+      transform: translateY(-1px);
+      animation: pulse 3s infinite;
+    }
+    
+    .circuit-line.vertical {
+      width: 2px;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-1px);
+      animation: pulse 3s infinite 1.5s;
+    }
+    
+    .circuit-node {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #FF5E00;
+      border-radius: 50%;
+      border: 1px solid #000;
+    }
+    
+    .circuit-node.node1 { top: 25%; left: 25%; }
+    .circuit-node.node2 { top: 25%; right: 25%; }
+    .circuit-node.node3 { bottom: 25%; left: 25%; }
+    .circuit-node.node4 { bottom: 25%; right: 25%; }
+    
+    .sparkle {
+      position: absolute;
+      background: #FFF;
+      border-radius: 50%;
+      animation: sparkle 2s infinite;
+    }
+    
+    .sparkle.s1 {
+      width: 3px;
+      height: 3px;
+      top: 3px;
+      left: 3px;
+      animation-delay: 0s;
+    }
+    
+    .sparkle.s2 {
+      width: 2px;
+      height: 2px;
+      top: 3px;
+      right: 3px;
+      animation-delay: 0.7s;
+    }
+    
+    .sparkle.s3 {
+      width: 2px;
+      height: 2px;
+      bottom: 3px;
+      left: 50%;
+      margin-left: -1px;
+      animation-delay: 1.4s;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    
+    @keyframes sparkle {
+      0%, 100% { 
+        transform: scale(0.5); 
+        opacity: 0.3;
+      }
+      50% { 
+        transform: scale(1.2); 
+        opacity: 1;
+      }
+    }
+    
+    /* Brand Text */
     .brand-text h1 {
       font-size: 1.75rem;
       margin-bottom: 0.25rem;
@@ -102,10 +205,10 @@
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      height: 650px;
+      height: 720px; /* Increased for better space usage */
       overflow: hidden;
       transition: all 0.3s ease;
-      position: relative; /* Added for maximize positioning */
+      position: relative;
     }
     
     .step-card:hover {
@@ -113,16 +216,16 @@
       box-shadow: 0 8px 25px rgba(255, 94, 0, 0.15);
     }
     
-    /* NEW: Maximized card styles */
+    /* Maximized card styles - FILLS SPACE BETTER */
     .step-card.is-maximized {
       position: fixed !important;
       top: 50% !important;
       left: 50% !important;
       transform: translate(-50%, -50%) !important;
-      width: 90vw !important;
-      height: 90vh !important;
-      max-width: 1400px !important;
-      max-height: 90vh !important;
+      width: 95vw !important;
+      height: 95vh !important;
+      max-width: 1600px !important;
+      max-height: 95vh !important;
       z-index: 9999 !important;
       border-radius: 16px !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
@@ -130,9 +233,37 @@
       background: var(--panel-bg) !important;
       animation: cardMaximize 0.3s ease-out !important;
       overflow: auto !important;
+      padding: 2rem !important; /* More padding when maximized */
     }
     
-    /* NEW: Minimized card styles */
+    /* When maximized, make textareas MUCH larger */
+    .step-card.is-maximized .textarea-container {
+      flex: 1.5 !important; /* Take more space */
+      margin-bottom: 1.5rem !important;
+    }
+    
+    .step-card.is-maximized .textarea-idea,
+    .step-card.is-maximized .output-textarea {
+      height: 400px !important; /* Much larger when maximized */
+      min-height: 400px !important;
+      max-height: 700px !important;
+      font-size: 0.9375rem !important; /* Slightly larger text */
+      line-height: 1.6 !important;
+    }
+    
+    /* Adjust button positions when maximized */
+    .step-card.is-maximized .prompt-actions {
+      margin-top: 1.5rem !important;
+      gap: 1rem !important;
+    }
+    
+    .step-card.is-maximized .elegant-convert-btn {
+      margin-top: 1.5rem !important;
+      padding: 1rem 1.5rem !important;
+      font-size: 1rem !important;
+    }
+    
+    /* Minimized card styles */
     .step-card.is-minimized {
       height: 60px !important;
       min-height: 60px !important;
@@ -155,7 +286,7 @@
       margin-bottom: 0 !important;
     }
     
-    /* NEW: Body with maximized card */
+    /* Body with maximized card */
     body.card-max-open {
       overflow: hidden !important;
     }
@@ -172,7 +303,7 @@
       animation: fadeIn 0.2s ease-out;
     }
     
-    /* NEW: Animations */
+    /* Animations */
     @keyframes cardMaximize {
       from {
         transform: translate(-50%, -50%) scale(0.95);
@@ -186,7 +317,7 @@
     
     @keyframes cardMinimize {
       from {
-        height: 650px;
+        height: 720px;
       }
       to {
         height: 60px;
@@ -236,7 +367,7 @@
       margin: 0;
     }
     
-    /* NEW: Card actions (maximize/minimize buttons) */
+    /* Card actions (maximize/minimize buttons) */
     .card-actions {
       display: flex;
       gap: 0.5rem;
@@ -274,7 +405,7 @@
       border-color: var(--primary);
     }
     
-    /* Elegant Convert Button - Smaller and beautiful */
+    /* Elegant Convert Button - Better positioned */
     .elegant-convert-btn {
       background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
       color: white;
@@ -291,7 +422,7 @@
       gap: 0.5rem;
       width: 100%;
       box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: 1rem;
+      margin-top: auto; /* Pushes to bottom of available space - NO SCROLL NEEDED */
     }
     
     .elegant-convert-btn:hover:not(:disabled) {
@@ -307,22 +438,25 @@
       box-shadow: none !important;
     }
     
-    /* FIXED: Text Areas - Now properly resizable */
+    /* Text Areas - IMPROVED SPACE USAGE */
     .textarea-container {
       flex: 1;
       margin-bottom: 1rem;
+      position: relative;
     }
     
     .textarea-wrapper {
       position: relative;
+      height: 100%;
     }
     
     .textarea-idea, .output-textarea {
       width: 100%;
-      min-height: 160px; /* Increased from 140px */
-      height: 180px; /* Set initial height */
-      max-height: 500px; /* FIXED: Increased from 160px to allow proper resize */
+      min-height: 200px; /* Increased for better visibility */
+      height: 240px; /* Better initial height */
+      max-height: 600px; /* Allow generous resize */
       padding: 1rem;
+      padding-bottom: 2rem; /* Extra space for resize handle */
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       border-radius: 8px;
@@ -330,22 +464,49 @@
       font-family: inherit;
       font-size: 0.875rem;
       line-height: 1.5;
-      resize: vertical; /* This enables drag resize */
+      resize: vertical; /* Enable resize */
       transition: all 0.3s ease;
       box-sizing: border-box;
     }
     
-    /* Better resize handle */
+    /* FIX: UNIQUE RESIZE HANDLE COLOR (Different from mic/copy buttons) */
     .textarea-idea::-webkit-resizer,
     .output-textarea::-webkit-resizer {
-      background-color: var(--primary);
-      border-radius: 2px;
+      background-color: #00C9A7 !important; /* Teal color - DIFFERENT from orange buttons */
+      border-radius: 3px;
       border: 2px solid var(--panel-bg);
-      padding: 3px;
+      padding: 4px;
+      cursor: ns-resize;
     }
     
-    .textarea-idea:focus, .output-textarea:focus {
-      outline: none;
+    /* Firefox */
+    .textarea-idea::-moz-resizer,
+    .output-textarea::-moz-resizer {
+      background-color: #00C9A7 !important;
+      border-radius: 3px;
+      border: 2px solid var(--panel-bg);
+    }
+    
+    /* Add visual indicator for resize handle */
+    .textarea-wrapper::after {
+      content: '↕';
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.75rem;
+      color: #00C9A7; /* Same teal color */
+      opacity: 0.7;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    
+    .textarea-wrapper:hover::after {
+      opacity: 1;
+    }
+    
+    /* When textarea is focused or resizing */
+    .textarea-idea:focus, .output-textarea:focus,
+    .textarea-idea:active, .output-textarea:active {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.1);
     }
@@ -370,10 +531,10 @@
     .icon-btn {
       width: 36px;
       height: 36px;
-      background: rgba(255, 94, 0, 0.1);
-      border: 1px solid rgba(255, 94, 0, 0.3);
+      background: rgba(255, 94, 0, 0.1); /* Orange background */
+      border: 1px solid rgba(255, 94, 0, 0.3); /* Orange border */
       border-radius: 6px;
-      color: var(--primary);
+      color: var(--primary); /* Orange color */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -392,6 +553,7 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
     }
     
     .helper-text {
@@ -508,17 +670,19 @@
       gap: 0.25rem;
     }
     
-    /* Action Buttons */
+    /* Action Buttons - BETTER POSITIONED (no scroll needed) */
     .prompt-actions {
       display: flex;
       gap: 0.75rem;
       margin-top: 1rem;
+      margin-bottom: 0.5rem; /* Reduced margin */
     }
     
     .ghost-btn, .secondary-btn {
       flex: 1;
       padding: 0.75rem;
       font-size: 0.8125rem;
+      font-weight: 500;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -538,12 +702,14 @@
     
     .ghost-btn:hover, .secondary-btn:hover {
       background: rgba(255, 94, 0, 0.15);
+      transform: translateY(-1px);
     }
     
     .ghost-btn:disabled, .secondary-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       pointer-events: none;
+      transform: none !important;
     }
     
     /* Card 3 - Scrollable Tools */
@@ -552,6 +718,7 @@
       overflow-y: auto;
       padding-right: 0.5rem;
       margin: 0.75rem 0;
+      max-height: 380px; /* Limit height */
     }
     
     .tools-grid {
@@ -702,7 +869,7 @@
       }
       
       .step-card {
-        height: 620px;
+        height: 680px;
       }
     }
     
@@ -717,7 +884,7 @@
       }
       
       .step-card {
-        height: 580px;
+        height: 650px;
       }
       
       .brand-header {
@@ -737,11 +904,21 @@
         flex-wrap: wrap;
         gap: 1rem;
       }
+      
+      .step-card.is-maximized {
+        padding: 1.5rem !important;
+      }
+      
+      .step-card.is-maximized .textarea-idea,
+      .step-card.is-maximized .output-textarea {
+        height: 350px !important;
+        min-height: 350px !important;
+      }
     }
     
     @media (max-width: 576px) {
       .step-card {
-        height: 550px;
+        height: 620px;
         padding: 1.25rem;
       }
       
@@ -753,7 +930,18 @@
       .brand-logo {
         width: 40px;
         height: 40px;
-        font-size: 1.25rem;
+      }
+      
+      .logo-container {
+        width: 28px;
+        height: 28px;
+      }
+      
+      .diamond {
+        width: 20px;
+        height: 20px;
+        top: 4px;
+        left: 4px;
       }
       
       .brand-text h1 {
@@ -777,11 +965,23 @@
         border-radius: 0 !important;
         max-width: none !important;
         max-height: none !important;
+        padding: 1rem !important;
+      }
+      
+      .step-card.is-maximized .textarea-idea,
+      .step-card.is-maximized .output-textarea {
+        height: 300px !important;
+        min-height: 300px !important;
       }
       
       .card-expand-btn {
         width: 36px;
         height: 36px;
+      }
+      
+      .prompt-actions {
+        flex-direction: column;
+        gap: 0.5rem;
       }
     }
   </style>
@@ -794,7 +994,20 @@
     <header class="brand-header">
       <div class="brand-container">
         <div class="brand-logo">
-          <span>⚡</span>
+          <!-- Your Custom Logo -->
+          <div class="logo-container">
+            <div class="diamond">
+              <div class="circuit-line horizontal"></div>
+              <div class="circuit-line vertical"></div>
+              <div class="circuit-node node1"></div>
+              <div class="circuit-node node2"></div>
+              <div class="circuit-node node3"></div>
+              <div class="circuit-node node4"></div>
+              <div class="sparkle s1"></div>
+              <div class="sparkle s2"></div>
+              <div class="sparkle s3"></div>
+            </div>
+          </div>
         </div>
         <div class="brand-text">
           <h1>PromptCraft</h1>
@@ -814,7 +1027,12 @@
             <h3>Your Idea</h3>
             <p>Type or speak your rough requirement</p>
           </div>
-        </div> <!-- CLOSE step-header HERE! -->
+          <div class="card-actions">
+            <button class="card-expand-btn" title="Maximize">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+        </div>
 
         <!-- Auto-convert -->
         <div class="auto-row">
@@ -875,7 +1093,12 @@
             <h3>Structured Prompt</h3>
             <p>AI-ready formatted prompt</p>
           </div>
-        </div> <!-- CLOSE step-header HERE! -->
+          <div class="card-actions">
+            <button class="card-expand-btn" title="Maximize">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+        </div>
 
         <!-- Preset Selector -->
         <div class="preset-row">
@@ -934,6 +1157,11 @@
             <h3>Send to AI</h3>
             <p>Open with your preferred tool</p>
           </div>
+          <div class="card-actions">
+            <button class="card-expand-btn" title="Maximize">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Scrollable tools container -->
@@ -983,6 +1211,115 @@
   <script type="module" src="js/app.js"></script>
   
   <script>
+    // Card maximize/minimize functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.step-card');
+      const expandButtons = document.querySelectorAll('.card-expand-btn');
+      
+      // Add event listeners to expand buttons
+      expandButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const card = this.closest('.step-card');
+          toggleCardSize(card, this);
+        });
+      });
+      
+      // Add click event to minimized cards
+      cards.forEach(card => {
+        card.addEventListener('click', function(e) {
+          if (this.classList.contains('is-minimized') && 
+              !e.target.closest('.card-actions')) {
+            const button = this.querySelector('.card-expand-btn');
+            toggleCardSize(this, button);
+          }
+        });
+      });
+      
+      // Function to toggle card size
+      function toggleCardSize(card, button) {
+        const isMaximized = card.classList.contains('is-maximized');
+        const isMinimized = card.classList.contains('is-minimized');
+        
+        if (isMaximized) {
+          // Currently maximized, minimize it
+          card.classList.remove('is-maximized');
+          card.classList.add('is-minimized');
+          button.innerHTML = '<i class="fas fa-expand"></i>';
+          button.title = 'Maximize';
+          document.body.classList.remove('card-max-open');
+        } else if (isMinimized) {
+          // Currently minimized, restore to normal
+          card.classList.remove('is-minimized');
+          button.innerHTML = '<i class="fas fa-expand"></i>';
+          button.title = 'Maximize';
+        } else {
+          // Currently normal, maximize it
+          // First, minimize any other maximized card
+          const otherMaximized = document.querySelector('.step-card.is-maximized');
+          if (otherMaximized && otherMaximized !== card) {
+            const otherBtn = otherMaximized.querySelector('.card-expand-btn');
+            otherMaximized.classList.remove('is-maximized');
+            if (otherBtn) {
+              otherBtn.innerHTML = '<i class="fas fa-expand"></i>';
+              otherBtn.title = 'Maximize';
+            }
+          }
+          
+          card.classList.add('is-maximized');
+          button.innerHTML = '<i class="fas fa-compress"></i>';
+          button.title = 'Minimize';
+          document.body.classList.add('card-max-open');
+          
+          // Scroll to top of card
+          card.scrollTop = 0;
+          
+          // Close on Escape key
+          const escapeHandler = function(e) {
+            if (e.key === 'Escape' && card.classList.contains('is-maximized')) {
+              card.classList.remove('is-maximized');
+              button.innerHTML = '<i class="fas fa-expand"></i>';
+              button.title = 'Maximize';
+              document.body.classList.remove('card-max-open');
+              document.removeEventListener('keydown', escapeHandler);
+            }
+          };
+          
+          document.addEventListener('keydown', escapeHandler);
+          
+          // Remove event listener when card is minimized
+          const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+              if (!card.classList.contains('is-maximized')) {
+                document.removeEventListener('keydown', escapeHandler);
+                observer.disconnect();
+              }
+            });
+          });
+          
+          observer.observe(card, { attributes: true, attributeFilter: ['class'] });
+        }
+      }
+      
+      // Close maximized card when clicking on overlay
+      document.addEventListener('click', function(e) {
+        const maximizedCard = document.querySelector('.step-card.is-maximized');
+        if (maximizedCard && 
+            !maximizedCard.contains(e.target) && 
+            !e.target.closest('.card-expand-btn') &&
+            document.body.classList.contains('card-max-open')) {
+          
+          const button = maximizedCard.querySelector('.card-expand-btn');
+          maximizedCard.classList.remove('is-maximized');
+          if (button) {
+            button.innerHTML = '<i class="fas fa-expand"></i>';
+            button.title = 'Maximize';
+          }
+          document.body.classList.remove('card-max-open');
+        }
+      });
+    });
+    
     // Enable/disable action buttons based on prompt generation
     function updateActionButtons() {
       const outputTextarea = document.getElementById('output');
