@@ -275,7 +275,7 @@
       border-color: var(--primary);
     }
     
-    /* Elegant Convert Button - Smaller and beautiful */
+    /* Elegant Convert Button - CRITICAL FIX: Force stable position */
     .elegant-convert-btn {
       background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
       color: white;
@@ -286,16 +286,21 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: flex;
+      display: flex !important;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
       width: 100%;
       box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
       margin-top: 0.5rem;
-      opacity: 1 !important; /* FIX: Ensure it stays visible */
-      visibility: visible !important; /* FIX: Ensure it stays visible */
-      position: relative; /* FIX: Ensure proper positioning */
+      position: relative;
+      min-height: 48px; /* Fixed height to prevent layout shift */
+      opacity: 1;
+      visibility: visible;
+      /* Force layout stability */
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
     
     .elegant-convert-btn:hover:not(:disabled) {
@@ -309,15 +314,20 @@
       cursor: not-allowed;
       transform: none !important;
       box-shadow: none !important;
-      /* IMPORTANT: Keep it visible but disabled */
+      /* Ensure button stays in exact same position when disabled */
+      position: relative;
       display: flex !important;
-      visibility: visible !important;
+      visibility: visible;
+      min-height: 48px; /* Same fixed height */
+      pointer-events: none;
     }
     
     /* FIXED: Text Areas - Now properly resizable */
     .textarea-container {
       flex: 1;
       margin-bottom: 1rem;
+      /* Ensure stable layout */
+      position: relative;
     }
     
     .textarea-wrapper {
@@ -515,15 +525,19 @@
       gap: 0.25rem;
     }
     
-    /* Action Buttons - FIXED: Ensure they stay in place */
+    /* Action Buttons - CRITICAL FIX: Ensure stable positioning */
     .prompt-actions {
-      display: flex;
+      display: flex !important;
       gap: 0.75rem;
       margin-top: 0.5rem;
-      opacity: 1 !important;
-      visibility: visible !important;
       position: relative;
-      min-height: 44px; /* FIX: Set minimum height to prevent collapse */
+      min-height: 44px; /* Fixed height to prevent layout shift */
+      opacity: 1;
+      visibility: visible;
+      /* Force layout stability */
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
     
     .ghost-btn, .secondary-btn {
@@ -537,9 +551,14 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      opacity: 1 !important;
-      visibility: visible !important;
+      opacity: 1;
+      visibility: visible;
       position: relative;
+      min-height: 42px; /* Fixed height */
+      /* Force layout stability */
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
     
     .ghost-btn {
@@ -562,9 +581,11 @@
       opacity: 0.5;
       cursor: not-allowed;
       pointer-events: none;
-      /* IMPORTANT: Keep buttons visible when disabled */
+      /* Ensure buttons stay in exact same position when disabled */
       display: flex !important;
-      visibility: visible !important;
+      visibility: visible;
+      min-height: 42px; /* Same fixed height */
+      transform: none !important;
     }
     
     /* Card 3 - Scrollable Tools */
@@ -1009,61 +1030,66 @@
   <script type="module" src="js/app.js"></script>
   
   <script>
-    // Initialize buttons in disabled state immediately (no flash)
-    document.addEventListener('DOMContentLoaded', function() {
-      // Set buttons to disabled state immediately
-      const convertBtn = document.getElementById('convertBtn');
-      const exportBtn = document.getElementById('exportBtn');
-      const saveBtn = document.getElementById('saveTemplateBtn');
+    // Immediately disable buttons on page load to prevent flash
+    (function() {
+      // Set buttons to disabled state immediately (no waiting for DOMContentLoaded)
+      const style = document.createElement('style');
+      style.textContent = `
+        #convertBtn, #exportBtn, #saveTemplateBtn {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+          pointer-events: none !important;
+        }
+      `;
+      document.head.appendChild(style);
       
-      if (convertBtn) convertBtn.disabled = true;
-      if (exportBtn) exportBtn.disabled = true;
-      if (saveBtn) saveBtn.disabled = true;
-      
-      // Update button states based on content
-      function updateActionButtons() {
+      // Wait for DOM to be ready
+      document.addEventListener('DOMContentLoaded', function() {
+        // Remove the inline style
+        style.remove();
+        
+        // Set disabled attribute properly
+        const convertBtn = document.getElementById('convertBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const saveBtn = document.getElementById('saveTemplateBtn');
+        
+        if (convertBtn) convertBtn.disabled = true;
+        if (exportBtn) exportBtn.disabled = true;
+        if (saveBtn) saveBtn.disabled = true;
+        
+        // Update button states based on content
+        function updateActionButtons() {
+          const outputTextarea = document.getElementById('output');
+          const requirementTextarea = document.getElementById('requirement');
+          
+          // Enable convert button if requirement has text
+          if (convertBtn && requirementTextarea) {
+            const hasRequirement = requirementTextarea.value.trim().length > 0;
+            convertBtn.disabled = !hasRequirement;
+          }
+          
+          // Enable export/save buttons if output has text
+          const hasPrompt = outputTextarea && outputTextarea.value.trim().length > 0;
+          if (exportBtn) exportBtn.disabled = !hasPrompt;
+          if (saveBtn) saveBtn.disabled = !hasPrompt;
+        }
+        
+        // Update buttons on load
+        updateActionButtons();
+        
+        // Set up event listeners
         const outputTextarea = document.getElementById('output');
         const requirementTextarea = document.getElementById('requirement');
         
-        // Enable convert button if requirement has text
-        if (convertBtn && requirementTextarea) {
-          convertBtn.disabled = !requirementTextarea.value.trim();
+        if (outputTextarea) {
+          outputTextarea.addEventListener('input', updateActionButtons);
         }
         
-        // Enable export/save buttons if output has text
-        const hasPrompt = outputTextarea && outputTextarea.value.trim().length > 0;
-        if (exportBtn) exportBtn.disabled = !hasPrompt;
-        if (saveBtn) saveBtn.disabled = !hasPrompt;
-      }
-      
-      // Update buttons on load
-      updateActionButtons();
-      
-      // Set up event listeners
-      const outputTextarea = document.getElementById('output');
-      const requirementTextarea = document.getElementById('requirement');
-      
-      if (outputTextarea) {
-        outputTextarea.addEventListener('input', updateActionButtons);
-      }
-      
-      if (requirementTextarea) {
-        requirementTextarea.addEventListener('input', function() {
-          if (convertBtn) {
-            convertBtn.disabled = !this.value.trim();
-          }
-        });
-      }
-      
-      // Also update when convert button is clicked
-      if (convertBtn) {
-        const originalClick = convertBtn.onclick;
-        convertBtn.onclick = function(e) {
-          if (originalClick) originalClick.call(this, e);
-          setTimeout(updateActionButtons, 800);
-        };
-      }
-    });
+        if (requirementTextarea) {
+          requirementTextarea.addEventListener('input', updateActionButtons);
+        }
+      });
+    })();
   </script>
 </body>
 </html>
