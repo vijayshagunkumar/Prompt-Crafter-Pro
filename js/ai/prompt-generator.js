@@ -1,146 +1,118 @@
-// prompt-generator.js – Core Prompt Generation Engine
+import { PRESETS } from './presets.js';
+import { analyzeText } from '../features/context-detective.js';
 
-import { OPENAI_API_URL, OPENAI_MODEL } from '../core/constants.js';
-import { PRESETS, localFormatter } from './presets.js';
-import { getRoleAndPreset } from '../features/context-detective.js';
-import appState from '../core/app-state.js';
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = "gpt-3.5-turbo";
 
-/**
- * Sanitize generated output
- */
-function sanitizePrompt(text = '') {
-  let cleaned = text;
-
-  cleaned = cleaned.replace(/^```[^\n]*\n?/g, '');
-  cleaned = cleaned.replace(/```$/g, '');
-
-  const forbidden =
-    /(prompt generator|generate a prompt|rewrite .*prompt|convert .*requirement)/i;
-
-  cleaned = cleaned
-    .split('\n')
-    .filter(line => !forbidden.test(line.trim()))
-    .join('\n');
-
-  return cleaned.trim();
-}
-
-/**
- * Main generation function
- */
-export async function generatePrompt(rawRequirement) {
-  if (!rawRequirement) {
-    return { success: false, prompt: '' };
+export class PromptGenerator {
+  constructor(apiKey = '') {
+    this.apiKey = apiKey;
   }
-
-  const { role, preset: autoPreset, label } =
-    getRoleAndPreset(rawRequirement);
-
-  // Auto preset selection unless locked
-  if (!appState.userPresetLocked && PRESETS[autoPreset]) {
-    appState.currentPreset = autoPreset;
-    appState.lastPresetSource = 'auto';
-  }
-
-  appState.lastTaskLabel = label;
-  appState.lastRole = role;
-
-  const apiKey = localStorage.getItem('OPENAI_API_KEY')?.trim();
-  let finalPrompt = '';
-
-  try {
-    if (!apiKey) {
-      // OFFLINE MODE
-      finalPrompt = localFormatter(
-        appState.currentPreset,
-        role,
-        rawRequirement
-      );
+  
+  // Main generation function
+  async generate(requirement, presetId = 'default', useOpenAI = true) {
+    if (!requirement.trim()) {
+      throw new Error('Requirement is empty');
+    }
+    
+    const { role } = analyzeText(requirement);
+    const preset = PRESETS[presetId] || PRESETS.default;
+    
+    if (useOpenAI && this.apiKey) {
+      return await this.generateWithOpenAI(requirement, role, presetId);
     } else {
-      // API MODE (same logic as old app.js)
-      const templateSkeleton =
-        PRESETS[appState.currentPreset]('[ROLE]', '[REQUIREMENT]');
-
+      return this.generateLocally(requirement, role, presetId);
+    }
+  }
+  
+  // Local generation (fallback)
+  generateLocally(requirement, role, presetId) {
+    const preset = PRESETS[presetId] || PRESETS.default;
+    let prompt = preset(role, requirement);
+    return this.sanitize(prompt);
+  }
+  
+  // OpenAI API generation
+  async generateWithOpenAI(requirement, role, presetId) {
+    try {
+      const presetTemplate = PRESETS[presetId]("[ROLE]", "[REQUIREMENT]");
+      
       const systemPrompt = `
 You write structured task instructions for AI models.
 
-Using the TEMPLATE below:
-- Replace [ROLE] with "${role}"
-- Replace [REQUIREMENT] with the user requirement
-- Return ONLY the filled template
+Using the TEMPLATE below, replace [ROLE] with an appropriate expert role (for example: "${role}")
+and [REQUIREMENT] with the user's requirement. Return ONLY the completed template and nothing else.
 
 TEMPLATE:
-${templateSkeleton}
+${presetTemplate}
 
-Rules:
-- Do NOT mention prompts or prompt generation
-- The AI must directly perform the task
+Important:
+- The template you return must tell the AI to directly perform the task and return the final result.
+- Do NOT mention prompts, prompt generation, or rewriting instructions in your output.
 `.trim();
 
       const response = await fetch(OPENAI_API_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + apiKey
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + this.apiKey
         },
         body: JSON.stringify({
           model: OPENAI_MODEL,
           messages: [
-            { role: 'system', content: systemPrompt },
-            {
-              role: 'user',
-              content: `User requirement: "${rawRequirement}"`
-            }
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `User requirement: "${requirement}"` }
           ],
           temperature: 0.1,
           max_tokens: 700
         })
       });
 
-      if (!response.ok) throw new Error('API error');
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
 
       const data = await response.json();
-      finalPrompt =
-        data.choices?.[0]?.message?.content ||
-        localFormatter(appState.currentPreset, role, rawRequirement);
+      const generatedPrompt = data.choices?.[0]?.message?.content?.trim() || '';
+      return this.sanitize(generatedPrompt);
+      
+    } catch (error) {
+      console.error('OpenAI generation failed:', error);
+      // Fall back to local generation
+      return this.generateLocally(requirement, role, presetId);
     }
-  } catch (err) {
-    finalPrompt = localFormatter(
-      appState.currentPreset,
-      role,
-      rawRequirement
-    );
   }
-
-  finalPrompt = sanitizePrompt(finalPrompt);
-
-  // Update state
-  appState.isConverted = true;
-  appState.lastConvertedText = rawRequirement;
-
-  return {
-    success: true,
-    prompt: finalPrompt
-  };
-}
-
-/**
- * Clipboard helper (used by UI)
- */
-export async function copyPromptToClipboard(text) {
-  await navigator.clipboard.writeText(text);
-  return true;
-}
-
-/**
- * Export helper
- */
-export function exportPromptToFile(text) {
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'prompt.txt';
-  a.click();
-  URL.revokeObjectURL(url);
+  
+  // Clean up the prompt
+  sanitize(text) {
+    if (!text) return "";
+    
+    let cleaned = text;
+    // Remove code blocks
+    cleaned = cleaned.replace(/^```[^\n]*\n?/g, "");
+    cleaned = cleaned.replace(/```$/g, "");
+    
+    // Remove forbidden phrases
+    const forbiddenLineRegex =
+      /(prompt generator|generate a prompt|convert .*requirement .*prompt|rewrite .*prompt|rewrite .*requirement)/i;
+    
+    cleaned = cleaned
+      .split("\n")
+      .filter((line) => {
+        const trimmed = line.trim();
+        if (/^```/.test(trimmed)) return false;
+        if (forbiddenLineRegex.test(trimmed)) return false;
+        return true;
+      })
+      .join("\n");
+    
+    // Replace remaining forbidden terms
+    cleaned = cleaned.replace(/prompt generator/gi, "assistant");
+    cleaned = cleaned.replace(
+      /generate a prompt/gi,
+      "perform the task and return the final answer"
+    );
+    
+    return cleaned.trim();
+  }
 }
