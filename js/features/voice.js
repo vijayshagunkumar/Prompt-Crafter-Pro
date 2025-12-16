@@ -1,231 +1,267 @@
-// voice.js - Voice Input Features
-
-/**
- * Voice Recognition State
- */
-class VoiceRecognition {
+// Voice input/output functionality
+export class VoiceFeatures {
   constructor() {
-    this.recognition = null;
     this.isListening = false;
-    this.language = 'en-US';
-    this.lastResult = '';
+    this.isSpeaking = false;
+    this.recognition = null;
+    this.synthesis = null;
+    this.voiceLanguage = 'en-US';
     this.init();
   }
-
-  /**
-   * Initialize voice recognition
-   */
+  
   init() {
-    // Check browser support
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      console.warn('Speech Recognition not supported in this browser');
-      return false;
+    // Check for browser support
+    this.checkSupport();
+    this.setupEventListeners();
+  }
+  
+  checkSupport() {
+    // Check for Speech Recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      this.recognition = new SpeechRecognition();
+      this.setupRecognition();
     }
-
-    // Initialize recognition
-    this.recognition = new SpeechRecognition();
+    
+    // Check for Speech Synthesis support
+    if ('speechSynthesis' in window) {
+      this.synthesis = window.speechSynthesis;
+    }
+  }
+  
+  setupRecognition() {
+    if (!this.recognition) return;
+    
     this.recognition.continuous = false;
     this.recognition.interimResults = false;
-    this.recognition.lang = this.language;
-    this.recognition.maxAlternatives = 1;
-
-    return true;
+    this.recognition.lang = this.voiceLanguage;
+    
+    this.recognition.onstart = () => {
+      this.isListening = true;
+      this.updateVoiceUI('input', 'listening');
+    };
+    
+    this.recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      this.handleVoiceInput(transcript);
+    };
+    
+    this.recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      this.isListening = false;
+      this.updateVoiceUI('input', 'idle');
+      
+      import('../ui/notifications.js').then(module => {
+        module.notifications.error(`Voice input error: ${event.error}`);
+      });
+    };
+    
+    this.recognition.onend = () => {
+      this.isListening = false;
+      this.updateVoiceUI('input', 'idle');
+    };
   }
-
-  /**
-   * Start listening
-   * @returns {boolean} Success status
-   */
-  start() {
-    if (!this.recognition || this.isListening) return false;
-
+  
+  setupEventListeners() {
+    // Voice input button
+    const voiceInputBtn = document.getElementById('voiceInputBtn');
+    if (voiceInputBtn) {
+      voiceInputBtn.addEventListener('click', () => this.startVoiceInput());
+    }
+    
+    // Voice output button
+    const voiceOutputBtn = document.getElementById('voiceOutputBtn');
+    if (voiceOutputBtn) {
+      voiceOutputBtn.addEventListener('click', () => {
+        const output = document.getElementById('output').value;
+        if (output) {
+          this.speakText(output);
+        }
+      });
+    }
+  }
+  
+  startVoiceInput() {
+    if (!this.recognition) {
+      import('../ui/notifications.js').then(module => {
+        module.notifications.error('Speech recognition not supported in your browser');
+      });
+      return;
+    }
+    
+    if (this.isListening) {
+      this.stopVoiceInput();
+      return;
+    }
+    
     try {
       this.recognition.start();
-      this.isListening = true;
-      this.lastResult = '';
-      return true;
     } catch (error) {
-      console.error('Error starting voice recognition:', error);
-      return false;
+      console.error('Failed to start recognition:', error);
+      import('../ui/notifications.js').then(module => {
+        module.notifications.error('Failed to start voice input');
+      });
     }
   }
-
-  /**
-   * Stop listening
-   */
-  stop() {
-    if (!this.recognition || !this.isListening) return;
-
-    try {
+  
+  stopVoiceInput() {
+    if (this.recognition && this.isListening) {
       this.recognition.stop();
-    } catch (error) {
-      console.error('Error stopping voice recognition:', error);
-    } finally {
-      this.isListening = false;
     }
   }
-
-  /**
-   * Toggle listening state
-   * @returns {boolean} New listening state
-   */
-  toggle() {
-    if (this.isListening) {
-      this.stop();
-      return false;
-    } else {
-      return this.start();
+  
+  handleVoiceInput(transcript) {
+    const requirementEl = document.getElementById('requirement');
+    if (requirementEl) {
+      // Append to existing text or replace if empty
+      const currentText = requirementEl.value;
+      if (currentText) {
+        requirementEl.value = currentText + ' ' + transcript;
+      } else {
+        requirementEl.value = transcript;
+      }
+      
+      // Trigger input event to update stats and auto-convert
+      requirementEl.dispatchEvent(new Event('input'));
+      
+      import('../ui/notifications.js').then(module => {
+        module.notifications.success('Voice input received');
+      });
     }
   }
-
-  /**
-   * Set recognition language
-   * @param {string} language - Language code
-   */
-  setLanguage(language) {
-    this.language = language;
+  
+  speakText(text) {
+    if (!this.synthesis) {
+      import('../ui/notifications.js').then(module => {
+        module.notifications.error('Text-to-speech not supported in your browser');
+      });
+      return;
+    }
+    
+    if (this.isSpeaking) {
+      this.stopSpeaking();
+      return;
+    }
+    
+    // Split text into chunks to avoid interruption limits
+    const chunks = this.splitTextIntoChunks(text, 200);
+    
+    if (chunks.length === 0) return;
+    
+    this.isSpeaking = true;
+    this.updateVoiceUI('output', 'speaking');
+    
+    // Speak first chunk
+    this.speakChunk(chunks, 0);
+  }
+  
+  speakChunk(chunks, index) {
+    if (index >= chunks.length || !this.isSpeaking) {
+      this.isSpeaking = false;
+      this.updateVoiceUI('output', 'idle');
+      return;
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(chunks[index]);
+    utterance.lang = this.voiceLanguage;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    
+    utterance.onend = () => {
+      this.speakChunk(chunks, index + 1);
+    };
+    
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      this.isSpeaking = false;
+      this.updateVoiceUI('output', 'idle');
+      
+      import('../ui/notifications.js').then(module => {
+        module.notifications.error('Speech synthesis failed');
+      });
+    };
+    
+    this.synthesis.speak(utterance);
+  }
+  
+  stopSpeaking() {
+    if (this.synthesis && this.isSpeaking) {
+      this.synthesis.cancel();
+      this.isSpeaking = false;
+      this.updateVoiceUI('output', 'idle');
+    }
+  }
+  
+  splitTextIntoChunks(text, maxLength) {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    const chunks = [];
+    let currentChunk = '';
+    
+    for (const sentence of sentences) {
+      if ((currentChunk + sentence).length <= maxLength) {
+        currentChunk += sentence;
+      } else {
+        if (currentChunk) chunks.push(currentChunk);
+        if (sentence.length <= maxLength) {
+          currentChunk = sentence;
+        } else {
+          // Sentence is too long, split by words
+          const words = sentence.split(' ');
+          currentChunk = '';
+          for (const word of words) {
+            if ((currentChunk + ' ' + word).length <= maxLength) {
+              currentChunk += (currentChunk ? ' ' : '') + word;
+            } else {
+              if (currentChunk) chunks.push(currentChunk);
+              currentChunk = word;
+            }
+          }
+        }
+      }
+    }
+    
+    if (currentChunk) chunks.push(currentChunk);
+    return chunks;
+  }
+  
+  updateVoiceUI(type, state) {
+    const statusEl = document.getElementById(`voice${type === 'input' ? 'Input' : 'Output'}Status`);
+    const buttonEl = document.getElementById(`voice${type === 'input' ? 'Input' : 'Output'}Btn`);
+    
+    if (statusEl) {
+      if (state === 'listening' || state === 'speaking') {
+        statusEl.style.display = 'flex';
+        statusEl.querySelector('span').textContent = state === 'listening' ? 'Listening...' : 'Speaking...';
+      } else {
+        statusEl.style.display = 'none';
+      }
+    }
+    
+    if (buttonEl) {
+      buttonEl.classList.remove('listening', 'speaking');
+      if (state === 'listening' || state === 'speaking') {
+        buttonEl.classList.add(state);
+        buttonEl.title = state === 'listening' ? 'Stop listening' : 'Stop speaking';
+      } else {
+        buttonEl.title = type === 'input' ? 'Voice Input' : 'Read Aloud';
+      }
+      
+      // Show voice output button when there's text
+      if (type === 'output') {
+        const output = document.getElementById('output').value;
+        buttonEl.style.display = output ? 'block' : 'none';
+      }
+    }
+  }
+  
+  updateVoiceLanguage(language) {
+    this.voiceLanguage = language;
     if (this.recognition) {
       this.recognition.lang = language;
     }
   }
-
-  /**
-   * Get supported languages
-   * @returns {Array} List of supported languages
-   */
-  getSupportedLanguages() {
-    // This is a simplified list. In a real app, you'd check browser support
-    return [
-      { code: 'en-US', name: 'English (US)' },
-      { code: 'en-GB', name: 'English (UK)' },
-      { code: 'es-ES', name: 'Spanish' },
-      { code: 'fr-FR', name: 'French' },
-      { code: 'de-DE', name: 'German' },
-      { code: 'hi-IN', name: 'Hindi' }
-    ];
-  }
-
-  /**
-   * Check if browser supports voice recognition
-   * @returns {boolean} Support status
-   */
-  isSupported() {
-    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-  }
-
-  /**
-   * Get current listening state
-   * @returns {boolean} Listening state
-   */
-  getListeningState() {
-    return this.isListening;
-  }
 }
 
-// Create singleton instance
-const voiceRecognition = new VoiceRecognition();
-
-// Export functions
-export function initializeVoice() {
-  return voiceRecognition.init();
-}
-
-export function startVoiceInput() {
-  return voiceRecognition.start();
-}
-
-export function stopVoiceInput() {
-  voiceRecognition.stop();
-}
-
-export function toggleVoiceInput() {
-  return voiceRecognition.toggle();
-}
-
-export function setVoiceLanguage(language) {
-  voiceRecognition.setLanguage(language);
-}
-
-export function isVoiceSupported() {
-  return voiceRecognition.isSupported();
-}
-
-export function isListening() {
-  return voiceRecognition.getListeningState();
-}
-
-export function getVoiceLanguages() {
-  return voiceRecognition.getSupportedLanguages();
-}
-
-/**
- * Setup voice input button
- * @param {HTMLElement} button - Voice button element
- * @param {HTMLElement} textarea - Textarea element
- * @param {Function} onResult - Callback for results
- */
-export function setupVoiceButton(button, textarea, onResult) {
-  if (!voiceRecognition.isSupported()) {
-    button.disabled = true;
-    button.title = 'Voice input not supported';
-    button.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-    return;
-  }
-
-  // Setup recognition event handlers
-  voiceRecognition.recognition.onstart = () => {
-    button.innerHTML = '<i class="fas fa-stop"></i>';
-    button.classList.add('recording');
-    button.title = 'Stop recording';
-  };
-
-  voiceRecognition.recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    voiceRecognition.lastResult = transcript;
-    
-    if (textarea) {
-      textarea.value = transcript;
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    
-    if (onResult) {
-      onResult(transcript);
-    }
-  };
-
-  voiceRecognition.recognition.onerror = (event) => {
-    console.error('Voice recognition error:', event.error);
-    
-    let errorMessage = 'Voice input error';
-    switch(event.error) {
-      case 'no-speech':
-        errorMessage = 'No speech detected';
-        break;
-      case 'audio-capture':
-        errorMessage = 'Microphone not accessible';
-        break;
-      case 'not-allowed':
-        errorMessage = 'Microphone permission denied';
-        break;
-    }
-    
-    if (onResult && typeof onResult === 'function') {
-      onResult(null, errorMessage);
-    }
-  };
-
-  voiceRecognition.recognition.onend = () => {
-    button.innerHTML = '<i class="fas fa-microphone"></i>';
-    button.classList.remove('recording');
-    button.title = 'Voice Input';
-    voiceRecognition.isListening = false;
-  };
-
-  // Setup button click handler
-  button.addEventListener('click', () => {
-    voiceRecognition.toggle();
-  });
-}
-
+// Make it globally available for settings manager
+window.voiceFeatures = new VoiceFeatures();
