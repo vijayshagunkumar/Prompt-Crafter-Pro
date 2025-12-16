@@ -117,6 +117,9 @@ body.card-max-open {
   gap: var(--space-xs);
   align-items: center;
 }
+.step-card .card-actions {
+  margin-top: auto;   /* ✅ pins buttons to bottom */
+}
 
 /* Expand Button */
 .card-expand-btn {
