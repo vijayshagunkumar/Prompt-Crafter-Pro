@@ -1,77 +1,70 @@
-/* variables.css - CSS Variables */
-
+/* CSS Variables */
 :root {
-  /* CYBERPUNK NEON COLOR PALETTE */
-  --primary: #FF5E00;                 /* Neon Orange - Primary accent */
-  --primary-dark: #FF4500;            /* Darker orange */
-  --primary-light: #FF8C42;           /* Lighter orange */
-  --secondary: #00F3FF;               /* Cyber Blue - Secondary accent */
-  --accent: #FF00FF;                  /* Neon Pink/Magenta */
-  --matrix-green: #00FF41;            /* Matrix green for special highlights */
+  /* Primary Colors */
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #818cf8;
   
-  /* DARK BACKGROUNDS */
-  --bg-body: #0A0E17;                 /* Deep navy blue - main background */
-  --bg-primary: #111827;              /* Dark panel background */
-  --bg-secondary: #1E293B;            /* Slightly lighter dark */
-  --bg-tertiary: #2D3748;             /* Even lighter for contrast */
+  /* Secondary Colors */
+  --secondary: #8b5cf6;
+  --secondary-dark: #7c3aed;
   
-  /* PANELS / CARDS */
-  --panel-bg: #111827;                /* Card backgrounds */
-  --panel-border: #FF5E00;            /* Neon orange borders */
+  /* Status Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
   
-  /* INPUTS */
-  --input-bg: #0A0E17;                /* Dark input backgrounds */
-  --input-border: #2D3748;            /* Subtle borders */
-  --input-border-focus: #FF5E00;      /* Neon orange on focus */
-  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2);
+  /* Background Colors */
+  --background: #0f172a;
+  --surface: #1e293b;
+  --surface-light: #334155;
+  --surface-dark: #0f172a;
   
-  /* TEXT */
-  --text-primary: #F1F5F9;            /* Bright white for readability */
-  --text-secondary: #94A3B8;          /* Light gray for secondary text */
-  --text-muted: #64748B;              /* Gray for muted text */
-  --text-light: #CBD5E1;              /* Light gray */
-  --text-on-primary: #000000;         /* Black text on orange buttons */
+  /* Text Colors */
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-light: #cbd5e1;
   
-  /* BORDERS */
-  --border-subtle: #2D3748;           /* Subtle borders */
+  /* Border & Shadow */
+  --border: #334155;
+  --border-light: #475569;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --glow: rgba(99, 102, 241, 0.2);
+  --glow-secondary: rgba(139, 92, 246, 0.2);
   
-  /* SHADOWS WITH GLOW EFFECTS */
-  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
-  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
-  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
   
-  /* RADIUS */
-  --radius-sm: 2px;                   /* Very sharp */
-  --radius-md: 4px;                   /* Moderately sharp */
-  --radius-lg: 8px;                   /* Slightly rounded */
-  --radius-full: 999px;               /* For pills and circles */
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+  --font-size-4xl: 40px;
   
-  /* TRANSITIONS */
-  --transition-fast: all 0.2s ease-out;
-  --transition-base: all 0.3s ease-out;
-  --transition-slow: all 0.5s ease-out;
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
   
-  /* GRADIENTS */
-  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
-  --gradient-subtle: linear-gradient(135deg, #111827 0%, #0A0E17 100%);
-  --gradient-neon: linear-gradient(90deg, #FF5E00, #FF00FF, #00F3FF);
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 350ms;
   
-  /* Z-INDEX LAYERS */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-toast: 1080;
-  
-  /* SPACING SCALE */
-  --space-xs: 0.25rem;   /* 4px */
-  --space-sm: 0.5rem;    /* 8px */
-  --space-md: 1rem;      /* 16px */
-  --space-lg: 1.5rem;    /* 24px */
-  --space-xl: 2rem;      /* 32px */
-  --space-2xl: 3rem;     /* 48px */
-  --space-3xl: 4rem;     /* 64px */
+  /* Z-index */
+  --z-modal: 1000;
+  --z-notification: 1100;
+  --z-scanline: 9999;
 }
