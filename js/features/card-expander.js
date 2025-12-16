@@ -74,4 +74,132 @@ export class CardExpander {
     expandOutputBtn.addEventListener('click', () => this.toggleExpand('output'));
   }
   
-  setupExpand
+  setupExpandOverlay() {
+    const overlay = document.getElementById('expandOverlay');
+    if (!overlay) return;
+    
+    overlay.addEventListener('click', () => {
+      if (this.isInputExpanded) this.collapse('input');
+      if (this.isOutputExpanded) this.collapse('output');
+    });
+    
+    // Escape key to collapse
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        overlay.click();
+      }
+    });
+  }
+  
+  toggleExpand(type) {
+    if (type === 'input') {
+      if (this.isInputExpanded) {
+        this.collapse('input');
+      } else {
+        this.expand('input');
+      }
+    } else if (type === 'output') {
+      if (this.isOutputExpanded) {
+        this.collapse('output');
+      } else {
+        this.expand('output');
+      }
+    }
+  }
+  
+  expand(type) {
+    const textarea = document.getElementById(type === 'input' ? 'requirement' : 'output');
+    const button = document.getElementById(type === 'input' ? 'expandInputBtn' : 'expandOutputBtn');
+    const overlay = document.getElementById('expandOverlay');
+    
+    if (!textarea || !button || !overlay) return;
+    
+    // Save current height before expanding
+    const currentHeight = textarea.offsetHeight;
+    if (type === 'input' && currentHeight > 140) {
+      appState.textareaSizes.requirement.height = currentHeight;
+    } else if (type === 'output' && currentHeight > 200) {
+      appState.textareaSizes.output.height = currentHeight;
+    }
+    
+    // Expand
+    textarea.classList.add('textarea-expanded');
+    button.classList.add('expanded');
+    button.innerHTML = '<i class="fas fa-compress-alt"></i>';
+    button.title = 'Collapse';
+    overlay.style.display = 'block';
+    
+    if (type === 'input') {
+      this.isInputExpanded = true;
+      textarea.focus();
+      // Scroll to cursor position
+      textarea.scrollTop = textarea.scrollHeight;
+    } else {
+      this.isOutputExpanded = true;
+    }
+  }
+  
+  collapse(type) {
+    const textarea = document.getElementById(type === 'input' ? 'requirement' : 'output');
+    const button = document.getElementById(type === 'input' ? 'expandInputBtn' : 'expandOutputBtn');
+    const overlay = document.getElementById('expandOverlay');
+    
+    if (!textarea || !button) return;
+    
+    // Collapse
+    textarea.classList.remove('textarea-expanded');
+    button.classList.remove('expanded');
+    button.innerHTML = '<i class="fas fa-expand-alt"></i>';
+    button.title = 'Expand';
+    
+    if (type === 'input') {
+      this.isInputExpanded = false;
+      // Restore saved height
+      if (appState.textareaSizes.requirement.height) {
+        textarea.style.height = `${appState.textareaSizes.requirement.height}px`;
+      }
+    } else {
+      this.isOutputExpanded = false;
+      // Restore saved height
+      if (appState.textareaSizes.output.height) {
+        textarea.style.height = `${appState.textareaSizes.output.height}px`;
+      }
+    }
+    
+    // Hide overlay if nothing is expanded
+    if (!this.isInputExpanded && !this.isOutputExpanded) {
+      overlay.style.display = 'none';
+    }
+  }
+  
+  updateSizeInfo(elementId, height) {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.textContent = `${Math.round(height)}px`;
+    }
+  }
+  
+  resetSizes() {
+    appState.resetTextareaSizes();
+    
+    const requirementEl = document.getElementById('requirement');
+    const outputEl = document.getElementById('output');
+    
+    if (requirementEl) {
+      requirementEl.style.height = '140px';
+      this.updateSizeInfo('inputSizeInfo', 140);
+    }
+    
+    if (outputEl) {
+      outputEl.style.height = '200px';
+      this.updateSizeInfo('outputSizeInfo', 200);
+    }
+    
+    import('../ui/notifications.js').then(module => {
+      module.notifications.success('Textarea sizes reset to default');
+    });
+  }
+}
+
+// Singleton instance
+export const cardExpander = new CardExpander();
