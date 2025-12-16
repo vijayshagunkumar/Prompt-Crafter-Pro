@@ -18,241 +18,6 @@ import { initializeEventHandlers } from './ui/event-handlers.js';
 import { showNotification, showSuccess, showError, showInfo } from './ui/notifications.js';
 import modalManager from './ui/modal-manager.js';
 
-// ===========================================
-// ADDED BACK: Preset templates from old version
-// ===========================================
-const PRESETS = {
-  default: (role, requirement) =>
-    `# Role
-You are an ${role} who will directly perform the user's task.
-
-# Objective
-${requirement}
-
-# Context
-(Add relevant background information or constraints here, if needed.)
-
-# Instructions
-1. Perform the task described in the Objective.
-2. Focus on delivering the final result (email, analysis, code, etc.).
-3. Do **not** talk about prompts, prompt generation, or rewriting instructions.
-4. Do **not** rewrite or summarize the task itself.
-5. Return the completed output in one response.
-
-# Notes
-- Use a clear, professional tone.
-- Structure the answer with headings or bullet points when helpful.
-- Include examples only if they improve clarity.`,
-
-  claude: (role, requirement) =>
-    `# Role
-You are an ${role}.
-
-# Objective
-Perform the following task and return the final result:
-
-${requirement}
-
-# Instructions
-- Do not explain your process unless explicitly asked.
-- Do not rephrase or restate the Objective.
-- Respond only with the completed result, not with a description of the task.
-
-# Notes
-Keep the answer clear and well-structured.`,
-
-  chatgpt: (role, requirement) =>
-    `# Role
-You are an ${role}.
-
-# Objective
-Carry out the following task for the user and return the finished output:
-
-${requirement}
-
-# Instructions
-- Start directly with the answer.
-- Do not include meta-commentary or a restatement of the request.
-- Do not talk about prompts or instructions.
-- Output only the final result.
-
-# Notes
-Maintain professional quality and clarity in your response.`,
-
-  detailed: (role, requirement) =>
-    `# Role
-You are an ${role}.
-
-# Objective
-Execute the following task end-to-end and provide the final output:
-
-${requirement}
-
-# Context
-- Add any important background, constraints, or assumptions here if needed.
-
-# Instructions
-1. Analyze the task carefully.
-2. Break the solution into clear, logical sections where useful.
-3. Ensure correctness, structure, and readability.
-4. Do **not** generate instructions or "prompts" for another AI.
-5. Do **not** rewrite or summarize the task; just solve it.
-
-# Notes
-- Use headings, bullet points, or numbered lists as appropriate.
-- Include examples or explanations only if they help the user apply the result.`
-};
-
-// ===========================================
-// ADDED BACK: getRoleAndPreset function from old version
-// ===========================================
-function getRoleAndPreset(text) {
-  const lower = (text || "").toLowerCase();
-  let role = "expert assistant";
-  let preset = "default";
-  let label = "General";
-
-  if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
-    role = "expert email writer";
-    preset = "default";
-    label = "Email";
-  } else if (
-    /code|program|script|develop|software|function|python|javascript|typescript|java|c#|sql|api|bug fix|refactor/i.test(
-      lower
-    )
-  ) {
-    role = "expert developer";
-    preset = "chatgpt";
-    label = "Code";
-  } else if (
-    /analyze|analysis|market|research|evaluate|assessment|review|trend|report|insight|metrics/i.test(
-      lower
-    )
-  ) {
-    role = "expert analyst";
-    preset = "detailed";
-    label = "Analysis";
-  } else if (
-    /blog|article|story|linkedin post|caption|copywriting|content/i.test(lower)
-  ) {
-    role = "expert content writer";
-    preset = "default";
-    label = "Writing";
-  } else if (
-    /workout|exercise|fitness|gym|diet|meal plan|training plan/i.test(lower)
-  ) {
-    role = "expert fitness trainer";
-    preset = "detailed";
-    label = "Workout";
-  } else if (
-    /strategy|business plan|roadmap|pitch deck|proposal|go[- ]to[- ]market|g2m/i.test(
-      lower
-    )
-  ) {
-    role = "expert business consultant";
-    preset = "detailed";
-    label = "Business";
-  } else if (
-    /teach|explain|lesson|tutorial|guide|training material|curriculum/i.test(
-      lower
-    )
-  ) {
-    role = "expert educator";
-    preset = "detailed";
-    label = "Education";
-  }
-
-  return { role, preset, label };
-}
-
-// ===========================================
-// ADDED BACK: generatePrompt function from old version (simplified)
-// ===========================================
-async function generatePrompt() {
-  const requirementEl = document.getElementById('requirement');
-  const outputEl = document.getElementById('output');
-  const convertBtn = document.getElementById('convertBtn');
-  const raw = requirementEl.value.trim();
-
-  if (!raw) {
-    showNotification("Please enter a requirement first");
-    return "";
-  }
-
-  const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
-  
-  // Get current preset from UI
-  const presetSelect = document.getElementById('presetSelect');
-  const currentPreset = presetSelect ? presetSelect.value : 'default';
-  
-  // Get the appropriate preset template
-  let presetTemplate;
-  if (currentPreset === 'claude' && PRESETS.claude) {
-    presetTemplate = PRESETS.claude;
-  } else if (currentPreset === 'chatgpt' && PRESETS.chatgpt) {
-    presetTemplate = PRESETS.chatgpt;
-  } else if (currentPreset === 'detailed' && PRESETS.detailed) {
-    presetTemplate = PRESETS.detailed;
-  } else {
-    presetTemplate = PRESETS.default;
-  }
-
-  // Disable convert button during generation
-  if (convertBtn) {
-    convertBtn.disabled = true;
-    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
-  }
-
-  try {
-    // Generate the prompt using the preset template
-    const generatedPrompt = presetTemplate(role, raw);
-    
-    // Update output
-    if (outputEl) {
-      outputEl.value = generatedPrompt;
-    }
-    
-    // Update stats
-    updateOutputStats();
-    
-    // Update usage count
-    appState.usageCount = (appState.usageCount || 0) + 1;
-    updateUsageCount();
-    
-    // Update AI tools based on generated prompt
-    updateAIToolsGrid(label, raw, true);
-    
-    // Update button states
-    updateButtonStates();
-    
-    // Show success notification
-    showSuccess('Prompt generated successfully!');
-    
-    return generatedPrompt;
-    
-  } catch (error) {
-    console.error('Generation error:', error);
-    showError('Failed to generate prompt. Please try again.');
-    
-    // Fallback: Use simple prompt format
-    const fallbackPrompt = `# Task\n${raw}\n\n# Instructions\nPlease perform this task and provide the result.`;
-    if (outputEl) {
-      outputEl.value = fallbackPrompt;
-      updateOutputStats();
-      updateButtonStates();
-    }
-    
-    return fallbackPrompt;
-    
-  } finally {
-    // Re-enable convert button
-    if (convertBtn) {
-      convertBtn.disabled = false;
-      convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert Idea to Prompt';
-    }
-  }
-}
-
 /**
  * Initialize the application
  */
@@ -289,19 +54,6 @@ async function initializeApp() {
     // Setup tool click handlers
     setupToolClickHandlers(showNotification);
     
-    // ===========================================
-    // ADDED: Setup convert button event listener
-    // ===========================================
-    const convertBtn = document.getElementById('convertBtn');
-    if (convertBtn) {
-      convertBtn.addEventListener('click', generatePrompt);
-    }
-    
-    // ===========================================
-    // ADDED: Setup auto-convert event listeners
-    // ===========================================
-    setupAutoConvertListeners();
-    
     // Show welcome message
     setTimeout(() => {
       showSuccess('PromptCraft is ready! Start crafting prompts.');
@@ -316,43 +68,6 @@ async function initializeApp() {
 }
 
 /**
- * Setup auto-convert event listeners
- */
-function setupAutoConvertListeners() {
-  const requirementEl = document.getElementById('requirement');
-  const autoConvertCheckbox = document.getElementById('autoConvert');
-  
-  if (!requirementEl || !autoConvertCheckbox) return;
-  
-  // Track typing for auto-convert
-  let typingTimer;
-  const doneTypingInterval = 1500; // 1.5 seconds
-  
-  requirementEl.addEventListener('input', function() {
-    // Update input stats
-    updateInputStats();
-    
-    // Update convert button state
-    updateButtonStates();
-    
-    // Clear existing timer
-    clearTimeout(typingTimer);
-    
-    // If auto-convert is enabled and there's text, start timer
-    if (autoConvertCheckbox.checked && this.value.trim()) {
-      typingTimer = setTimeout(() => {
-        generatePrompt();
-      }, doneTypingInterval);
-    }
-  });
-  
-  // Clear timer on blur
-  requirementEl.addEventListener('blur', () => {
-    clearTimeout(typingTimer);
-  });
-}
-
-/**
  * Initialize UI components
  */
 function initializeUI() {
@@ -364,23 +79,6 @@ function initializeUI() {
   
   // Set initial button states
   updateButtonStates();
-  
-  // ===========================================
-  // ADDED: Setup preset selector change handler
-  // ===========================================
-  const presetSelect = document.getElementById('presetSelect');
-  if (presetSelect) {
-    presetSelect.addEventListener('change', function() {
-      // Regenerate prompt if there's content and auto-convert is enabled
-      const requirementEl = document.getElementById('requirement');
-      const autoConvertCheckbox = document.getElementById('autoConvert');
-      
-      if (requirementEl && requirementEl.value.trim() && 
-          autoConvertCheckbox && autoConvertCheckbox.checked) {
-        generatePrompt();
-      }
-    });
-  }
 }
 
 /**
@@ -417,14 +115,7 @@ function updateAllStats() {
 function updateUsageCount() {
   const usageElement = document.getElementById('usageCount');
   if (usageElement) {
-    const count = appState.usageCount || 0;
-    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${count} prompts generated`;
-    
-    // Also update the stats footer
-    const statsFooter = document.querySelector('.stats-footer');
-    if (statsFooter) {
-      statsFooter.innerHTML = `<i class="fas fa-bolt"></i><span>${count} prompts generated</span>`;
-    }
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${appState.usageCount} prompts generated`;
   }
 }
 
@@ -449,13 +140,6 @@ function updateOutputStats() {
   
   if (outputEl && outputStats) {
     outputStats.textContent = `${outputEl.value.length} chars`;
-    
-    // Also update export/save buttons
-    const exportBtn = document.getElementById('exportBtn');
-    const saveBtn = document.getElementById('saveTemplateBtn');
-    
-    if (exportBtn) exportBtn.disabled = !outputEl.value.trim();
-    if (saveBtn) saveBtn.disabled = !outputEl.value.trim();
   }
 }
 
@@ -687,10 +371,7 @@ window.PromptCraft = {
   maximizeCard,
   minimizeCard,
   restoreCard,
-  getCardStates,
-  // Prompt generation methods (ADDED BACK)
-  getRoleAndPreset,
-  generatePrompt
+  getCardStates
 };
 
 console.log('🎯 PromptCraft loaded');
