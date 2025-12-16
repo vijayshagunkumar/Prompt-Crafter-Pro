@@ -1,56 +1,125 @@
+## 🏗️ Architecture
 
-## 📁 Project Structure
+PromptCraft follows a **modular, scalable, and separation-of-concerns–driven architecture**.
+The codebase is organized to keep **UI, core logic, AI integrations, and assets clearly isolated**, enabling faster iteration, easier debugging, and long-term maintainability.
 
-The project follows a modular and scalable folder structure to ensure clean separation of concerns, easier maintenance, and future extensibility.
+### 📁 Project Structure
 
-```
 Prompt-Crafter-Pro/
 │
-├── README.md                 # Project documentation
-├── index.html                # Main application entry point
-├── settings-modal.html       # Settings modal markup
-│
-├── assets/                   # Static assets
-│   ├── icons/                # App icons and favicons
-│   └── images/               # Images and logos
-│
-├── css/                      # Stylesheets
-│   ├── base/                 # Base styles and variables
-│   ├── components/           # Component-level styles
-│   ├── layouts/              # Layout and grid system
-│   ├── themes/               # Theme definitions
-│   ├── main.css              # Global stylesheet
-│  
-│
-├── js/                       # JavaScript source code
-│   ├── app.js                # Application bootstrap
-│   │   
-│   ├── ai/                   # AI-related logic
-│   │   ├── ai-tools.js       # AI tool integrations
-│   │   ├── presets.js        # Prompt presets
-│   │   └── prompt-generator.js # Core prompt generation logic
+├── assets/                     # Static assets (icons, images, branding)
+│   ├── icons/                  # App icons & AI tool logos
+│   │   ├── chatgpt.svg
+│   │   ├── claude.svg
+│   │   ├── copilot.svg
+│   │   ├── deepseek.svg
+│   │   ├── gemini.svg
+│   │   ├── grok.svg
+│   │   ├── midjourney.svg
+│   │   └── perplexity.svg
 │   │
-│   ├── core/                 # Core app utilities
-│   │   ├── app-state.js      # Global state management
-│   │   ├── constants.js      # Application constants
-│   │   └── utilities.js      # Helper utilities
+│   └── images/                 # Images and logos
+│       ├── img.jpg
+│       └── logo.png
+│
+├── css/                        # Modular CSS architecture
+│   ├── base/                   # Reset, variables, typography
+│   │   ├── reset.css
+│   │   ├── typography.css
+│   │   ├── variable-mapping.css
+│   │   └── variables.css
 │   │
-│   ├── features/             # Feature-specific modules
-│   │   ├── card-expander.js  # Card maximize/minimize logic
-│   │   ├── context-detective.js # Auto context detection
-│   │   ├── history.js        # Prompt history handling
-│   │   ├── templates.js      # Prompt templates
-│   │   └── voice.js          # Voice input/output support
+│   ├── components/             # Component-level styles
+│   │   ├── cards.css
+│   │   ├── buttons.css
+│   │   ├── forms.css
+│   │   ├── modals.css
+│   │   ├── sidebar.css
+│   │   ├── notifications.css
+│   │   ├── tools-grid.css
+│   │   └── ai-tools-cards.css
 │   │
-│   └── ui/                   # UI interaction logic
-│       ├── event-handlers.js # DOM event bindings
-│       ├── modal-manager.js  # Modal lifecycle handling
-│       ├── notifications.js # UI notifications
-│       ├── settings-manager.js # Settings persistence
-│       └── theme-manager.js  # Theme switching logic
+│   ├── layouts/                # Layout & responsive system
+│   │   ├── grid.css
+│   │   ├── grid-system.css
+│   │   ├── sidebar-layout.css
+│   │   └── responsive.css
+│   │
+│   ├── themes/                 # Theme definitions
+│   │   ├── cyberpunk.css
+│   │   └── themes.css
+│   │
+│   └── main.css                # Global CSS entry point
+│
+├── js/                         # JavaScript source (ES modules)
+│   ├── ai/                     # AI-specific logic
+│   │   ├── ai-tools.js         # Supported AI tools
+│   │   ├── presets.js          # Prompt presets
+│   │   └── prompt-generator.js # Core prompt generation
+│   │
+│   ├── core/                   # Core application logic
+│   │   ├── app-state.js        # Global state management
+│   │   ├── constants.js        # App-wide constants
+│   │   └── utilities.js        # Shared helpers
+│   │
+│   ├── features/               # Feature modules
+│   │   ├── card-expander.js    # Card maximize/minimize
+│   │   ├── context-detective.js# Auto context detection
+│   │   ├── history.js          # Prompt history
+│   │   ├── templates.js        # Saved templates
+│   │   └── voice.js            # Voice input/output
+│   │
+│   ├── ui/                     # UI orchestration
+│   │   ├── event-handlers.js   # DOM event bindings
+│   │   ├── modal-manager.js    # Modal lifecycle
+│   │   ├── notifications.js   # UI feedback
+│   │   ├── settings-manager.js# Settings persistence
+│   │   └── theme-manager.js   # Theme switching
+│   │
+│   ├── app.js                  # Application bootstrap
+│   └── emergency-fix.js        # Recovery / hotfix logic
+│
+├── index.html                  # Main application entry
+├── settings-modal.html         # Settings modal markup
+├── README.md                   # Project documentation
+└── .gitignore
 ```
 
+### 🧠 Architectural Principles
+
+* **Separation of Concerns**
+  UI, features, AI logic, and core state are isolated into dedicated modules.
+
+* **Modular & Extensible**
+  New AI tools, themes, or features can be added without touching existing code.
+
+* **Vanilla JS, No Framework Lock-in**
+  Keeps the app lightweight, fast, and easy to reason about.
+
+* **Single Entry Points**
+
+  * `css/main.css` → global style aggregation
+  * `js/app.js` → application bootstrap
+
+* **Future-Ready**
+  Structure supports:
+
+  * Build tools (Vite / Webpack)
+  * Server-side APIs
+  * Plugin-based AI tools
+  * Mobile or desktop wrappers
+
 ---
+
+If you want next, I can:
+
+* Add a **“Data Flow” diagram section**
+* Add **“How files interact” explanation**
+* Add **Production / Build strategy**
+* Convert this into **portfolio-ready documentation**
+
+Just tell me.
+
 
 ### 🧩 Architectural Highlights
 
