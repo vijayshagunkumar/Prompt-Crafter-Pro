@@ -1,8 +1,7 @@
-// presets.js – Prompt Preset Templates (PURE FUNCTIONS ONLY)
-
+// Preset template definitions
 export const PRESETS = {
-  default: (role, requirement) => `
-# Role
+  default: (role, requirement) =>
+    `# Role
 You are an ${role} who will directly perform the user's task.
 
 # Objective
@@ -14,18 +13,34 @@ ${requirement}
 # Instructions
 1. Perform the task described in the Objective.
 2. Focus on delivering the final result (email, analysis, code, etc.).
-3. Do NOT talk about prompts, prompt generation, or rewriting instructions.
-4. Do NOT rewrite or summarize the task itself.
+3. Do **not** talk about prompts, prompt generation, or rewriting instructions.
+4. Do **not** rewrite or summarize the task itself.
 5. Return the completed output in one response.
 
 # Notes
 - Use a clear, professional tone.
 - Structure the answer with headings or bullet points when helpful.
-- Include examples only if they improve clarity.
-`.trim(),
+- Include examples only if they improve clarity.`,
 
-  chatgpt: (role, requirement) => `
-# Role
+  claude: (role, requirement) =>
+    `# Role
+You are an ${role}.
+
+# Objective
+Perform the following task and return the final result:
+
+${requirement}
+
+# Instructions
+- Do not explain your process unless explicitly asked.
+- Do not rephrase or restate the Objective.
+- Respond only with the completed result, not with a description of the task.
+
+# Notes
+Keep the answer clear and well-structured.`,
+
+  chatgpt: (role, requirement) =>
+    `# Role
 You are an ${role}.
 
 # Objective
@@ -40,29 +55,10 @@ ${requirement}
 - Output only the final result.
 
 # Notes
-Maintain professional quality and clarity in your response.
-`.trim(),
+Maintain professional quality and clarity in your response.`,
 
-  claude: (role, requirement) => `
-# Role
-You are an ${role}.
-
-# Objective
-Perform the following task and return the final result:
-
-${requirement}
-
-# Instructions
-- Do not explain your process unless explicitly asked.
-- Do not rephrase or restate the Objective.
-- Respond only with the completed result.
-
-# Notes
-Keep the answer concise, clear, and well-structured.
-`.trim(),
-
-  detailed: (role, requirement) => `
-# Role
+  detailed: (role, requirement) =>
+    `# Role
 You are an ${role}.
 
 # Objective
@@ -75,21 +71,16 @@ ${requirement}
 
 # Instructions
 1. Analyze the task carefully.
-2. Break the solution into clear, logical sections.
+2. Break the solution into clear, logical sections where useful.
 3. Ensure correctness, structure, and readability.
-4. Do NOT generate instructions or prompts for another AI.
-5. Do NOT rewrite or summarize the task.
+4. Do **not** generate instructions or "prompts" for another AI.
+5. Do **not** rewrite or summarize the task; just solve it.
 
 # Notes
-- Use headings, bullet points, or numbered lists where useful.
-- Include examples only if they improve understanding.
-`.trim()
+- Use headings, bullet points, or numbered lists as appropriate.
+- Include examples or explanations only if they help the user apply the result.`
 };
 
-/**
- * Local (offline) formatter – direct preset application
- */
-export function localFormatter(presetId, role, requirement) {
-  const preset = PRESETS[presetId] || PRESETS.default;
-  return preset(role, requirement);
+export function getPreset(presetId) {
+  return PRESETS[presetId] || PRESETS.default;
 }
