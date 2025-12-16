@@ -1,4 +1,5 @@
 import { appState } from '../core/app-state.js';
+import { formatDate, truncateText } from '../core/utilities.js';
 
 export class HistoryManager {
   constructor() {
@@ -11,6 +12,7 @@ export class HistoryManager {
   
   add(requirement, prompt) {
     const item = appState.addHistoryItem(requirement, prompt);
+    this.historyItems = appState.historyItems;
     return item;
   }
   
@@ -39,13 +41,47 @@ export class HistoryManager {
     container.innerHTML = this.historyItems.map(item => `
       <div class="history-item" data-id="${item.id}">
         <div class="history-item-title">
-          ${(item.requirement || "").slice(0, 80)}${item.requirement.length > 80 ? "..." : ""}
+          ${truncateText(item.requirement || "", 80)}
         </div>
         <div class="history-item-meta">
-          ${new Date(item.createdAt).toLocaleString()}
+          ${formatDate(item.createdAt)}
         </div>
       </div>
     `).join('');
+    
+    // Add click handlers
+    container.querySelectorAll('.history-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = parseInt(item.dataset.id);
+        this.loadItem(id);
+      });
+    });
+  }
+  
+  loadItem(id) {
+    const item = this.findById(id);
+    if (!item) return;
+    
+    // Load into textareas
+    document.getElementById('requirement').value = item.requirement;
+    document.getElementById('output').value = item.prompt;
+    
+    // Update stats
+    this.updateStats(item.prompt);
+    
+    // Update UI state
+    document.getElementById('convertedBadge').style.display = 'inline-flex';
+    
+    // Notify
+    import('../ui/notifications.js').then(module => {
+      module.notifications.success('Loaded from history');
+    });
+  }
+  
+  updateStats(prompt) {
+    import('../core/utilities.js').then(module => {
+      module.updateStats(prompt, 'outputCharCount', 'outputWordCount', 'outputLineCount');
+    });
   }
 }
 
