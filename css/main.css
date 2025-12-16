@@ -283,7 +283,8 @@
   }
   
   .step-card {
-    min-height: 650px;
+    min-height: unset;
+     height: auto
   }
 }
 
@@ -294,7 +295,8 @@
   
   .step-card:nth-child(3) {
     grid-column: span 2;
-    min-height: 550px;
+    min-height: unset;
+     height: auto
   }
 }
 
@@ -359,7 +361,8 @@
   }
   
   .step-card {
-    min-height: 550px;
+    min-height: unset;
+     height: auto
   }
   
   .hero-top h1 {
