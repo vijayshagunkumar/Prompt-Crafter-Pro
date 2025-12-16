@@ -84,3 +84,13 @@ ${requirement}
 export function getPreset(presetId) {
   return PRESETS[presetId] || PRESETS.default;
 }
+
+export function getPresetName(presetId) {
+  const presetNames = {
+    default: "Standard",
+    chatgpt: "ChatGPT",
+    claude: "Claude",
+    detailed: "Detailed"
+  };
+  return presetNames[presetId] || presetId;
+}
