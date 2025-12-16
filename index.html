@@ -699,6 +699,7 @@
     /* Responsive Design */
     @media (max-width: 1200px) {
       .cards-grid {
+        height: auto
         grid-template-columns: repeat(2, 1fr);
       }
       
@@ -708,8 +709,11 @@
     }
     
     @media (max-width: 900px) {
+      .step-card{
+        height: auto
       .main-container {
         padding: 1rem;
+      }
       }
       
       .cards-grid {
@@ -742,7 +746,7 @@
     
     @media (max-width: 576px) {
       .step-card {
-        height: 550px;
+        height: auto;
         padding: 1.25rem;
       }
       
