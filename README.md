@@ -3,8 +3,10 @@
 PromptCraft follows a **modular, scalable, and separation-of-concerns–driven architecture**.
 The codebase is organized to keep **UI, core logic, AI integrations, and assets clearly isolated**, enabling faster iteration, easier debugging, and long-term maintainability.
 
+Replace your Project Structure section with this
 ### 📁 Project Structure
 
+```text
 Prompt-Crafter-Pro/
 │
 ├── assets/                     # Static assets (icons, images, branding)
@@ -18,18 +20,18 @@ Prompt-Crafter-Pro/
 │   │   ├── midjourney.svg
 │   │   └── perplexity.svg
 │   │
-│   └── images/                 # Images and logos
+│   └── images/
 │       ├── img.jpg
 │       └── logo.png
 │
 ├── css/                        # Modular CSS architecture
-│   ├── base/                   # Reset, variables, typography
+│   ├── base/
 │   │   ├── reset.css
 │   │   ├── typography.css
 │   │   ├── variable-mapping.css
 │   │   └── variables.css
 │   │
-│   ├── components/             # Component-level styles
+│   ├── components/
 │   │   ├── cards.css
 │   │   ├── buttons.css
 │   │   ├── forms.css
@@ -39,51 +41,50 @@ Prompt-Crafter-Pro/
 │   │   ├── tools-grid.css
 │   │   └── ai-tools-cards.css
 │   │
-│   ├── layouts/                # Layout & responsive system
+│   ├── layouts/
 │   │   ├── grid.css
 │   │   ├── grid-system.css
 │   │   ├── sidebar-layout.css
 │   │   └── responsive.css
 │   │
-│   ├── themes/                 # Theme definitions
+│   ├── themes/
 │   │   ├── cyberpunk.css
 │   │   └── themes.css
 │   │
-│   └── main.css                # Global CSS entry point
+│   └── main.css
 │
 ├── js/                         # JavaScript source (ES modules)
-│   ├── ai/                     # AI-specific logic
-│   │   ├── ai-tools.js         # Supported AI tools
-│   │   ├── presets.js          # Prompt presets
-│   │   └── prompt-generator.js # Core prompt generation
+│   ├── ai/
+│   │   ├── ai-tools.js
+│   │   ├── presets.js
+│   │   └── prompt-generator.js
 │   │
-│   ├── core/                   # Core application logic
-│   │   ├── app-state.js        # Global state management
-│   │   ├── constants.js        # App-wide constants
-│   │   └── utilities.js        # Shared helpers
+│   ├── core/
+│   │   ├── app-state.js
+│   │   ├── constants.js
+│   │   └── utilities.js
 │   │
-│   ├── features/               # Feature modules
-│   │   ├── card-expander.js    # Card maximize/minimize
-│   │   ├── context-detective.js# Auto context detection
-│   │   ├── history.js          # Prompt history
-│   │   ├── templates.js        # Saved templates
-│   │   └── voice.js            # Voice input/output
+│   ├── features/
+│   │   ├── card-expander.js
+│   │   ├── context-detective.js
+│   │   ├── history.js
+│   │   ├── templates.js
+│   │   └── voice.js
 │   │
-│   ├── ui/                     # UI orchestration
-│   │   ├── event-handlers.js   # DOM event bindings
-│   │   ├── modal-manager.js    # Modal lifecycle
-│   │   ├── notifications.js   # UI feedback
-│   │   ├── settings-manager.js# Settings persistence
-│   │   └── theme-manager.js   # Theme switching
+│   ├── ui/
+│   │   ├── event-handlers.js
+│   │   ├── modal-manager.js
+│   │   ├── notifications.js
+│   │   ├── settings-manager.js
+│   │   └── theme-manager.js
 │   │
-│   ├── app.js                  # Application bootstrap
-│   └── emergency-fix.js        # Recovery / hotfix logic
+│   ├── app.js
+│   └── emergency-fix.js
 │
-├── index.html                  # Main application entry
-├── settings-modal.html         # Settings modal markup
-├── README.md                   # Project documentation
+├── index.html
+├── settings-modal.html
+├── README.md
 └── .gitignore
-```
 
 ### 🧠 Architectural Principles
 
