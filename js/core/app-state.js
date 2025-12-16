@@ -1,354 +1,91 @@
-// app-state.js - Application State Management
+import { APP_CONFIG } from './constants.js';
 
-import { STORAGE_KEYS, DEFAULTS } from './constants.js';
-import { loadJSON } from './utilities.js';
-
-// Application State
+// Central application state management
 class AppState {
   constructor() {
-    this.currentPreset = "default";
+    this.currentPreset = 'default';
     this.userPresetLocked = false;
-    this.lastPresetSource = "auto";
-    this.lastTaskLabel = "General";
-    this.lastRole = "expert assistant";
+    this.lastPresetSource = 'auto';
+    this.lastTaskLabel = 'General';
+    this.lastRole = 'expert assistant';
     
     this.autoConvertEnabled = true;
-    this.autoConvertDelay = DEFAULTS.autoConvertDelay;
+    this.autoConvertDelay = 60;
     this.usageCount = 0;
-    this.lastConvertedText = "";
     this.isConverted = false;
     
-    this.autoConvertTimer = null;
-    this.autoConvertCountdown = this.autoConvertDelay;
-    this.countdownInterval = null;
-    
-    this.editingTemplateId = null;
     this.templates = [];
     this.historyItems = [];
     
-    this.lastDetectedContext = null;
-    
-    // NEW: Card expander states
-    this.maximizedCardId = null;
-    this.minimizedCardIds = [];
-    this.cardStates = {}; // For individual card state
-    
-    // Initialize state from storage
-    this.init();
-  }
-  
-  /**
-   * Initialize state from localStorage
-   */
-  init() {
-    this.usageCount = parseInt(localStorage.getItem(STORAGE_KEYS.usageCount) || "0", 10);
-    this.templates = loadJSON(STORAGE_KEYS.templates, []);
-    this.historyItems = loadJSON(STORAGE_KEYS.history, []);
-    
-    // NEW: Load card expander states
-    this.loadCardStates();
-  }
-  
-  /**
-   * Save templates to storage
-   */
-  saveTemplates() {
-    localStorage.setItem(STORAGE_KEYS.templates, JSON.stringify(this.templates));
-  }
-  
-  /**
-   * Save history to storage
-   */
-  saveHistory() {
-    localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(this.historyItems));
-  }
-  
-  /**
-   * NEW: Save card expander states
-   */
-  saveCardStates() {
-    const cardState = {
-      maximizedCardId: this.maximizedCardId,
-      minimizedCardIds: this.minimizedCardIds,
-      cardStates: this.cardStates
+    this.textareaSizes = {
+      requirement: { height: 140 },
+      output: { height: 200 }
     };
-    localStorage.setItem(STORAGE_KEYS.cardExpander, JSON.stringify(cardState));
+    
+    this.loadState();
   }
   
-  /**
-   * NEW: Load card expander states
-   */
-  loadCardStates() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.cardExpander);
-      if (saved) {
-        const state = JSON.parse(saved);
-        this.maximizedCardId = state.maximizedCardId || null;
-        this.minimizedCardIds = state.minimizedCardIds || [];
-        this.cardStates = state.cardStates || {};
-      }
-    } catch (e) {
-      console.error('Failed to load card states:', e);
-      this.maximizedCardId = null;
-      this.minimizedCardIds = [];
-      this.cardStates = {};
+  loadState() {
+    // Load from localStorage
+    this.usageCount = parseInt(localStorage.getItem(APP_CONFIG.STORAGE_KEYS.USAGE)) || 0;
+    
+    const savedTemplates = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.TEMPLATES);
+    this.templates = savedTemplates ? JSON.parse(savedTemplates) : [];
+    
+    const savedHistory = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.HISTORY);
+    this.historyItems = savedHistory ? JSON.parse(savedHistory) : [];
+    
+    const savedSizes = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.SIZES);
+    if (savedSizes) {
+      this.textareaSizes = JSON.parse(savedSizes);
+    }
+    
+    const savedSettings = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.SETTINGS);
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      this.autoConvertEnabled = settings.autoConvertEnabled ?? true;
+      this.autoConvertDelay = settings.autoConvertDelay ?? 60;
     }
   }
   
-  /**
-   * Increment usage count and save
-   */
-  incrementUsageCount() {
-    this.usageCount++;
-    localStorage.setItem(STORAGE_KEYS.usageCount, this.usageCount.toString());
-    return this.usageCount;
-  }
-  
-  /**
-   * Add item to history
-   * @param {Object} item - History item
-   */
-  addHistoryItem(item) {
-    const historyItem = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      ...item
-    };
+  saveState() {
+    localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USAGE, this.usageCount.toString());
+    localStorage.setItem(APP_CONFIG.STORAGE_KEYS.TEMPLATES, JSON.stringify(this.templates));
+    localStorage.setItem(APP_CONFIG.STORAGE_KEYS.HISTORY, JSON.stringify(this.historyItems));
+    localStorage.setItem(APP_CONFIG.STORAGE_KEYS.SIZES, JSON.stringify(this.textareaSizes));
     
-    this.historyItems.unshift(historyItem);
-    this.historyItems = this.historyItems.slice(0, 200); // Keep only last 200 items
-    this.saveHistory();
-  }
-  
-  /**
-   * Add template
-   * @param {Object} template - Template object
-   */
-  addTemplate(template) {
-    const newTemplate = {
-      id: Date.now().toString(),
-      ...template
-    };
-    
-    this.templates.push(newTemplate);
-    this.saveTemplates();
-    return newTemplate;
-  }
-  
-  /**
-   * Update template
-   * @param {string} id - Template ID
-   * @param {Object} updates - Template updates
-   */
-  updateTemplate(id, updates) {
-    const index = this.templates.findIndex(t => t.id === id);
-    if (index !== -1) {
-      this.templates[index] = { ...this.templates[index], ...updates };
-      this.saveTemplates();
-      return this.templates[index];
-    }
-    return null;
-  }
-  
-  /**
-   * Delete template
-   * @param {string} id - Template ID
-   */
-  deleteTemplate(id) {
-    this.templates = this.templates.filter(t => t.id !== id);
-    this.saveTemplates();
-  }
-  
-  /**
-   * Get template by ID
-   * @param {string} id - Template ID
-   * @returns {Object|null} Template or null
-   */
-  getTemplate(id) {
-    return this.templates.find(t => t.id === id) || null;
-  }
-  
-  /**
-   * NEW: Save card state
-   * @param {string} cardId - Card ID (card-1, card-2)
-   * @param {string} state - State to save ('maximized', 'minimized', 'restored')
-   */
-  saveCardState(cardId, state) {
-    if (state === 'maximized') {
-      this.maximizedCardId = cardId;
-      // Remove from minimized if present
-      this.minimizedCardIds = this.minimizedCardIds.filter(id => id !== cardId);
-    } else if (state === 'minimized') {
-      if (!this.minimizedCardIds.includes(cardId)) {
-        this.minimizedCardIds.push(cardId);
-      }
-      // Remove from maximized if present
-      if (this.maximizedCardId === cardId) {
-        this.maximizedCardId = null;
-      }
-    } else if (state === 'restored') {
-      if (this.maximizedCardId === cardId) {
-        this.maximizedCardId = null;
-      }
-      this.minimizedCardIds = this.minimizedCardIds.filter(id => id !== cardId);
-    }
-    
-    // Update individual card state
-    this.cardStates[cardId] = {
-      lastState: state,
-      timestamp: new Date().toISOString()
-    };
-    
-    this.saveCardStates();
-  }
-  
-  /**
-   * NEW: Get current card states
-   * @returns {Object} Card states object
-   */
-  getCardStates() {
-    return {
-      maximizedCardId: this.maximizedCardId,
-      minimizedCardIds: this.minimizedCardIds,
-      cardStates: this.cardStates
-    };
-  }
-  
-  /**
-   * NEW: Get maximized card ID
-   * @returns {string|null} Maximized card ID or null
-   */
-  getMaximizedCard() {
-    return this.maximizedCardId;
-  }
-  
-  /**
-   * NEW: Get minimized card IDs
-   * @returns {Array} Array of minimized card IDs
-   */
-  getMinimizedCards() {
-    return this.minimizedCardIds;
-  }
-  
-  /**
-   * NEW: Check if any card is maximized
-   * @returns {boolean} True if a card is maximized
-   */
-  hasMaximizedCard() {
-    return this.maximizedCardId !== null;
-  }
-  
-  /**
-   * NEW: Check if card is minimized
-   * @param {string} cardId - Card ID to check
-   * @returns {boolean} True if card is minimized
-   */
-  isCardMinimized(cardId) {
-    return this.minimizedCardIds.includes(cardId);
-  }
-  
-  /**
-   * NEW: Clear all card states
-   */
-  clearCardStates() {
-    this.maximizedCardId = null;
-    this.minimizedCardIds = [];
-    this.cardStates = {};
-    this.saveCardStates();
-  }
-  
-  /**
-   * NEW: Get card statistics
-   * @returns {Object} Card statistics
-   */
-  getCardStats() {
-    return {
-      totalCards: 2, // Card 1 and Card 2
-      maximized: this.maximizedCardId ? 1 : 0,
-      minimized: this.minimizedCardIds.length,
-      normal: 2 - (this.maximizedCardId ? 1 : 0) - this.minimizedCardIds.length
-    };
-  }
-  
-  /**
-   * Clear auto-convert timers
-   */
-  clearAutoConvertTimers() {
-    if (this.autoConvertTimer) {
-      clearTimeout(this.autoConvertTimer);
-      this.autoConvertTimer = null;
-    }
-    
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-      this.countdownInterval = null;
-    }
-  }
-  
-  /**
-   * Reset auto-convert timer
-   */
-  resetAutoConvertTimer() {
-    this.clearAutoConvertTimers();
-    
-    if (this.autoConvertEnabled && !this.isConverted) {
-      this.autoConvertCountdown = this.autoConvertDelay;
-      // Timer logic would be implemented in the UI layer
-    }
-  }
-  
-  /**
-   * Reset all state
-   */
-  reset() {
-    this.currentPreset = "default";
-    this.userPresetLocked = false;
-    this.lastPresetSource = "auto";
-    this.lastTaskLabel = "General";
-    this.lastRole = "expert assistant";
-    
-    this.autoConvertEnabled = true;
-    this.lastConvertedText = "";
-    this.isConverted = false;
-    
-    this.clearAutoConvertTimers();
-    this.autoConvertCountdown = this.autoConvertDelay;
-    
-    this.editingTemplateId = null;
-    this.lastDetectedContext = null;
-    
-    // NEW: Clear card states on reset
-    this.clearCardStates();
-  }
-  
-  /**
-   * Export state as JSON (for debugging)
-   * @returns {Object} State object
-   */
-  export() {
-    return {
-      currentPreset: this.currentPreset,
-      userPresetLocked: this.userPresetLocked,
+    const settings = {
       autoConvertEnabled: this.autoConvertEnabled,
-      usageCount: this.usageCount,
-      isConverted: this.isConverted,
-      templatesCount: this.templates.length,
-      historyCount: this.historyItems.length,
-      lastDetectedContext: this.lastDetectedContext,
-      // NEW: Include card states in export
-      cardStats: this.getCardStats(),
-      maximizedCardId: this.maximizedCardId,
-      minimizedCardIds: this.minimizedCardIds
+      autoConvertDelay: this.autoConvertDelay
     };
+    localStorage.setItem(APP_CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  }
+  
+  incrementUsage() {
+    this.usageCount++;
+    this.saveState();
+  }
+  
+  addHistoryItem(requirement, prompt) {
+    const item = {
+      id: Date.now(),
+      requirement,
+      prompt,
+      createdAt: new Date().toISOString()
+    };
+    
+    this.historyItems.unshift(item);
+    this.historyItems = this.historyItems.slice(0, 20); // Keep last 20 items
+    this.saveState();
+    
+    return item;
+  }
+  
+  clearHistory() {
+    this.historyItems = [];
+    localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.HISTORY);
   }
 }
 
-// Update STORAGE_KEYS in constants.js to include:
-// Add this to your constants.js file:
-// STORAGE_KEYS.cardExpander = 'promptcraft_card_expander_state';
-
-// Create singleton instance
-const appState = new AppState();
-
-// Export singleton instance
-export default appState;
+// Singleton instance
+export const appState = new AppState();
