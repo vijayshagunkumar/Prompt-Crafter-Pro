@@ -102,8 +102,8 @@
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      height: auto;
-      min-height: unset;
+      height: 680px; /* FIXED: Set consistent height */
+      min-height: 680px; /* FIXED: Set consistent height */
       overflow: hidden;
       transition: all 0.3s ease;
       position: relative;
@@ -187,7 +187,7 @@
     
     @keyframes cardMinimize {
       from {
-        height: 650px;
+        height: 680px;
       }
       to {
         height: 60px;
@@ -303,19 +303,25 @@
     
     /* Text Areas */
     .textarea-container {
-      margin-bottom: 1.5rem; /* Increased margin for better spacing */
+      flex: 1;
+      margin-bottom: 1.5rem;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
     
     .textarea-wrapper {
       position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     
     .textarea-idea, .output-textarea {
       width: 100%;
-      min-height: 160px;
-      height: 180px;
-      max-height: 500px;
+      flex: 1;
+      min-height: 180px;
+      max-height: 400px;
       padding: 1rem;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
@@ -402,7 +408,7 @@
       font-size: 0.75rem;
     }
     
-    /* Elegant Convert Button - FIXED: Position immediately below textarea */
+    /* Elegant Convert Button - FIXED: Better positioning */
     .elegant-convert-btn {
       background: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
       color: white;
@@ -419,7 +425,7 @@
       gap: 0.5rem;
       width: 100%;
       box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
-      margin-top: 0; /* FIX: Remove auto margin */
+      margin-top: auto; /* FIX: Push to bottom of available space */
       min-height: 48px;
       opacity: 1;
     }
@@ -468,11 +474,11 @@
       cursor: pointer;
     }
     
-    /* Action Buttons - FIXED: Position immediately below textarea */
+    /* Action Buttons - FIXED: Better positioning */
     .prompt-actions {
       display: flex;
       gap: 0.75rem;
-      margin-top: 0.5rem; /* FIX: Normal margin, not auto */
+      margin-top: auto; /* FIX: Push to bottom of available space */
       margin-bottom: 0;
       min-height: 44px;
     }
@@ -531,13 +537,16 @@
       flex: 1;
       overflow-y: auto;
       padding-right: 0.5rem;
-      margin: 0.75rem 0 1rem 0;
+      margin: 0.75rem 0;
+      display: flex;
+      flex-direction: column;
     }
     
     .tools-grid {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      flex: 1;
     }
     
     .tool-card {
@@ -603,8 +612,9 @@
     }
     
     /* Card 3 Helper Text */
-    .step-card#card-3 .helper-text {
-      margin-top: 0.5rem;
+    #card-3 .helper-text {
+      margin-top: auto; /* Push to bottom of card 3 */
+      padding-top: 0.5rem;
     }
     
     /* Footer with Features and Stats */
@@ -675,20 +685,23 @@
     /* Responsive Design */
     @media (max-width: 1200px) {
       .cards-grid {
-        height: auto;
         grid-template-columns: repeat(2, 1fr);
       }
       
       .step-card {
-        height: 620px;
+        height: 650px;
+        min-height: 650px;
       }
     }
     
-    @media (max-width: 900px) {
+    @media (max-width: 992px) {
       .step-card {
-        height: auto;
+        height: 620px;
+        min-height: 620px;
       }
-      
+    }
+    
+    @media (max-width: 768px) {
       .main-container {
         padding: 1rem;
       }
@@ -699,7 +712,8 @@
       }
       
       .step-card {
-        height: 580px;
+        height: 600px;
+        min-height: 600px;
       }
       
       .brand-header {
@@ -724,6 +738,7 @@
     @media (max-width: 576px) {
       .step-card {
         height: auto;
+        min-height: 580px;
         padding: 1.25rem;
       }
       
@@ -759,6 +774,19 @@
         border-radius: 0 !important;
         max-width: none !important;
         max-height: none !important;
+      }
+    }
+    
+    /* For very large screens */
+    @media (min-width: 1600px) {
+      .step-card {
+        height: 720px;
+        min-height: 720px;
+      }
+      
+      .textarea-idea, .output-textarea {
+        min-height: 200px;
+        max-height: 450px;
       }
     }
   </style>
@@ -1001,6 +1029,37 @@
         requirementTextarea.addEventListener('input', function() {
           if (convertBtn) {
             convertBtn.disabled = !this.value.trim();
+          }
+        });
+      }
+      
+      // Mock function for convert button
+      const mockConvertBtn = document.getElementById('convertBtn');
+      if (mockConvertBtn) {
+        mockConvertBtn.addEventListener('click', function() {
+          const requirement = document.getElementById('requirement');
+          const output = document.getElementById('output');
+          
+          if (requirement && output && requirement.value.trim()) {
+            output.value = "Generated prompt based on: " + requirement.value;
+            updateActionButtons();
+          }
+        });
+      }
+      
+      // Mock function for copy button
+      const copyBtn = document.getElementById('copyOutputBtn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          const output = document.getElementById('output');
+          if (output && output.value) {
+            navigator.clipboard.writeText(output.value).then(() => {
+              const originalHTML = copyBtn.innerHTML;
+              copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+              setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+              }, 2000);
+            });
           }
         });
       }
