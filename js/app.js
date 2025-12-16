@@ -1,215 +1,206 @@
 // Main application orchestrator
-import { appState } from '../core/app-state.js';
-import { PromptGenerator } from '../ai/prompt-generator.js';
-import { analyzeText } from '../features/context-detective.js';
-import { historyManager } from '../features/history.js';
-import { notifications } from '../ui/notifications.js';
-import { ThemeManager } from '../ui/theme-manager.js';
-import { SettingsManager } from '../ui/settings-manager.js';
+import { appState } from './core/app-state.js';
+import { PromptGenerator } from './ai/prompt-generator.js';
+import { analyzeText } from './features/context-detective.js';
+import { getPresetName } from './ai/presets.js';
+import { updateStats, copyToClipboard, downloadFile } from './core/utilities.js';
+import { historyManager } from './features/history.js';
+import { templateManager } from './features/templates.js';
+import { cardExpander } from './features/card-expander.js';
+import { aiToolsManager } from './ai/ai-tools.js';
+import { notifications } from './ui/notifications.js';
+import { settingsManager } from './ui/settings-manager.js';
+import { modalManager } from './ui/modal-manager.js';
+import { themeManager } from './ui/theme-manager.js';
+import { EventHandlers } from './ui/event-handlers.js';
+import './features/voice.js'; // Initialize voice features
 
-export class PromptCrafterApp {
+class PromptCrafterApp {
   constructor() {
-    this.state = appState;
     this.promptGenerator = null;
-    this.themeManager = new ThemeManager();
-    this.settingsManager = new SettingsManager();
-    
+    this.eventHandlers = null;
     this.init();
   }
   
   async init() {
+    console.log('🚀 PromptCrafter Pro v3.1 - Modular Edition');
+    
     // Initialize modules
-    await this.settingsManager.load();
+    this.initPromptGenerator();
+    this.initEventHandlers();
+    this.initUI();
     
-    // Create prompt generator with API key if available
-    const apiKey = this.settingsManager.getApiKey();
+    // Show welcome notification
+    setTimeout(() => {
+      notifications.success('PromptCrafter loaded successfully!');
+    }, 500);
+  }
+  
+  initPromptGenerator() {
+    const apiKey = settingsManager.getApiKey();
     this.promptGenerator = new PromptGenerator(apiKey);
-    
-    // Setup event listeners
-    this.setupEventListeners();
-    
-    // Initial render
-    this.render();
-    
-    notifications.success('PromptCrafter loaded successfully!');
   }
   
-  setupEventListeners() {
-    // Requirement input
-    const requirementEl = document.getElementById('requirement');
-    if (requirementEl) {
-      requirementEl.addEventListener('input', this.handleRequirementInput.bind(this));
-    }
-    
-    // Convert button
-    const convertBtn = document.getElementById('convertBtn');
-    if (convertBtn) {
-      convertBtn.addEventListener('click', this.generatePrompt.bind(this));
-    }
-    
-    // Preset selection
-    document.querySelectorAll('.preset-option').forEach(option => {
-      option.addEventListener('click', () => {
-        const presetId = option.dataset.preset;
-        this.setPreset(presetId, 'manual');
-      });
-    });
-    
-    // Export button
-    const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) {
-      exportBtn.addEventListener('click', this.exportPrompt.bind(this));
-    }
-    
-    // Add more event listeners as needed...
+  initEventHandlers() {
+    this.eventHandlers = new EventHandlers(this);
   }
   
-  handleRequirementInput(event) {
-    const text = event.target.value;
-    
-    // Auto-detect context
-    if (text.trim() && !this.state.userPresetLocked) {
-      const { role, preset, label } = analyzeText(text);
-      this.state.lastRole = role;
-      this.state.lastTaskLabel = label;
-      this.setPreset(preset, 'auto');
-    }
-    
-    // Update UI state
-    this.updateUIState();
-  }
-  
-  setPreset(presetId, source = 'auto') {
-    if (!presetId || !this.isValidPreset(presetId)) return;
-    
-    this.state.currentPreset = presetId;
-    this.state.lastPresetSource = source;
-    
-    if (source === 'manual') {
-      this.state.userPresetLocked = true;
-    }
-    
+  initUI() {
+    this.updateUsageCount();
     this.updatePresetUI();
+    this.updateAutoConvertToggle();
+    historyManager.renderTo('historyList');
+    this.setupOutputStats();
   }
   
   async generatePrompt() {
-    const requirement = document.getElementById('requirement').value.trim();
+    const requirementEl = document.getElementById('requirement');
+    const outputEl = document.getElementById('output');
+    const convertBtn = document.getElementById('convertBtn');
+    const requirement = requirementEl.value.trim();
+    
     if (!requirement) {
       notifications.error('Please enter a requirement first');
       return;
     }
     
+    const { role, preset: autoPreset, label } = analyzeText(requirement);
+    appState.lastRole = role;
+    appState.lastTaskLabel = label;
+    
+    if (!appState.userPresetLocked && autoPreset) {
+      appState.lastPresetSource = 'auto';
+      this.eventHandlers.setPreset(autoPreset);
+    } else {
+      this.updatePresetInfo();
+    }
+    
+    // Update usage count
+    appState.incrementUsage();
+    this.updateUsageCount();
+    
+    // Show loading state
+    convertBtn.disabled = true;
+    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+    this.eventHandlers.clearAutoConvertTimer();
+    
     try {
-      const outputEl = document.getElementById('output');
-      const convertBtn = document.getElementById('convertBtn');
-      
-      // Show loading state
-      convertBtn.disabled = true;
-      convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
-      
-      // Generate prompt
-      const useOpenAI = !!this.settingsManager.getApiKey();
+      const useOpenAI = !!settingsManager.getApiKey();
       const prompt = await this.promptGenerator.generate(
         requirement,
-        this.state.currentPreset,
+        appState.currentPreset,
         useOpenAI
       );
       
       // Update output
       outputEl.value = prompt;
-      this.state.isConverted = true;
-      this.state.incrementUsage();
+      
+      // Update stats
+      updateStats(prompt, 'outputCharCount', 'outputWordCount', 'outputLineCount');
       
       // Save to history
       historyManager.add(requirement, prompt);
       
-      // Update UI
-      this.updateUIState();
-      notifications.success('Prompt generated successfully!');
+      // Update state
+      appState.isConverted = true;
+      appState.lastConvertedText = requirement;
+      document.getElementById('convertedBadge').style.display = 'inline-flex';
+      aiToolsManager.setToolsEnabled(true);
+      
+      // Show voice output button
+      const voiceOutputBtn = document.getElementById('voiceOutputBtn');
+      if (voiceOutputBtn) {
+        voiceOutputBtn.style.display = 'block';
+      }
+      
+      notifications.success('Prompt generated successfully');
+      
+      // Reset auto-convert timer if still enabled
+      if (appState.autoConvertEnabled) {
+        appState.autoConvertCountdown = appState.autoConvertDelay;
+        this.eventHandlers.resetAutoConvertTimer();
+      }
       
     } catch (error) {
-      notifications.error('Failed to generate prompt: ' + error.message);
-      console.error(error);
+      console.error('Generation error:', error);
+      notifications.error(`Generation failed: ${error.message}`);
+      
+      // Fallback to local generation
+      const { role } = analyzeText(requirement);
+      const prompt = this.promptGenerator.generateLocally(requirement, role, appState.currentPreset);
+      outputEl.value = prompt;
+      updateStats(prompt, 'outputCharCount', 'outputWordCount', 'outputLineCount');
+      
     } finally {
-      const convertBtn = document.getElementById('convertBtn');
-      if (convertBtn) {
-        convertBtn.disabled = false;
-        convertBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Enhance Prompt';
-      }
+      convertBtn.disabled = false;
+      convertBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Enhance Prompt';
     }
   }
   
-  exportPrompt() {
-    const outputEl = document.getElementById('output');
-    const prompt = outputEl.value.trim();
-    
-    if (!prompt) {
-      notifications.error('No prompt to export');
-      return;
+  updateUsageCount() {
+    const usageCountEl = document.getElementById('usageCount');
+    if (usageCountEl) {
+      usageCountEl.innerHTML = `<i class="fas fa-bolt"></i>${appState.usageCount} prompts generated`;
     }
-    
-    const blob = new Blob([prompt], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `prompt-${new Date().toISOString().slice(0, 10)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    notifications.success('Prompt exported successfully');
-  }
-  
-  updateUIState() {
-    // Update various UI elements based on state
-    this.updatePresetUI();
-    this.updateStats();
-    this.updateConvertButton();
   }
   
   updatePresetUI() {
-    const presetInfoEl = document.getElementById('presetInfo');
-    if (!presetInfoEl) return;
+    // Set active preset button
+    document.querySelectorAll('.preset-option').forEach((o) => {
+      o.classList.toggle('active', o.dataset.preset === appState.currentPreset);
+    });
     
-    const presetNames = {
-      default: 'Standard',
-      chatgpt: 'ChatGPT',
-      claude: 'Claude',
-      detailed: 'Detailed'
-    };
-    
-    const nicePreset = presetNames[this.state.currentPreset] || this.state.currentPreset;
-    presetInfoEl.textContent = `${this.state.lastTaskLabel} • ${nicePreset} (${this.state.lastPresetSource})`;
+    this.updatePresetInfo();
   }
   
-  updateStats() {
-    // Update character/word/line counts
-    // Implementation depends on your UI
+  updatePresetInfo() {
+    const el = document.getElementById('presetInfo');
+    if (!el) return;
+    
+    const nicePreset = getPresetName(appState.currentPreset);
+    el.textContent = `${appState.lastTaskLabel} • ${nicePreset} (${appState.lastPresetSource})`;
   }
   
-  updateConvertButton() {
-    const requirement = document.getElementById('requirement').value.trim();
-    const convertBtn = document.getElementById('convertBtn');
-    
-    if (convertBtn) {
-      convertBtn.disabled = !requirement;
+  updateAutoConvertToggle() {
+    const autoConvert = document.getElementById('autoConvert');
+    if (autoConvert) {
+      autoConvert.checked = appState.autoConvertEnabled;
     }
   }
   
-  isValidPreset(presetId) {
-    const validPresets = ['default', 'claude', 'chatgpt', 'detailed'];
-    return validPresets.includes(presetId);
+  setupOutputStats() {
+    const outputEl = document.getElementById('output');
+    if (outputEl) {
+      outputEl.addEventListener('input', () => {
+        const text = outputEl.value;
+        updateStats(text, 'outputCharCount', 'outputWordCount', 'outputLineCount');
+        
+        // Show/hide voice output button
+        const voiceOutputBtn = document.getElementById('voiceOutputBtn');
+        if (voiceOutputBtn) {
+          voiceOutputBtn.style.display = text ? 'block' : 'none';
+        }
+      });
+    }
   }
   
-  render() {
-    // Initial render of components
-    historyManager.renderTo('historyList');
-    this.updateUIState();
+  // Public API for external use
+  getState() {
+    return appState;
+  }
+  
+  getPromptGenerator() {
+    return this.promptGenerator;
   }
 }
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new PromptCrafterApp();
+  
+  // Make app available globally for debugging
+  console.log('📱 App initialized:', window.app);
 });
+
+// Export for module usage
+export default PromptCrafterApp;
