@@ -113,7 +113,8 @@
 
 /* Step Cards */
 .step-card {
-  min-height: 700px;
+  min-height: unset;
+   height: auto;
 }
 
 /* Auto-row */
