@@ -69,7 +69,8 @@ Important:
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`API error (${response.status}): ${errorText}`);
       }
 
       const data = await response.json();
@@ -114,5 +115,10 @@ Important:
     );
     
     return cleaned.trim();
+  }
+  
+  // Update API key
+  setApiKey(apiKey) {
+    this.apiKey = apiKey;
   }
 }
