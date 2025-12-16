@@ -433,7 +433,7 @@ body.card-max-open {
 /* Responsive Cards */
 @media (max-width: 768px) {
   .step-card {
-    min-height: 550px;
+    min-height: unset;
     padding: var(--space-md);
   }
   
