@@ -1,11 +1,32 @@
-// presets.js - Prompt Presets
+// presets.js – Prompt Preset Templates (PURE FUNCTIONS ONLY)
 
-/**
- * PRESETS: How the final structured prompt is shaped
- */
 export const PRESETS = {
-  default: (role, requirement) => `# Role
-${role}
+  default: (role, requirement) => `
+# Role
+You are an ${role} who will directly perform the user's task.
+
+# Objective
+${requirement}
+
+# Context
+(Add relevant background information or constraints here, if needed.)
+
+# Instructions
+1. Perform the task described in the Objective.
+2. Focus on delivering the final result (email, analysis, code, etc.).
+3. Do NOT talk about prompts, prompt generation, or rewriting instructions.
+4. Do NOT rewrite or summarize the task itself.
+5. Return the completed output in one response.
+
+# Notes
+- Use a clear, professional tone.
+- Structure the answer with headings or bullet points when helpful.
+- Include examples only if they improve clarity.
+`.trim(),
+
+  chatgpt: (role, requirement) => `
+# Role
+You are an ${role}.
 
 # Objective
 Carry out the following task for the user and return the finished output:
@@ -13,113 +34,62 @@ Carry out the following task for the user and return the finished output:
 ${requirement}
 
 # Instructions
-- Focus on delivering the final result (answer, email, code, etc.).
-- Do not talk about prompts, prompt generation, or rewriting instructions.
-- Do not restate or summarize the user's request.
-- Return only the completed output.
+- Start directly with the answer.
+- Do not include meta-commentary or a restatement of the request.
+- Do not talk about prompts or instructions.
+- Output only the final result.
 
 # Notes
-Maintain professional quality and clarity in your response.`,
+Maintain professional quality and clarity in your response.
+`.trim(),
 
-  communication: (role, requirement) => `# Role
-You are a highly skilled communication specialist.
+  claude: (role, requirement) => `
+# Role
+You are an ${role}.
 
 # Objective
-Turn the user's request into a clear, effective piece of communication:
+Perform the following task and return the final result:
 
 ${requirement}
 
 # Instructions
-- Use a tone that matches the context (professional, friendly, or neutral as appropriate).
-- Structure the message with a clear beginning, middle, and end.
-- Avoid jargon and keep the language simple and understandable.
-- Do NOT mention that you are rewriting or optimizing a prompt.
-- Deliver the communication piece ready to send.
-
-# Output Format
-Return only the final message ready to send.
+- Do not explain your process unless explicitly asked.
+- Do not rephrase or restate the Objective.
+- Respond only with the completed result.
 
 # Notes
-Keep it concise, specific, and audience-appropriate.`,
+Keep the answer concise, clear, and well-structured.
+`.trim(),
 
-  coding: (role, requirement) => `# Role
-You are an expert software developer.
+  detailed: (role, requirement) => `
+# Role
+You are an ${role}.
 
 # Objective
-Fulfill the following coding-related task:
+Execute the following task end-to-end and provide the final output:
 
 ${requirement}
 
-# Instructions
-- If code is required, provide complete, working code with comments where helpful.
-- Explain reasoning briefly if it helps understanding, but focus on the final code.
-- Do NOT talk about prompts, prompt generation, or rewriting instructions.
-- Optimize for readability and maintainability.
-
-# Output Format
-- Code (in appropriate language)
-- Brief explanation only if essential.
-
-# Notes
-Follow best practices and handle edge cases when possible.`,
-
-  writing: (role, requirement) => `# Role
-You are a skilled writer and editor.
-
-# Objective
-Create a polished written piece based on this request:
-
-${requirement}
+# Context
+- Add any important background, constraints, or assumptions here if needed.
 
 # Instructions
-- Choose the appropriate style (formal, informal, storytelling, etc.) based on context.
-- Make the writing clear, engaging, and cohesive.
-- Do NOT mention prompts, prompt generation, or rewriting instructions.
-- Fix any grammar, clarity, or structure issues implicitly.
-
-# Output Format
-Return only the final written content.
+1. Analyze the task carefully.
+2. Break the solution into clear, logical sections.
+3. Ensure correctness, structure, and readability.
+4. Do NOT generate instructions or prompts for another AI.
+5. Do NOT rewrite or summarize the task.
 
 # Notes
-Aim for readability and impact.`,
-
-  analysis: (role, requirement) => `# Role
-You are an analytical expert with strong critical thinking skills.
-
-# Objective
-Respond to this analytical or comparative request:
-
-${requirement}
-
-# Instructions
-- Break down complex ideas into clear, structured sections.
-- Highlight key insights, pros/cons, and trade-offs where relevant.
-- Do NOT mention prompts, prompt generation, or rewriting instructions.
-- Keep explanations rigorous but understandable.
-
-# Output Format
-Use headings or bullet points if helpful, but focus on clarity of reasoning.
-
-# Notes
-Support statements with logical arguments or examples where possible.`
+- Use headings, bullet points, or numbered lists where useful.
+- Include examples only if they improve understanding.
+`.trim()
 };
 
 /**
- * Format prompt using local formatter (offline mode)
- * @param {string} raw - Raw requirement
- * @param {string} forcedRole - Forced role (optional)
- * @param {string} preset - Preset name
- * @param {Function} getRoleAndPreset - Function to get role from requirement
- * @returns {string} Formatted prompt
+ * Local (offline) formatter – direct preset application
  */
-export function localFormatter(raw, forcedRole, preset = "default", getRoleAndPreset) {
-  const requirement = raw;
-  const roleToUse = forcedRole || (getRoleAndPreset ? getRoleAndPreset(requirement).role : "expert assistant");
-  
-  if (PRESETS[preset]) {
-    return PRESETS[preset](roleToUse, requirement);
-  }
-  
-  // Fallback to default
-  return PRESETS.default(roleToUse, requirement);
+export function localFormatter(presetId, role, requirement) {
+  const preset = PRESETS[presetId] || PRESETS.default;
+  return preset(role, requirement);
 }
