@@ -20,12 +20,11 @@ Prompt-Crafter-Pro/
 │   ├── layouts/              # Layout and grid system
 │   ├── themes/               # Theme definitions
 │   ├── main.css              # Global stylesheet
-│   └── emergency-fix.css     # Temporary fixes / overrides
+│  
 │
 ├── js/                       # JavaScript source code
 │   ├── app.js                # Application bootstrap
-│   ├── emergency-fix.js      # Hotfix logic
-│   │
+│   │   
 │   ├── ai/                   # AI-related logic
 │   │   ├── ai-tools.js       # AI tool integrations
 │   │   ├── presets.js        # Prompt presets
