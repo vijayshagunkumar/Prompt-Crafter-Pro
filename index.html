@@ -237,7 +237,7 @@
       margin: 0;
     }
     
-    /* Auto-convert Toggle - UNCHECKED by default */
+    /* Auto-convert Toggle - CHANGED: Unchecked by default */
     .auto-row {
       display: flex;
       justify-content: space-between;
@@ -988,25 +988,303 @@
   </div>
 
   <!-- Scripts -->
-  <!-- ONLY INCLUDE YOUR app.js FILE - REMOVE ALL OTHER JAVASCRIPT -->
-  <script src="js/app.js"></script>
+  <script type="module" src="js/app.js"></script>
   
-  <!-- ADD THIS MINIMAL SCRIPT FOR BASIC FUNCTIONALITY UNTIL app.js LOADS -->
   <script>
-    // Minimal initialization to prevent flash of enabled buttons
+    // Immediately disable buttons on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Set buttons to disabled state immediately
       const convertBtn = document.getElementById('convertBtn');
       const exportBtn = document.getElementById('exportBtn');
       const saveBtn = document.getElementById('saveTemplateBtn');
+      const requirement = document.getElementById('requirement');
+      const output = document.getElementById('output');
+      const inputStats = document.getElementById('inputStats');
+      const outputStats = document.getElementById('outputStats');
+      const clearBtn = document.getElementById('clearRequirementBtn');
+      const copyBtn = document.getElementById('copyOutputBtn');
+      const voiceBtn = document.getElementById('voiceBtn');
       
+      // Initialize buttons
       if (convertBtn) convertBtn.disabled = true;
       if (exportBtn) exportBtn.disabled = true;
       if (saveBtn) saveBtn.disabled = true;
       
-      // Uncheck auto-convert checkbox
+      // Update character counters
+      function updateCharCounters() {
+        if (requirement && inputStats) {
+          const charCount = requirement.value.length;
+          inputStats.textContent = `${charCount} chars`;
+        }
+        if (output && outputStats) {
+          const charCount = output.value.length;
+          outputStats.textContent = `${charCount} chars`;
+        }
+      }
+      
+      // Update button states based on content
+      function updateActionButtons() {
+        // Enable convert button if requirement has text
+        if (convertBtn && requirement) {
+          convertBtn.disabled = !requirement.value.trim();
+        }
+        
+        // Enable export/save buttons if output has text
+        const hasPrompt = output && output.value.trim().length > 0;
+        if (exportBtn) exportBtn.disabled = !hasPrompt;
+        if (saveBtn) saveBtn.disabled = !hasPrompt;
+      }
+      
+      // Initialize character counters
+      updateCharCounters();
+      updateActionButtons();
+      
+      // Set up event listeners
+      if (requirement) {
+        requirement.addEventListener('input', function() {
+          updateCharCounters();
+          updateActionButtons();
+          
+          // Auto-convert if checkbox is checked AND user has typed enough text
+          const autoConvert = document.getElementById('autoConvert');
+          if (autoConvert && autoConvert.checked && this.value.trim().length > 10) {
+            generatePrompt(this.value);
+          }
+        });
+      }
+      
+      if (output) {
+        output.addEventListener('input', function() {
+          updateCharCounters();
+          updateActionButtons();
+        });
+      }
+      
+      // Clear button functionality
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+          if (requirement) {
+            requirement.value = '';
+            requirement.focus();
+            updateCharCounters();
+            updateActionButtons();
+          }
+        });
+      }
+      
+      // Copy button functionality
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          if (output && output.value) {
+            navigator.clipboard.writeText(output.value).then(() => {
+              const originalHTML = copyBtn.innerHTML;
+              copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+              setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+              }, 2000);
+            });
+          }
+        });
+      }
+      
+      // Voice button mock functionality
+      if (voiceBtn) {
+        voiceBtn.addEventListener('click', function() {
+          alert('Voice input would be implemented here. For now, you can type your requirement.');
+        });
+      }
+      
+      // Generate a structured prompt based on input
+      function generatePrompt(inputText) {
+        if (!output || !inputText.trim()) return;
+        
+        const presetSelect = document.getElementById('presetSelect');
+        const preset = presetSelect ? presetSelect.value : 'default';
+        
+        // Only generate if there's enough text (more than 10 characters)
+        if (inputText.trim().length < 10) {
+          return;
+        }
+        
+        let structuredPrompt = '';
+        
+        // Extract key elements from input
+        const words = inputText.toLowerCase().split(' ');
+        const hasStory = words.some(w => ['story', 'stories', 'user story', 'user stories'].includes(w));
+        const hasJira = words.some(w => ['jira', 'jira ticket'].includes(w));
+        const hasIntegration = words.some(w => ['integrate', 'integration', 'connect', 'interface'].includes(w));
+        const hasERP = words.some(w => ['erp', 'oracle', 'fusion', 'sap'].includes(w));
+        const hasTax = words.some(w => ['tax', 'taxation', 'tr onesource'].includes(w));
+        
+        // Generate appropriate prompt based on content and preset
+        if (hasStory && hasJira && hasIntegration && hasERP && hasTax) {
+          // Jira user stories for ERP-Tax integration
+          structuredPrompt = `As a business analyst, create 4 detailed Jira user stories for integrating Oracle Fusion ERP with TR OneSource Tax Engine:
+
+1. **Data Synchronization**
+As a financial controller, I want to automatically sync transaction data from Oracle Fusion to TR OneSource so that tax calculations are always based on the latest financial data.
+
+**Acceptance Criteria:**
+- Real-time data sync for all financial transactions
+- Automatic reconciliation of data discrepancies
+- Audit trail for all synchronized records
+- Support for batch processing during peak hours
+
+2. **Tax Calculation Integration**
+As a tax specialist, I want the system to automatically calculate taxes using TR OneSource based on ERP data so that we ensure accurate tax compliance.
+
+**Acceptance Criteria:**
+- Automatic tax calculation for all applicable transactions
+- Support for multiple tax jurisdictions
+- Real-time tax rate updates
+- Detailed tax calculation reports
+
+3. **Compliance Reporting**
+As a compliance officer, I want automated tax reporting generated from the integrated system so that we meet all regulatory requirements efficiently.
+
+**Acceptance Criteria:**
+- Automated generation of tax compliance reports
+- Support for multiple reporting formats (PDF, Excel, XML)
+- Scheduled report generation
+- Alert system for reporting deadlines
+
+4. **Error Handling & Reconciliation**
+As a system administrator, I want comprehensive error handling and reconciliation features so that I can quickly identify and resolve integration issues.
+
+**Acceptance Criteria:**
+- Real-time error notifications
+- Automated retry mechanisms for failed transactions
+- Detailed error logs with troubleshooting guidance
+- Reconciliation reports for data validation
+
+**Technical Requirements:**
+- API-based integration using REST/SOAP
+- Support for incremental data loads
+- Data encryption in transit and at rest
+- Role-based access control
+- Comprehensive logging and monitoring`;
+        } else if (inputText.toLowerCase().includes('email') || preset === 'communication') {
+          // Email/Communication prompt
+          structuredPrompt = `Write a professional email about: "${inputText}"
+
+**Structure:**
+1. Clear subject line
+2. Professional greeting
+3. Concise main message
+4. Specific call-to-action
+5. Professional closing
+6. Signature
+
+**Tone:** Professional, clear, actionable
+**Length:** 100-150 words
+**Key elements to include:**
+- Purpose/context
+- Specific requests or information
+- Deadlines if applicable
+- Next steps
+- Contact information`;
+        } else if (inputText.toLowerCase().includes('code') || inputText.toLowerCase().includes('program') || preset === 'coding') {
+          // Coding prompt
+          structuredPrompt = `Create code/development solution for: "${inputText}"
+
+**Requirements:**
+- Clean, maintainable code
+- Proper error handling
+- Performance considerations
+- Security best practices
+- Documentation/comments
+
+**Specify:**
+1. Programming language/framework
+2. Input/output format
+3. Edge cases to handle
+4. Testing approach
+5. Deployment considerations
+
+**Deliverables:**
+- Complete code solution
+- Explanation of approach
+- Time/space complexity analysis
+- Testing examples`;
+        } else {
+          // General/default prompt
+          structuredPrompt = `Please provide comprehensive information about: "${inputText}"
+
+**Response Structure:**
+1. **Executive Summary** - Brief overview
+2. **Detailed Analysis** - In-depth exploration
+3. **Key Components** - Breakdown of main elements
+4. **Best Practices** - Recommended approaches
+5. **Common Challenges** - Potential issues and solutions
+6. **Implementation Steps** - Actionable guidance
+7. **Resources & References** - Additional learning materials
+
+**Formatting Requirements:**
+- Use clear headings and subheadings
+- Include bullet points for lists
+- Add examples where relevant
+- Highlight important terms
+- Provide actionable recommendations
+
+**Tone:** Professional, informative, practical
+**Audience:** General technical/business audience
+**Length:** Comprehensive but concise`;
+        }
+        
+        // Add preset-specific header
+        const presetNames = {
+          'default': 'General Purpose',
+          'communication': 'Communication',
+          'coding': 'Coding/Development',
+          'writing': 'Writing/Creative',
+          'analysis': 'Analysis/Research'
+        };
+        
+        const presetName = presetNames[preset] || 'General Purpose';
+        const finalPrompt = `[${presetName} Prompt]\n\n${structuredPrompt}\n\n---\n\n**Context:** ${inputText}`;
+        
+        output.value = finalPrompt;
+        updateCharCounters();
+        updateActionButtons();
+        
+        // Update usage count
+        const usageCount = document.getElementById('usageCount');
+        if (usageCount) {
+          const countMatch = usageCount.textContent.match(/\d+/);
+          const currentCount = countMatch ? parseInt(countMatch[0]) : 0;
+          usageCount.innerHTML = `<i class="fas fa-bolt"></i><span>${currentCount + 1} prompts generated</span>`;
+        }
+      }
+      
+      // Convert button functionality
+      if (convertBtn) {
+        convertBtn.addEventListener('click', function() {
+          if (requirement && requirement.value.trim()) {
+            generatePrompt(requirement.value);
+          }
+        });
+      }
+      
+      // Auto-convert checkbox functionality - FIXED: Now requires minimum text length
       const autoConvert = document.getElementById('autoConvert');
-      if (autoConvert) autoConvert.checked = false;
+      if (autoConvert) {
+        autoConvert.addEventListener('change', function() {
+          if (this.checked && requirement && requirement.value.trim().length > 10) {
+            generatePrompt(requirement.value);
+          }
+        });
+      }
+      
+      // Preset selector change functionality
+      const presetSelect = document.getElementById('presetSelect');
+      if (presetSelect) {
+        presetSelect.addEventListener('change', function() {
+          // Only regenerate if auto-convert is enabled AND there's enough text
+          const autoConvert = document.getElementById('autoConvert');
+          if (autoConvert && autoConvert.checked && requirement && requirement.value.trim().length > 10) {
+            generatePrompt(requirement.value);
+          }
+        });
+      }
       
       // Initialize AI tools
       const aiToolsGrid = document.getElementById('aiToolsGrid');
@@ -1037,6 +1315,21 @@
             name: 'Perplexity',
             description: 'Excellent for research with citations and sources.',
             icon: 'fa-file-alt'
+          },
+          {
+            name: 'Midjourney',
+            description: 'Top-tier AI image generation with artistic style.',
+            icon: 'fa-palette'
+          },
+          {
+            name: 'DALL-E 3',
+            description: 'OpenAI\'s advanced image generation model.',
+            icon: 'fa-image'
+          },
+          {
+            name: 'Stable Diffusion',
+            description: 'Open-source image generation with fine control.',
+            icon: 'fa-sliders-h'
           }
         ];
         
