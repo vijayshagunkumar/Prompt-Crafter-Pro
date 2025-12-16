@@ -1,9 +1,17 @@
 // Notification system
 export class NotificationManager {
-  constructor(containerId = 'notification') {
-    this.container = document.getElementById(containerId);
+  constructor() {
+    this.container = document.getElementById('notification');
     this.textElement = document.getElementById('notificationText');
     this.timeout = null;
+    this.setup();
+  }
+  
+  setup() {
+    if (!this.container || !this.textElement) {
+      console.warn('Notification elements not found');
+      return;
+    }
   }
   
   show(message, type = 'success', duration = 3000) {
@@ -21,6 +29,25 @@ export class NotificationManager {
     // Set message and type
     this.textElement.textContent = message;
     this.container.className = `notification notification-${type}`;
+    
+    // Set icon based on type
+    const icon = this.container.querySelector('i');
+    if (icon) {
+      switch(type) {
+        case 'success':
+          icon.className = 'fas fa-check-circle';
+          break;
+        case 'error':
+          icon.className = 'fas fa-exclamation-circle';
+          break;
+        case 'info':
+          icon.className = 'fas fa-info-circle';
+          break;
+        case 'warning':
+          icon.className = 'fas fa-exclamation-triangle';
+          break;
+      }
+    }
     
     // Show notification
     this.container.style.display = 'flex';
@@ -55,6 +82,10 @@ export class NotificationManager {
   
   info(message, duration = 3000) {
     this.show(message, 'info', duration);
+  }
+  
+  warning(message, duration = 3000) {
+    this.show(message, 'warning', duration);
   }
 }
 
