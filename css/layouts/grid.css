@@ -36,6 +36,7 @@
 .grid {
   display: grid;
   gap: var(--space-lg);
+    align-items: start;   /* ✅ CRITICAL FIX */
 }
 
 .grid-cols-1 {
