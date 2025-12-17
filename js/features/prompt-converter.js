@@ -3,6 +3,8 @@ import { notifications } from '../ui/notifications.js';
 
 export class PromptConverter {
     constructor() {
+        this.isConverting = false;
+        this.lastConversionPromise = null;
         this.setup();
     }
     
@@ -21,8 +23,17 @@ export class PromptConverter {
             autoToggle.checked = appState.autoConvertEnabled;
             
             let timeout;
+            
+            // Auto-clear Card 2 when Card 1 is empty
             input.addEventListener('input', () => {
-                if (autoToggle.checked) {
+                const text = input.value.trim();
+                
+                // Clear Card 2 if Card 1 is empty
+                if (!text) {
+                    this.clearGeneratedPrompt();
+                }
+                
+                if (autoToggle.checked && text) {
                     clearTimeout(timeout);
                     timeout = setTimeout(() => this.convert(), 1000);
                 }
@@ -36,7 +47,42 @@ export class PromptConverter {
         }
     }
     
-    convert() {
+    clearGeneratedPrompt() {
+        const output = document.getElementById('output');
+        if (output) {
+            output.value = '';
+            
+            // Update counters
+            this.updateCounters();
+            
+            // Disable AI buttons
+            document.querySelectorAll('.launch-btn').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            // Hide success badge
+            const badge = document.getElementById('convertedBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+            
+            // Hide voice output button
+            const voiceOutputBtn = document.getElementById('voiceOutputBtn');
+            if (voiceOutputBtn) {
+                voiceOutputBtn.style.display = 'none';
+            }
+            
+            // Reset app state
+            appState.isConverted = false;
+            appState.lastConvertedText = '';
+            appState.lastRole = '';
+        }
+    }
+    
+    async convert() {
+        // Prevent multiple simultaneous conversions
+        if (this.isConverting) return;
+        
         const input = document.getElementById('requirement');
         const output = document.getElementById('output');
         
@@ -49,53 +95,84 @@ export class PromptConverter {
             return;
         }
         
-        // Show loading state
-        const convertBtn = document.getElementById('convertBtn');
-        if (convertBtn) {
+        this.isConverting = true;
+        
+        try {
+            // Show loading state - FIX: Proper loader with immediate stop
+            const convertBtn = document.getElementById('convertBtn');
             const originalHTML = convertBtn.innerHTML;
+            
+            // Set loading state
             convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             convertBtn.disabled = true;
             
-            // Simulate processing time
-            setTimeout(() => {
-                const { role } = this.analyzeText(requirement);
-                const optimizedPrompt = this.generatePrompt(requirement, role);
-                
-                output.value = optimizedPrompt;
-                
-                // Update app state
-                appState.isConverted = true;
-                appState.lastConvertedText = optimizedPrompt;
-                appState.lastRole = role;
-                appState.incrementUsage();
-                
-                // Enable launch buttons
-                document.querySelectorAll('.launch-btn').forEach(btn => {
-                    btn.disabled = false;
-                });
-                
-                // Show success badge
-                const badge = document.getElementById('convertedBadge');
-                if (badge) {
-                    badge.style.display = 'flex';
-                }
-                
-                // Update counters
-                this.updateCounters();
-                
-                // Update usage display
-                const usageElement = document.getElementById('usageCount');
-                if (usageElement) {
-                    usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts`;
-                }
-                
-                // Reset button
-                convertBtn.innerHTML = originalHTML;
+            // Create conversion promise
+            this.lastConversionPromise = new Promise((resolve) => {
+                setTimeout(() => {
+                    const { role, preset, label } = this.analyzeText(requirement);
+                    const optimizedPrompt = this.generatePrompt(requirement, role);
+                    
+                    // Update output
+                    output.value = optimizedPrompt;
+                    
+                    // Update app state
+                    appState.isConverted = true;
+                    appState.lastConvertedText = optimizedPrompt;
+                    appState.lastRole = role;
+                    appState.incrementUsage();
+                    
+                    // Enable launch buttons
+                    document.querySelectorAll('.launch-btn').forEach(btn => {
+                        btn.disabled = false;
+                    });
+                    
+                    // Show success badge
+                    const badge = document.getElementById('convertedBadge');
+                    if (badge) {
+                        badge.style.display = 'flex';
+                    }
+                    
+                    // Update counters
+                    this.updateCounters();
+                    
+                    // Update usage display
+                    const usageElement = document.getElementById('usageCount');
+                    if (usageElement) {
+                        usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts`;
+                    }
+                    
+                    // Show voice output button
+                    const voiceOutputBtn = document.getElementById('voiceOutputBtn');
+                    if (voiceOutputBtn) {
+                        voiceOutputBtn.style.display = 'block';
+                    }
+                    
+                    // FIX: Stop loader immediately
+                    convertBtn.innerHTML = originalHTML;
+                    convertBtn.disabled = false;
+                    
+                    // FIX: Show only ONE success notification
+                    notifications.success('Prompt generated successfully!', 3000);
+                    
+                    resolve();
+                }, 800); // Simulated processing time
+            });
+            
+            await this.lastConversionPromise;
+            
+        } catch (error) {
+            console.error('Conversion error:', error);
+            notifications.error('Failed to generate prompt');
+            
+            // Reset button on error
+            const convertBtn = document.getElementById('convertBtn');
+            if (convertBtn) {
+                convertBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
                 convertBtn.disabled = false;
-                
-                notifications.success('Prompt generated successfully!');
-                
-            }, 800);
+            }
+        } finally {
+            this.isConverting = false;
+            this.lastConversionPromise = null;
         }
     }
     
