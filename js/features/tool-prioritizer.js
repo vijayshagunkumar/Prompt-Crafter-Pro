@@ -1,282 +1,111 @@
-import { appState } from '../core/app-state.js';
-import { notifications } from '../ui/notifications.js';
-import { toolPrioritizer } from './tool-prioritizer.js'; // ADD THIS IMPORT
-
-export class PromptConverter {
+// AI Tool Prioritization - Sorts AI tools based on prompt content
+class ToolPrioritizer {
     constructor() {
-        this.isConverting = false;
-        this.lastConversionPromise = null;
-        this.setup();
+        this.toolScores = {
+            // Writing & General Purpose
+            'chatgptBtn': { keywords: ['general', 'writing', 'email', 'blog', 'article', 'content'], weight: 10 },
+            'claudeBtn': { keywords: ['writing', 'creative', 'story', 'analysis', 'detailed'], weight: 9 },
+            'geminiBtn': { keywords: ['google', 'integrated', 'search', 'research'], weight: 8 },
+            
+            // Research & Analysis
+            'perplexityBtn': { keywords: ['research', 'analysis', 'study', 'report', 'citation'], weight: 9 },
+            
+            // Image Generation
+            'dalleBtn': { keywords: ['image', 'picture', 'photo', 'visual', 'graphic', 'design', 'art'], weight: 10 },
+            'midjourneyBtn': { keywords: ['art', 'creative', 'design', 'visual', 'image', 'picture'], weight: 9 },
+            
+            // Coding & Technical
+            'deepseekBtn': { keywords: ['code', 'programming', 'developer', 'python', 'javascript', 'technical'], weight: 10 },
+            'copilotBtn': { keywords: ['code', 'developer', 'microsoft', 'office', 'technical'], weight: 8 },
+            
+            // Real-time & Business
+            'grokBtn': { keywords: ['real-time', 'current', 'news', 'trending', 'x', 'twitter'], weight: 8 }
+        };
     }
     
-    setup() {
-        // Manual convert button
-        const convertBtn = document.getElementById('convertBtn');
-        if (convertBtn) {
-            convertBtn.addEventListener('click', () => this.convert());
-        }
+    analyzePrompt(promptText) {
+        const text = promptText.toLowerCase();
+        const scores = {};
         
-        // Auto-convert on input if enabled
-        const input = document.getElementById('requirement');
-        const autoToggle = document.getElementById('autoConvert');
-        
-        if (input && autoToggle) {
-            autoToggle.checked = appState.autoConvertEnabled;
+        // Calculate scores for each tool
+        Object.keys(this.toolScores).forEach(toolId => {
+            const tool = this.toolScores[toolId];
+            let score = 0;
             
-            let timeout;
-            
-            // Auto-clear Card 2 when Card 1 is empty
-            input.addEventListener('input', () => {
-                const text = input.value.trim();
-                
-                // Clear Card 2 if Card 1 is empty
-                if (!text) {
-                    this.clearGeneratedPrompt();
+            // Check for keyword matches
+            tool.keywords.forEach(keyword => {
+                if (text.includes(keyword)) {
+                    score += tool.weight;
                 }
-                
-                if (autoToggle.checked && text) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => this.convert(), 1000);
+            });
+            
+            scores[toolId] = score;
+        });
+        
+        // Sort tools by score (descending)
+        const sortedTools = Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
+        
+        return {
+            bestTool: sortedTools[0],
+            scores: scores,
+            sortedTools: sortedTools
+        };
+    }
+    
+    prioritizeTools(promptText) {
+        const analysis = this.analyzePrompt(promptText);
+        const launchList = document.querySelector('.launch-list');
+        
+        if (!launchList) return;
+        
+        // Get all launch buttons
+        const buttons = Array.from(launchList.querySelectorAll('.launch-btn'));
+        
+        // Sort buttons based on priority
+        buttons.sort((a, b) => {
+            const scoreA = analysis.scores[a.id] || 0;
+            const scoreB = analysis.scores[b.id] || 0;
+            return scoreB - scoreA;
+        });
+        
+        // Clear and re-add in sorted order
+        launchList.innerHTML = '';
+        buttons.forEach(btn => {
+            launchList.appendChild(btn);
+            
+            // Add visual indicator for best tool (first one)
+            if (btn.id === analysis.bestTool) {
+                btn.classList.add('best-tool');
+                // Add crown icon
+                const icon = btn.querySelector('.launch-icon');
+                if (icon && !icon.querySelector('.crown-icon')) {
+                    const crown = document.createElement('span');
+                    crown.className = 'crown-icon';
+                    crown.innerHTML = '👑';
+                    crown.style.position = 'absolute';
+                    crown.style.top = '-8px';
+                    crown.style.right = '-8px';
+                    crown.style.fontSize = '12px';
+                    crown.style.zIndex = '5';
+                    icon.style.position = 'relative';
+                    icon.appendChild(crown);
                 }
-            });
-            
-            // Update app state when toggle changes
-            autoToggle.addEventListener('change', (e) => {
-                appState.autoConvertEnabled = e.target.checked;
-                appState.saveSettings();
-            });
-        }
-    }
-    
-    clearGeneratedPrompt() {
-        const output = document.getElementById('output');
-        if (output) {
-            output.value = '';
-            
-            // Update counters
-            this.updateCounters();
-            
-            // Disable AI buttons
-            document.querySelectorAll('.launch-btn').forEach(btn => {
-                btn.disabled = true;
-            });
-            
-            // Hide success badge
-            const badge = document.getElementById('convertedBadge');
-            if (badge) {
-                badge.style.display = 'none';
+            } else {
+                btn.classList.remove('best-tool');
+                // Remove crown if exists
+                const crown = btn.querySelector('.crown-icon');
+                if (crown) {
+                    crown.remove();
+                }
             }
-            
-            // Hide voice output button
-            const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-            if (voiceOutputBtn) {
-                voiceOutputBtn.style.display = 'none';
-            }
-            
-            // Reset app state
-            appState.isConverted = false;
-            appState.lastConvertedText = '';
-            appState.lastRole = '';
-        }
-    }
-    
-    async convert() {
-        // Prevent multiple simultaneous conversions
-        if (this.isConverting) return;
+        });
         
-        const input = document.getElementById('requirement');
-        const output = document.getElementById('output');
-        
-        if (!input || !output) return;
-        
-        const requirement = input.value.trim();
-        
-        if (!requirement) {
-            notifications.error('Please enter your idea first');
-            return;
-        }
-        
-        this.isConverting = true;
-        
-        try {
-            // Show loading state - FIX: Proper loader with immediate stop
-            const convertBtn = document.getElementById('convertBtn');
-            const originalHTML = convertBtn.innerHTML;
-            
-            // Set loading state
-            convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            convertBtn.disabled = true;
-            
-            // Create conversion promise
-            this.lastConversionPromise = new Promise((resolve) => {
-                setTimeout(() => {
-                    const { role, preset, label } = this.analyzeText(requirement);
-                    const optimizedPrompt = this.generatePrompt(requirement, role);
-                    
-                    // Update output
-                    output.value = optimizedPrompt;
-                    
-                    // Update app state
-                    appState.isConverted = true;
-                    appState.lastConvertedText = optimizedPrompt;
-                    appState.lastRole = role;
-                    appState.incrementUsage();
-                    
-                    // Enable launch buttons
-                    document.querySelectorAll('.launch-btn').forEach(btn => {
-                        btn.disabled = false;
-                    });
-                    
-                    // PRIORITIZE AI TOOLS BASED ON CONTENT - ADD THIS
-                    const bestTool = toolPrioritizer.prioritizeTools(requirement);
-                    
-                    // Show success badge
-                    const badge = document.getElementById('convertedBadge');
-                    if (badge) {
-                        badge.style.display = 'flex';
-                    }
-                    
-                    // Update counters
-                    this.updateCounters();
-                    
-                    // Update usage display
-                    const usageElement = document.getElementById('usageCount');
-                    if (usageElement) {
-                        usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts`;
-                    }
-                    
-                    // Show voice output button
-                    const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-                    if (voiceOutputBtn) {
-                        voiceOutputBtn.style.display = 'block';
-                    }
-                    
-                    // FIX: Stop loader immediately
-                    convertBtn.innerHTML = originalHTML;
-                    convertBtn.disabled = false;
-                    
-                    // FIX: Show only ONE success notification
-                    notifications.success('Prompt generated successfully!', 3000);
-                    
-                    resolve();
-                }, 800); // Simulated processing time
-            });
-            
-            await this.lastConversionPromise;
-            
-        } catch (error) {
-            console.error('Conversion error:', error);
-            notifications.error('Failed to generate prompt');
-            
-            // Reset button on error
-            const convertBtn = document.getElementById('convertBtn');
-            if (convertBtn) {
-                convertBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
-                convertBtn.disabled = false;
-            }
-        } finally {
-            this.isConverting = false;
-            this.lastConversionPromise = null;
-        }
-    }
-    
-    analyzeText(text) {
-        const lower = (text || "").toLowerCase();
-        let role = "expert assistant";
-        let preset = "default";
-        let label = "General";
-      
-        // Email detection
-        if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
-          role = "expert email writer";
-          preset = "default";
-          label = "Email";
-        } 
-        // Code detection
-        else if (/code|program|script|develop|software|function|python|javascript|typescript|java|c#|sql|api|bug fix|refactor/i.test(lower)) {
-          role = "expert developer";
-          preset = "chatgpt";
-          label = "Code";
-        } 
-        // Analysis detection
-        else if (/analyze|analysis|market|research|evaluate|assessment|review|trend|report|insight|metrics/i.test(lower)) {
-          role = "expert analyst";
-          preset = "detailed";
-          label = "Analysis";
-        } 
-        // Writing detection
-        else if (/blog|article|story|linkedin post|caption|copywriting|content/i.test(lower)) {
-          role = "expert content writer";
-          preset = "default";
-          label = "Writing";
-        } 
-        // Fitness detection
-        else if (/workout|exercise|fitness|gym|diet|meal plan|training plan/i.test(lower)) {
-          role = "expert fitness trainer";
-          preset = "detailed";
-          label = "Workout";
-        } 
-        // Business detection
-        else if (/strategy|business plan|roadmap|pitch deck|proposal|go[- ]to[- ]market|g2m/i.test(lower)) {
-          role = "expert business consultant";
-          preset = "detailed";
-          label = "Business";
-        } 
-        // Education detection
-        else if (/teach|explain|lesson|tutorial|guide|training material|curriculum/i.test(lower)) {
-          role = "expert educator";
-          preset = "detailed";
-          label = "Education";
-        }
-        // Creative detection
-        else if (/creative|design|logo|brand|marketing|ad|campaign/i.test(lower)) {
-          role = "expert creative director";
-          preset = "detailed";
-          label = "Creative";
-        }
-      
-        return { role, preset, label };
-    }
-    
-    generatePrompt(requirement, role) {
-        // Build prompt structure using the detected role
-        const prompt = `Act as a ${role}.
-
-TASK: ${requirement}
-
-INSTRUCTIONS:
-1. Provide a comprehensive and detailed response
-2. Structure your answer logically with clear sections
-3. Use examples and practical applications where relevant
-4. Include actionable advice and next steps
-5. Maintain a professional, helpful tone
-
-Please proceed with the task and provide your complete response below:`;
-
-        return prompt;
-    }
-    
-    updateCounters() {
-        const output = document.getElementById('output');
-        if (!output) return;
-        
-        const text = output.value;
-        const charCount = document.getElementById('charCount');
-        const wordCount = document.getElementById('wordCount');
-        const lineCount = document.getElementById('lineCount');
-        
-        if (charCount) {
-            charCount.textContent = `${text.length} chars`;
-        }
-        
-        if (wordCount) {
-            wordCount.textContent = `${text.split(/\s+/).filter(w => w.length > 0).length} words`;
-        }
-        
-        if (lineCount) {
-            lineCount.textContent = `${text.split('\n').length} lines`;
-        }
+        return analysis.bestTool;
     }
 }
 
-export const promptConverter = new PromptConverter();
+// Create instance and export it
+const toolPrioritizer = new ToolPrioritizer();
+
+// Export both the class and the instance
+export { ToolPrioritizer, toolPrioritizer };
