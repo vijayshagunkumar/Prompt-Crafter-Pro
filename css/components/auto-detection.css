@@ -1,23 +1,48 @@
 /* ===== AUTO-DETECTION COMPONENT - FIXED ===== */
 
-/* Container for auto-detection */
+/* Container for auto-detection - FIXED HEIGHT */
 .auto-detection-container {
   margin-bottom: 20px;
   min-height: 60px;
+  max-height: 120px;
+  overflow: hidden;
 }
 
-/* Intent badge - Fixed visibility */
+/* Intent badge - Fixed height with scroll */
 .intent-badge {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(30, 41, 59, 0.9);
   border: 2px solid #3b82f6;
   border-radius: 12px;
   animation: slideDown 0.3s ease-out;
   backdrop-filter: blur(10px);
   margin-bottom: 16px;
+  max-height: 100px; /* Fixed max height */
+  overflow-y: auto; /* Scroll when content overflows */
+  overflow-x: hidden;
+  align-content: flex-start;
+}
+
+/* Custom scrollbar */
+.intent-badge::-webkit-scrollbar {
+  width: 4px;
+}
+
+.intent-badge::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 2px;
+}
+
+.intent-badge::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 2px;
+}
+
+.intent-badge::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
 }
 
 /* Intent items - Better visibility */
@@ -33,6 +58,7 @@
   animation: fadeIn 0.4s ease-out;
   transition: all 0.2s;
   min-height: 36px;
+  flex-shrink: 0;
 }
 
 /* Different intent types with better contrast */
@@ -85,6 +111,7 @@
   border: 1px solid rgba(139, 92, 246, 0.4);
   color: #ddd6fe;
   text-transform: capitalize;
+  flex-shrink: 0;
 }
 
 .tone-badge[data-tone="professional"] {
@@ -124,6 +151,7 @@
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid #475569;
   color: #cbd5e1;
+  flex-shrink: 0;
 }
 
 .attribute-tag[data-attribute="character"] {
@@ -159,6 +187,8 @@
   color: #60a5fa;
   font-size: 14px;
   font-weight: 600;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 /* Detection grid for multiple attributes */
@@ -167,6 +197,7 @@
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
   margin-top: 12px;
+  width: 100%;
 }
 
 .detection-category {
@@ -232,8 +263,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .auto-detection-container {
+    max-height: 100px;
+  }
+  
   .intent-badge {
     padding: 10px 14px;
+    max-height: 90px;
   }
   
   .intent-item {
@@ -248,5 +284,31 @@
   
   .detection-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .auto-detection-container {
+    max-height: 80px;
+  }
+  
+  .intent-badge {
+    padding: 8px 10px;
+    max-height: 70px;
+  }
+  
+  .intent-item {
+    padding: 5px 10px;
+    font-size: 12px;
+    min-height: 32px;
+  }
+  
+  .tone-badge {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .detection-grid {
+    gap: 8px;
   }
 }
