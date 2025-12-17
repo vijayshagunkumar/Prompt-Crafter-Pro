@@ -1,4 +1,4 @@
-/* ===== MAIN STYLES ===== */
+/* ===== MAIN STYLES - FIXED VERSION ===== */
 
 /* Root layout */
 body {
@@ -7,6 +7,8 @@ body {
   font-family: 'Inter', sans-serif;
   color: #f1f5f9;
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .page {
@@ -17,29 +19,13 @@ body {
   position: relative;
 }
 
-/* Hero section - FIXED: No purple */
+/* Hero section */
 .hero {
   background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
   padding: 32px;
   border-bottom: 1px solid #334155;
   position: relative;
   overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  animation: shine 8s infinite linear;
-}
-
-@keyframes shine {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
 }
 
 .hero-top {
@@ -109,47 +95,71 @@ body {
   background: #0f172a;
 }
 
+/* FIX: Cards grid - prevent 3rd card from going to next row */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns */
   gap: 24px;
   width: 100%;
 }
 
-/* Cards - FIXED: Distinguishable */
+/* FIX: Textarea size */
+.textarea-idea,
+.output-textarea {
+  width: 100%;
+  min-height: 180px; /* Increased height */
+  padding: 20px;
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  color: #f1f5f9;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.3s;
+}
+
+/* Cards - with proper positioning */
 .step-card {
   background: #1e293b;
   border: 2px solid #334155;
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* FIX: Remove absolute positioning that causes dancing */
+  position: static !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  width: auto !important;
+  height: auto !important;
 }
 
 /* Different border colors for each card */
 .step-card:nth-child(1) {
-  border-top: 4px solid #3b82f6; /* Blue */
+  border-top: 4px solid #3b82f6;
   border-left: 4px solid #3b82f6;
 }
 
 .step-card:nth-child(2) {
-  border-top: 4px solid #10b981; /* Green */
+  border-top: 4px solid #10b981;
   border-left: 4px solid #10b981;
 }
 
 .step-card:nth-child(3) {
-  border-top: 4px solid #f59e0b; /* Amber */
+  border-top: 4px solid #f59e0b;
   border-left: 4px solid #f59e0b;
 }
 
 .step-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  border-color: #3b82f6;
 }
 
 /* Step headers */
@@ -207,42 +217,86 @@ body {
   margin: 0;
 }
 
-/* Text areas */
+/* Text areas wrapper */
 .textarea-wrapper {
   position: relative;
   width: 100%;
+  margin-bottom: 20px;
 }
 
-.textarea-idea,
-.output-textarea {
+/* FIX: AI Tools Grid - Single column inside card */
+.launch-list {
+  display: grid;
+  grid-template-columns: 1fr !important; /* SINGLE COLUMN */
+  gap: 12px;
+  margin-top: 20px;
   width: 100%;
-  min-height: 150px;
-  padding: 20px;
-  background: #0f172a;
+}
+
+/* Launch buttons */
+.launch-btn {
+  background: #1e293b;
   border: 2px solid #334155;
   border-radius: 12px;
-  color: #f1f5f9;
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  line-height: 1.6;
-  resize: vertical;
-  transition: all 0.3s;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
 }
 
-.textarea-idea:focus,
-.output-textarea:focus {
-  outline: none;
+.launch-btn:hover:not(:disabled) {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-.textarea-idea::placeholder {
-  color: #94a3b8;
+.launch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(50%);
 }
 
-.output-textarea {
-  background: #1e293b;
-  cursor: default;
+.launch-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.launch-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.launch-name {
+  font-weight: 600;
+  color: #f1f5f9;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.launch-sub {
+  font-size: 12px;
+  color: #cbd5e1;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Footer */
@@ -310,87 +364,51 @@ body {
   opacity: 1;
 }
 
-/* Scan line animation - FIXED: Blue not purple */
-.scan-line {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    #3b82f6 50%, 
-    transparent 100%);
-  z-index: 9999;
-  animation: scan 3s linear infinite;
-  pointer-events: none;
-}
+/* ===== FIX: CARD MAXIMIZE - NO DANCING ===== */
 
-@keyframes scan {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(100vh); }
-}
-
-/* Loading states */
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ===== FIXES ===== */
-
-/* AI Tools Grid - FIXED: Single column by default */
-.launch-list {
-  display: grid;
-  grid-template-columns: 1fr; /* Single column */
-  gap: 12px;
-  margin-top: 20px;
-  width: 100%;
-}
-
-/* Responsive AI tools grid */
-@media (min-width: 768px) {
-  .launch-list {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet */
-  }
-}
-
-@media (min-width: 1024px) {
-  .launch-list {
-    grid-template-columns: repeat(3, 1fr); /* 3 columns on desktop */
-  }
-}
-
-/* Maximize Fix - NO TRANSPARENCY */
-.maximized {
+/* When card is maximized - FIXED VERSION */
+.step-card.maximized {
   position: fixed !important;
-  top: 40px !important;
-  left: 40px !important;
-  width: calc(100vw - 80px) !important;
-  height: calc(100vh - 80px) !important;
-  z-index: 1000 !important;
-  background: #1e293b !important; /* SOLID background */
-  backdrop-filter: blur(20px) !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 90vw !important;
+  height: 90vh !important;
+  z-index: 9999 !important;
+  background: #1e293b !important;
   border: 3px solid #3b82f6 !important;
   box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8) !important;
   border-radius: 24px !important;
   margin: 0 !important;
   padding: 40px !important;
   opacity: 1 !important;
+  animation: maximizeCard 0.3s ease-out;
+  overflow: auto !important;
 }
 
-/* Overlay - SOLID background */
+/* Overlay */
 .card-maximize-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.95) !important; /* SOLID dark blue */
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(10px);
-  z-index: 999;
+  z-index: 9998;
   animation: fadeIn 0.3s ease;
   cursor: pointer;
+}
+
+@keyframes maximizeCard {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 @keyframes fadeIn {
@@ -398,42 +416,167 @@ body {
   to { opacity: 1; }
 }
 
-/* Ensure cards are solid */
-.step-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #1e293b;
-  border-radius: inherit;
-  z-index: -1;
-  pointer-events: none;
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet */
+  }
+  
+  .step-card:nth-child(3) {
+    grid-column: span 2; /* Make 3rd card take full width */
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .workflow {
+    padding: 24px;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 160px;
+  }
 }
 
-/* Responsive fixes */
-@media (min-width: 1600px) {
+/* Mobile */
+@media (max-width: 768px) {
   .cards-grid {
-    grid-template-columns: repeat(3, minmax(400px, 1fr));
+    grid-template-columns: 1fr; /* 1 column on mobile */
+  }
+  
+  .step-card:nth-child(3) {
+    grid-column: span 1;
+  }
+  
+  .hero {
+    padding: 24px;
+  }
+  
+  .hero-top {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .hero-brand {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  
+  .global-reset-btn,
+  .settings-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .workflow {
+    padding: 20px;
+  }
+  
+  .step-card {
+    padding: 20px;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 140px;
+    padding: 16px;
+  }
+  
+  .footer {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    padding: 16px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .cards-grid {
+    gap: 16px;
+  }
+  
+  .step-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  
+  .step-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .step-header-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 120px;
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+  
+  .launch-btn {
+    padding: 14px;
+  }
+  
+  .launch-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  
+  .step-card.maximized {
+    width: 95vw !important;
+    height: 95vh !important;
+    padding: 24px !important;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1440px) {
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .cards-grid {
+    gap: 32px;
   }
   
   .step-card {
     padding: 32px;
   }
-}
-
-@media (min-width: 2000px) {
-  .page {
-    max-width: 1800px;
-    margin: 0 auto;
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 200px;
+    padding: 24px;
+    font-size: 1.05rem;
   }
 }
 
 /* Fix ChatGPT icon */
 .fa-openai {
-  font-size: 20px !important;
-  color: #10a37f !important;
+  font-size: 20px;
+  color: #10a37f;
+}
+
+/* Loading states */
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Remove any purple color references */
