@@ -205,175 +205,6 @@
   to { opacity: 1; }
 }
 
-/* ===== AI TOOLS LAYOUT - CARD 3 FIX ===== */
-
-/* Mobile: Single column */
-.step-card:nth-child(3) .launch-list {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 8px !important;
-  margin-top: 16px;
-  width: 100%;
-  max-height: 300px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 8px;
-  flex: 1;
-}
-
-/* Tablet: 2 columns */
-@media (min-width: 768px) {
-  .step-card:nth-child(3) .launch-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    max-height: 280px;
-  }
-}
-
-/* Desktop: 2 columns with more height */
-@media (min-width: 1024px) {
-  .step-card:nth-child(3) .launch-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-    max-height: 320px;
-  }
-  
-  .step-card:nth-child(3) .launch-btn {
-    min-height: 60px;
-    padding: 12px;
-  }
-}
-
-/* Custom scrollbar */
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.3);
-  border-radius: 3px;
-}
-
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar-thumb {
-  background: #3b82f6;
-  border-radius: 3px;
-}
-
-/* Launch buttons - make sure text is visible */
-.launch-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: left;
-  min-height: 56px;
-  overflow: hidden;
-}
-
-.launch-btn:hover:not(:disabled) {
-  border-color: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.launch-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(50%);
-}
-
-.launch-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: #0f172a;
-  border: 1px solid #334155;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.launch-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.launch-name {
-  font-weight: 600;
-  color: #f1f5f9;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.launch-sub {
-  font-size: 12px;
-  color: #cbd5e1;
-  opacity: 0.8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Specific tool colors - COMPACT */
-.launch-btn.launch-chatgpt .launch-icon {
-  background: rgba(16, 163, 127, 0.1);
-  color: #10a37f;
-}
-
-.launch-btn.launch-claude .launch-icon {
-  background: rgba(212, 165, 116, 0.1);
-  color: #d4a574;
-}
-
-.launch-btn.launch-gemini .launch-icon {
-  background: rgba(66, 133, 244, 0.1);
-  color: #4285f4;
-}
-
-.launch-btn.launch-perplexity .launch-icon {
-  background: rgba(155, 89, 182, 0.1);
-  color: #9b59b6;
-}
-
-.launch-btn.launch-deepseek .launch-icon {
-  background: rgba(52, 152, 219, 0.1);
-  color: #3498db;
-}
-
-.launch-btn.launch-copilot .launch-icon {
-  background: rgba(0, 120, 215, 0.1);
-  color: #0078d7;
-}
-
-.launch-btn.launch-grok .launch-icon {
-  background: rgba(243, 118, 38, 0.1);
-  color: #f37626;
-}
-
-.launch-btn.launch-dalle .launch-icon {
-  background: rgba(255, 107, 107, 0.1);
-  color: #ff6b6b;
-}
-
-.launch-btn.launch-midjourney .launch-icon {
-  background: rgba(157, 78, 221, 0.1);
-  color: #9d4edd;
-}
-
 /* ===== FIXED ANALYSIS RESULTS BOX ===== */
 
 /* Analysis Results container - FIXED HEIGHT WITH SCROLL */
@@ -513,10 +344,6 @@
     padding: 20px !important;
   }
   
-  .step-card:nth-child(3) .launch-list {
-    max-height: 240px;
-  }
-  
   .auto-detection-container {
     max-height: 100px;
   }
@@ -547,17 +374,6 @@
     right: 8px;
   }
   
-  .launch-btn {
-    padding: 8px;
-    min-height: 52px;
-  }
-  
-  .launch-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-  }
-  
   .auto-detection-container {
     max-height: 80px;
   }
@@ -583,18 +399,6 @@
 
 .step-card {
   animation: cardAppear 0.4s ease-out;
-}
-
-/* Ensure Card 3 fits in the row */
-@media (min-width: 1025px) {
-  .step-card:nth-child(3) {
-    min-width: 280px;
-    max-width: 320px;
-  }
-  
-  .step-card:nth-child(3) .launch-list {
-    max-height: 320px;
-  }
 }
 
 /* Best tool styling */
