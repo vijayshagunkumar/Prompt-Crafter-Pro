@@ -3,192 +3,162 @@ import { notifications } from '../ui/notifications.js';
 export class CardMaximizer {
   constructor() {
     this.maximizedCard = null;
-    this.originalStates = new Map();
+    this.originalStyles = new Map();
     this.setup();
   }
   
   setup() {
-    // Add maximize buttons to card headers
-    this.addMaximizeButtons();
-    
-    // Setup keyboard shortcuts
+    setTimeout(() => this.addMaximizeButtons(), 100);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.maximizedCard) {
-        this.restoreCard(this.maximizedCard);
-      }
+      if (e.key === 'Escape' && this.maximizedCard) this.restoreCurrentCard();
     });
   }
   
   addMaximizeButtons() {
-    const cards = document.querySelectorAll('.step-card');
-    
-    cards.forEach((card, index) => {
-      const header = card.querySelector('.step-header');
+    document.querySelectorAll('.step-card').forEach((card, index) => {
+      const header = card.querySelector('.step-header-main');
       if (!header) return;
       
-      // Create maximize button
-      const maximizeBtn = document.createElement('button');
-      maximizeBtn.className = 'maximize-card-btn';
-      maximizeBtn.title = 'Maximize card';
-      maximizeBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
-      maximizeBtn.dataset.cardIndex = index;
+      // Remove existing button if any
+      const existingBtn = header.querySelector('.maximize-card-btn');
+      if (existingBtn) existingBtn.remove();
       
-      maximizeBtn.addEventListener('click', (e) => {
+      // Create new button
+      const btn = document.createElement('button');
+      btn.className = 'maximize-card-btn';
+      btn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+      btn.title = 'Maximize card';
+      btn.onclick = (e) => {
         e.stopPropagation();
-        this.toggleCardMaximize(card, index);
-      });
+        this.toggleCard(card);
+      };
       
-      // Add to header
-      const headerMain = card.querySelector('.step-header-main');
-      if (headerMain) {
-        headerMain.appendChild(maximizeBtn);
-      }
+      header.appendChild(btn);
     });
   }
   
-  toggleCardMaximize(card, index) {
+  toggleCard(card) {
     if (this.maximizedCard === card) {
       this.restoreCard(card);
     } else {
-      this.maximizeCard(card, index);
+      if (this.maximizedCard) this.restoreCard(this.maximizedCard);
+      this.maximizeCard(card);
     }
   }
   
-  maximizeCard(card, index) {
-    // Save original state
-    this.originalStates.set(card, {
-      parent: card.parentNode,
-      nextSibling: card.nextSibling,
-      style: {
-        width: card.style.width,
-        height: card.style.height,
+  maximizeCard(card) {
+    // Save original styles
+    const rect = card.getBoundingClientRect();
+    const originalParent = card.parentNode;
+    const originalIndex = Array.from(originalParent.children).indexOf(card);
+    
+    this.originalStyles.set(card, {
+      parent: originalParent,
+      index: originalIndex,
+      styles: {
         position: card.style.position,
         top: card.style.top,
         left: card.style.left,
+        width: card.style.width,
+        height: card.style.height,
         zIndex: card.style.zIndex,
         margin: card.style.margin,
-        gridColumn: card.style.gridColumn
-      }
+        borderRadius: card.style.borderRadius,
+        transition: card.style.transition
+      },
+      rect: rect
     });
     
-    // Hide other cards
-    document.querySelectorAll('.step-card').forEach(otherCard => {
-      if (otherCard !== card) {
-        otherCard.style.display = 'none';
-      }
-    });
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'maximizeOverlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1998;
+      animation: fadeIn 0.3s ease-out;
+    `;
+    overlay.onclick = () => this.restoreCard(card);
+    document.body.appendChild(overlay);
     
-    // Move card to maximize container or apply maximize styles
-    const maximizeContainer = document.getElementById('maximizeContainer') || this.createMaximizeContainer();
-    maximizeContainer.appendChild(card);
+    // Move card to body for fullscreen
+    document.body.appendChild(card);
     
-    // Apply maximize styles
-    card.classList.add('maximized');
-    card.style.width = '100%';
-    card.style.height = '100vh';
+    // Set initial position (same as original)
     card.style.position = 'fixed';
-    card.style.top = '0';
-    card.style.left = '0';
-    card.style.zIndex = '2000';
-    card.style.margin = '0';
-    card.style.borderRadius = '0';
-    card.style.overflow = 'auto';
+    card.style.top = `${rect.top}px`;
+    card.style.left = `${rect.left}px`;
+    card.style.width = `${rect.width}px`;
+    card.style.height = `${rect.height}px`;
+    card.style.zIndex = '1999';
+    card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    card.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.5)';
     
-    // Update button
-    const btn = card.querySelector('.maximize-card-btn');
-    if (btn) {
-      btn.innerHTML = '<i class="fas fa-compress-alt"></i>';
-      btn.title = 'Restore card';
-    }
+    // Force reflow
+    card.offsetHeight;
+    
+    // Animate to fullscreen
+    requestAnimationFrame(() => {
+      card.style.top = '50%';
+      card.style.left = '50%';
+      card.style.width = '90vw';
+      card.style.height = '90vh';
+      card.style.transform = 'translate(-50%, -50%)';
+      card.style.borderRadius = '20px';
+      card.style.border = '2px solid var(--primary)';
+      card.classList.add('maximized');
+    });
     
     this.maximizedCard = card;
-    
-    // Show overlay
-    const overlay = document.getElementById('maximizeOverlay') || this.createOverlay();
-    overlay.style.display = 'block';
-    
-    notifications.info(`Card ${index + 1} maximized. Press ESC to restore.`);
+    notifications.info('Card maximized. Press ESC or click outside to restore.', 2000);
   }
   
   restoreCard(card) {
-    if (!this.originalStates.has(card)) return;
+    if (!this.originalStyles.has(card)) return;
     
-    const originalState = this.originalStates.get(card);
+    const original = this.originalStyles.get(card);
     
-    // Restore original parent and position
-    if (originalState.nextSibling) {
-      originalState.parent.insertBefore(card, originalState.nextSibling);
-    } else {
-      originalState.parent.appendChild(card);
-    }
-    
-    // Restore original styles
-    card.classList.remove('maximized');
-    Object.assign(card.style, originalState.style);
-    
-    // Show all cards
-    document.querySelectorAll('.step-card').forEach(otherCard => {
-      otherCard.style.display = '';
-    });
-    
-    // Update button
-    const btn = card.querySelector('.maximize-card-btn');
-    if (btn) {
-      btn.innerHTML = '<i class="fas fa-expand-alt"></i>';
-      btn.title = 'Maximize card';
-    }
-    
-    // Hide overlay
+    // Remove overlay
     const overlay = document.getElementById('maximizeOverlay');
-    if (overlay) overlay.style.display = 'none';
+    if (overlay) overlay.remove();
     
-    this.maximizedCard = null;
-    this.originalStates.delete(card);
-  }
-  
-  createMaximizeContainer() {
-    const container = document.createElement('div');
-    container.id = 'maximizeContainer';
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.right = '0';
-    container.style.bottom = '0';
-    container.style.zIndex = '1999';
-    container.style.display = 'none';
-    document.body.appendChild(container);
-    return container;
-  }
-  
-  createOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'maximizeOverlay';
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.right = '0';
-    overlay.style.bottom = '0';
-    overlay.style.background = 'rgba(0, 0, 0, 0.8)';
-    overlay.style.zIndex = '1998';
-    overlay.style.display = 'none';
-    overlay.style.backdropFilter = 'blur(4px)';
+    // Animate back
+    card.style.top = `${original.rect.top}px`;
+    card.style.left = `${original.rect.left}px`;
+    card.style.width = `${original.rect.width}px`;
+    card.style.height = `${original.rect.height}px`;
+    card.style.transform = 'none';
+    card.style.borderRadius = '';
+    card.style.border = '';
     
-    overlay.addEventListener('click', () => {
-      if (this.maximizedCard) {
-        this.restoreCard(this.maximizedCard);
+    setTimeout(() => {
+      // Restore original parent and styles
+      if (original.parent && document.body.contains(card)) {
+        if (original.index >= original.parent.children.length) {
+          original.parent.appendChild(card);
+        } else {
+          const sibling = original.parent.children[original.index];
+          original.parent.insertBefore(card, sibling);
+        }
       }
-    });
-    
-    document.body.appendChild(overlay);
-    return overlay;
+      
+      // Restore styles
+      Object.keys(original.styles).forEach(prop => {
+        card.style[prop] = original.styles[prop];
+      });
+      
+      card.classList.remove('maximized');
+      this.maximizedCard = null;
+      this.originalStyles.delete(card);
+    }, 400);
   }
   
-  isCardMaximized() {
-    return this.maximizedCard !== null;
-  }
-  
-  getMaximizedCard() {
-    return this.maximizedCard;
+  restoreCurrentCard() {
+    if (this.maximizedCard) {
+      this.restoreCard(this.maximizedCard);
+    }
   }
 }
 
