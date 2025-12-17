@@ -433,3 +433,61 @@ input:checked + .toggle-slider:before {
         transform: translate(-50%, -50%);
     }
 }
+/* ===== ADDITIONAL FIXES FOR ISSUES ===== */
+
+/* Ensure Card 3 layout stays single column */
+.step-card:nth-child(3) .launch-list {
+    grid-template-columns: 1fr !important;
+}
+
+/* Prevent any multi-column overrides */
+@media (min-width: 768px) {
+    .step-card:nth-child(3) .launch-list {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .step-card:nth-child(3) .launch-list {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Analysis Results fixed height */
+.intent-badge {
+    max-height: 100px !important;
+    overflow-y: auto !important;
+}
+
+/* Ensure maximize button stays visible */
+.maximize-card-btn {
+    z-index: 100 !important;
+}
+
+/* Card grid positioning fixes */
+.cards-grid {
+    position: relative;
+}
+
+.cards-grid > .step-card {
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+/* Prevent card swapping on maximize */
+.step-card.maximized {
+    position: fixed !important;
+    z-index: 10000 !important;
+}
+
+/* Ensure Card 3 doesn't overflow */
+@media (min-width: 1024px) {
+    .step-card:nth-child(3) {
+        min-width: 280px;
+        max-width: 320px;
+    }
+    
+    .step-card:nth-child(3) .launch-list {
+        max-height: 300px;
+    }
+}
