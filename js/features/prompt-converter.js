@@ -1,5 +1,6 @@
 import { appState } from '../core/app-state.js';
 import { notifications } from '../ui/notifications.js';
+import { toolPrioritizer } from './tool-prioritizer.js'; // ADD THIS IMPORT
 
 export class PromptConverter {
     constructor() {
@@ -125,6 +126,9 @@ export class PromptConverter {
                     document.querySelectorAll('.launch-btn').forEach(btn => {
                         btn.disabled = false;
                     });
+                    
+                    // PRIORITIZE AI TOOLS BASED ON CONTENT - ADD THIS
+                    const bestTool = toolPrioritizer.prioritizeTools(requirement);
                     
                     // Show success badge
                     const badge = document.getElementById('convertedBadge');
