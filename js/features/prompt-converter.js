@@ -1,6 +1,5 @@
 import { appState } from '../core/app-state.js';
 import { notifications } from '../ui/notifications.js';
-import { historyManager } from './history.js';
 
 export class PromptConverter {
     constructor() {
@@ -19,12 +18,20 @@ export class PromptConverter {
         const autoToggle = document.getElementById('autoConvert');
         
         if (input && autoToggle) {
+            autoToggle.checked = appState.autoConvertEnabled;
+            
             let timeout;
             input.addEventListener('input', () => {
                 if (autoToggle.checked) {
                     clearTimeout(timeout);
                     timeout = setTimeout(() => this.convert(), 1000);
                 }
+            });
+            
+            // Update app state when toggle changes
+            autoToggle.addEventListener('change', (e) => {
+                appState.autoConvertEnabled = e.target.checked;
+                appState.saveSettings();
             });
         }
     }
@@ -45,91 +52,125 @@ export class PromptConverter {
         // Show loading state
         const convertBtn = document.getElementById('convertBtn');
         if (convertBtn) {
+            const originalHTML = convertBtn.innerHTML;
             convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             convertBtn.disabled = true;
-        }
-        
-        // Simulate processing time
-        setTimeout(() => {
-            const optimizedPrompt = this.generatePrompt(requirement);
             
-            output.value = optimizedPrompt;
-            output.style.height = Math.min(output.scrollHeight, 400) + 'px';
-            
-            // Enable launch buttons
-            document.querySelectorAll('.launch-btn').forEach(btn => {
-                btn.disabled = false;
-            });
-            
-            // Show success badge
-            const badge = document.getElementById('convertedBadge');
-            if (badge) {
-                badge.style.display = 'flex';
-            }
-            
-            // Update counters
-            this.updateCounters();
-            
-            // Add to history
-            if (historyManager) {
-                historyManager.add(requirement, optimizedPrompt);
-            }
-            
-            // Reset button
-            if (convertBtn) {
-                convertBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
+            // Simulate processing time
+            setTimeout(() => {
+                const { role } = this.analyzeText(requirement);
+                const optimizedPrompt = this.generatePrompt(requirement, role);
+                
+                output.value = optimizedPrompt;
+                
+                // Update app state
+                appState.isConverted = true;
+                appState.lastConvertedText = optimizedPrompt;
+                appState.lastRole = role;
+                appState.incrementUsage();
+                
+                // Enable launch buttons
+                document.querySelectorAll('.launch-btn').forEach(btn => {
+                    btn.disabled = false;
+                });
+                
+                // Show success badge
+                const badge = document.getElementById('convertedBadge');
+                if (badge) {
+                    badge.style.display = 'flex';
+                }
+                
+                // Update counters
+                this.updateCounters();
+                
+                // Update usage display
+                const usageElement = document.getElementById('usageCount');
+                if (usageElement) {
+                    usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts`;
+                }
+                
+                // Reset button
+                convertBtn.innerHTML = originalHTML;
                 convertBtn.disabled = false;
-            }
-            
-            notifications.success('Prompt generated successfully!');
-            
-        }, 800);
+                
+                notifications.success('Prompt generated successfully!');
+                
+            }, 800);
+        }
     }
     
-    generatePrompt(requirement) {
-        // Simple local prompt generation
-        const words = requirement.toLowerCase().split(/\s+/);
-        
-        // Determine category
-        let category = 'General';
-        let role = 'expert assistant';
-        
-        if (words.some(w => ['code', 'program', 'function', 'script', 'python', 'javascript'].includes(w))) {
-            category = 'Programming';
-            role = 'senior software developer';
-        } else if (words.some(w => ['write', 'email', 'letter', 'blog', 'article', 'content'].includes(w))) {
-            category = 'Writing';
-            role = 'professional writer';
-        } else if (words.some(w => ['image', 'picture', 'art', 'design', 'logo', 'visual'].includes(w))) {
-            category = 'Visual';
-            role = 'digital artist';
-        } else if (words.some(w => ['analyze', 'research', 'data', 'report', 'summary'].includes(w))) {
-            category = 'Analysis';
-            role = 'data analyst';
-        } else if (words.some(w => ['business', 'plan', 'strategy', 'marketing', 'sales'].includes(w))) {
-            category = 'Business';
-            role = 'business consultant';
+    analyzeText(text) {
+        const lower = (text || "").toLowerCase();
+        let role = "expert assistant";
+        let preset = "default";
+        let label = "General";
+      
+        // Email detection
+        if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
+          role = "expert email writer";
+          preset = "default";
+          label = "Email";
+        } 
+        // Code detection
+        else if (/code|program|script|develop|software|function|python|javascript|typescript|java|c#|sql|api|bug fix|refactor/i.test(lower)) {
+          role = "expert developer";
+          preset = "chatgpt";
+          label = "Code";
+        } 
+        // Analysis detection
+        else if (/analyze|analysis|market|research|evaluate|assessment|review|trend|report|insight|metrics/i.test(lower)) {
+          role = "expert analyst";
+          preset = "detailed";
+          label = "Analysis";
+        } 
+        // Writing detection
+        else if (/blog|article|story|linkedin post|caption|copywriting|content/i.test(lower)) {
+          role = "expert content writer";
+          preset = "default";
+          label = "Writing";
+        } 
+        // Fitness detection
+        else if (/workout|exercise|fitness|gym|diet|meal plan|training plan/i.test(lower)) {
+          role = "expert fitness trainer";
+          preset = "detailed";
+          label = "Workout";
+        } 
+        // Business detection
+        else if (/strategy|business plan|roadmap|pitch deck|proposal|go[- ]to[- ]market|g2m/i.test(lower)) {
+          role = "expert business consultant";
+          preset = "detailed";
+          label = "Business";
+        } 
+        // Education detection
+        else if (/teach|explain|lesson|tutorial|guide|training material|curriculum/i.test(lower)) {
+          role = "expert educator";
+          preset = "detailed";
+          label = "Education";
         }
-        
-        // Build prompt structure
-        const prompt = `Act as a ${role} with expertise in ${category}.
+        // Creative detection
+        else if (/creative|design|logo|brand|marketing|ad|campaign/i.test(lower)) {
+          role = "expert creative director";
+          preset = "detailed";
+          label = "Creative";
+        }
+      
+        return { role, preset, label };
+    }
+    
+    generatePrompt(requirement, role) {
+        // Build prompt structure using the detected role
+        const prompt = `Act as a ${role}.
 
 TASK: ${requirement}
 
-REQUIREMENTS:
+INSTRUCTIONS:
 1. Provide a comprehensive and detailed response
-2. Use clear, professional language
-3. Structure your answer logically
-4. Include specific examples where relevant
-5. Focus on practical, actionable advice
+2. Structure your answer logically with clear sections
+3. Use examples and practical applications where relevant
+4. Include actionable advice and next steps
+5. Maintain a professional, helpful tone
 
-FORMAT GUIDELINES:
-- Use headings and bullet points for clarity
-- Break down complex concepts
-- Avoid unnecessary jargon
-- Maintain a helpful, solution-oriented tone
-
-Please proceed with the task and provide your response below:`;
+Please proceed with the task and provide your complete response below:`;
 
         return prompt;
     }
