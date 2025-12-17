@@ -1,4 +1,4 @@
-// Voice input/output functionality - FIXED MIC BUTTON
+// Voice input/output functionality
 export class VoiceFeatures {
   constructor() {
     this.isListening = false;
@@ -49,7 +49,7 @@ export class VoiceFeatures {
     this.recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       this.isListening = false;
-      this.updateVoiceUI('input', 'muted'); // Changed from 'idle' to 'muted' on error
+      this.updateVoiceUI('input', 'muted');
       
       import('../ui/notifications.js').then(module => {
         module.notifications.error(`Voice input error: ${event.error}`);
@@ -58,12 +58,12 @@ export class VoiceFeatures {
     
     this.recognition.onend = () => {
       this.isListening = false;
-      this.updateVoiceUI('input', 'idle'); // Changed back to idle when done
+      this.updateVoiceUI('input', 'idle');
     };
   }
   
   setupEventListeners() {
-    // Voice input button - FIXED LOGIC
+    // Voice input button
     const voiceInputBtn = document.getElementById('voiceInputBtn');
     if (voiceInputBtn) {
       // Set initial state - Mic with cut sign (muted/off)
@@ -106,7 +106,7 @@ export class VoiceFeatures {
       this.recognition.start();
     } catch (error) {
       console.error('Failed to start recognition:', error);
-      this.updateVoiceUI('input', 'muted'); // Show muted state on error
+      this.updateVoiceUI('input', 'muted');
       import('../ui/notifications.js').then(module => {
         module.notifications.error('Failed to start voice input');
       });
@@ -243,7 +243,6 @@ export class VoiceFeatures {
       
       if (state === 'listening') {
         buttonEl.classList.add('listening');
-        // FIX: Show regular mic icon (no slash) when listening
         buttonEl.innerHTML = '<i class="fas fa-microphone"></i>';
         buttonEl.title = 'Listening... Click to stop';
       } 
@@ -274,5 +273,9 @@ export class VoiceFeatures {
   }
 }
 
-// Make it globally available for settings manager
-window.voiceFeatures = new VoiceFeatures();
+// Create instance and make it globally available
+const voiceFeatures = new VoiceFeatures();
+window.voiceFeatures = voiceFeatures;
+
+// Export both
+export { VoiceFeatures, voiceFeatures };
