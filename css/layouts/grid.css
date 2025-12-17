@@ -122,23 +122,29 @@
     margin: 0 auto;
     height: 100%;
     align-items: stretch;
+    min-height: 0; /* Allow cards to shrink */
 }
 
-/* Card positions */
+/* Card positions - FIXED ORDER */
 .cards-grid > .step-card:nth-child(1) {
     grid-column: 1;
     grid-row: 1;
+    grid-area: card1 !important;
 }
 
 .cards-grid > .step-card:nth-child(2) {
     grid-column: 2;
     grid-row: 1;
+    grid-area: card2 !important;
 }
 
 .cards-grid > .step-card:nth-child(3) {
     grid-column: 3;
     grid-row: 1;
+    grid-area: card3 !important;
     min-width: 280px;
+    max-width: 320px;
+    overflow: hidden; /* Prevent content overflow */
 }
 
 /* Footer - SUPER COMPACT */
@@ -181,22 +187,23 @@
     .cards-grid {
         grid-template-columns: 1fr 1fr;
         grid-template-rows: auto auto;
+        grid-template-areas: 
+            "card1 card2"
+            "card3 card3" !important;
     }
     
     .cards-grid > .step-card:nth-child(1) {
-        grid-column: 1;
-        grid-row: 1;
+        grid-area: card1 !important;
     }
     
     .cards-grid > .step-card:nth-child(2) {
-        grid-column: 2;
-        grid-row: 1;
+        grid-area: card2 !important;
     }
     
     .cards-grid > .step-card:nth-child(3) {
-        grid-column: 1 / -1;
-        grid-row: 2;
+        grid-area: card3 !important;
         min-width: auto;
+        max-width: none;
     }
 }
 
@@ -204,17 +211,23 @@
     .cards-grid {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
+        grid-template-areas: 
+            "card1"
+            "card2"
+            "card3" !important;
+        gap: 1rem;
     }
     
-    .cards-grid > .step-card:nth-child(1),
-    .cards-grid > .step-card:nth-child(2),
-    .cards-grid > .step-card:nth-child(3) {
-        grid-column: 1;
+    .cards-grid > .step-card:nth-child(1) { 
+        grid-area: card1 !important; 
     }
-    
-    .cards-grid > .step-card:nth-child(1) { grid-row: 1; }
-    .cards-grid > .step-card:nth-child(2) { grid-row: 2; }
-    .cards-grid > .step-card:nth-child(3) { grid-row: 3; }
+    .cards-grid > .step-card:nth-child(2) { 
+        grid-area: card2 !important; 
+    }
+    .cards-grid > .step-card:nth-child(3) { 
+        grid-area: card3 !important; 
+        min-height: 400px;
+    }
     
     .hero-top {
         flex-direction: column;
@@ -249,5 +262,17 @@
     
     .cards-grid {
         overflow: hidden;
+    }
+    
+    /* Ensure Card 3 has proper scroll */
+    .cards-grid > .step-card:nth-child(3) {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .cards-grid > .step-card:nth-child(3) .launch-list {
+        flex: 1;
+        min-height: 280px;
     }
 }
