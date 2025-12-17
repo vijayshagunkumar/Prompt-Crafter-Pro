@@ -226,31 +226,36 @@ export class VoiceFeatures {
   }
   
   updateVoiceUI(type, state) {
-    const statusEl = document.getElementById(`voice${type === 'input' ? 'Input' : 'Output'}Status`);
     const buttonEl = document.getElementById(`voice${type === 'input' ? 'Input' : 'Output'}Btn`);
     
-    if (statusEl) {
-      if (state === 'listening' || state === 'speaking') {
-        statusEl.style.display = 'flex';
-        statusEl.querySelector('span').textContent = state === 'listening' ? 'Listening...' : 'Speaking...';
-      } else {
-        statusEl.style.display = 'none';
-      }
-    }
-    
     if (buttonEl) {
-      buttonEl.classList.remove('listening', 'speaking');
-      if (state === 'listening' || state === 'speaking') {
-        buttonEl.classList.add(state);
-        buttonEl.title = state === 'listening' ? 'Stop listening' : 'Stop speaking';
-      } else {
-        buttonEl.title = type === 'input' ? 'Voice Input' : 'Read Aloud';
-      }
+      // Clear all states first
+      buttonEl.classList.remove('listening', 'speaking', 'muted');
       
-      // Show voice output button when there's text
-      if (type === 'output') {
-        const output = document.getElementById('output').value;
-        buttonEl.style.display = output ? 'block' : 'none';
+      if (state === 'listening') {
+        buttonEl.classList.add('listening');
+        // FIX: Use proper listening icon (not muted/red)
+        buttonEl.innerHTML = '<i class="fas fa-microphone"></i>';
+        buttonEl.title = 'Stop listening';
+        buttonEl.style.color = '#10b981'; // Green for active listening
+      } 
+      else if (state === 'speaking') {
+        buttonEl.classList.add('speaking');
+        buttonEl.innerHTML = '<i class="fas fa-volume-up"></i>';
+        buttonEl.title = 'Stop speaking';
+        buttonEl.style.color = '#3b82f6'; // Blue for speaking
+      }
+      else if (state === 'muted') {
+        buttonEl.classList.add('muted');
+        buttonEl.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+        buttonEl.title = 'Microphone muted';
+        buttonEl.style.color = '#ef4444'; // Red for muted
+      }
+      else {
+        // Idle state
+        buttonEl.innerHTML = '<i class="fas fa-microphone"></i>';
+        buttonEl.title = type === 'input' ? 'Voice Input' : 'Read Aloud';
+        buttonEl.style.color = ''; // Reset color
       }
     }
   }
