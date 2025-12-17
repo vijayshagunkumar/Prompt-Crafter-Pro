@@ -1,70 +1,443 @@
-/* Main CSS File - Imports all modules */
-@import url('base/reset.css');
-@import url('base/variables.css');
-@import url('base/typography.css');
-@import url('base/variable-mapping.css');
+/* ===== MAIN STYLES ===== */
 
-@import url('components/buttons.css');
-@import url('components/cards.css');
-@import url('components/forms.css');
-@import url('components/modals.css');
-@import url('components/notifications.css');
-@import url('components/sidebar.css');
-@import url('components/tools-grid.css');
-@import url('components/ai-tools-cards.css');
-
-@import url('layouts/grid.css');
-@import url('layouts/grid-system.css');
-@import url('layouts/sidebar-layout.css');
-@import url('layouts/responsive.css');
-
-@import url('themes/cyberpunk.css');
-@import url('themes/themes.css');
-
-/* Any additional styles can go here */
+/* Root layout */
 body {
+  min-height: 100vh;
+  background: var(--bg-primary);
   font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
 }
 
-/* Custom scrollbar for specific elements */
-.templates-panel::-webkit-scrollbar,
-.history-panel::-webkit-scrollbar,
-.modal::-webkit-scrollbar {
-  width: 6px;
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
 }
 
-.templates-panel::-webkit-scrollbar-thumb,
-.history-panel::-webkit-scrollbar-thumb,
-.modal::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
+/* Hero section */
+.hero {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  padding: 32px;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Focus styles for accessibility */
-*:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shine 8s infinite linear;
 }
 
-*:focus:not(:focus-visible) {
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.hero-logo {
+  width: 60px;
+  height: 60px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--primary);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.logo-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #ffffff, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+/* Main workflow area */
+.workflow {
+  flex: 1;
+  padding: 32px;
+  background: var(--bg-primary);
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+/* Cards */
+.step-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary);
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.step-card:hover::before {
+  opacity: 1;
+}
+
+/* Step headers */
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.step-pill {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.step-header-main {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.step-header-main h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.step-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Text areas */
+.textarea-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.textarea-idea,
+.output-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 20px;
+  background: var(--card-bg-dark);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.3s;
+}
+
+.textarea-idea:focus,
+.output-textarea:focus {
   outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
 }
 
-/* Print styles */
-@media print {
-  .scan-line,
-  .settings-btn,
-  .template-toggle,
-  .history-btn,
-  .export-btn,
-  .launch-btn,
-  .footer {
-    display: none !important;
+.textarea-idea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.output-textarea {
+  background: var(--card-bg);
+  cursor: default;
+}
+
+/* Footer */
+.footer {
+  background: var(--card-bg-dark);
+  border-top: 1px solid var(--border-color);
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.footer-left,
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dot {
+  color: var(--text-tertiary);
+}
+
+/* Buttons */
+.global-reset-btn,
+.settings-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.global-reset-btn:hover,
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Maximize button */
+.maximize-card-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.maximize-card-btn:hover {
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+  opacity: 1;
+}
+
+/* Scan line animation */
+.scan-line {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--primary) 50%, 
+    transparent 100%);
+  z-index: 9999;
+  animation: scan 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Loading states */
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive fixes for big screens */
+@media (min-width: 1600px) {
+  .cards-grid {
+    grid-template-columns: repeat(3, minmax(400px, 1fr));
   }
   
   .step-card {
-    break-inside: avoid;
-    box-shadow: none;
-    border: 1px solid #ccc;
+    padding: 32px;
+  }
+}
+
+/* Ensure full width on very large screens */
+@media (min-width: 2000px) {
+  .page {
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+}
+
+/* Fix for card maximize on big screens */
+.maximized {
+  position: fixed !important;
+  top: 50px !important;
+  left: 50px !important;
+  width: calc(100vw - 100px) !important;
+  height: calc(100vh - 100px) !important;
+  z-index: 2000 !important;
+  transform: none !important;
+  margin: 0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5) !important;
+}
+
+.card-maximize-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Utility classes for responsive design */
+.responsive-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    max-width: 640px;
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    max-width: 768px;
+    padding: 0 28px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 1024px;
+    padding: 0 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-container {
+    max-width: 1280px;
+    padding: 0 40px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .responsive-container {
+    max-width: 1536px;
+  }
+}
+
+/* Ensure content doesn't get too wide on huge screens */
+.content-max-width {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Make sure images and videos are responsive */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Typography scaling for big screens */
+@media (min-width: 1600px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 2000px) {
+  html {
+    font-size: 20px;
   }
 }
