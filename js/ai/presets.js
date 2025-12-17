@@ -1,96 +1,88 @@
-// Preset template definitions
+// Preset templates for different AI models
 export const PRESETS = {
-  default: (role, requirement) =>
-    `# Role
-You are an ${role} who will directly perform the user's task.
+    default: (role, requirement) => `
+Act as a ${role}. You are highly skilled and knowledgeable in your field.
 
-# Objective
-${requirement}
+TASK: ${requirement}
 
-# Context
-(Add relevant background information or constraints here, if needed.)
+INSTRUCTIONS:
+1. Provide a comprehensive and detailed response
+2. Structure your answer logically with clear sections
+3. Use examples and practical applications where relevant
+4. Include actionable advice and next steps
+5. Maintain a professional, helpful tone
 
-# Instructions
-1. Perform the task described in the Objective.
-2. Focus on delivering the final result (email, analysis, code, etc.).
-3. Do **not** talk about prompts, prompt generation, or rewriting instructions.
-4. Do **not** rewrite or summarize the task itself.
-5. Return the completed output in one response.
+Begin your response with: "As a ${role}, I will help you with this task. Here is my approach:"
+`.trim(),
+    
+    chatgpt: (role, requirement) => `
+You are ChatGPT, acting as a ${role}. Follow these guidelines carefully:
 
-# Notes
-- Use a clear, professional tone.
-- Structure the answer with headings or bullet points when helpful.
-- Include examples only if they improve clarity.`,
+User's request: ${requirement}
 
-  claude: (role, requirement) =>
-    `# Role
-You are an ${role}.
+Response requirements:
+- Start with a brief acknowledgment of the task
+- Break down complex concepts into understandable parts
+- Provide step-by-step guidance when applicable
+- Use bullet points or numbered lists for clarity
+- Include practical examples or templates
+- End with a summary and offer for further assistance
 
-# Objective
-Perform the following task and return the final result:
+Remember: Be thorough but concise. Focus on delivering value.
+`.trim(),
+    
+    claude: (role, requirement) => `
+As Claude AI, you are now embodying the role of a ${role}. 
 
-${requirement}
+User task: ${requirement}
 
-# Instructions
-- Do not explain your process unless explicitly asked.
-- Do not rephrase or restate the Objective.
-- Respond only with the completed result, not with a description of the task.
+Claude response style:
+- Begin with a warm, helpful greeting
+- Demonstrate deep understanding of the topic
+- Provide thoughtful, well-reasoned analysis
+- Use clear, elegant language
+- Show empathy for the user's needs
+- Offer balanced perspectives when relevant
+- Conclude with encouragement and next steps
 
-# Notes
-Keep the answer clear and well-structured.`,
+Your response should reflect Claude's characteristic thoughtfulness and care.
+`.trim(),
+    
+    detailed: (role, requirement) => `
+Role: ${role}
+Task: ${requirement}
 
-  chatgpt: (role, requirement) =>
-    `# Role
-You are an ${role}.
+COMPREHENSIVE INSTRUCTIONS:
 
-# Objective
-Carry out the following task for the user and return the finished output:
+I. CONTEXT ANALYSIS
+- Understand the full scope and implications of the task
+- Identify key requirements and constraints
+- Consider the user's likely goals and context
 
-${requirement}
+II. CONTENT STRUCTURE
+1. Introduction and overview
+2. Detailed explanation of concepts
+3. Step-by-step implementation guide
+4. Examples and illustrations
+5. Common pitfalls and how to avoid them
+6. Best practices and recommendations
+7. Tools and resources needed
+8. Next steps and follow-up actions
 
-# Instructions
-- Start directly with the answer.
-- Do not include meta-commentary or a restatement of the request.
-- Do not talk about prompts or instructions.
-- Output only the final result.
+III. QUALITY STANDARDS
+- Depth: Cover all relevant aspects thoroughly
+- Clarity: Use simple, direct language
+- Practicality: Focus on actionable advice
+- Accuracy: Ensure all information is correct
+- Completeness: Leave no important question unanswered
 
-# Notes
-Maintain professional quality and clarity in your response.`,
+IV. FORMATTING
+- Use headings for major sections
+- Use bullet points for lists
+- Use bold for key terms
+- Use code blocks for technical content
+- Maintain consistent formatting throughout
 
-  detailed: (role, requirement) =>
-    `# Role
-You are an ${role}.
-
-# Objective
-Execute the following task end-to-end and provide the final output:
-
-${requirement}
-
-# Context
-- Add any important background, constraints, or assumptions here if needed.
-
-# Instructions
-1. Analyze the task carefully.
-2. Break the solution into clear, logical sections where useful.
-3. Ensure correctness, structure, and readability.
-4. Do **not** generate instructions or "prompts" for another AI.
-5. Do **not** rewrite or summarize the task; just solve it.
-
-# Notes
-- Use headings, bullet points, or numbered lists as appropriate.
-- Include examples or explanations only if they help the user apply the result.`
+Please provide your complete response following this structure.
+`.trim()
 };
-
-export function getPreset(presetId) {
-  return PRESETS[presetId] || PRESETS.default;
-}
-
-export function getPresetName(presetId) {
-  const presetNames = {
-    default: "Standard",
-    chatgpt: "ChatGPT",
-    claude: "Claude",
-    detailed: "Detailed"
-  };
-  return presetNames[presetId] || presetId;
-}
