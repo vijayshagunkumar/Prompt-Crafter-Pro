@@ -225,3 +225,211 @@
   color: var(--text-muted);
   margin-top: 2px;
 }
+
+/* Intent Badge */
+.intent-badge {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  font-size: var(--font-size-sm);
+  color: var(--info);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.intent-badge .tone-badge {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-full);
+  padding: 2px 6px;
+  font-size: var(--font-size-xs);
+  color: var(--secondary);
+  margin-left: 4px;
+  text-transform: capitalize;
+}
+
+/* Card Maximize Button */
+.maximize-card-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.maximize-card-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.step-card.maximized {
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--primary);
+  animation: maximizeCard 0.3s ease-out;
+}
+
+@keyframes maximizeCard {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Best Match Display */
+.best-match-display {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  animation: slideDown 0.3s ease-out;
+}
+
+.best-match-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: 4px;
+}
+
+.best-match-header .fa-star {
+  color: #f59e0b;
+}
+
+.best-match-label {
+  font-weight: 600;
+  color: var(--text);
+  font-size: var(--font-size-sm);
+}
+
+.best-match-tool {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: var(--font-size-base);
+}
+
+.best-match-reason {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.best-match-details {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+/* Tool Highlights */
+.launch-btn.top-match {
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.05);
+  position: relative;
+}
+
+.launch-btn.top-match::before {
+  content: '🥇';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  background: var(--surface);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--success);
+}
+
+.launch-btn.second-match {
+  border-color: var(--warning);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.launch-btn.third-match {
+  border-color: var(--info);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Global Reset Button */
+.global-reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+}
+
+.global-reset-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(99, 102, 246, 0.1);
+}
+
+/* Responsive Textareas */
+.textarea-idea, .output-textarea {
+  min-height: 120px;
+  max-height: 400px;
+  transition: height 0.2s ease-out;
+}
+
+@media (max-height: 700px) {
+  .textarea-idea, .output-textarea {
+    max-height: 300px;
+  }
+}
+
+@media (max-height: 500px) {
+  .textarea-idea, .output-textarea {
+    max-height: 200px;
+  }
+}
+
+/* History Panel */
+.history-panel {
+  max-height: 300px;
+  overflow-y: auto;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
