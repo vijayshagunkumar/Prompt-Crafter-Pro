@@ -1,17 +1,18 @@
 /* ===== FIXED CARD STYLES ===== */
 
-/* Card Base Styles */
+/* Card Base Styles - UPDATED FOR CONSISTENCY */
 .step-card {
   background: var(--surface);
   border: 2px solid var(--border);
   border-radius: 16px;
-  padding: 28px;
+  padding: 1.75rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  margin-bottom: 24px;
-  min-height: 400px;
+  min-height: 480px; /* Consistent height */
+  display: flex;
+  flex-direction: column;
   backdrop-filter: blur(10px);
   z-index: 1;
 }
@@ -153,8 +154,9 @@
 /* Fixed maximize styles - NO TRANSPARENCY */
 .step-card.maximized {
   position: fixed !important;
-  top: 40px !important;
-  left: 40px !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
   width: calc(100vw - 80px) !important;
   height: calc(100vh - 80px) !important;
   z-index: 9999 !important;
@@ -167,6 +169,7 @@
   padding: 40px !important;
   opacity: 1 !important;
   visibility: visible !important;
+  overflow: auto !important;
 }
 
 /* Overlay - SOLID background */
@@ -197,6 +200,23 @@
   gap: 12px !important;
   margin-top: 20px;
   width: 100%;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.launch-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.launch-list::-webkit-scrollbar-track {
+  background: var(--surface-dark);
+  border-radius: 3px;
+}
+
+.launch-list::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
 }
 
 /* Responsive columns */
@@ -208,13 +228,15 @@
 
 @media (min-width: 1024px) {
   .launch-list {
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns on desktop */
+    grid-template-columns: 1fr !important; /* Single column on desktop */
+    max-height: 400px;
   }
 }
 
 @media (min-width: 1440px) {
   .launch-list {
-    grid-template-columns: repeat(4, 1fr) !important; /* 4 columns on large screens */
+    grid-template-columns: 1fr !important; /* Single column on large screens */
+    max-height: 420px;
   }
 }
 
@@ -355,7 +377,7 @@
   }
   
   .launch-list {
-    grid-template-columns: 1fr !important; /* Always single column on mobile */
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns on mobile */
   }
 }
 
@@ -363,6 +385,7 @@
   .step-card {
     padding: 16px;
     border-radius: 12px;
+    min-height: 400px;
   }
   
   .step-header {
@@ -378,6 +401,21 @@
   .maximize-card-btn {
     top: 16px;
     right: 16px;
+  }
+  
+  .launch-list {
+    grid-template-columns: 1fr !important; /* Single column on small mobile */
+  }
+  
+  .launch-btn {
+    padding: 14px;
+    min-height: 64px;
+  }
+  
+  .launch-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
   }
 }
 
@@ -417,4 +455,50 @@
   color: var(--primary) !important;
   background: var(--primary) !important;
   border-color: var(--primary) !important;
+}
+
+/* Fix for small screens - Card 3 height adjustment */
+@media (max-height: 800px) {
+  .step-card:nth-child(3) {
+    min-height: 420px;
+  }
+  
+  .launch-list {
+    max-height: 320px;
+  }
+}
+
+/* Large screens optimization */
+@media (min-width: 1440px) {
+  .step-card {
+    min-height: 500px;
+  }
+  
+  .launch-list {
+    max-height: 420px;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1920px) {
+  .step-card {
+    min-height: 520px;
+    padding: 2rem;
+  }
+  
+  .launch-list {
+    max-height: 440px;
+    gap: 1rem;
+  }
+  
+  .launch-btn {
+    padding: 1.25rem;
+    min-height: 80px;
+  }
+  
+  .launch-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
 }
