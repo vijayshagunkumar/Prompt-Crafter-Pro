@@ -1,592 +1,186 @@
-/* Card Styles */
+/* ===== FIXED CARD STYLES ===== */
+
+/* Card Base Styles */
 .step-card {
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl);
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 20px var(--shadow);
-  transition: transform var(--transition-normal), border-color var(--transition-normal);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  margin-bottom: 24px;
+  min-height: 400px;
+  backdrop-filter: blur(10px);
+  z-index: 1;
 }
 
+/* Make cards distinguishable with different top borders */
+.step-card:nth-child(1) {
+  border-top: 4px solid var(--primary); /* Blue for Card 1 */
+}
+
+.step-card:nth-child(2) {
+  border-top: 4px solid var(--success); /* Green for Card 2 */
+}
+
+.step-card:nth-child(3) {
+  border-top: 4px solid var(--warning); /* Amber for Card 3 */
+}
+
+/* Card hover effect */
 .step-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--primary-light);
-  box-shadow: 0 8px 30px var(--shadow), 0 0 0 1px var(--primary-light);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border-color: var(--primary);
 }
 
-.step-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
-.step-card:hover::before {
-  opacity: 1;
-}
-
+/* Card header */
 .step-header {
   display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
 }
 
+/* Step pill with different colors for each card */
 .step-pill {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border-radius: var(--radius-full);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 700;
-  font-size: var(--font-size-lg);
+  font-size: 18px;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+.step-card:nth-child(1) .step-pill {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.step-card:nth-child(2) .step-pill {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.step-card:nth-child(3) .step-pill {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Step header content */
 .step-header-main {
   flex: 1;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.step-header-main h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px 0;
 }
 
 .step-subtitle {
+  font-size: 0.95rem;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  margin-top: 2px;
+  margin: 0;
+  opacity: 0.8;
 }
 
-.step-meta {
-  display: flex;
-  gap: var(--space-sm);
-}
-
+/* Meta badges */
 .meta-pill {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.meta-pill.success {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.meta-pill.info {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--info);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.template-card {
-  background: var(--surface-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  border: 1px solid var(--border);
-  transition: all var(--transition-normal);
-}
-
-.template-card:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px var(--shadow);
-}
-
-.template-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--space-sm);
-}
-
-.template-card-title {
-  font-weight: 600;
-  color: var(--text);
-  font-size: var(--font-size-base);
-}
-
-.template-card-meta {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.template-card-description {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  margin-bottom: var(--space-md);
-  line-height: 1.5;
-}
-
-.history-item {
-  background: var(--surface-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  border: 1px solid var(--border);
-  margin-bottom: var(--space-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.history-item:hover {
-  border-color: var(--primary);
-  background: var(--surface);
-  transform: translateX(4px);
-}
-
-.history-item-title {
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 4px;
-  font-size: var(--font-size-sm);
-}
-
-.history-item-meta {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.launch-btn {
-  background: var(--surface-light);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  width: 100%;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  text-align: left;
-  position: relative;
-}
-
-.launch-btn:hover:not(:disabled) {
-  border-color: var(--primary);
-  transform: translateX(4px);
-  box-shadow: 0 4px 15px var(--shadow);
-}
-
-.launch-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.launch-btn.launch-chatgpt:hover:not(:disabled) {
-  border-color: #10a37f;
-  box-shadow: 0 4px 15px rgba(16, 163, 127, 0.2);
-}
-
-.launch-btn.launch-claude:hover:not(:disabled) {
-  border-color: #d4a574;
-  box-shadow: 0 4px 15px rgba(212, 165, 116, 0.2);
-}
-
-.launch-btn.launch-gemini:hover:not(:disabled) {
-  border-color: #4285f4;
-  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.2);
-}
-
-.launch-btn.launch-perplexity:hover:not(:disabled) {
-  border-color: #9b59b6;
-  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.2);
-}
-
-.launch-btn.launch-dalle:hover:not(:disabled) {
-  border-color: #00a3ff;
-  box-shadow: 0 4px 15px rgba(0, 163, 255, 0.2);
-}
-
-.launch-btn.launch-midjourney:hover:not(:disabled) {
-  border-color: #f37626;
-  box-shadow: 0 4px 15px rgba(243, 118, 38, 0.2);
-}
-
-.launch-btn.launch-deepseek:hover:not(:disabled) {
-  border-color: #3498db;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
-}
-
-.launch-btn.launch-copilot:hover:not(:disabled) {
-  border-color: #0078d7;
-  box-shadow: 0 4px 15px rgba(0, 120, 215, 0.2);
-}
-
-.launch-btn.launch-grok:hover:not(:disabled) {
-  border-color: #f37626;
-  box-shadow: 0 4px 15px rgba(243, 118, 38, 0.2);
-}
-
-.launch-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-xl);
-  flex-shrink: 0;
-}
-
-.launch-btn.launch-dalle .launch-icon {
-  background: rgba(0, 163, 255, 0.1);
-  color: #00a3ff;
-}
-
-.launch-btn.launch-midjourney .launch-icon {
-  background: rgba(243, 118, 38, 0.1);
-  color: #f37626;
-}
-
-.launch-text {
-  flex: 1;
-}
-
-.launch-name {
-  display: block;
-  font-weight: 600;
-  color: var(--text);
-  font-size: var(--font-size-base);
-}
-
-.launch-sub {
-  display: block;
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-/* =========================================== */
-/* NEW FEATURES - FUNCTIONAL & UX REQUIREMENTS */
-/* =========================================== */
-
-/* 1. Intent Badge */
-.intent-badge {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: var(--radius-full);
   padding: 6px 12px;
-  font-size: var(--font-size-sm);
-  color: var(--info);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
-  animation: fadeIn 0.3s ease-out;
   white-space: nowrap;
 }
 
-.intent-badge .tone-badge {
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: var(--radius-full);
-  padding: 2px 6px;
-  font-size: var(--font-size-xs);
-  color: var(--secondary);
-  margin-left: 4px;
-  text-transform: capitalize;
+.meta-pill.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* 2. Card Maximize Button */
+.meta-pill.info {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ===== CARD MAXIMIZE FIXES ===== */
+
+/* Maximize button */
 .maximize-card-btn {
-  background: transparent;
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  padding: 6px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  margin-left: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
 }
 
 .maximize-card-btn:hover {
+  background: var(--primary);
+  color: white;
   border-color: var(--primary);
-  color: var(--primary);
-  background: rgba(99, 102, 241, 0.1);
+  transform: scale(1.1);
 }
 
+/* Fixed maximize styles - NO TRANSPARENCY */
 .step-card.maximized {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 2000 !important;
-  border-radius: 0 !important;
+  top: 40px !important;
+  left: 40px !important;
+  width: calc(100vw - 80px) !important;
+  height: calc(100vh - 80px) !important;
+  z-index: 9999 !important;
+  background: var(--surface) !important; /* Solid background */
+  backdrop-filter: blur(20px) !important;
+  border: 3px solid var(--primary) !important;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8) !important;
+  border-radius: 24px !important;
   margin: 0 !important;
-  border: 2px solid var(--primary) !important;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5) !important;
-  animation: maximizeCard 0.3s ease-out;
-  overflow: auto !important;
+  padding: 40px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-@keyframes maximizeCard {
-  from {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* 3. Best Match Display */
-.best-match-display {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  margin-top: var(--space-sm);
-  margin-bottom: var(--space-lg);
-  animation: slideDown 0.3s ease-out;
-}
-
-.best-match-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: 4px;
-  flex-wrap: wrap;
-}
-
-.best-match-header .fa-star {
-  color: #f59e0b;
-}
-
-.best-match-label {
-  font-weight: 600;
-  color: var(--text);
-  font-size: var(--font-size-sm);
-}
-
-.best-match-tool {
-  font-weight: 700;
-  color: var(--primary);
-  font-size: var(--font-size-base);
-  background: rgba(99, 102, 241, 0.1);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-}
-
-.best-match-reason {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-.best-match-details {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-/* 4. Tool Highlights */
-.launch-btn.top-match {
-  border-color: var(--success) !important;
-  background: rgba(16, 185, 129, 0.05) !important;
-  position: relative;
-  order: 1;
-}
-
-.launch-btn.top-match::before {
-  content: '🥇';
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  font-size: 16px;
-  background: var(--surface);
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--success);
-  z-index: 1;
-}
-
-.launch-btn.second-match {
-  border-color: var(--warning) !important;
-  background: rgba(245, 158, 11, 0.05) !important;
-  order: 2;
-}
-
-.launch-btn.third-match {
-  border-color: var(--info) !important;
-  background: rgba(59, 130, 246, 0.05) !important;
-  order: 3;
-}
-
-/* 5. Responsive Textareas */
-.textarea-idea, .output-textarea {
-  min-height: 120px;
-  max-height: 400px;
-  transition: height 0.2s ease-out;
-  resize: vertical;
-}
-
-@media (max-height: 700px) {
-  .textarea-idea, .output-textarea {
-    max-height: 300px;
-  }
-}
-
-@media (max-height: 500px) {
-  .textarea-idea, .output-textarea {
-    max-height: 200px;
-  }
-}
-
-/* 6. Global Reset Button */
-.global-reset-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--font-size-sm);
-  margin-left: var(--space-sm);
-}
-
-.global-reset-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: rgba(99, 102, 246, 0.1);
-}
-
-/* 7. History Panel Improvements */
-.history-panel {
-  max-height: 300px;
-  overflow-y: auto;
-  animation: slideDown 0.3s ease-out;
-}
-
-.history-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-xs);
-}
-
-.history-item-index {
-  font-weight: 600;
-  color: var(--primary);
-  font-size: var(--font-size-sm);
-}
-
-.history-item-time {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.history-item-content {
-  margin-top: var(--space-sm);
-}
-
-.history-item-requirement {
-  font-size: var(--font-size-sm);
-  color: var(--text);
-  margin-bottom: var(--space-sm);
-  line-height: 1.4;
-}
-
-.history-item-actions {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.history-empty-state {
-  text-align: center;
-  padding: var(--space-xl);
-  color: var(--text-muted);
-}
-
-.history-empty-state i {
-  font-size: var(--font-size-3xl);
-  margin-bottom: var(--space-md);
-  opacity: 0.5;
-}
-
-.history-empty-state p {
-  font-size: var(--font-size-sm);
-  margin: 0;
-}
-
-/* 8. AI Tool Colors - Additional */
-.launch-btn.launch-perplexity .launch-icon {
-  background: rgba(155, 89, 182, 0.1);
-  color: #9b59b6;
-}
-
-.launch-btn.launch-deepseek .launch-icon {
-  background: rgba(52, 152, 219, 0.1);
-  color: #3498db;
-}
-
-.launch-btn.launch-copilot .launch-icon {
-  background: rgba(0, 120, 215, 0.1);
-  color: #0078d7;
-}
-
-.launch-btn.launch-grok .launch-icon {
-  background: rgba(243, 118, 38, 0.1);
-  color: #f37626;
-}
-
-/* 9. Maximize Overlay (CRITICAL - WAS MISSING) */
-#maximizeOverlay {
+/* Overlay - SOLID background */
+.card-maximize-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
-  z-index: 1999;
-  display: none;
-  animation: fadeIn 0.3s ease-out;
-  cursor: pointer;
-}
-
-/* 10. Animations */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  background: rgba(15, 23, 42, 0.95) !important; /* Solid dark blue */
+  backdrop-filter: blur(10px);
+  z-index: 9998;
+  animation: fadeIn 0.3s ease;
+  display: block !important;
 }
 
 @keyframes fadeIn {
@@ -594,301 +188,205 @@
   to { opacity: 1; }
 }
 
-/* 11. Mobile Responsiveness */
-@media (max-width: 768px) {
-  .intent-badge {
-    margin-top: var(--space-sm);
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .global-reset-btn {
-    margin-top: var(--space-sm);
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .best-match-display {
-    font-size: var(--font-size-sm);
-  }
-  
-  .best-match-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-xs);
-  }
-  
-  .step-header-main {
-    flex-wrap: wrap;
-  }
-  
-  .maximize-card-btn {
-    margin-left: 0;
-    margin-top: var(--space-sm);
+/* ===== FIX AI TOOLS LAYOUT ===== */
+
+/* Make AI tools single column by default */
+.launch-list {
+  display: grid !important;
+  grid-template-columns: 1fr !important; /* Single column */
+  gap: 12px !important;
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Responsive columns */
+@media (min-width: 768px) {
+  .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns on tablet */
   }
 }
 
-/* 12. History Item Styling for Functional History */
-.history-item:hover .history-item-title {
-  color: var(--primary);
+@media (min-width: 1024px) {
+  .launch-list {
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns on desktop */
+  }
 }
 
-.history-item-actions button {
-  padding: 4px 8px;
-  font-size: var(--font-size-xs);
+@media (min-width: 1440px) {
+  .launch-list {
+    grid-template-columns: repeat(4, 1fr) !important; /* 4 columns on large screens */
+  }
 }
 
-.history-item-actions button i {
-  font-size: var(--font-size-xs);
-}
-
-/* 13. Ensure Textarea Resize Works Properly */
-.textarea-idea:focus, .output-textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--glow);
-}
-
-/* 14. Card 2 Mode Buttons Enhancement */
-.preset-option {
-  transition: all var(--transition-fast);
-}
-
-.preset-option.active {
-  background: var(--primary) !important;
-  color: white !important;
-  border-color: var(--primary) !important;
-}
-
-.preset-option:hover:not(.active) {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: var(--primary-light);
-}
-
-/* 15. Ensure No Layout Shifts */
-.step-card, .textarea-wrapper, .launch-btn {
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-/* 16. Remove Floating Buttons Inside Inputs */
-.textarea-buttons {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
+/* Launch button styles */
+.launch-btn {
+  background: var(--surface-light);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-.textarea-buttons button {
-  pointer-events: auto;
-  background: rgba(30, 41, 59, 0.9);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(4px);
-}
-
-/* 17. Ensure All Buttons Look Clickable */
-.btn-primary, .btn-ghost-small, .settings-btn, .export-btn, .history-btn,
-.template-toggle, .clear-input-btn, .voice-input-btn, .voice-output-btn,
-.expand-btn, .maximize-card-btn, .global-reset-btn {
+  align-items: center;
+  gap: 12px;
+  width: 100%;
   cursor: pointer;
-  user-select: none;
+  transition: all 0.3s ease;
+  text-align: left;
+  min-height: 72px;
 }
 
-.btn-primary:active, .btn-ghost-small:active, .settings-btn:active {
-  transform: translateY(1px);
+.launch-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* 18. Loading States */
-.btn-primary.loading {
-  opacity: 0.7;
-  cursor: wait;
+.launch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(50%);
 }
 
-.btn-primary.loading i {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* 19. Ensure No Content Jump */
-.page, .workflow, .cards-grid {
-  min-height: 100vh;
-  overflow-anchor: none;
-}
-
-/* 20. Card Layout Stability */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: var(--space-xl);
-  align-items: start;
-}
-
-.step-card {
-  min-height: 400px;
+.launch-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
-}
-
-.step-card .step-header {
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
   flex-shrink: 0;
 }
 
-.step-card .field-block,
-.step-card .field-block-output,
-.step-card .launch-list {
+.launch-text {
   flex: 1;
-}
-
-/* 21. Explicit Button States for Mode Buttons */
-.preset-option[data-preset="default"] {
-  border-left: 3px solid #6366f1;
-}
-
-.preset-option[data-preset="chatgpt"] {
-  border-left: 3px solid #10a37f;
-}
-
-.preset-option[data-preset="claude"] {
-  border-left: 3px solid #d4a574;
-}
-
-.preset-option[data-preset="detailed"] {
-  border-left: 3px solid #8b5cf6;
-}
-
-/* 22. History Button Active State */
-.history-btn.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-/* 23. Template Toggle Active State */
-.template-toggle.active {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-/* 24. Voice Button Active States */
-.voice-input-btn.listening, .voice-output-btn.speaking {
-  color: var(--danger);
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--danger);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
-  }
-}
-
-/* 25. Clear/Undo Button States */
-.clear-input-btn.undo-state {
-  color: var(--success);
-  background: rgba(16, 185, 129, 0.1);
-  border-color: var(--success);
-}
-
-.clear-input-btn.undo-state:hover {
-  background: rgba(16, 185, 129, 0.2);
-}
-
-/* 26. Export Button Success State */
-.export-btn.success {
-  color: var(--success);
-  border-color: var(--success);
-  background: rgba(16, 185, 129, 0.1);
-}
-
-/* 27. Auto-convert Timer Animation */
-.timer-badge {
-  animation: pulseTimer 1s infinite alternate;
-}
-
-@keyframes pulseTimer {
-  from { opacity: 0.7; }
-  to { opacity: 1; }
-}
-
-/* 28. Converted Badge Animation */
-.meta-pill.success {
-  animation: bounceIn 0.5s ease-out;
-}
-
-@keyframes bounceIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* 29. Input Focus Enhancement */
-#requirement:focus ~ .textarea-buttons .clear-input-btn,
-#requirement:focus ~ .textarea-buttons .voice-input-btn {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: var(--primary-light);
-}
-
-/* 30. Output Read-only Enhancement */
-.output-textarea:read-only {
-  background: var(--surface-light);
-  cursor: default;
-}
-
-.output-textarea:read-only:focus {
-  border-color: var(--border);
-  box-shadow: none;
-}
-
-/* Improved Intent Badge */
-.intent-badge {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-left: auto;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.intent-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  border: 1px solid;
-  animation: slideIn 0.3s ease-out;
-}
-
-.tone-badge {
-  display: inline-flex;
-  align-items: center;
+  flex-direction: column;
   gap: 4px;
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  color: var(--secondary);
-  text-transform: capitalize;
+  min-width: 0;
 }
 
-@keyframes slideIn {
+.launch-name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.launch-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== FIX PURPLE COLORS ===== */
+
+/* Remove all purple colors */
+* {
+  --purple: #3b82f6 !important; /* Replace purple with blue */
+  --violet: #3b82f6 !important;
+  --indigo: #3b82f6 !important;
+  --secondary: #06b6d4 !important; /* Cyan instead of purple */
+}
+
+/* Replace any purple in gradients */
+.step-card::before {
+  background: linear-gradient(90deg, var(--primary), var(--info)) !important;
+}
+
+/* Fix hero gradient */
+.hero {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+}
+
+/* ===== ENSURE SOLID BACKGROUNDS ===== */
+
+/* Add solid background layer to prevent transparency */
+.step-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Ensure all card content is above background */
+.step-card > *:not(.maximize-card-btn):not(::after) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== RESPONSIVE FIXES ===== */
+
+@media (max-width: 768px) {
+  .step-card {
+    padding: 20px;
+    min-height: auto;
+    margin-bottom: 20px;
+  }
+  
+  .step-pill {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+  .step-header-main h2 {
+    font-size: 1.3rem;
+  }
+  
+  .step-card.maximized {
+    top: 20px !important;
+    left: 20px !important;
+    width: calc(100vw - 40px) !important;
+    height: calc(100vh - 40px) !important;
+    padding: 24px !important;
+  }
+  
+  .launch-list {
+    grid-template-columns: 1fr !important; /* Always single column on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .step-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .step-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .step-header-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .maximize-card-btn {
+    top: 16px;
+    right: 16px;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes cardAppear {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -896,39 +394,27 @@
   }
 }
 
-/* Save Template Button in Card 1 */
-#saveTemplateBtn {
-  transition: all var(--transition-fast);
+.step-card {
+  animation: cardAppear 0.4s ease-out;
 }
 
-#saveTemplateBtn:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: var(--info);
-  color: var(--info);
+.step-card:nth-child(2) {
+  animation-delay: 0.1s;
 }
 
-/* Single Reset Button */
-.global-reset-btn {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: var(--warning);
-  color: var(--warning);
+.step-card:nth-child(3) {
+  animation-delay: 0.2s;
 }
 
-.global-reset-btn:hover {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: var(--warning);
-  color: var(--warning);
-}
+/* ===== UTILITY CLASSES ===== */
 
-/* Removed options from Card 2 */
-.preset-selector {
-  display: none; /* Hide the preset selector */
-}
-
-/* Better ChatGPT icon visibility */
-.launch-btn.launch-chatgpt .launch-icon i {
-  font-size: 20px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* Ensure no purple appears anywhere */
+[class*="purple"],
+[style*="purple"],
+[style*="#8b5cf6"],
+[style*="#7c3aed"],
+[style*="#6d28d9"] {
+  color: var(--primary) !important;
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
 }
