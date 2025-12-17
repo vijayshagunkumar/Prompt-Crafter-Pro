@@ -1,5 +1,5 @@
 // Voice input/output functionality
-export class VoiceFeatures {
+class VoiceFeatures {
   constructor() {
     this.isListening = false;
     this.isSpeaking = false;
@@ -273,9 +273,8 @@ export class VoiceFeatures {
   }
 }
 
-// Create instance and make it globally available
+// Create instance and export
 const voiceFeatures = new VoiceFeatures();
 window.voiceFeatures = voiceFeatures;
 
-// Export both
 export { VoiceFeatures, voiceFeatures };
