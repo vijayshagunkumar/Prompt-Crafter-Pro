@@ -1,8 +1,8 @@
-/* Launch Buttons Grid - SINGLE COLUMN ONLY */
+/* Launch Buttons Grid - Fixed for Card 3 visibility */
 
 .launch-list {
   display: grid;
-  grid-template-columns: 1fr !important; /* SINGLE COLUMN FORCED */
+  grid-template-columns: 1fr; /* Single column by default */
   gap: 12px;
   margin-top: 20px;
   width: 100%;
@@ -21,6 +21,7 @@
   text-align: left;
   width: 100%;
   min-height: 70px;
+  overflow: hidden;
 }
 
 .launch-btn:hover:not(:disabled) {
@@ -163,22 +164,76 @@
   border-color: rgba(234, 67, 53, 0.4);
 }
 
-/* DISABLE ALL RESPONSIVE MULTI-COLUMN LAYOUTS */
-/* Remove these media queries that create multiple columns */
-
-/* 
+/* Responsive grid - Desktop layouts */
 @media (min-width: 768px) {
   .launch-list {
-    grid-template-columns: repeat(2, 1fr); REMOVED
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
   }
 }
 
 @media (min-width: 1024px) {
   .launch-list {
-    grid-template-columns: repeat(3, 1fr); REMOVED
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on desktop */
   }
 }
-*/
+
+/* CARD 3 SPECIFIC OVERRIDES - SINGLE COLUMN WITH SCROLL */
+.step-card:nth-child(3) .launch-list {
+  grid-template-columns: 1fr !important; /* Force single column */
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Tablet: Card 3 - 2 columns */
+@media (min-width: 768px) {
+  .step-card:nth-child(3) .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns for Card 3 */
+    max-height: 280px;
+  }
+}
+
+/* Desktop: Card 3 - 2 columns */
+@media (min-width: 1024px) {
+  .step-card:nth-child(3) .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns for Card 3 */
+    max-height: 320px;
+    gap: 10px;
+  }
+  
+  .step-card:nth-child(3) .launch-btn {
+    min-height: 60px;
+    padding: 12px;
+  }
+  
+  .step-card:nth-child(3) .launch-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .step-card:nth-child(3) .launch-name {
+    font-size: 15px;
+  }
+  
+  .step-card:nth-child(3) .launch-sub {
+    font-size: 12px;
+  }
+}
+
+/* Custom scrollbar for Card 3 */
+.step-card:nth-child(3) .launch-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.step-card:nth-child(3) .launch-list::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 3px;
+}
+
+.step-card:nth-child(3) .launch-list::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 3px;
+}
 
 /* Fix for small screens */
 @media (max-width: 480px) {
@@ -199,6 +254,11 @@
   
   .launch-sub {
     font-size: 12px;
+  }
+  
+  /* Card 3 on mobile */
+  .step-card:nth-child(3) .launch-list {
+    max-height: 260px;
   }
 }
 
