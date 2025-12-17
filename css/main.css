@@ -702,3 +702,55 @@ input:checked + .toggle-slider:before {
   background: #3b82f6 !important;
   border-color: #3b82f6 !important;
 }
+/* ===== FIXES FOR CARD 2 BUTTON OVERLAP ===== */
+
+/* Card 2 specific styles */
+.step-card:nth-child(2) {
+  min-width: 400px; /* Ensure minimum width */
+}
+
+/* Output footer - better spacing */
+.output-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.output-footer button {
+  flex: 1;
+  min-width: 100px;
+  max-width: 150px;
+  padding: 10px 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure buttons don't wrap */
+@media (max-width: 768px) {
+  .step-card:nth-child(2) {
+    min-width: auto;
+  }
+  
+  .output-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .output-footer button {
+    min-width: calc(33.333% - 10px);
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .output-footer button {
+    min-width: calc(50% - 8px);
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
