@@ -627,3 +627,84 @@ input:checked + .toggle-slider:before {
     content: "Your optimized prompt will appear here...";
     color: #94a3b8;
 }
+
+/* Layout fixes to show all 3 cards without scrolling - ADD TO main.css */
+
+/* Reduce hero height */
+.hero {
+  padding: 1.5rem 2rem !important; /* Reduced from 2rem */
+  min-height: auto !important;
+}
+
+.hero-title {
+  font-size: 2rem !important; /* Reduced from 2.5rem */
+  margin-bottom: 0.25rem !important;
+}
+
+.hero-subtitle {
+  font-size: 1rem !important; /* Reduced from 1.1rem */
+}
+
+/* Reduce card heights to fit all 3 in viewport */
+.step-card {
+  min-height: 420px !important; /* Reduced from 480px */
+}
+
+/* Specifically reduce Card 3 height for AI tools */
+.step-card:nth-child(3) {
+  min-height: 380px !important;
+}
+
+/* Reduce textarea heights */
+.textarea-idea,
+.output-textarea {
+  min-height: 150px !important; /* Reduced from 180px */
+  max-height: 200px !important;
+}
+
+/* Compact launch buttons grid */
+.launch-list {
+  max-height: 320px !important; /* Reduced from 380px */
+  gap: 0.5rem !important;
+}
+
+.launch-btn {
+  padding: 0.75rem !important; /* Reduced from 1rem */
+  min-height: 60px !important; /* Reduced from 72px */
+}
+
+/* Compact step header */
+.step-header {
+  margin-bottom: 1rem !important; /* Reduced from 1.5rem */
+  padding-bottom: 0.75rem !important; /* Reduced from 1rem */
+}
+
+/* Compact auto-row */
+.auto-row {
+  margin-bottom: 1rem !important; /* Reduced from 1.5rem */
+  padding: 0.5rem !important; /* Reduced from 0.75rem */
+}
+
+/* Compact footer */
+.footer {
+  padding: 1rem 2rem !important; /* Reduced from 1.5rem */
+}
+
+/* For very small screens, adjust further */
+@media (max-height: 800px) {
+  .hero {
+    padding: 1rem 1.5rem !important;
+  }
+  
+  .step-card {
+    min-height: 380px !important;
+  }
+  
+  .step-card:nth-child(3) {
+    min-height: 340px !important;
+  }
+  
+  .launch-list {
+    max-height: 280px !important;
+  }
+}
