@@ -4,16 +4,25 @@
 @media (min-width: 1921px) {
   .page {
     max-width: 1800px;
-    margin: 0 auto;
+    margin: 60px auto;
+    border-radius: 32px;
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
   }
   
   .cards-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
+    gap: 40px;
+    padding: 40px;
   }
   
   .step-card {
-    padding: 32px;
+    padding: 40px;
+    border-radius: 24px;
+  }
+  
+  .hero {
+    padding: 50px 40px;
   }
   
   .hero-title {
@@ -26,59 +35,88 @@
   
   .launch-list {
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 20px;
   }
   
   .launch-btn {
-    padding: 20px;
+    padding: 24px;
     font-size: 1.1rem;
   }
   
   .launch-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
   }
   
   .textarea-idea,
   .output-textarea {
     font-size: 1.1rem;
-    padding: 20px;
-    min-height: 180px;
+    padding: 24px;
+    min-height: 200px;
+    border-radius: 16px;
+  }
+  
+  .step-header-main h2 {
+    font-size: 1.8rem;
+  }
+  
+  .step-subtitle {
+    font-size: 1.1rem;
   }
 }
 
-/* Large desktop screens (1920px and above) */
+/* Large desktop screens (1440px - 1920px) */
 @media (min-width: 1440px) and (max-width: 1920px) {
   .page {
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 40px auto;
+    border-radius: 28px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
   }
   
   .cards-grid {
     grid-template-columns: repeat(3, minmax(400px, 1fr));
-    gap: 28px;
+    gap: 32px;
+    padding: 32px;
   }
   
   .step-card {
-    padding: 28px;
+    padding: 32px;
+    border-radius: 20px;
+  }
+  
+  .hero {
+    padding: 40px 32px;
   }
   
   .hero-title {
     font-size: 3rem;
   }
   
+  .hero-subtitle {
+    font-size: 1.3rem;
+  }
+  
   .launch-list {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
   
   .textarea-idea,
   .output-textarea {
-    min-height: 160px;
+    min-height: 180px;
     font-size: 1.05rem;
+    padding: 20px;
   }
   
   .stats-row {
+    font-size: 1rem;
+    gap: 24px;
+  }
+  
+  .footer {
+    padding: 24px 32px;
     font-size: 1rem;
   }
 }
@@ -87,36 +125,63 @@
 @media (min-width: 1024px) and (max-width: 1439px) {
   .page {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 30px auto;
+    border-radius: 24px;
   }
   
   .cards-grid {
     grid-template-columns: repeat(3, minmax(320px, 1fr));
-    gap: 24px;
+    gap: 28px;
+    padding: 28px;
   }
   
   .step-card {
-    padding: 24px;
+    padding: 28px;
+  }
+  
+  .hero {
+    padding: 36px 28px;
   }
   
   .hero-title {
     font-size: 2.5rem;
   }
   
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+  
   .launch-list {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 160px;
+    padding: 18px;
   }
 }
 
 /* Tablet landscape (768px - 1023px) */
 @media (min-width: 768px) and (max-width: 1023px) {
+  .page {
+    margin: 20px;
+    border-radius: 20px;
+  }
+  
   .cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 24px;
+    padding: 24px;
   }
   
   .step-card:nth-child(3) {
     grid-column: span 2;
+  }
+  
+  .hero {
+    padding: 30px 24px;
   }
   
   .hero-title {
@@ -129,6 +194,7 @@
   
   .launch-list {
     grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
   }
   
   .hero-top {
@@ -141,18 +207,46 @@
   .settings-btn {
     position: static;
     margin-top: 10px;
+    width: 100%;
+  }
+  
+  .hero-brand {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 150px;
   }
 }
 
 /* Tablet portrait (600px - 767px) */
 @media (min-width: 600px) and (max-width: 767px) {
+  body {
+    padding: 16px;
+  }
+  
+  .page {
+    margin: 0;
+    border-radius: 16px;
+  }
+  
   .cards-grid {
     grid-template-columns: 1fr;
     gap: 20px;
+    padding: 20px;
   }
   
   .step-card {
-    padding: 20px;
+    padding: 24px;
+    border-radius: 16px;
+  }
+  
+  .hero {
+    padding: 24px 20px;
+    border-radius: 16px 16px 0 0;
   }
   
   .hero-title {
@@ -161,22 +255,40 @@
   
   .launch-list {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   
   .footer {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+    border-radius: 0 0 16px 16px;
   }
   
   .modal {
-    width: 95%;
-    max-width: 95%;
+    width: 90%;
+    max-width: 500px;
+    margin: 20px;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    min-height: 140px;
+    padding: 16px;
   }
 }
 
 /* Mobile (375px - 599px) */
 @media (max-width: 599px) {
+  body {
+    padding: 12px;
+  }
+  
+  .page {
+    margin: 0;
+    border-radius: 12px;
+  }
+  
   .cards-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -190,6 +302,7 @@
   
   .hero {
     padding: 20px 16px;
+    border-radius: 12px 12px 0 0;
   }
   
   .hero-title {
@@ -203,6 +316,7 @@
   
   .launch-list {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
   
   .launch-btn {
@@ -213,11 +327,15 @@
     font-size: 1.3rem;
   }
   
+  .step-subtitle {
+    font-size: 0.9rem;
+  }
+  
   .textarea-idea,
   .output-textarea {
     padding: 16px;
     font-size: 1rem;
-    min-height: 140px;
+    min-height: 120px;
   }
   
   .footer {
@@ -225,6 +343,8 @@
     gap: 8px;
     padding: 16px;
     text-align: center;
+    font-size: 0.9rem;
+    border-radius: 0 0 12px 12px;
   }
   
   .modal {
@@ -264,6 +384,10 @@
 
 /* Small mobile (under 375px) */
 @media (max-width: 374px) {
+  body {
+    padding: 8px;
+  }
+  
   .cards-grid {
     padding: 12px;
     gap: 12px;
@@ -271,6 +395,12 @@
   
   .step-card {
     padding: 16px;
+    border-radius: 10px;
+  }
+  
+  .hero {
+    padding: 16px 12px;
+    border-radius: 10px 10px 0 0;
   }
   
   .hero-title {
@@ -287,6 +417,10 @@
     font-size: 1.2rem;
   }
   
+  .step-subtitle {
+    font-size: 0.85rem;
+  }
+  
   .launch-name {
     font-size: 14px;
   }
@@ -298,6 +432,20 @@
   .stats-row {
     font-size: 12px;
     gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    padding: 14px;
+    font-size: 0.95rem;
+    min-height: 100px;
+  }
+  
+  .footer {
+    padding: 12px;
+    font-size: 0.85rem;
+    border-radius: 0 0 10px 10px;
   }
 }
 
@@ -311,13 +459,19 @@
   
   .hero-top {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
   
   .global-reset-btn,
   .settings-btn {
     margin-top: 15px;
     width: 100%;
+    justify-content: center;
+  }
+  
+  .template-toggle {
+    width: 100%;
+    padding: 12px;
   }
 }
 
@@ -328,7 +482,7 @@
   }
 }
 
-/* Responsive text */
+/* Responsive text scaling */
 @media (max-width: 1023px) {
   .step-subtitle {
     font-size: 0.9rem;
@@ -336,6 +490,10 @@
   
   .launch-sub {
     font-size: 0.8rem;
+  }
+  
+  .stats-row span {
+    font-size: 0.9rem;
   }
 }
 
@@ -361,6 +519,16 @@
   }
 }
 
+@media (min-width: 768px) and (max-width: 1023px) {
+  .maximized {
+    width: calc(100vw - 40px) !important;
+    height: calc(100vh - 40px) !important;
+    left: 20px !important;
+    top: 20px !important;
+    border-radius: 20px !important;
+  }
+}
+
 /* ===== FIX FOR BIG SCREENS ===== */
 @media (min-width: 1440px) {
   body {
@@ -374,10 +542,7 @@
   
   .page {
     width: 100%;
-    max-width: 1600px;
     background: var(--card-bg);
-    border-radius: 24px;
-    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     border: 1px solid var(--border-color);
   }
@@ -399,16 +564,21 @@
 @media (min-width: 2560px) {
   .page {
     max-width: 2000px;
-    margin: 60px auto;
+    margin: 80px auto;
   }
   
   .cards-grid {
-    gap: 40px;
+    gap: 48px;
+    padding: 48px;
   }
   
   .step-card {
-    padding: 40px;
-    border-radius: 24px;
+    padding: 48px;
+    border-radius: 32px;
+  }
+  
+  .hero {
+    padding: 60px 48px;
   }
   
   .hero-title {
@@ -421,30 +591,35 @@
   
   .launch-list {
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 28px;
   }
   
   .launch-btn {
-    padding: 24px;
-    border-radius: 16px;
+    padding: 28px;
+    border-radius: 20px;
   }
   
   .launch-icon {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
+    width: 64px;
+    height: 64px;
+    font-size: 32px;
   }
   
   .textarea-idea,
   .output-textarea {
     font-size: 1.2rem;
-    padding: 24px;
-    border-radius: 16px;
+    padding: 28px;
+    border-radius: 20px;
+    min-height: 220px;
   }
   
   .modal {
-    max-width: 800px;
-    border-radius: 24px;
+    max-width: 1000px;
+    border-radius: 32px;
+  }
+  
+  html {
+    font-size: 18px;
   }
 }
 
@@ -454,7 +629,10 @@
   .global-reset-btn,
   .settings-btn,
   .launch-list,
-  .footer {
+  .footer,
+  .modal-backdrop,
+  .template-toggle,
+  .toggle-switch {
     display: none !important;
   }
   
@@ -462,15 +640,65 @@
     break-inside: avoid;
     box-shadow: none !important;
     border: 1px solid #000 !important;
+    page-break-inside: avoid;
   }
   
   body {
     background: white !important;
     color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   
   .page {
     max-width: 100% !important;
     box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .textarea-idea,
+  .output-textarea {
+    border: 1px solid #000 !important;
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --primary: #0000ff;
+    --secondary: #ff0000;
+    --border-color: #000000;
+  }
+  
+  .step-card {
+    border: 2px solid var(--border-color);
+  }
+}
+
+@media (prefers-color-scheme: dark) and (min-width: 1024px) {
+  .page {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+@media (hover: none) and (pointer: coarse) {
+  .launch-btn,
+  .btn-primary,
+  .btn-ghost-small {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .textarea-buttons button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .step-card:hover {
+    transform: none;
   }
 }
