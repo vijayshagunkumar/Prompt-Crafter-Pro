@@ -1,167 +1,214 @@
-/* Auto-detection container */
+/* ===== AUTO-DETECTION COMPONENT - FIXED ===== */
+
+/* Container for auto-detection */
 .auto-detection-container {
-  position: relative;
-  margin-bottom: 16px;
-  min-height: 40px;
+  margin-bottom: 20px;
+  min-height: 60px;
 }
 
+/* Intent badge - Fixed visibility */
 .intent-badge {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 10px 14px;
-  background: rgba(var(--primary-rgb), 0.1);
-  border: 1px solid rgba(var(--primary-rgb), 0.3);
-  border-radius: 10px;
-  color: var(--primary);
-  font-size: 14px;
-  font-weight: 500;
-  animation: fadeIn 0.3s ease;
-  width: fit-content;
+  padding: 12px 16px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  animation: slideDown 0.3s ease-out;
   backdrop-filter: blur(10px);
+  margin-bottom: 16px;
 }
 
-.intent-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 300px;
-}
-
-.intent-label {
-  font-weight: 600;
-}
-
-.placeholder-text {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 10px 14px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  opacity: 0.7;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  display: flex;
+/* Intent items - Better visibility */
+.intent-item {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid;
+  animation: fadeIn 0.4s ease-out;
+  transition: all 0.2s;
+  min-height: 36px;
 }
 
-.placeholder-text.hidden {
-  opacity: 0;
-  visibility: hidden;
+/* Different intent types with better contrast */
+.intent-item[data-type="visual"] {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
 }
 
-/* Emotion detection tags */
-.emotion-tag {
+.intent-item[data-type="code"] {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #a7f3d0;
+}
+
+.intent-item[data-type="writing"] {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+
+.intent-item[data-type="analysis"] {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+}
+
+.intent-item[data-type="business"] {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.intent-item[data-type="learning"] {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #67e8f9;
+}
+
+/* Tone/Emotion tags - Better contrast */
+.tone-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  background: rgba(236, 72, 153, 0.1);
-  border: 1px solid rgba(236, 72, 153, 0.3);
-  border-radius: 8px;
-  color: #ec4899;
+  padding: 6px 12px;
+  border-radius: 16px;
   font-size: 13px;
   font-weight: 500;
-  margin-left: 8px;
-  animation: slideIn 0.3s ease;
+  background: rgba(139, 92, 246, 0.25);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #ddd6fe;
+  text-transform: capitalize;
 }
 
-.emotion-tag.love {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+.tone-badge[data-tone="professional"] {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
 }
 
-.emotion-tag.excitement {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+.tone-badge[data-tone="casual"] {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #a7f3d0;
 }
 
-.emotion-tag.sadness {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+.tone-badge[data-tone="emotional"] {
+  background: rgba(236, 72, 153, 0.25);
+  border-color: rgba(236, 72, 153, 0.4);
+  color: #fbcfe8;
 }
 
-.emotion-tag.empathy {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #10b981;
+.tone-badge[data-tone="urgent"] {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
 }
 
-.emotion-tag.gratitude {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: #8b5cf6;
-}
-
-.emotion-tag.urgency {
-  background: rgba(236, 72, 153, 0.1);
-  border-color: rgba(236, 72, 153, 0.3);
-  color: #ec4899;
-}
-
-.tone-tag {
+/* Attribute tags for multiple detections */
+.attribute-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: rgba(100, 116, 139, 0.1);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  border-radius: 6px;
-  color: var(--text-secondary);
+  gap: 6px;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid #475569;
+  color: #cbd5e1;
+}
+
+.attribute-tag[data-attribute="character"] {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: #8b5cf6;
+  color: #c4b5fd;
+}
+
+.attribute-tag[data-attribute="object"] {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #a7f3d0;
+}
+
+.attribute-tag[data-attribute="context"] {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fde68a;
+}
+
+.attribute-tag[data-attribute="place"] {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+/* Detection header */
+.detection-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #60a5fa;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Detection grid for multiple attributes */
+.detection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.detection-category {
   font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detection-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Confidence indicator */
+.confidence-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   margin-left: 6px;
+  display: inline-block;
 }
 
-/* Responsive auto-detection */
-@media (max-width: 768px) {
-  .auto-detection-container {
-    min-height: 36px;
-  }
-  
-  .intent-badge {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .intent-text {
-    max-width: 200px;
-  }
-  
-  .emotion-tag,
-  .tone-tag {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-  
-  .placeholder-text {
-    font-size: 13px;
-    padding: 8px 12px;
-  }
+.confidence-high {
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
 }
 
-@media (max-width: 480px) {
-  .intent-badge {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  
-  .intent-text {
-    max-width: 150px;
-  }
-  
-  .emotion-tag,
-  .tone-tag {
-    margin-left: 4px;
-  }
+.confidence-medium {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+.confidence-low {
+  background: #94a3b8;
+  box-shadow: 0 0 6px #94a3b8;
 }
 
 /* Animations */
-@keyframes fadeIn {
+@keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -172,40 +219,34 @@
   }
 }
 
-@keyframes slideIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(-10px);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: scale(1);
   }
 }
 
-/* Detection indicators */
-.detection-indicator {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 6px;
-  animation: pulse 2s infinite;
-}
-
-.detection-indicator.active {
-  background: var(--success);
-}
-
-.detection-indicator.inactive {
-  background: var(--text-tertiary);
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+/* Responsive */
+@media (max-width: 768px) {
+  .intent-badge {
+    padding: 10px 14px;
   }
-  50% {
-    opacity: 0.5;
+  
+  .intent-item {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .attribute-tag {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .detection-grid {
+    grid-template-columns: 1fr;
   }
 }
