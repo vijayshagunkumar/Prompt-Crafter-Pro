@@ -83,16 +83,13 @@
                 <h2>Your Idea</h2>
                 <p class="step-subtitle">Describe what you want to create</p>
               </div>
+              <span class="intent-badge" id="intentBadge" style="display:none;">
+                <i class="fas fa-lightbulb"></i> Analyzing...
+              </span>
             </div>
           </div>
 
-          <!-- FIX 1: Auto-detection container -->
-          <div class="auto-detection-container">
-            <div class="intent-badge" id="intentBadge" style="display:none;">
-              <i class="fas fa-lightbulb"></i> <span class="intent-text">Analyzing...</span>
-            </div>
-                  </div>
-
+          <!-- Auto-convert toggle -->
           <div class="auto-row">
             <label class="toggle-switch">
               <input type="checkbox" id="autoConvert" checked />
@@ -106,7 +103,7 @@
 
           <div class="field-block">
             <div class="textarea-wrapper">
-              <textarea id="requirement" class="textarea-idea" placeholder=""></textarea>
+              <textarea id="requirement" class="textarea-idea" placeholder="Describe your task..."></textarea>
               <button class="expand-btn" id="expandInputBtn"><i class="fas fa-expand-alt"></i></button>
               <div class="textarea-buttons">
                 <button class="clear-input-btn" id="clearInputBtn"><i class="fas fa-broom"></i></button>
@@ -115,25 +112,15 @@
             </div>
           </div>
 
-          <div class="step-footer">
-            <!-- REMOVED: Save Template Button from Card 1 -->
-            <button id="convertBtn" class="btn-primary" style="flex: 1;">
+          <div class="step-footer" style="display: flex; gap: 12px; margin-top: 20px;">
+            <button id="saveTemplateBtn" class="btn-primary" style="flex: 1;">
+              <i class="fas fa-save"></i> Save Template
+            </button>
+            <button id="convertBtn" class="btn-primary" style="flex: 2;">
               <i class="fas fa-wand-magic-sparkles"></i> Generate Prompt
             </button>
           </div>
-
-          <button class="template-toggle" id="toggleTemplatesBtn">
-            <i class="fas fa-layer-group"></i> Template Library
-          </button>
-          
-          <div id="templatesPanel" class="templates-panel" style="display:none;">
-            <div class="templates-header">
-              <span class="templates-title">Your Templates</span>
-              <input id="templateSearch" class="input-search" type="text" placeholder="Search templates..." />
-            </div>
-            <div id="templateCategories" class="template-categories"></div>
-            <div id="templatesGrid" class="templates-grid"></div>
-          </div>
+          <!-- Template Library REMOVED -->
         </section>
 
         <!-- CARD 2: Optimized Prompt -->
@@ -165,12 +152,11 @@
             </div>
           </div>
 
-          <!-- FIX 2: Save Template button moved to Card 2 -->
           <div class="output-footer">
             <button class="btn-ghost-small export-btn" id="exportBtn">
               <i class="fas fa-file-export"></i> Export
             </button>
-            <button class="btn-ghost-small save-template-btn" id="saveTemplateBtn">
+            <button class="btn-ghost-small save-template-btn" id="saveTemplateBtn2">
               <i class="fas fa-save"></i> Save Template
             </button>
             <button class="btn-ghost-small history-btn" id="toggleHistoryBtn">
@@ -202,7 +188,7 @@
           </div>
 
           <div class="launch-list">
-            <!-- FIX 3: ChatGPT with proper icon class -->
+            <!-- ChatGPT -->
             <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
               <div class="launch-icon">
                 <i class="fab fa-openai" style="color: #10a37f;"></i>
