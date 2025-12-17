@@ -6,9 +6,10 @@ import { templateManager } from './features/templates.js';
 import { historyManager } from './features/history.js';
 import { intentDetector } from './features/intent-detector.js';
 import { cardMaximizer } from './features/card-maximizer.js';
-import { voiceHandler } from './features/voice-handler.js';
+import { voiceFeatures } from './features/voice.js'; // Changed from voiceHandler
 import { exportHandler } from './features/export-handler.js';
 import { launchButtons } from './features/launch-buttons.js';
+import { toolPrioritizer } from './features/tool-prioritizer.js'; // NEW
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,12 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.promptConverter = promptConverter;
   window.templateManager = templateManager;
   window.historyManager = historyManager;
+  window.cardMaximizer = cardMaximizer;
+  window.toolPrioritizer = toolPrioritizer; // NEW
   
   console.log('✅ PromptCraft initialized successfully');
 });
 
 function initFeatures() {
-  // Features auto-initialize via their constructors
   // Add maximize buttons to cards
   setTimeout(() => {
     cardMaximizer.addMaximizeButtons();
@@ -41,6 +43,10 @@ function initFeatures() {
       templateManager.loadDefaultTemplates();
     }
   }, 300);
+  
+  // Initialize voice features (already done in constructor)
+  // Initialize tool prioritizer (already done in constructor)
+  // All other features auto-initialize via their constructors
 }
 
 function setupEventListeners() {
@@ -75,23 +81,11 @@ function setupEventListeners() {
     });
   }
   
-  // Auto-convert toggle
-  const autoConvertToggle = document.getElementById('autoConvert');
-  if (autoConvertToggle) {
-    autoConvertToggle.addEventListener('change', (e) => {
-      appState.autoConvert = e.target.checked;
-      localStorage.setItem('autoConvert', e.target.checked);
-      notifications.info(`Auto-convert ${e.target.checked ? 'enabled' : 'disabled'}`);
-    });
-  }
+  // Auto-convert toggle - REMOVED (handled in prompt-converter.js)
+  // This is now handled in prompt-converter.js setup()
   
-  // Generate prompt button
-  const convertBtn = document.getElementById('convertBtn');
-  if (convertBtn) {
-    convertBtn.addEventListener('click', () => {
-      promptConverter.convert();
-    });
-  }
+  // Generate prompt button - REMOVED (handled in prompt-converter.js)
+  // This is already handled in prompt-converter.js setup()
   
   // Clear input button
   const clearInputBtn = document.getElementById('clearInputBtn');
@@ -99,73 +93,166 @@ function setupEventListeners() {
     clearInputBtn.addEventListener('click', () => {
       document.getElementById('requirement').value = '';
       intentDetector.clearDetection();
+      // Also clear the generated prompt in Card 2
+      document.getElementById('output').value = '';
+      
+      // Update counters
+      const charCount = document.getElementById('charCount');
+      const wordCount = document.getElementById('wordCount');
+      const lineCount = document.getElementById('lineCount');
+      if (charCount) charCount.textContent = '0 chars';
+      if (wordCount) wordCount.textContent = '0 words';
+      if (lineCount) lineCount.textContent = '0 lines';
+      
+      // Disable AI buttons
+      document.querySelectorAll('.launch-btn').forEach(btn => {
+        btn.disabled = true;
+      });
+      
+      // Hide success badge
+      const badge = document.getElementById('convertedBadge');
+      if (badge) {
+        badge.style.display = 'none';
+      }
+      
       notifications.info('Input cleared');
     });
   }
   
-  // Expand buttons
-  const expandInputBtn = document.getElementById('expandInputBtn');
-  const expandOutputBtn = document.getElementById('expandOutputBtn');
+  // Expand buttons - REMOVED (need textarea-expander.js)
+  // These need to be handled by textarea-expander.js
+  // Create a new file or integrate into card-maximizer.js
   
-  if (expandInputBtn) {
-    expandInputBtn.addEventListener('click', () => {
-      const inputTextarea = document.getElementById('requirement');
-      if (inputTextarea.style.height === '300px') {
-        inputTextarea.style.height = '150px';
-      } else {
-        inputTextarea.style.height = '300px';
-      }
-    });
-  }
+  // Voice input - REMOVED (handled in voice.js)
+  // This is already handled in voice.js setupEventListeners()
   
-  if (expandOutputBtn) {
-    expandOutputBtn.addEventListener('click', () => {
-      const outputTextarea = document.getElementById('output');
-      if (outputTextarea.style.height === '400px') {
-        outputTextarea.style.height = '200px';
-      } else {
-        outputTextarea.style.height = '400px';
-      }
-    });
-  }
-  
-  // Voice input
-  const voiceInputBtn = document.getElementById('voiceInputBtn');
-  if (voiceInputBtn) {
-    voiceInputBtn.addEventListener('click', () => {
-      voiceHandler.startVoiceInput();
-    });
-  }
-  
-  // Export button
-  const exportBtn = document.getElementById('exportBtn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      exportHandler.exportPrompt();
-    });
-  }
+  // Export button - REMOVED (handled in export-handler.js)
+  // This should be handled in export-handler.js
   
   // Global reset button
   const globalResetBtn = document.getElementById('globalResetBtn');
   if (globalResetBtn) {
     globalResetBtn.addEventListener('click', () => {
       if (confirm('Reset all cards to default layout?')) {
+        // Clear all text areas
+        document.getElementById('requirement').value = '';
+        document.getElementById('output').value = '';
+        
         // Reset textarea sizes
         const inputTextarea = document.getElementById('requirement');
         const outputTextarea = document.getElementById('output');
         if (inputTextarea) inputTextarea.style.height = '';
         if (outputTextarea) outputTextarea.style.height = '';
         
-        // Close open panels
-        const templatesPanel = document.getElementById('templatesPanel');
-        const historyPanel = document.getElementById('historyPanel');
-        if (templatesPanel) templatesPanel.style.display = 'none';
-        if (historyPanel) historyPanel.style.display = 'none';
+        // Reset counters
+        const charCount = document.getElementById('charCount');
+        const wordCount = document.getElementById('wordCount');
+        const lineCount = document.getElementById('lineCount');
+        if (charCount) charCount.textContent = '0 chars';
+        if (wordCount) wordCount.textContent = '0 words';
+        if (lineCount) lineCount.textContent = '0 lines';
         
-        // Restore maximized card if any
-        cardMaximizer.restoreCurrentCard();
+        // Disable AI buttons
+        document.querySelectorAll('.launch-btn').forEach(btn => {
+          btn.disabled = true;
+        });
+        
+        // Hide badges
+        const convertedBadge = document.getElementById('convertedBadge');
+        if (convertedBadge) convertedBadge.style.display = 'none';
+        
+        const intentBadge = document.getElementById('intentBadge');
+        if (intentBadge) intentBadge.style.display = 'none';
+        
+        // Reset voice button state
+        const voiceInputBtn = document.getElementById('voiceInputBtn');
+        if (voiceInputBtn) {
+          voiceInputBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+          voiceInputBtn.title = 'Click to enable voice input';
+          voiceInputBtn.classList.remove('listening', 'speaking');
+          voiceInputBtn.classList.add('muted');
+        }
+        
+        // Close any maximized card
+        cardMaximizer.closeAll();
+        
+        // Clear intent detection
+        intentDetector.clearDetection();
+        
+        // Reset tool prioritization
+        const launchList = document.querySelector('.launch-list');
+        if (launchList) {
+          // Remove crowns
+          launchList.querySelectorAll('.crown-icon').forEach(crown => crown.remove());
+          // Reset button classes
+          launchList.querySelectorAll('.launch-btn').forEach(btn => {
+            btn.classList.remove('best-tool');
+          });
+        }
         
         notifications.success('Layout reset to default');
+      }
+    });
+  }
+  
+  // Template modal
+  const closeTemplateBtn = document.getElementById('closeTemplateBtn');
+  if (closeTemplateBtn) {
+    closeTemplateBtn.addEventListener('click', () => {
+      document.getElementById('templateModal').style.display = 'none';
+    });
+  }
+  
+  // Save template buttons
+  const saveTemplateBtn1 = document.getElementById('saveTemplateBtn');
+  const saveTemplateBtn2 = document.getElementById('saveTemplateBtn2');
+  const saveTemplateBtnModal = document.getElementById('saveTemplateBtnModal');
+  
+  if (saveTemplateBtn1) {
+    saveTemplateBtn1.addEventListener('click', () => templateManager.openSaveModal());
+  }
+  
+  if (saveTemplateBtn2) {
+    saveTemplateBtn2.addEventListener('click', () => templateManager.openSaveModal());
+  }
+  
+  if (saveTemplateBtnModal) {
+    saveTemplateBtnModal.addEventListener('click', () => {
+      const name = document.getElementById('templateName').value;
+      const category = document.getElementById('templateCategory').value;
+      const prompt = document.getElementById('output').value;
+      
+      if (name && prompt) {
+        templateManager.saveTemplate(name, category, prompt);
+        document.getElementById('templateModal').style.display = 'none';
+        document.getElementById('templateName').value = '';
+      } else {
+        notifications.error('Please enter template name and generate a prompt first');
+      }
+    });
+  }
+  
+  // History toggle
+  const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+  if (toggleHistoryBtn) {
+    toggleHistoryBtn.addEventListener('click', () => {
+      const historyPanel = document.getElementById('historyPanel');
+      if (historyPanel) {
+        const isVisible = historyPanel.style.display === 'block';
+        historyPanel.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+          historyManager.loadHistory();
+        }
+      }
+    });
+  }
+  
+  // Clear history
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Clear all history?')) {
+        historyManager.clearHistory();
       }
     });
   }
@@ -198,9 +285,20 @@ function setupEventListeners() {
       templateManager.openSaveModal();
     }
     
-    // Escape to restore maximized card
+    // Escape to close modals or restore maximized card
     if (e.key === 'Escape') {
-      cardMaximizer.restoreCurrentCard();
+      // Close modals first
+      const settingsModal = document.getElementById('settingsModal');
+      const templateModal = document.getElementById('templateModal');
+      
+      if (settingsModal && settingsModal.style.display === 'flex') {
+        settingsModal.style.display = 'none';
+      } else if (templateModal && templateModal.style.display === 'flex') {
+        templateModal.style.display = 'none';
+      } else {
+        // Then restore maximized card
+        cardMaximizer.closeAll();
+      }
     }
   });
 }
@@ -226,7 +324,17 @@ function loadInitialState() {
     }
   }
   
-  // Update usage counter
+  // Load usage count
+  const savedUsage = localStorage.getItem('promptCraftUsageCount');
+  if (savedUsage) {
+    appState.usageCount = parseInt(savedUsage) || 0;
+    const usageElement = document.getElementById('usageCount');
+    if (usageElement) {
+      usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${appState.usageCount} prompts`;
+    }
+  }
+  
+  // Update template counters
   templateManager.updateCounters();
   
   // Show welcome notification
