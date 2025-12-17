@@ -6,10 +6,10 @@ import { templateManager } from './features/templates.js';
 import { historyManager } from './features/history.js';
 import { intentDetector } from './features/intent-detector.js';
 import { cardMaximizer } from './features/card-maximizer.js';
-import { voiceFeatures } from './features/voice.js'; // Changed from voiceHandler
+import { voiceFeatures } from './features/voice.js';
 import { exportHandler } from './features/export-handler.js';
 import { launchButtons } from './features/launch-buttons.js';
-import { toolPrioritizer } from './features/tool-prioritizer.js'; // NEW
+import { toolPrioritizer } from './features/tool-prioritizer.js';
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.templateManager = templateManager;
   window.historyManager = historyManager;
   window.cardMaximizer = cardMaximizer;
-  window.toolPrioritizer = toolPrioritizer; // NEW
+  window.toolPrioritizer = toolPrioritizer;
   
   console.log('✅ PromptCraft initialized successfully');
 });
@@ -44,9 +44,42 @@ function initFeatures() {
     }
   }, 300);
   
-  // Initialize voice features (already done in constructor)
-  // Initialize tool prioritizer (already done in constructor)
-  // All other features auto-initialize via their constructors
+  // Override promptConverter to add tool prioritization
+  overridePromptConverter();
+}
+
+function overridePromptConverter() {
+  // Store original convert method
+  const originalConvert = promptConverter.convert;
+  
+  // Override convert method
+  promptConverter.convert = async function() {
+    // Show loading state
+    const convertBtn = document.getElementById('convertBtn');
+    const originalHTML = convertBtn.innerHTML;
+    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    convertBtn.disabled = true;
+    
+    try {
+      // Call original convert method
+      await originalConvert.call(this);
+      
+      // After successful conversion, prioritize AI tools
+      const input = document.getElementById('requirement');
+      if (input && input.value.trim()) {
+        setTimeout(() => {
+          toolPrioritizer.prioritizeTools(input.value);
+        }, 300);
+      }
+    } catch (error) {
+      console.error('Conversion error:', error);
+      notifications.error('Failed to generate prompt');
+      
+      // Reset button
+      convertBtn.innerHTML = originalHTML;
+      convertBtn.disabled = false;
+    }
+  };
 }
 
 function setupEventListeners() {
@@ -81,12 +114,6 @@ function setupEventListeners() {
     });
   }
   
-  // Auto-convert toggle - REMOVED (handled in prompt-converter.js)
-  // This is now handled in prompt-converter.js setup()
-  
-  // Generate prompt button - REMOVED (handled in prompt-converter.js)
-  // This is already handled in prompt-converter.js setup()
-  
   // Clear input button
   const clearInputBtn = document.getElementById('clearInputBtn');
   if (clearInputBtn) {
@@ -115,19 +142,20 @@ function setupEventListeners() {
         badge.style.display = 'none';
       }
       
+      // Reset tool prioritization
+      const launchList = document.querySelector('.launch-list');
+      if (launchList) {
+        // Remove crowns
+        launchList.querySelectorAll('.crown-icon').forEach(crown => crown.remove());
+        // Reset button classes
+        launchList.querySelectorAll('.launch-btn').forEach(btn => {
+          btn.classList.remove('best-tool');
+        });
+      }
+      
       notifications.info('Input cleared');
     });
   }
-  
-  // Expand buttons - REMOVED (need textarea-expander.js)
-  // These need to be handled by textarea-expander.js
-  // Create a new file or integrate into card-maximizer.js
-  
-  // Voice input - REMOVED (handled in voice.js)
-  // This is already handled in voice.js setupEventListeners()
-  
-  // Export button - REMOVED (handled in export-handler.js)
-  // This should be handled in export-handler.js
   
   // Global reset button
   const globalResetBtn = document.getElementById('globalResetBtn');
