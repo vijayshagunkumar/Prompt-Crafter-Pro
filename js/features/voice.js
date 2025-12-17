@@ -277,4 +277,4 @@ class VoiceFeatures {
 const voiceFeatures = new VoiceFeatures();
 window.voiceFeatures = voiceFeatures;
 
-export { VoiceFeatures, voiceFeatures };
+export { VoiceFeatures };
