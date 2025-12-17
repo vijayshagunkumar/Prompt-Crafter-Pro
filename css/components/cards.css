@@ -1,4 +1,3 @@
-
 /* Card Styles */
 .step-card {
   background: var(--surface);
@@ -56,6 +55,10 @@
 
 .step-header-main {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
 }
 
 .step-subtitle {
@@ -143,6 +146,7 @@
 .history-item:hover {
   border-color: var(--primary);
   background: var(--surface);
+  transform: translateX(4px);
 }
 
 .history-item-title {
@@ -169,6 +173,7 @@
   cursor: pointer;
   transition: all var(--transition-normal);
   text-align: left;
+  position: relative;
 }
 
 .launch-btn:hover:not(:disabled) {
@@ -197,6 +202,36 @@
   box-shadow: 0 4px 15px rgba(66, 133, 244, 0.2);
 }
 
+.launch-btn.launch-perplexity:hover:not(:disabled) {
+  border-color: #9b59b6;
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.2);
+}
+
+.launch-btn.launch-dalle:hover:not(:disabled) {
+  border-color: #00a3ff;
+  box-shadow: 0 4px 15px rgba(0, 163, 255, 0.2);
+}
+
+.launch-btn.launch-midjourney:hover:not(:disabled) {
+  border-color: #f37626;
+  box-shadow: 0 4px 15px rgba(243, 118, 38, 0.2);
+}
+
+.launch-btn.launch-deepseek:hover:not(:disabled) {
+  border-color: #3498db;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+.launch-btn.launch-copilot:hover:not(:disabled) {
+  border-color: #0078d7;
+  box-shadow: 0 4px 15px rgba(0, 120, 215, 0.2);
+}
+
+.launch-btn.launch-grok:hover:not(:disabled) {
+  border-color: #f37626;
+  box-shadow: 0 4px 15px rgba(243, 118, 38, 0.2);
+}
+
 .launch-icon {
   width: 40px;
   height: 40px;
@@ -207,6 +242,16 @@
   justify-content: center;
   font-size: var(--font-size-xl);
   flex-shrink: 0;
+}
+
+.launch-btn.launch-dalle .launch-icon {
+  background: rgba(0, 163, 255, 0.1);
+  color: #00a3ff;
+}
+
+.launch-btn.launch-midjourney .launch-icon {
+  background: rgba(243, 118, 38, 0.1);
+  color: #f37626;
 }
 
 .launch-text {
@@ -227,7 +272,11 @@
   margin-top: 2px;
 }
 
-/* Intent Badge */
+/* =========================================== */
+/* NEW FEATURES - FUNCTIONAL & UX REQUIREMENTS */
+/* =========================================== */
+
+/* 1. Intent Badge */
 .intent-badge {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -240,6 +289,7 @@
   gap: 6px;
   margin-left: auto;
   animation: fadeIn 0.3s ease-out;
+  white-space: nowrap;
 }
 
 .intent-badge .tone-badge {
@@ -253,7 +303,7 @@
   text-transform: capitalize;
 }
 
-/* Card Maximize Button */
+/* 2. Card Maximize Button */
 .maximize-card-btn {
   background: transparent;
   border: 1px solid var(--border);
@@ -262,12 +312,13 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
-  margin-left: auto;
+  margin-left: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
 }
 
 .maximize-card-btn:hover {
@@ -277,9 +328,18 @@
 }
 
 .step-card.maximized {
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-  border: 2px solid var(--primary);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2000 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5) !important;
   animation: maximizeCard 0.3s ease-out;
+  overflow: auto !important;
 }
 
 @keyframes maximizeCard {
@@ -293,13 +353,14 @@
   }
 }
 
-/* Best Match Display */
+/* 3. Best Match Display */
 .best-match-display {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
   border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: var(--radius-md);
   padding: var(--space-md);
   margin-top: var(--space-sm);
+  margin-bottom: var(--space-lg);
   animation: slideDown 0.3s ease-out;
 }
 
@@ -308,6 +369,7 @@
   align-items: center;
   gap: var(--space-sm);
   margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 
 .best-match-header .fa-star {
@@ -324,6 +386,9 @@
   font-weight: 700;
   color: var(--primary);
   font-size: var(--font-size-base);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
 }
 
 .best-match-reason {
@@ -339,11 +404,12 @@
   color: var(--text-muted);
 }
 
-/* Tool Highlights */
+/* 4. Tool Highlights */
 .launch-btn.top-match {
-  border-color: var(--success);
-  background: rgba(16, 185, 129, 0.05);
+  border-color: var(--success) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
   position: relative;
+  order: 1;
 }
 
 .launch-btn.top-match::before {
@@ -360,44 +426,27 @@
   align-items: center;
   justify-content: center;
   border: 2px solid var(--success);
+  z-index: 1;
 }
 
 .launch-btn.second-match {
-  border-color: var(--warning);
-  background: rgba(245, 158, 11, 0.05);
+  border-color: var(--warning) !important;
+  background: rgba(245, 158, 11, 0.05) !important;
+  order: 2;
 }
 
 .launch-btn.third-match {
-  border-color: var(--info);
-  background: rgba(59, 130, 246, 0.05);
+  border-color: var(--info) !important;
+  background: rgba(59, 130, 246, 0.05) !important;
+  order: 3;
 }
 
-/* Global Reset Button */
-.global-reset-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--font-size-sm);
-}
-
-.global-reset-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: rgba(99, 102, 246, 0.1);
-}
-
-/* Responsive Textareas */
+/* 5. Responsive Textareas */
 .textarea-idea, .output-textarea {
   min-height: 120px;
   max-height: 400px;
   transition: height 0.2s ease-out;
+  resize: vertical;
 }
 
 @media (max-height: 700px) {
@@ -412,13 +461,123 @@
   }
 }
 
-/* History Panel */
+/* 6. Global Reset Button */
+.global-reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  margin-left: var(--space-sm);
+}
+
+.global-reset-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(99, 102, 246, 0.1);
+}
+
+/* 7. History Panel Improvements */
 .history-panel {
   max-height: 300px;
   overflow-y: auto;
   animation: slideDown 0.3s ease-out;
 }
 
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.history-item-index {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: var(--font-size-sm);
+}
+
+.history-item-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.history-item-content {
+  margin-top: var(--space-sm);
+}
+
+.history-item-requirement {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  margin-bottom: var(--space-sm);
+  line-height: 1.4;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.history-empty-state {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+}
+
+.history-empty-state i {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--space-md);
+  opacity: 0.5;
+}
+
+.history-empty-state p {
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+/* 8. AI Tool Colors - Additional */
+.launch-btn.launch-perplexity .launch-icon {
+  background: rgba(155, 89, 182, 0.1);
+  color: #9b59b6;
+}
+
+.launch-btn.launch-deepseek .launch-icon {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.launch-btn.launch-copilot .launch-icon {
+  background: rgba(0, 120, 215, 0.1);
+  color: #0078d7;
+}
+
+.launch-btn.launch-grok .launch-icon {
+  background: rgba(243, 118, 38, 0.1);
+  color: #f37626;
+}
+
+/* 9. Maximize Overlay (CRITICAL - WAS MISSING) */
+#maximizeOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 1999;
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+  cursor: pointer;
+}
+
+/* 10. Animations */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -433,4 +592,261 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* 11. Mobile Responsiveness */
+@media (max-width: 768px) {
+  .intent-badge {
+    margin-top: var(--space-sm);
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .global-reset-btn {
+    margin-top: var(--space-sm);
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .best-match-display {
+    font-size: var(--font-size-sm);
+  }
+  
+  .best-match-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+  
+  .step-header-main {
+    flex-wrap: wrap;
+  }
+  
+  .maximize-card-btn {
+    margin-left: 0;
+    margin-top: var(--space-sm);
+  }
+}
+
+/* 12. History Item Styling for Functional History */
+.history-item:hover .history-item-title {
+  color: var(--primary);
+}
+
+.history-item-actions button {
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+}
+
+.history-item-actions button i {
+  font-size: var(--font-size-xs);
+}
+
+/* 13. Ensure Textarea Resize Works Properly */
+.textarea-idea:focus, .output-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+
+/* 14. Card 2 Mode Buttons Enhancement */
+.preset-option {
+  transition: all var(--transition-fast);
+}
+
+.preset-option.active {
+  background: var(--primary) !important;
+  color: white !important;
+  border-color: var(--primary) !important;
+}
+
+.preset-option:hover:not(.active) {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary-light);
+}
+
+/* 15. Ensure No Layout Shifts */
+.step-card, .textarea-wrapper, .launch-btn {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* 16. Remove Floating Buttons Inside Inputs */
+.textarea-buttons {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.textarea-buttons button {
+  pointer-events: auto;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(4px);
+}
+
+/* 17. Ensure All Buttons Look Clickable */
+.btn-primary, .btn-ghost-small, .settings-btn, .export-btn, .history-btn,
+.template-toggle, .clear-input-btn, .voice-input-btn, .voice-output-btn,
+.expand-btn, .maximize-card-btn, .global-reset-btn {
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn-primary:active, .btn-ghost-small:active, .settings-btn:active {
+  transform: translateY(1px);
+}
+
+/* 18. Loading States */
+.btn-primary.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.btn-primary.loading i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 19. Ensure No Content Jump */
+.page, .workflow, .cards-grid {
+  min-height: 100vh;
+  overflow-anchor: none;
+}
+
+/* 20. Card Layout Stability */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.step-card {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card .step-header {
+  flex-shrink: 0;
+}
+
+.step-card .field-block,
+.step-card .field-block-output,
+.step-card .launch-list {
+  flex: 1;
+}
+
+/* 21. Explicit Button States for Mode Buttons */
+.preset-option[data-preset="default"] {
+  border-left: 3px solid #6366f1;
+}
+
+.preset-option[data-preset="chatgpt"] {
+  border-left: 3px solid #10a37f;
+}
+
+.preset-option[data-preset="claude"] {
+  border-left: 3px solid #d4a574;
+}
+
+.preset-option[data-preset="detailed"] {
+  border-left: 3px solid #8b5cf6;
+}
+
+/* 22. History Button Active State */
+.history-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* 23. Template Toggle Active State */
+.template-toggle.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* 24. Voice Button Active States */
+.voice-input-btn.listening, .voice-output-btn.speaking {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--danger);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
+/* 25. Clear/Undo Button States */
+.clear-input-btn.undo-state {
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--success);
+}
+
+.clear-input-btn.undo-state:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+/* 26. Export Button Success State */
+.export-btn.success {
+  color: var(--success);
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* 27. Auto-convert Timer Animation */
+.timer-badge {
+  animation: pulseTimer 1s infinite alternate;
+}
+
+@keyframes pulseTimer {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* 28. Converted Badge Animation */
+.meta-pill.success {
+  animation: bounceIn 0.5s ease-out;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 29. Input Focus Enhancement */
+#requirement:focus ~ .textarea-buttons .clear-input-btn,
+#requirement:focus ~ .textarea-buttons .voice-input-btn {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: var(--primary-light);
+}
+
+/* 30. Output Read-only Enhancement */
+.output-textarea:read-only {
+  background: var(--surface-light);
+  cursor: default;
+}
+
+.output-textarea:read-only:focus {
+  border-color: var(--border);
+  box-shadow: none;
 }
