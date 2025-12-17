@@ -8,83 +8,83 @@ Replace your Project Structure section with this
 
 ```text
 Prompt-Crafter-Pro/
-│
-├── assets/                     # Static assets (icons, images, branding)
-│   ├── icons/                  # App icons & AI tool logos
+@vijayshagunkumar ➜ /workspaces/Prompt-Crafter-Pro (main) $ ls
+README.md  assets  css  index.html  js  settings-modal.html
+@vijayshagunkumar ➜ /workspaces/Prompt-Crafter-Pro (main) $ tree
+.
+├── README.md
+├── assets
+│   ├── icons
+│   │   ├── abc.ico
 │   │   ├── chatgpt.svg
 │   │   ├── claude.svg
 │   │   ├── copilot.svg
 │   │   ├── deepseek.svg
+│   │   ├── favicon.ico
 │   │   ├── gemini.svg
 │   │   ├── grok.svg
 │   │   ├── midjourney.svg
 │   │   └── perplexity.svg
-│   │
-│   └── images/
+│   └── images
 │       ├── img.jpg
 │       └── logo.png
-│
-├── css/                        # Modular CSS architecture
-│   ├── base/
+├── css
+│   ├── base
 │   │   ├── reset.css
 │   │   ├── typography.css
 │   │   ├── variable-mapping.css
 │   │   └── variables.css
-│   │
-│   ├── components/
-│   │   ├── cards.css
+│   ├── components
+│   │   ├── ai-tools-cards.css
+│   │   ├── auto-detection.css
 │   │   ├── buttons.css
+│   │   ├── cards.css
 │   │   ├── forms.css
 │   │   ├── modals.css
-│   │   ├── sidebar.css
 │   │   ├── notifications.css
-│   │   ├── tools-grid.css
-│   │   └── ai-tools-cards.css
-│   │
-│   ├── layouts/
-│   │   ├── grid.css
+│   │   ├── sidebar.css
+│   │   └── tools-grid.css
+│   ├── layouts
 │   │   ├── grid-system.css
-│   │   ├── sidebar-layout.css
-│   │   └── responsive.css
-│   │
-│   ├── themes/
-│   │   ├── cyberpunk.css
-│   │   └── themes.css
-│   │
-│   └── main.css
-│
-├── js/                         # JavaScript source (ES modules)
-│   ├── ai/
+│   │   ├── grid.css
+│   │   ├── responsive.css
+│   │   └── sidebar-layout.css
+│   ├── main.css
+│   └── themes
+│       ├── cyberpunk.css
+│       └── themes.css
+├── index.html
+├── js
+│   ├── ai
 │   │   ├── ai-tools.js
 │   │   ├── presets.js
 │   │   └── prompt-generator.js
-│   │
-│   ├── core/
+│   ├── app.js
+│   ├── core
 │   │   ├── app-state.js
 │   │   ├── constants.js
 │   │   └── utilities.js
-│   │
-│   ├── features/
+│   ├── features
 │   │   ├── card-expander.js
+│   │   ├── card-maximizer.js
 │   │   ├── context-detective.js
+│   │   ├── export-handler.js
 │   │   ├── history.js
+│   │   ├── intent-detector.js
+│   │   ├── launch-buttons.js
+│   │   ├── presets.js
+│   │   ├── prompt-converter.js
 │   │   ├── templates.js
+│   │   ├── tool-prioritizer.js
+│   │   ├── voice-handler.js
 │   │   └── voice.js
-│   │
-│   ├── ui/
-│   │   ├── event-handlers.js
-│   │   ├── modal-manager.js
-│   │   ├── notifications.js
-│   │   ├── settings-manager.js
-│   │   └── theme-manager.js
-│   │
-│   ├── app.js
-│   └── emergency-fix.js
-│
-├── index.html
-├── settings-modal.html
-├── README.md
-└── .gitignore
+│   └── ui
+│       ├── event-handlers.js
+│       ├── modal-manager.js
+│       ├── notifications.js
+│       ├── settings-manager.js
+│       └── theme-manager.js
+└── settings-modal.html
 
 ### 🧠 Architectural Principles
 
