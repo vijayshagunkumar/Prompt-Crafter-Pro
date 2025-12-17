@@ -1,8 +1,8 @@
-/* Launch Buttons Grid - Fixed for single column */
+/* Launch Buttons Grid - SINGLE COLUMN ONLY */
 
 .launch-list {
   display: grid;
-  grid-template-columns: 1fr; /* Single column by default */
+  grid-template-columns: 1fr !important; /* SINGLE COLUMN FORCED */
   gap: 12px;
   margin-top: 20px;
   width: 100%;
@@ -163,18 +163,22 @@
   border-color: rgba(234, 67, 53, 0.4);
 }
 
-/* Responsive grid - Desktop layouts */
+/* DISABLE ALL RESPONSIVE MULTI-COLUMN LAYOUTS */
+/* Remove these media queries that create multiple columns */
+
+/* 
 @media (min-width: 768px) {
   .launch-list {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+    grid-template-columns: repeat(2, 1fr); REMOVED
   }
 }
 
 @media (min-width: 1024px) {
   .launch-list {
-    grid-template-columns: repeat(3, 1fr); /* 3 columns on desktop */
+    grid-template-columns: repeat(3, 1fr); REMOVED
   }
 }
+*/
 
 /* Fix for small screens */
 @media (max-width: 480px) {
