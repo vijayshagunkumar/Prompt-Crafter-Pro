@@ -1,106 +1,91 @@
-/* Modal Styles */
+/* Modals */
 .modal-backdrop {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: var(--z-modal);
   backdrop-filter: blur(4px);
-  animation: fadeIn var(--transition-normal) ease-out;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-out;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-  max-width: 500px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   width: 90%;
-  max-height: 90vh;
+  max-width: 500px;
+  max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  animation: slideUp var(--transition-normal) ease-out;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 3001;
 }
 
 .modal-header {
-  padding: var(--space-xl);
-  border-bottom: 1px solid var(--border);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  z-index: 1;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
-  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: var(--font-size-xl);
 }
 
 .modal-close {
-  background: transparent;
+  background: none;
   border: none;
-  color: var(--text-muted);
-  font-size: var(--font-size-2xl);
+  color: var(--text-secondary);
+  font-size: 28px;
   cursor: pointer;
   width: 32px;
   height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
+  transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background: var(--surface-light);
+  background: var(--hover-bg);
   color: var(--danger);
 }
 
 .modal-body {
-  padding: var(--space-xl);
-}
-
-.form-group {
-  margin-bottom: var(--space-xl);
-}
-
-.form-label {
-  display: block;
-  margin-bottom: var(--space-sm);
-  font-weight: 500;
-  color: var(--text);
-  font-size: var(--font-size-base);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.form-hint {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  margin-top: var(--space-xs);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  padding: 24px;
 }
 
 .modal-actions {
   display: flex;
-  gap: var(--space-md);
   justify-content: flex-end;
-  margin-top: var(--space-xl);
-  padding-top: var(--space-xl);
-  border-top: 1px solid var(--border);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Form groups in modals */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 14px;
 }
 
 @keyframes fadeIn {
@@ -111,7 +96,7 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
