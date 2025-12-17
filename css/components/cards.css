@@ -205,12 +205,12 @@
   to { opacity: 1; }
 }
 
-/* ===== AI TOOLS LAYOUT - SINGLE COLUMN WITH SCROLL (CARD 3 ONLY) ===== */
+/* ===== AI TOOLS LAYOUT - CARD 3 FIX ===== */
 
-/* Card 3 specific - Single column AI tools with scroll */
+/* Mobile: Single column */
 .step-card:nth-child(3) .launch-list {
   display: grid !important;
-  grid-template-columns: 1fr !important; /* SINGLE COLUMN ONLY */
+  grid-template-columns: 1fr !important;
   gap: 8px !important;
   margin-top: 16px;
   width: 100%;
@@ -219,10 +219,32 @@
   overflow-x: hidden;
   padding-right: 8px;
   flex: 1;
-  min-height: 280px;
 }
 
-/* Custom scrollbar for Card 3 */
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+  .step-card:nth-child(3) .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    max-height: 280px;
+  }
+}
+
+/* Desktop: 2 columns with more height */
+@media (min-width: 1024px) {
+  .step-card:nth-child(3) .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    max-height: 320px;
+  }
+  
+  .step-card:nth-child(3) .launch-btn {
+    min-height: 60px;
+    padding: 12px;
+  }
+}
+
+/* Custom scrollbar */
 .step-card:nth-child(3) .launch-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -237,11 +259,7 @@
   border-radius: 3px;
 }
 
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar-thumb:hover {
-  background: #2563eb;
-}
-
-/* Launch button styles - COMPACT */
+/* Launch buttons - make sure text is visible */
 .launch-btn {
   background: #1e293b;
   border: 1px solid #334155;
@@ -255,7 +273,7 @@
   transition: all 0.3s ease;
   text-align: left;
   min-height: 56px;
-  flex-shrink: 0; /* Prevent shrinking */
+  overflow: hidden;
 }
 
 .launch-btn:hover:not(:disabled) {
@@ -295,14 +313,14 @@
 .launch-name {
   font-weight: 600;
   color: #f1f5f9;
-  font-size: 13px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .launch-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: #cbd5e1;
   opacity: 0.8;
   white-space: nowrap;
@@ -363,7 +381,7 @@
   position: relative;
   margin-bottom: 16px;
   min-height: 40px;
-  max-height: 120px; /* Fixed max height */
+  max-height: 120px;
   overflow: hidden;
 }
 
@@ -378,9 +396,10 @@
   animation: slideDown 0.3s ease-out;
   backdrop-filter: blur(10px);
   margin-bottom: 16px;
-  max-height: 100px; /* Fixed height */
-  overflow-y: auto; /* Scroll when content overflows */
+  max-height: 100px;
+  overflow-y: auto;
   overflow-x: hidden;
+  align-content: flex-start;
 }
 
 /* Custom scrollbar for intent badge */
@@ -396,6 +415,57 @@
 .intent-badge::-webkit-scrollbar-thumb {
   background: #3b82f6;
   border-radius: 2px;
+}
+
+.intent-badge::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* Intent items */
+.intent-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid;
+  animation: fadeIn 0.4s ease-out;
+  transition: all 0.2s;
+  min-height: 36px;
+  flex-shrink: 0;
+}
+
+/* Different intent types */
+.intent-item[data-type="visual"] {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+}
+
+.intent-item[data-type="code"] {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #a7f3d0;
+}
+
+.intent-item[data-type="writing"] {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+
+.intent-item[data-type="analysis"] {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+}
+
+.intent-item[data-type="business"] {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
 }
 
 /* ===== ENSURE SOLID BACKGROUNDS ===== */
@@ -527,9 +597,6 @@
   }
 }
 
-/* REMOVE ALL MULTI-COLUMN MEDIA QUERIES - SINGLE COLUMN ONLY */
-/* Ensure no multi-column layouts override our single column */
-
 /* Best tool styling */
 .launch-btn.best-tool {
   border: 2px solid #f59e0b !important;
@@ -573,5 +640,28 @@
   to {
     transform: scale(1.1);
     opacity: 1;
+  }
+}
+
+/* Intent badge animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
