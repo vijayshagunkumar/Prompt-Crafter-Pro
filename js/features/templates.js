@@ -1,283 +1,350 @@
 import { appState } from '../core/app-state.js';
-import { TEMPLATE_CATEGORIES } from '../core/constants.js';
-import { truncateText } from '../core/utilities.js';
 import { notifications } from '../ui/notifications.js';
+import { historyManager } from './history.js';
 
 export class TemplateManager {
   constructor() {
-    this.templates = appState.templates;
-    this.editingTemplateId = null;
+    this.templates = appState.templates || [];
+    this.setup();
   }
   
-  getAll() {
-    return [...this.templates];
-  }
-  
-  getById(id) {
-    return this.templates.find(template => template.id === id);
-  }
-  
-  getByCategory(category) {
-    if (category === 'all') return this.templates;
-    return this.templates.filter(template => template.category === category);
-  }
-  
-  search(query) {
-    const q = query.toLowerCase();
-    return this.templates.filter(template =>
-      template.name.toLowerCase().includes(q) ||
-      (template.description || '').toLowerCase().includes(q) ||
-      (template.example || '').toLowerCase().includes(q)
-    );
-  }
-  
-  add(template) {
-    const newTemplate = {
-      id: Date.now().toString(),
-      usageCount: 0,
-      createdAt: Date.now(),
-      isDefault: false,
-      ...template
-    };
-    
-    this.templates.push(newTemplate);
-    appState.templates = this.templates;
-    appState.saveTemplates();
-    
-    return newTemplate;
-  }
-  
-  update(id, updates) {
-    const index = this.templates.findIndex(t => t.id === id);
-    if (index === -1) return null;
-    
-    this.templates[index] = { ...this.templates[index], ...updates };
-    appState.templates = this.templates;
-    appState.saveTemplates();
-    
-    return this.templates[index];
-  }
-  
-  delete(id) {
-    const template = this.getById(id);
-    if (template?.isDefault) {
-      notifications.error('Cannot delete default template');
-      return false;
+  setup() {
+    // Save template button in Card 1
+    const saveBtn = document.getElementById('saveTemplateBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => this.openSaveModal());
     }
     
-    this.templates = this.templates.filter(t => t.id !== id);
-    appState.templates = this.templates;
-    appState.saveTemplates();
-    
-    return true;
-  }
-  
-  incrementUsage(id) {
-    const template = this.getById(id);
-    if (template) {
-      template.usageCount = (template.usageCount || 0) + 1;
-      appState.saveTemplates();
-    }
-  }
-  
-  useTemplate(id) {
-    const template = this.getById(id);
-    if (!template) return false;
-    
-    // Update usage count
-    this.incrementUsage(id);
-    
-    // Load into UI
-    document.getElementById('requirement').value = template.example || '';
-    document.getElementById('output').value = template.content;
-    
-    // Update stats
-    this.updateStats(template.content);
-    
-    // Update UI state
-    document.getElementById('convertedBadge').style.display = 'inline-flex';
-    
-    notifications.success(`Template "${template.name}" loaded`);
-    
-    return true;
-  }
-  
-  updateStats(content) {
-    import('../core/utilities.js').then(module => {
-      module.updateStats(content, 'outputCharCount', 'outputWordCount', 'outputLineCount');
-    });
-  }
-  
-  renderCategories(elementId) {
-    const container = document.getElementById(elementId);
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    // Add "All" category
-    const allCat = document.createElement('div');
-    allCat.className = 'template-category active';
-    allCat.dataset.category = 'all';
-    allCat.innerHTML = '<i class="fas fa-th"></i> All';
-    allCat.addEventListener('click', () => this.filterTemplates('all'));
-    container.appendChild(allCat);
-    
-    // Add other categories
-    Object.entries(TEMPLATE_CATEGORIES).forEach(([key, value]) => {
-      const div = document.createElement('div');
-      div.className = 'template-category';
-      div.dataset.category = key;
-      div.innerHTML = `<i class="fas ${value.icon}"></i> ${value.name}`;
-      div.addEventListener('click', () => this.filterTemplates(key));
-      container.appendChild(div);
-    });
-  }
-  
-  renderTemplates(elementId, category = 'all', searchQuery = '') {
-    const container = document.getElementById(elementId);
-    if (!container) return;
-    
-    let filtered = this.templates;
-    
-    if (category !== 'all') {
-      filtered = filtered.filter(t => t.category === category);
+    // Save template button in modal
+    const saveModalBtn = document.getElementById('saveTemplateBtnModal');
+    if (saveModalBtn) {
+      saveModalBtn.addEventListener('click', () => this.saveTemplate());
     }
     
-    if (searchQuery) {
-      filtered = this.search(searchQuery);
+    // Template search
+    const searchInput = document.getElementById('templateSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => this.searchTemplates(e.target.value));
     }
     
-    if (!filtered.length) {
-      const empty = document.getElementById('emptyTemplates');
-      if (empty) empty.style.display = 'block';
-      container.innerHTML = '';
+    // Close template modal
+    const closeTemplateBtn = document.getElementById('closeTemplateBtn');
+    if (closeTemplateBtn) {
+      closeTemplateBtn.addEventListener('click', () => {
+        document.getElementById('templateModal').style.display = 'none';
+      });
+    }
+    
+    // Toggle templates panel
+    const toggleBtn = document.getElementById('toggleTemplatesBtn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => this.toggleTemplatesPanel());
+    }
+    
+    // Load templates initially
+    this.renderTemplates();
+    this.setupCategoryFilters();
+  }
+  
+  openSaveModal() {
+    const requirement = document.getElementById('requirement').value.trim();
+    const output = document.getElementById('output').value.trim();
+    
+    if (!output) {
+      notifications.error('Please generate a prompt first');
       return;
     }
     
-    const empty = document.getElementById('emptyTemplates');
-    if (empty) empty.style.display = 'none';
+    // Auto-generate name from requirement
+    const defaultName = requirement 
+      ? `Template: ${requirement.substring(0, 40)}${requirement.length > 40 ? '...' : ''}`
+      : 'My Template';
     
-    container.innerHTML = filtered.map(template => {
-      const categoryMeta = TEMPLATE_CATEGORIES[template.category] || TEMPLATE_CATEGORIES.other;
-      
-      return `
-        <div class="template-card">
-          <div class="template-card-header">
-            <div class="template-card-title">${template.name}</div>
-            <span class="template-card-meta" style="color:${categoryMeta.color}">
-              <i class="fas ${categoryMeta.icon}"></i> ${categoryMeta.name}
-            </span>
-          </div>
-          <div class="template-card-meta">
-            Used ${template.usageCount || 0} times
-          </div>
-          <div class="template-card-description">
-            ${truncateText(template.description || '', 120)}
-          </div>
-          <div class="template-actions">
-            <button class="btn-ghost-small use-template-btn" data-id="${template.id}" 
-              style="border-color:${categoryMeta.color};color:${categoryMeta.color}">
-              <i class="fas fa-play"></i> Use
-            </button>
-            <button class="btn-ghost-small edit-template-btn" data-id="${template.id}">
-              <i class="fas fa-edit"></i>
-            </button>
-            ${!template.isDefault ? `
-              <button class="btn-ghost-small danger delete-template-btn" data-id="${template.id}">
-                <i class="fas fa-trash"></i>
-              </button>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-    
-    // Add event listeners
-    container.querySelectorAll('.use-template-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.dataset.id;
-        this.useTemplate(id);
-      });
-    });
-    
-    container.querySelectorAll('.edit-template-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.dataset.id;
-        this.editTemplate(id);
-      });
-    });
-    
-    container.querySelectorAll('.delete-template-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.dataset.id;
-        if (confirm('Delete this template?')) {
-          this.delete(id);
-          this.renderTemplates(elementId, category, searchQuery);
-        }
-      });
-    });
-  }
-  
-  filterTemplates(category) {
-    const searchQuery = document.getElementById('templateSearch')?.value || '';
-    this.renderTemplates('templatesGrid', category, searchQuery);
-    
-    // Update active category
-    document.querySelectorAll('.template-category').forEach(cat => {
-      cat.classList.remove('active');
-    });
-    
-    const activeCat = document.querySelector(`.template-category[data-category="${category}"]`);
-    if (activeCat) activeCat.classList.add('active');
-  }
-  
-  editTemplate(id) {
-    const template = this.getById(id);
-    if (!template) return;
-    
-    this.editingTemplateId = id;
-    
-    // Fill modal form
-    document.getElementById('templateName').value = template.name;
-    document.getElementById('templateDescription').value = template.description || '';
-    document.getElementById('templateContent').value = template.content || '';
-    document.getElementById('templateCategory').value = template.category || 'other';
-    document.getElementById('templateExample').value = template.example || '';
-    
-    // Show modal
+    document.getElementById('templateName').value = defaultName;
     document.getElementById('templateModal').style.display = 'flex';
   }
   
   saveTemplate() {
     const name = document.getElementById('templateName').value.trim();
-    const description = document.getElementById('templateDescription').value.trim();
-    const content = document.getElementById('templateContent').value.trim();
     const category = document.getElementById('templateCategory').value;
-    const example = document.getElementById('templateExample').value.trim();
-
-    if (!name || !content) {
-      notifications.error('Name and content are required');
+    const requirement = document.getElementById('requirement').value.trim();
+    const output = document.getElementById('output').value.trim();
+    
+    if (!name) {
+      notifications.error('Please enter a template name');
       return;
     }
-
-    const templateData = { name, description, content, category, example };
-
-    if (this.editingTemplateId) {
-      this.update(this.editingTemplateId, templateData);
-      notifications.success(`Template "${name}" updated`);
-    } else {
-      this.add(templateData);
-      notifications.success(`Template "${name}" created`);
-    }
-
-    // Update UI
-    this.renderTemplates('templatesGrid');
     
-    // Close modal
+    if (!output) {
+      notifications.error('No prompt content to save');
+      return;
+    }
+    
+    const newTemplate = {
+      id: Date.now().toString(),
+      name,
+      category,
+      content: output,
+      example: requirement,
+      usageCount: 0,
+      createdAt: Date.now(),
+      isDefault: false
+    };
+    
+    // Add to templates
+    this.templates.unshift(newTemplate);
+    appState.templates = this.templates;
+    localStorage.setItem('promptTemplates', JSON.stringify(this.templates));
+    
+    // Also save to history
+    if (historyManager) {
+      historyManager.add(requirement, output, `Template: ${name}`);
+    }
+    
+    // Update UI
+    this.renderTemplates();
+    
+    // Close modal and notify
     document.getElementById('templateModal').style.display = 'none';
-    this.editingTemplateId = null;
+    notifications.success(`Template "${name}" saved successfully!`);
+    
+    // Show template library
+    const panel = document.getElementById('templatesPanel');
+    if (panel) panel.style.display = 'block';
+  }
+  
+  searchTemplates(query) {
+    if (!query.trim()) {
+      this.renderTemplates();
+      return;
+    }
+    
+    const filtered = this.templates.filter(t => 
+      t.name.toLowerCase().includes(query.toLowerCase()) ||
+      (t.example && t.example.toLowerCase().includes(query.toLowerCase()))
+    );
+    
+    this.renderTemplates(filtered);
+  }
+  
+  filterByCategory(category) {
+    if (category === 'all') {
+      this.renderTemplates();
+      return;
+    }
+    
+    const filtered = this.templates.filter(t => t.category === category);
+    this.renderTemplates(filtered);
+    
+    // Update active category
+    document.querySelectorAll('.template-category').forEach(el => {
+      el.classList.remove('active');
+      if (el.dataset.category === category) {
+        el.classList.add('active');
+      }
+    });
+  }
+  
+  setupCategoryFilters() {
+    // This will be called when categories are rendered
+    setTimeout(() => {
+      document.querySelectorAll('.template-category').forEach(el => {
+        el.addEventListener('click', () => {
+          this.filterByCategory(el.dataset.category);
+        });
+      });
+    }, 100);
+  }
+  
+  toggleTemplatesPanel() {
+    const panel = document.getElementById('templatesPanel');
+    if (!panel) return;
+    
+    if (panel.style.display === 'block') {
+      panel.style.display = 'none';
+    } else {
+      panel.style.display = 'block';
+      this.renderTemplates();
+    }
+  }
+  
+  renderTemplates(templatesToShow = this.templates) {
+    const grid = document.getElementById('templatesGrid');
+    const categories = document.getElementById('templateCategories');
+    if (!grid) return;
+    
+    if (templatesToShow.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>No templates found. Save your first template!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Render templates
+    grid.innerHTML = templatesToShow.map(template => `
+      <div class="template-card" data-category="${template.category}">
+        <div class="template-card-header">
+          <div class="template-card-title">${template.name}</div>
+          <span class="template-card-meta">${template.category}</span>
+        </div>
+        ${template.example ? `
+          <div class="template-card-description">
+            "${template.example.substring(0, 80)}${template.example.length > 80 ? '...' : ''}"
+          </div>
+        ` : ''}
+        <div class="template-card-meta">
+          Used ${template.usageCount || 0} times
+        </div>
+        <div class="template-card-actions">
+          <button class="btn-ghost-small" onclick="templateManager.loadTemplate('${template.id}')">
+            <i class="fas fa-play"></i> Use
+          </button>
+          <button class="btn-ghost-small" onclick="templateManager.deleteTemplate('${template.id}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+    
+    // Setup categories
+    if (categories && templatesToShow === this.templates) {
+      const allCats = ['all', 'writing', 'coding', 'business', 'creative', 'analysis'];
+      const catNames = {
+        'all': 'All Templates',
+        'writing': 'Writing',
+        'coding': 'Coding',
+        'business': 'Business',
+        'creative': 'Creative',
+        'analysis': 'Analysis'
+      };
+      
+      categories.innerHTML = allCats.map(cat => `
+        <div class="template-category ${cat === 'all' ? 'active' : ''}" 
+             data-category="${cat}">
+          ${catNames[cat]}
+        </div>
+      `).join('');
+      
+      this.setupCategoryFilters();
+    }
+  }
+  
+  loadTemplate(templateId) {
+    const template = this.templates.find(t => t.id === templateId);
+    if (!template) return;
+    
+    // Load into output
+    document.getElementById('output').value = template.content;
+    
+    // Update counters
+    template.usageCount = (template.usageCount || 0) + 1;
+    appState.templates = this.templates;
+    localStorage.setItem('promptTemplates', JSON.stringify(this.templates));
+    
+    // Update display
+    this.updateCounters();
+    
+    // Show notification
+    notifications.success(`Loaded template: ${template.name}`);
+    
+    // Enable launch buttons
+    document.querySelectorAll('.launch-btn').forEach(btn => {
+      btn.disabled = false;
+    });
+    
+    // Show success badge
+    const badge = document.getElementById('convertedBadge');
+    if (badge) {
+      badge.style.display = 'flex';
+    }
+  }
+  
+  deleteTemplate(templateId) {
+    if (!confirm('Are you sure you want to delete this template?')) return;
+    
+    this.templates = this.templates.filter(t => t.id !== templateId);
+    appState.templates = this.templates;
+    localStorage.setItem('promptTemplates', JSON.stringify(this.templates));
+    
+    this.renderTemplates();
+    notifications.info('Template deleted');
+  }
+  
+  updateCounters() {
+    const usageElement = document.getElementById('usageCount');
+    if (usageElement) {
+      const totalUsage = this.templates.reduce((sum, t) => sum + (t.usageCount || 0), 0);
+      usageElement.innerHTML = `<i class="fas fa-bolt"></i> ${totalUsage} prompts`;
+    }
+  }
+  
+  loadDefaultTemplates() {
+    // Add some default templates if empty
+    if (this.templates.length === 0) {
+      this.templates = [
+        {
+          id: '1',
+          name: 'Professional Email Draft',
+          category: 'writing',
+          content: `Compose a professional email with the following structure:
+
+Subject: [Clear and concise subject line]
+
+Greeting: [Appropriate salutation]
+
+Body:
+- Introduction with context
+- Clear request or information
+- Specific details or requirements
+- Timeline or deadline (if applicable)
+- Call to action
+
+Closing: [Professional sign-off]
+
+Additional instructions:
+- Maintain professional tone
+- Use clear and concise language
+- Include all necessary details
+- Ensure proper formatting`,
+          example: 'Email to client about project delay',
+          usageCount: 5,
+          createdAt: Date.now() - 86400000,
+          isDefault: true
+        },
+        {
+          id: '2',
+          name: 'Python Function Helper',
+          category: 'coding',
+          content: `Write a Python function that:
+1. Has a descriptive name following snake_case
+2. Includes type hints for parameters and return value
+3. Has a clear docstring with:
+   - One-line description
+   - Args section
+   - Returns section
+   - Example usage
+4. Includes error handling where appropriate
+5. Follows PEP 8 style guidelines
+
+Provide:
+- Complete function code
+- Test cases
+- Explanation of algorithm`,
+          example: 'Function to calculate factorial',
+          usageCount: 8,
+          createdAt: Date.now() - 172800000,
+          isDefault: true
+        }
+      ];
+      
+      appState.templates = this.templates;
+      localStorage.setItem('promptTemplates', JSON.stringify(this.templates));
+      this.renderTemplates();
+    }
   }
 }
 
-// Singleton instance
 export const templateManager = new TemplateManager();
