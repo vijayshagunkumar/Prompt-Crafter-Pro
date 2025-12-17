@@ -13,6 +13,12 @@ import { settingsManager } from './ui/settings-manager.js';
 import { modalManager } from './ui/modal-manager.js';
 import { themeManager } from './ui/theme-manager.js';
 import { EventHandlers } from './ui/event-handlers.js';
+
+// NEW: Import the new features
+import { cardMaximizer } from './features/card-maximizer.js';
+import { intentDetector } from './features/intent-detector.js';
+import { toolPrioritizer } from './features/tool-prioritizer.js';
+
 import './features/voice.js'; // Initialize voice features
 
 class PromptCrafterApp {
@@ -29,6 +35,11 @@ class PromptCrafterApp {
     this.initPromptGenerator();
     this.initEventHandlers();
     this.initUI();
+    
+    // NEW: Initialize additional features
+    this.setupAutoSync();
+    this.setupGlobalResetButton();
+    this.setupResponsiveTextareas();
     
     // Show welcome notification
     setTimeout(() => {
@@ -182,6 +193,84 @@ class PromptCrafterApp {
         }
       });
     }
+  }
+  
+  // NEW: Auto-sync between Card 1 and Card 2
+  setupAutoSync() {
+    const requirementEl = document.getElementById('requirement');
+    if (requirementEl) {
+      requirementEl.addEventListener('input', () => {
+        const text = requirementEl.value.trim();
+        if (!text) {
+          // Clear Card 2 when Card 1 is empty
+          document.getElementById('output').value = '';
+          document.getElementById('convertedBadge').style.display = 'none';
+          aiToolsManager.setToolsEnabled(false);
+          
+          // Update stats
+          updateStats('', 'outputCharCount', 'outputWordCount', 'outputLineCount');
+        }
+      });
+    }
+  }
+  
+  // NEW: Global reset button in header
+  setupGlobalResetButton() {
+    const header = document.querySelector('.hero-top');
+    if (header) {
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'global-reset-btn';
+      resetBtn.id = 'globalResetBtn';
+      resetBtn.title = 'Reset all textarea sizes';
+      resetBtn.innerHTML = '<i class="fas fa-arrows-alt-v"></i> Reset Sizes';
+      
+      resetBtn.addEventListener('click', () => {
+        cardExpander.resetSizes();
+      });
+      
+      header.appendChild(resetBtn);
+    }
+  }
+  
+  // NEW: Responsive textarea sizing
+  setupResponsiveTextareas() {
+    // Responsive textarea sizing
+    const updateTextareaHeights = () => {
+      const viewportHeight = window.innerHeight;
+      const maxHeight = Math.min(viewportHeight * 0.6, 500); // Max 60% of viewport or 500px
+      
+      const requirementEl = document.getElementById('requirement');
+      const outputEl = document.getElementById('output');
+      
+      if (requirementEl) {
+        requirementEl.style.maxHeight = `${maxHeight}px`;
+      }
+      
+      if (outputEl) {
+        outputEl.style.maxHeight = `${maxHeight}px`;
+      }
+    };
+    
+    // Initial setup
+    updateTextareaHeights();
+    
+    // Update on resize
+    window.addEventListener('resize', updateTextareaHeights);
+    
+    // Auto-grow with content
+    const setupAutoGrow = (textarea) => {
+      textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        const newHeight = Math.min(textarea.scrollHeight, parseInt(textarea.style.maxHeight));
+        textarea.style.height = `${newHeight}px`;
+      });
+    };
+    
+    const requirementEl = document.getElementById('requirement');
+    const outputEl = document.getElementById('output');
+    
+    if (requirementEl) setupAutoGrow(requirementEl);
+    if (outputEl) setupAutoGrow(outputEl);
   }
   
   // Public API for external use
