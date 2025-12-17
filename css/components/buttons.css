@@ -224,3 +224,62 @@
   transform: none !important;
   box-shadow: none !important;
 }
+
+/* Voice button states - FIXED */
+.voice-input-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+/* Default state - Mic with CUT sign (muted/off) */
+.voice-input-btn i {
+  font-size: 16px;
+}
+
+/* Listening state - Mic without cut (active) */
+.voice-input-btn.listening {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: #10b981 !important;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-input-btn.listening i {
+  color: #10b981 !important;
+}
+
+/* Muted state - Mic with slash (disabled) */
+.voice-input-btn.muted {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: #ef4444 !important;
+}
+
+.voice-input-btn.muted i {
+  color: #ef4444 !important;
+}
+
+/* Best tool styling */
+.launch-btn.best-tool {
+  border: 2px solid #f59e0b !important;
+  background: rgba(245, 158, 11, 0.05) !important;
+}
+
+.launch-btn.best-tool .launch-icon {
+  border-color: #f59e0b !important;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
