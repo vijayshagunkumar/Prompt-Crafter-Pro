@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.historyManager = historyManager;
   window.cardMaximizer = cardMaximizer;
   window.toolPrioritizer = toolPrioritizer;
+  window.voiceFeatures = voiceFeatures;
   
   console.log('✅ PromptCraft initialized successfully');
 });
