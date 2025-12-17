@@ -755,28 +755,3 @@ input:checked + .toggle-slider:before {
   }
 }
 
-/* FIX FOR STEP CARD HEADER SPACING ISSUE */
-.step-card .step-header {
-    margin-bottom: 8px !important;
-    padding-bottom: 8px !important;
-}
-
-/* Make sure the subtitle has proper spacing */
-.step-header-main > div:first-child {
-    margin-bottom: 4px !important;
-}
-
-/* If there's a border causing extra space */
-.step-header {
-    border-bottom: none !important; /* Remove if there's a border */
-}
-
-/* Reduce space between header and auto-row */
-.step-header + .auto-row {
-    margin-top: 12px !important;
-}
-
-/* Ensure proper spacing for the textarea */
-.field-block {
-    margin-top: 16px !important;
-}
