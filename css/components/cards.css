@@ -850,3 +850,85 @@
   border-color: var(--border);
   box-shadow: none;
 }
+
+/* Improved Intent Badge */
+.intent-badge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.intent-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border: 1px solid;
+  animation: slideIn 0.3s ease-out;
+}
+
+.tone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: var(--secondary);
+  text-transform: capitalize;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Save Template Button in Card 1 */
+#saveTemplateBtn {
+  transition: all var(--transition-fast);
+}
+
+#saveTemplateBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: var(--info);
+  color: var(--info);
+}
+
+/* Single Reset Button */
+.global-reset-btn {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.global-reset-btn:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+/* Removed options from Card 2 */
+.preset-selector {
+  display: none; /* Hide the preset selector */
+}
+
+/* Better ChatGPT icon visibility */
+.launch-btn.launch-chatgpt .launch-icon i {
+  font-size: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
