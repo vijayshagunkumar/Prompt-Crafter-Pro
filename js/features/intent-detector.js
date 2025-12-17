@@ -2,182 +2,247 @@ import { notifications } from '../ui/notifications.js';
 
 export class IntentDetector {
   constructor() {
-    this.currentIntent = null;
-    this.currentTone = null;
+    this.currentIntents = [];
+    this.currentTones = [];
     this.setup();
   }
   
   setup() {
-    const requirementEl = document.getElementById('requirement');
-    if (requirementEl) {
-      requirementEl.addEventListener('input', this.detectIntent.bind(this));
-    }
+    const input = document.getElementById('requirement');
+    if (!input) return;
+    
+    let timeout;
+    input.addEventListener('input', (e) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => this.analyze(e.target.value), 500);
+    });
   }
   
-  detectIntent(event) {
-    const text = event.target.value.trim();
-    if (!text) {
-      this.currentIntent = null;
-      this.currentTone = null;
-      this.updateUI();
+  analyze(text) {
+    if (!text.trim()) {
+      this.clearDetection();
       return;
     }
     
-    // Detect intent
-    const intent = this.analyzeIntent(text);
-    const tone = this.analyzeTone(text);
+    const lower = text.toLowerCase();
+    this.currentIntents = this.detectIntents(lower, text);
+    this.currentTones = this.detectTones(lower, text);
     
-    this.currentIntent = intent;
-    this.currentTone = tone;
+    this.updateDisplay();
     
-    this.updateUI();
-    this.notifyIfSignificantChange(intent, tone);
+    // Notify if high confidence detection
+    if (this.currentIntents.some(i => i.confidence > 0.7)) {
+      const primaryIntent = this.currentIntents[0];
+      const primaryTone = this.currentTones[0];
+      notifications.info(
+        `Detected: ${primaryIntent.label} (${primaryTone.label} tone)`, 
+        2000
+      );
+    }
   }
   
-  analyzeIntent(text) {
-    const lower = text.toLowerCase();
+  detectIntents(lowerText, fullText) {
+    const intents = [];
     
-    // Image generation
-    if (/(generate|create|make).*(image|picture|photo|art|illustration|drawing|visual|graphic|logo|design|poster|banner)/i.test(text) ||
-        /(image|picture|photo|art|illustration|drawing|visual|graphic|logo|design)/i.test(text) && 
-        /(generate|create|make|design)/i.test(text)) {
-      return { type: 'image_generation', confidence: 0.9, label: 'Image Generation' };
+    // Visual/Image Creation
+    if (/(generate|create|make).*(image|picture|photo|art|drawing|visual|graphic|logo|design)/i.test(fullText) ||
+        /(image|picture|photo|art|design) of/i.test(fullText)) {
+      intents.push({
+        type: 'visual',
+        label: 'Visual Creation',
+        confidence: this.calcConfidence(fullText, ['image', 'picture', 'art', 'design', 'generate', 'create']),
+        icon: 'fa-image',
+        color: '#8b5cf6'
+      });
     }
     
-    // Code generation
-    if (/(code|program|script|function|algorithm|api|endpoint|database|sql|query|bug|fix|debug|refactor|optimize)/i.test(text) ||
-        /\b(python|javascript|java|c\+\+|c#|php|ruby|go|rust|swift|kotlin|typescript|html|css|react|vue|angular|node\.js)\b/i.test(text)) {
-      return { type: 'code_generation', confidence: 0.85, label: 'Code Generation' };
+    // Code/Programming
+    if (/(code|program|script|function|algorithm|api|sql|query|bug|debug|python|javascript|java|html|css)/i.test(fullText) ||
+        /\b(def |function |class |import |export |const |let |var )/i.test(fullText)) {
+      intents.push({
+        type: 'code',
+        label: 'Code Generation',
+        confidence: this.calcConfidence(fullText, ['code', 'function', 'python', 'javascript', 'sql', 'bug']),
+        icon: 'fa-code',
+        color: '#10b981'
+      });
     }
     
-    // Email writing
-    if (/(email|mail|send.*to|message.*to|follow-up|professional.*email|business.*email)/i.test(text)) {
-      return { type: 'email_writing', confidence: 0.8, label: 'Email Writing' };
+    // Writing/Content
+    if (/(write|create|draft|compose|email|letter|message|blog|article|post|content|copy|story|creative)/i.test(fullText)) {
+      intents.push({
+        type: 'writing',
+        label: 'Writing Task',
+        confidence: this.calcConfidence(fullText, ['write', 'email', 'blog', 'article', 'content', 'story']),
+        icon: 'fa-pen',
+        color: '#3b82f6'
+      });
     }
     
-    // Blog/Article writing
-    if (/(blog|article|post|content|copy|copywriting|marketing|seo|social.*media|linkedin|twitter|thread)/i.test(text)) {
-      return { type: 'content_writing', confidence: 0.75, label: 'Content Writing' };
-    }
-    
-    // Story/Creative writing
-    if (/(story|narrative|fiction|creative|poem|script|screenplay|dialogue|character|plot)/i.test(text)) {
-      return { type: 'creative_writing', confidence: 0.8, label: 'Creative Writing' };
-    }
-    
-    // Research/Analysis
-    if (/(research|analyze|analysis|study|compare|contrast|evaluate|assess|review|summary|report|findings)/i.test(text)) {
-      return { type: 'research_analysis', confidence: 0.7, label: 'Research & Analysis' };
-    }
-    
-    // Emotional/Empathetic
-    if (/(feel|feeling|emotion|emotional|empathy|support|help|advice|comfort|sorry|apologize|thank|grateful)/i.test(text) ||
-        /(sad|happy|angry|frustrated|excited|anxious|worried|nervous|stressed|overwhelmed)/i.test(text)) {
-      return { type: 'emotional_response', confidence: 0.8, label: 'Emotional Response' };
+    // Analysis/Research
+    if (/(analyze|analysis|research|study|compare|evaluate|review|summary|report|data|statistics)/i.test(fullText)) {
+      intents.push({
+        type: 'analysis',
+        label: 'Analysis',
+        confidence: this.calcConfidence(fullText, ['analyze', 'research', 'data', 'report', 'study']),
+        icon: 'fa-chart-bar',
+        color: '#f59e0b'
+      });
     }
     
     // Business/Strategy
-    if (/(business|strategy|plan|proposal|pitch|deck|presentation|meeting|agenda|minutes|roadmap|timeline)/i.test(text)) {
-      return { type: 'business_strategy', confidence: 0.75, label: 'Business Strategy' };
+    if (/(business|strategy|plan|proposal|pitch|presentation|marketing|sales|meeting|agenda)/i.test(fullText)) {
+      intents.push({
+        type: 'business',
+        label: 'Business',
+        confidence: this.calcConfidence(fullText, ['business', 'strategy', 'plan', 'marketing', 'sales']),
+        icon: 'fa-briefcase',
+        color: '#ef4444'
+      });
     }
     
-    // General Q&A
-    return { type: 'general_qa', confidence: 0.6, label: 'General Q&A' };
+    // Learning/Explanation
+    if (/(explain|teach|learn|understand|how to|what is|why does|tutorial|guide)/i.test(fullText)) {
+      intents.push({
+        type: 'learning',
+        label: 'Learning',
+        confidence: this.calcConfidence(fullText, ['explain', 'teach', 'how', 'what', 'why']),
+        icon: 'fa-graduation-cap',
+        color: '#06b6d4'
+      });
+    }
+    
+    // Sort by confidence
+    return intents.sort((a, b) => b.confidence - a.confidence);
   }
   
-  analyzeTone(text) {
+  detectTones(lowerText, fullText) {
+    const tones = [];
+    
+    // Professional
+    if (/(please|kindly|would you|could you|professional|formal|respectfully|sincerely)/i.test(fullText) ||
+        (fullText.includes('?') && fullText.length > 80)) {
+      tones.push({
+        type: 'professional',
+        label: 'Professional',
+        confidence: this.calcConfidence(fullText, ['please', 'professional', 'formal']),
+        icon: 'fa-suitcase'
+      });
+    }
+    
+    // Casual
+    if (/(hey|hi|hello|thanks|thank you|cheers|cool|awesome|great)/i.test(fullText) ||
+        fullText.length < 40) {
+      tones.push({
+        type: 'casual',
+        label: 'Casual',
+        confidence: this.calcConfidence(fullText, ['hey', 'hi', 'thanks', 'cool']),
+        icon: 'fa-smile'
+      });
+    }
+    
+    // Emotional
+    if (/(!{2,}|\?{2,}|😊|😢|😠|😂|❤️|💔|omg|wow|amazing|terrible|love|hate)/.test(fullText)) {
+      tones.push({
+        type: 'emotional',
+        label: 'Emotional',
+        confidence: this.calcConfidence(fullText, ['!', '?', '😊', 'omg', 'wow', 'love']),
+        icon: 'fa-heart'
+      });
+    }
+    
+    // Technical
+    if (/(technical|specification|parameter|configuration|api|json|xml|database|server)/i.test(fullText)) {
+      tones.push({
+        type: 'technical',
+        label: 'Technical',
+        confidence: this.calcConfidence(fullText, ['technical', 'api', 'json', 'database']),
+        icon: 'fa-cog'
+      });
+    }
+    
+    // Urgent
+    if (/(urgent|asap|immediately|right now|quickly|emergency|deadline)/i.test(fullText)) {
+      tones.push({
+        type: 'urgent',
+        label: 'Urgent',
+        confidence: this.calcConfidence(fullText, ['urgent', 'asap', 'emergency', 'deadline']),
+        icon: 'fa-clock'
+      });
+    }
+    
+    // Default to neutral
+    if (tones.length === 0) {
+      tones.push({
+        type: 'neutral',
+        label: 'Neutral',
+        confidence: 0.5,
+        icon: 'fa-comment'
+      });
+    }
+    
+    return tones.sort((a, b) => b.confidence - a.confidence);
+  }
+  
+  calcConfidence(text, keywords) {
     const lower = text.toLowerCase();
-    
-    // Professional tone indicators
-    if (/(please|kindly|would.*you|could.*you|professional|business|formal|respectfully)/i.test(text) ||
-        text.includes('?') && text.length > 50) {
-      return 'professional';
-    }
-    
-    // Casual tone indicators
-    if (/(hey|hi|hello|thanks|thank you|cheers|quick|simple|easy|basic)/i.test(text) ||
-        text.length < 30 && text.includes('?')) {
-      return 'casual';
-    }
-    
-    // Emotional tone indicators
-    if (/(!{2,}|\?{2,}|😊|😢|😠|😂|❤️|💔|😭|😡)/.test(text) ||
-        /(omg|wow|awesome|amazing|terrible|horrible|frustrating|exciting)/i.test(text)) {
-      return 'emotional';
-    }
-    
-    // Technical tone indicators
-    if (/(technical|specification|requirement|parameter|configuration|implementation|architecture)/i.test(text) ||
-        /\b(api|http|https|json|xml|database|server|client|frontend|backend)\b/i.test(text)) {
-      return 'technical';
-    }
-    
-    return 'neutral';
+    let matches = 0;
+    keywords.forEach(kw => {
+      if (lower.includes(kw.toLowerCase())) matches++;
+    });
+    return Math.min(matches / keywords.length, 0.95);
   }
   
-  updateUI() {
-    // Update intent badge in Card 1
-    const intentBadge = document.getElementById('intentBadge');
-    if (!intentBadge) return;
+  updateDisplay() {
+    const badge = document.getElementById('intentBadge');
+    if (!badge) return;
     
-    if (this.currentIntent) {
-      intentBadge.style.display = 'inline-flex';
-      intentBadge.innerHTML = `
-        <i class="fas ${this.getIntentIcon(this.currentIntent.type)}"></i>
-        ${this.currentIntent.label}
-        ${this.currentTone !== 'neutral' ? `<span class="tone-badge">${this.currentTone}</span>` : ''}
+    if (this.currentIntents.length === 0) {
+      badge.style.display = 'none';
+      return;
+    }
+    
+    badge.style.display = 'flex';
+    
+    // Show top 2 intents and top tone
+    const topIntents = this.currentIntents.slice(0, 2);
+    const topTone = this.currentTones[0];
+    
+    let html = '';
+    topIntents.forEach(intent => {
+      if (intent.confidence > 0.3) {
+        html += `
+          <span class="intent-tag" style="background:${intent.color}15; border-color:${intent.color}30;">
+            <i class="fas ${intent.icon}"></i> ${intent.label}
+          </span>
+        `;
+      }
+    });
+    
+    if (topTone && topTone.confidence > 0.4 && topTone.type !== 'neutral') {
+      html += `
+        <span class="tone-tag">
+          <i class="fas ${topTone.icon}"></i> ${topTone.label}
+        </span>
       `;
-    } else {
-      intentBadge.style.display = 'none';
     }
-  }
-  
-  getIntentIcon(intentType) {
-    const icons = {
-      'image_generation': 'fa-image',
-      'code_generation': 'fa-code',
-      'email_writing': 'fa-envelope',
-      'content_writing': 'fa-pen',
-      'creative_writing': 'fa-feather-alt',
-      'research_analysis': 'fa-chart-bar',
-      'emotional_response': 'fa-heart',
-      'business_strategy': 'fa-briefcase',
-      'general_qa': 'fa-question-circle'
-    };
-    return icons[intentType] || 'fa-lightbulb';
-  }
-  
-  notifyIfSignificantChange(intent, tone) {
-    // Only notify on significant changes (not on every keystroke)
-    if (intent?.confidence > 0.8) {
-      notifications.info(`Detected: ${intent.label} (${tone} tone)`);
-    }
-  }
-  
-  getCurrentIntent() {
-    return this.currentIntent;
-  }
-  
-  getCurrentTone() {
-    return this.currentTone;
-  }
-  
-  getBestToolMatch() {
-    if (!this.currentIntent) return null;
     
-    const toolMatches = {
-      'image_generation': { tool: 'dalle', name: 'DALL·E', reason: 'Best for image generation' },
-      'code_generation': { tool: 'chatgpt', name: 'ChatGPT', reason: 'Excellent for coding assistance' },
-      'email_writing': { tool: 'claude', name: 'Claude', reason: 'Great for professional writing' },
-      'content_writing': { tool: 'chatgpt', name: 'ChatGPT', reason: 'Versatile for content creation' },
-      'creative_writing': { tool: 'claude', name: 'Claude', reason: 'Strong creative writing capabilities' },
-      'research_analysis': { tool: 'perplexity', name: 'Perplexity', reason: 'Research-focused with citations' },
-      'emotional_response': { tool: 'chatgpt', name: 'ChatGPT', reason: 'Good at empathetic responses' },
-      'business_strategy': { tool: 'claude', name: 'Claude', reason: 'Strong analytical thinking' },
-      'general_qa': { tool: 'chatgpt', name: 'ChatGPT', reason: 'General purpose AI assistant' }
-    };
-    
-    return toolMatches[this.currentIntent.type] || { tool: 'chatgpt', name: 'ChatGPT', reason: 'General purpose' };
+    badge.innerHTML = html;
+  }
+  
+  clearDetection() {
+    this.currentIntents = [];
+    this.currentTones = [];
+    const badge = document.getElementById('intentBadge');
+    if (badge) badge.style.display = 'none';
+  }
+  
+  getPrimaryIntent() {
+    return this.currentIntents[0] || null;
+  }
+  
+  getPrimaryTone() {
+    return this.currentTones[0] || null;
   }
 }
 
