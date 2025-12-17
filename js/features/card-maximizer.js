@@ -1,16 +1,16 @@
-// Card maximize functionality - FIXED VERSION (No dancing)
+// Card maximize functionality - FIXED VERSION (No dancing cards)
 export class CardMaximizer {
     constructor() {
         this.maximizedCard = null;
         this.overlay = null;
+        this.placeholder = null;
+        this.originalCardStyles = null;
         this.setup();
     }
     
     setup() {
-        // Add maximize buttons to cards if they don't exist
         this.addMaximizeButtons();
         
-        // Add maximize button event listeners
         document.querySelectorAll('.maximize-card-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -19,14 +19,12 @@ export class CardMaximizer {
             });
         });
         
-        // Close on overlay click
         document.addEventListener('click', (e) => {
             if (this.overlay && e.target === this.overlay) {
                 this.closeAll();
             }
         });
         
-        // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.maximizedCard) {
                 this.closeAll();
@@ -51,38 +49,47 @@ export class CardMaximizer {
         if (this.maximizedCard === card) {
             this.closeAll();
         } else {
-            this.closeAll(); // Close any currently maximized card first
+            this.closeAll();
             this.maximizeCard(card);
         }
     }
     
     maximizeCard(card) {
-        // Store original card data
-        const originalStyle = {
+        // Store original position and styles
+        this.originalCardStyles = {
+            gridColumn: card.style.gridColumn,
+            gridRow: card.style.gridRow,
             position: card.style.position,
             top: card.style.top,
             left: card.style.left,
             width: card.style.width,
             height: card.style.height,
+            zIndex: card.style.zIndex,
             margin: card.style.margin,
             padding: card.style.padding,
+            border: card.style.border,
+            boxShadow: card.style.boxShadow,
             borderRadius: card.style.borderRadius,
-            zIndex: card.style.zIndex,
             transform: card.style.transform,
             transition: card.style.transition
         };
         
-        // Store original parent and sibling reference
-        const parent = card.parentNode;
-        const nextSibling = card.nextSibling;
+        // Get card position in the grid
+        const cardRect = card.getBoundingClientRect();
+        const gridRect = card.parentElement.getBoundingClientRect();
+        
+        // Create a placeholder to keep the grid layout intact
+        this.placeholder = document.createElement('div');
+        this.placeholder.style.width = cardRect.width + 'px';
+        this.placeholder.style.height = cardRect.height + 'px';
+        this.placeholder.style.visibility = 'hidden';
+        this.placeholder.style.pointerEvents = 'none';
+        card.parentNode.insertBefore(this.placeholder, card);
         
         // Create overlay
         this.createOverlay();
         
-        // Calculate fixed position
-        const rect = card.getBoundingClientRect();
-        
-        // Set fixed position BEFORE adding to body
+        // Set fixed position for maximized card
         card.style.position = 'fixed';
         card.style.top = '20px';
         card.style.left = '20px';
@@ -91,30 +98,22 @@ export class CardMaximizer {
         card.style.zIndex = '9999';
         card.style.margin = '0';
         card.style.padding = '40px';
-        card.style.borderRadius = '24px';
         card.style.border = '3px solid #3b82f6';
         card.style.boxShadow = '0 40px 120px rgba(0, 0, 0, 0.8)';
+        card.style.borderRadius = '24px';
         card.style.backgroundColor = '#1e293b';
-        card.style.backdropFilter = 'blur(20px)';
         card.style.transform = 'none';
-        card.style.transition = 'none';
+        card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
         card.style.overflow = 'auto';
+        
+        // Move to body to ensure proper z-index
+        document.body.appendChild(card);
         
         // Add maximized class
         card.classList.add('maximized');
-        
-        // Store original data
-        card.dataset.originalStyle = JSON.stringify(originalStyle);
-        card.dataset.originalParent = parent.id || '';
-        card.dataset.originalNextSibling = nextSibling ? nextSibling.id || '' : '';
-        
-        // Move to body
-        document.body.appendChild(card);
-        
-        // Set as maximized
         this.maximizedCard = card;
         
-        // Update maximize button icon
+        // Update button icon
         const maxBtn = card.querySelector('.maximize-card-btn');
         if (maxBtn) {
             maxBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
@@ -131,25 +130,26 @@ export class CardMaximizer {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(10px);
             z-index: 9998;
-            animation: fadeIn 0.3s ease;
+            animation: overlayFadeIn 0.3s ease;
         `;
-        document.body.appendChild(this.overlay);
         
-        // Add fadeIn animation if not exists
-        if (!document.getElementById('maximize-animations')) {
+        // Add animation if not exists
+        if (!document.querySelector('#overlay-animation')) {
             const style = document.createElement('style');
-            style.id = 'maximize-animations';
+            style.id = 'overlay-animation';
             style.textContent = `
-                @keyframes fadeIn {
+                @keyframes overlayFadeIn {
                     from { opacity: 0; }
                     to { opacity: 1; }
                 }
             `;
             document.head.appendChild(style);
         }
+        
+        document.body.appendChild(this.overlay);
     }
     
     closeAll() {
@@ -162,18 +162,27 @@ export class CardMaximizer {
             this.overlay.remove();
             this.overlay = null;
         }
+        
+        if (this.placeholder) {
+            this.placeholder.remove();
+            this.placeholder = null;
+        }
+        
+        this.originalCardStyles = null;
     }
     
     restoreCard(card) {
         // Remove maximized class
         card.classList.remove('maximized');
         
-        // Restore original style
-        if (card.dataset.originalStyle) {
-            const originalStyle = JSON.parse(card.dataset.originalStyle);
-            Object.assign(card.style, originalStyle);
+        // Find original position in grid
+        const originalGrid = document.querySelector('.cards-grid');
+        
+        // Restore original styles
+        if (this.originalCardStyles) {
+            Object.assign(card.style, this.originalCardStyles);
         } else {
-            // Default restore
+            // Reset to default
             card.style.position = '';
             card.style.top = '';
             card.style.left = '';
@@ -182,47 +191,37 @@ export class CardMaximizer {
             card.style.zIndex = '';
             card.style.margin = '';
             card.style.padding = '';
-            card.style.borderRadius = '';
             card.style.border = '';
             card.style.boxShadow = '';
-            card.style.backgroundColor = '';
-            card.style.backdropFilter = '';
+            card.style.borderRadius = '';
+            card.style.transform = '';
+            card.style.transition = '';
             card.style.overflow = '';
         }
         
-        // Try to restore to original position
-        const parentId = card.dataset.originalParent;
-        const nextSiblingId = card.dataset.originalNextSibling;
-        
-        let parent = document.getElementById(parentId) || document.querySelector('.cards-grid');
-        if (parent) {
-            // Remove from body
-            document.body.removeChild(card);
-            
-            // Insert at original position
-            if (nextSiblingId) {
-                const nextSibling = document.getElementById(nextSiblingId);
-                if (nextSibling) {
-                    parent.insertBefore(card, nextSibling);
-                } else {
-                    parent.appendChild(card);
-                }
+        // Move card back to its original position
+        if (originalGrid && this.placeholder) {
+            originalGrid.insertBefore(card, this.placeholder);
+            this.placeholder.remove();
+            this.placeholder = null;
+        } else if (originalGrid) {
+            // If placeholder is missing, insert at the correct position
+            const cardIndex = Array.from(originalGrid.children).findIndex(child => 
+                child.classList.contains('step-card') && !child.classList.contains('maximized')
+            );
+            if (cardIndex !== -1) {
+                originalGrid.insertBefore(card, originalGrid.children[cardIndex]);
             } else {
-                parent.appendChild(card);
+                originalGrid.appendChild(card);
             }
         }
         
-        // Update maximize button icon
+        // Update button icon
         const maxBtn = card.querySelector('.maximize-card-btn');
         if (maxBtn) {
             maxBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
             maxBtn.title = 'Maximize card';
         }
-        
-        // Clear stored data
-        delete card.dataset.originalStyle;
-        delete card.dataset.originalParent;
-        delete card.dataset.originalNextSibling;
     }
 }
 
