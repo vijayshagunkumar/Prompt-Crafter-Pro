@@ -491,3 +491,64 @@ input:checked + .toggle-slider:before {
         max-height: 300px;
     }
 }
+
+/* ===== ADDITIONAL FIXES ===== */
+
+/* Ensure Card 3 has proper layout */
+.step-card:nth-child(3) .launch-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+/* Desktop: Card 3 - 2 columns */
+@media (min-width: 768px) {
+  .step-card:nth-child(3) .launch-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+/* Large desktop: Card 3 - 2 columns */
+@media (min-width: 1024px) {
+  .step-card:nth-child(3) .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    max-height: 320px !important;
+  }
+}
+
+/* Scrollbar for Card 3 */
+.step-card:nth-child(3) .launch-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.step-card:nth-child(3) .launch-list::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.3);
+}
+
+.step-card:nth-child(3) .launch-list::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 3px;
+}
+
+/* Analysis box fixes */
+.auto-detection-container {
+  position: relative;
+  z-index: 2;
+}
+
+.intent-badge {
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+/* Maximize fixes */
+.step-card.maximized {
+  z-index: 10000 !important;
+}
+
+.card-maximize-overlay {
+  z-index: 9999 !important;
+}
