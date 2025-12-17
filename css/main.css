@@ -3,9 +3,9 @@
 /* Root layout */
 body {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: #0f172a;
   font-family: 'Inter', sans-serif;
-  color: var(--text-primary);
+  color: #f1f5f9;
   overflow-x: hidden;
 }
 
@@ -14,15 +14,14 @@ body {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  max-width: 100%;
   position: relative;
 }
 
-/* Hero section */
+/* Hero section - FIXED: No purple */
 .hero {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
   padding: 32px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #334155;
   position: relative;
   overflow: hidden;
 }
@@ -60,12 +59,12 @@ body {
 .hero-logo {
   width: 60px;
   height: 60px;
-  background: var(--card-bg);
+  background: #1e293b;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--primary);
+  border: 2px solid #3b82f6;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -73,7 +72,7 @@ body {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
   font-size: 20px;
-  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  background: linear-gradient(45deg, #3b82f6, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -89,7 +88,7 @@ body {
   font-family: 'Poppins', sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(45deg, #ffffff, var(--accent));
+  background: linear-gradient(45deg, #ffffff, #10b981);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -107,7 +106,7 @@ body {
 .workflow {
   flex: 1;
   padding: 32px;
-  background: var(--bg-primary);
+  background: #0f172a;
 }
 
 .cards-grid {
@@ -117,10 +116,10 @@ body {
   width: 100%;
 }
 
-/* Cards */
+/* Cards - FIXED: Distinguishable */
 .step-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background: #1e293b;
+  border: 2px solid #334155;
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -131,26 +130,26 @@ body {
   overflow: hidden;
 }
 
+/* Different border colors for each card */
+.step-card:nth-child(1) {
+  border-top: 4px solid #3b82f6; /* Blue */
+  border-left: 4px solid #3b82f6;
+}
+
+.step-card:nth-child(2) {
+  border-top: 4px solid #10b981; /* Green */
+  border-left: 4px solid #10b981;
+}
+
+.step-card:nth-child(3) {
+  border-top: 4px solid #f59e0b; /* Amber */
+  border-left: 4px solid #f59e0b;
+}
+
 .step-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  border-color: var(--primary);
-}
-
-.step-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.step-card:hover::before {
-  opacity: 1;
+  border-color: #3b82f6;
 }
 
 /* Step headers */
@@ -164,7 +163,6 @@ body {
 .step-pill {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -173,6 +171,19 @@ body {
   font-weight: 700;
   font-size: 16px;
   flex-shrink: 0;
+}
+
+/* Different pill colors */
+.step-card:nth-child(1) .step-pill {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.step-card:nth-child(2) .step-pill {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.step-card:nth-child(3) .step-pill {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
 .step-header-main {
@@ -186,13 +197,13 @@ body {
   font-family: 'Poppins', sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #f1f5f9;
   margin: 0 0 4px 0;
 }
 
 .step-subtitle {
   font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: #cbd5e1;
   margin: 0;
 }
 
@@ -207,10 +218,10 @@ body {
   width: 100%;
   min-height: 150px;
   padding: 20px;
-  background: var(--card-bg-dark);
-  border: 2px solid var(--border-color);
+  background: #0f172a;
+  border: 2px solid #334155;
   border-radius: 12px;
-  color: var(--text-primary);
+  color: #f1f5f9;
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   line-height: 1.6;
@@ -221,29 +232,29 @@ body {
 .textarea-idea:focus,
 .output-textarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .textarea-idea::placeholder {
-  color: var(--text-tertiary);
+  color: #94a3b8;
 }
 
 .output-textarea {
-  background: var(--card-bg);
+  background: #1e293b;
   cursor: default;
 }
 
 /* Footer */
 .footer {
-  background: var(--card-bg-dark);
-  border-top: 1px solid var(--border-color);
+  background: #0f172a;
+  border-top: 1px solid #334155;
   padding: 20px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: #cbd5e1;
 }
 
 .footer-left,
@@ -254,7 +265,7 @@ body {
 }
 
 .dot {
-  color: var(--text-tertiary);
+  color: #94a3b8;
 }
 
 /* Buttons */
@@ -285,7 +296,7 @@ body {
 .maximize-card-btn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: #cbd5e1;
   cursor: pointer;
   padding: 6px 12px;
   border-radius: 8px;
@@ -294,12 +305,12 @@ body {
 }
 
 .maximize-card-btn:hover {
-  color: var(--primary);
-  background: rgba(var(--primary-rgb), 0.1);
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
   opacity: 1;
 }
 
-/* Scan line animation */
+/* Scan line animation - FIXED: Blue not purple */
 .scan-line {
   position: fixed;
   top: 0;
@@ -308,7 +319,7 @@ body {
   height: 2px;
   background: linear-gradient(90deg, 
     transparent 0%, 
-    var(--primary) 50%, 
+    #3b82f6 50%, 
     transparent 100%);
   z-index: 9999;
   animation: scan 3s linear infinite;
@@ -326,7 +337,82 @@ body {
   cursor: not-allowed;
 }
 
-/* Responsive fixes for big screens */
+/* ===== FIXES ===== */
+
+/* AI Tools Grid - FIXED: Single column by default */
+.launch-list {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column */
+  gap: 12px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Responsive AI tools grid */
+@media (min-width: 768px) {
+  .launch-list {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .launch-list {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on desktop */
+  }
+}
+
+/* Maximize Fix - NO TRANSPARENCY */
+.maximized {
+  position: fixed !important;
+  top: 40px !important;
+  left: 40px !important;
+  width: calc(100vw - 80px) !important;
+  height: calc(100vh - 80px) !important;
+  z-index: 1000 !important;
+  background: #1e293b !important; /* SOLID background */
+  backdrop-filter: blur(20px) !important;
+  border: 3px solid #3b82f6 !important;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8) !important;
+  border-radius: 24px !important;
+  margin: 0 !important;
+  padding: 40px !important;
+  opacity: 1 !important;
+}
+
+/* Overlay - SOLID background */
+.card-maximize-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.95) !important; /* SOLID dark blue */
+  backdrop-filter: blur(10px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Ensure cards are solid */
+.step-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #1e293b;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Responsive fixes */
 @media (min-width: 1600px) {
   .cards-grid {
     grid-template-columns: repeat(3, minmax(400px, 1fr));
@@ -337,7 +423,6 @@ body {
   }
 }
 
-/* Ensure full width on very large screens */
 @media (min-width: 2000px) {
   .page {
     max-width: 1800px;
@@ -345,247 +430,15 @@ body {
   }
 }
 
-/* Fix for card maximize on big screens */
-.maximized {
-  position: fixed !important;
-  top: 50px !important;
-  left: 50px !important;
-  width: calc(100vw - 100px) !important;
-  height: calc(100vh - 100px) !important;
-  z-index: 2000 !important;
-  transform: none !important;
-  margin: 0 !important;
-  border-radius: 24px !important;
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5) !important;
-}
-
-.card-maximize-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 1999;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Utility classes for responsive design */
-.responsive-container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-@media (min-width: 640px) {
-  .responsive-container {
-    max-width: 640px;
-    padding: 0 24px;
-  }
-}
-
-@media (min-width: 768px) {
-  .responsive-container {
-    max-width: 768px;
-    padding: 0 28px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .responsive-container {
-    max-width: 1024px;
-    padding: 0 32px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .responsive-container {
-    max-width: 1280px;
-    padding: 0 40px;
-  }
-}
-
-@media (min-width: 1536px) {
-  .responsive-container {
-    max-width: 1536px;
-  }
-}
-
-/* Ensure content doesn't get too wide on huge screens */
-.content-max-width {
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-/* Make sure images and videos are responsive */
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Typography scaling for big screens */
-@media (min-width: 1600px) {
-  html {
-    font-size: 18px;
-  }
-}
-
-@media (min-width: 2000px) {
-  html {
-    font-size: 20px;
-  }
-}
-
-/* ===== QUICK FIXES ===== */
-
-/* 1. Fix purple colors in header */
-.hero {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-}
-
-/* 2. Fix card transparency */
-.step-card {
-  background: #1e293b !important;
-  position: relative;
-}
-
-.step-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #1e293b;
-  border-radius: inherit;
-  z-index: -1;
-}
-
-/* 3. Fix maximize transparency */
-.maximized {
-  background: #1e293b !important;
-  backdrop-filter: blur(20px) !important;
-}
-
-.card-maximize-overlay {
-  background: rgba(15, 23, 42, 0.95) !important;
-}
-
-/* 4. Fix AI tools grid */
-.launch-list {
-  grid-template-columns: 1fr !important;
-}
-
-@media (min-width: 768px) {
-  .launch-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .launch-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-}
-
-/* 5. Make cards more distinguishable */
-.step-card:nth-child(1) {
-  border-left: 4px solid #3b82f6;
-}
-
-.step-card:nth-child(2) {
-  border-left: 4px solid #10b981;
-}
-
-.step-card:nth-child(3) {
-  border-left: 4px solid #f59e0b;
-}
-
-/* ===== QUICK FIXES FOR ALL ISSUES ===== */
-
-/* 1. FIX PURPLE COLORS IN HEADER */
-.hero {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
-}
-
-/* 2. MAKE CARDS MORE DISTINGUISHABLE */
-.step-card {
-  border-left: 4px solid transparent !important;
-}
-
-.step-card:nth-child(1) {
-  border-left-color: #3b82f6 !important; /* Blue */
-}
-
-.step-card:nth-child(2) {
-  border-left-color: #10b981 !important; /* Green */
-}
-
-.step-card:nth-child(3) {
-  border-left-color: #f59e0b !important; /* Amber */
-}
-
-/* 3. FIX AI TOOLS SINGLE COLUMN */
-.launch-list {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 12px !important;
-}
-
-@media (min-width: 768px) {
-  .launch-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .launch-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-}
-
-/* 4. FIX MAXIMIZE TRANSPARENCY */
-.step-card.maximized {
-  background: #1e293b !important;
-  opacity: 1 !important;
-}
-
-.card-maximize-overlay {
-  background: rgba(15, 23, 42, 0.95) !important;
-}
-
-/* 5. ENSURE NO BACKGROUND SHOWS THROUGH */
-body, .page, .workflow {
-  background: var(--bg-primary) !important;
-}
-
-.step-card {
-  position: relative;
-}
-
-.step-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--surface);
-  border-radius: inherit;
-  z-index: -1;
-}
-
-/* 6. FIX CHATGPT ICON */
+/* Fix ChatGPT icon */
 .fa-openai {
   font-size: 20px !important;
   color: #10a37f !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+}
+
+/* Remove any purple color references */
+.purple, .violet, .indigo, [style*="8b5cf6"], [style*="7c3aed"], [style*="6d28d9"] {
+  color: #3b82f6 !important;
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
 }
