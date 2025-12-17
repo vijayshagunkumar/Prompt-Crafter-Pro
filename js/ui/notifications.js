@@ -2,6 +2,8 @@
 export class NotificationSystem {
     constructor() {
         this.container = null;
+        this.lastNotification = null;
+        this.notificationCooldown = 1000; // 1 second cooldown
         this.setup();
     }
     
@@ -25,6 +27,15 @@ export class NotificationSystem {
     }
     
     show(message, type = 'info', duration = 4000) {
+        // Prevent duplicate notifications within cooldown period
+        const now = Date.now();
+        if (this.lastNotification && 
+            this.lastNotification.message === message && 
+            this.lastNotification.type === type &&
+            now - this.lastNotification.timestamp < this.notificationCooldown) {
+            return null; // Skip duplicate notification
+        }
+        
         if (!this.container) this.createContainer();
         
         const notification = document.createElement('div');
@@ -113,6 +124,13 @@ export class NotificationSystem {
             `;
             document.head.appendChild(style);
         }
+        
+        // Store last notification info
+        this.lastNotification = {
+            message,
+            type,
+            timestamp: now
+        };
         
         return notification;
     }
