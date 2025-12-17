@@ -1,295 +1,236 @@
-// Main application orchestrator
+// Import all modules
 import { appState } from './core/app-state.js';
-import { PromptGenerator } from './ai/prompt-generator.js';
-import { analyzeText } from './features/context-detective.js';
-import { getPresetName } from './ai/presets.js';
-import { updateStats, copyToClipboard, downloadFile } from './core/utilities.js';
-import { historyManager } from './features/history.js';
-import { templateManager } from './features/templates.js';
-import { cardExpander } from './features/card-expander.js';
-import { aiToolsManager } from './ai/ai-tools.js';
 import { notifications } from './ui/notifications.js';
-import { settingsManager } from './ui/settings-manager.js';
-import { modalManager } from './ui/modal-manager.js';
-import { themeManager } from './ui/theme-manager.js';
-import { EventHandlers } from './ui/event-handlers.js';
-
-// NEW: Import the new features
-import { cardMaximizer } from './features/card-maximizer.js';
+import { promptConverter } from './features/prompt-converter.js';
+import { templateManager } from './features/templates.js';
+import { historyManager } from './features/history.js';
 import { intentDetector } from './features/intent-detector.js';
-import { toolPrioritizer } from './features/tool-prioritizer.js';
+import { cardMaximizer } from './features/card-maximizer.js';
+import { voiceHandler } from './features/voice-handler.js';
+import { exportHandler } from './features/export-handler.js';
+import { launchButtons } from './features/launch-buttons.js';
 
-import './features/voice.js'; // Initialize voice features
-
-class PromptCrafterApp {
-  constructor() {
-    this.promptGenerator = null;
-    this.eventHandlers = null;
-    this.init();
-  }
-  
-  async init() {
-    console.log('🚀 PromptCrafter Pro v3.1 - Modular Edition');
-    
-    // Initialize modules
-    this.initPromptGenerator();
-    this.initEventHandlers();
-    this.initUI();
-    
-    // NEW: Initialize additional features
-    this.setupAutoSync();
-    this.setupGlobalResetButton();
-    this.setupResponsiveTextareas();
-    
-    // Show welcome notification
-    setTimeout(() => {
-      notifications.success('PromptCrafter loaded successfully!');
-    }, 500);
-  }
-  
-  initPromptGenerator() {
-    const apiKey = settingsManager.getApiKey();
-    this.promptGenerator = new PromptGenerator(apiKey);
-  }
-  
-  initEventHandlers() {
-    this.eventHandlers = new EventHandlers(this);
-  }
-  
-  initUI() {
-    this.updateUsageCount();
-    this.updatePresetUI();
-    this.updateAutoConvertToggle();
-    historyManager.renderTo('historyList');
-    this.setupOutputStats();
-  }
-  
-  async generatePrompt() {
-    const requirementEl = document.getElementById('requirement');
-    const outputEl = document.getElementById('output');
-    const convertBtn = document.getElementById('convertBtn');
-    const requirement = requirementEl.value.trim();
-    
-    if (!requirement) {
-      notifications.error('Please enter a requirement first');
-      return;
-    }
-    
-    const { role, preset: autoPreset, label } = analyzeText(requirement);
-    appState.lastRole = role;
-    appState.lastTaskLabel = label;
-    
-    if (!appState.userPresetLocked && autoPreset) {
-      appState.lastPresetSource = 'auto';
-      this.eventHandlers.setPreset(autoPreset);
-    } else {
-      this.updatePresetInfo();
-    }
-    
-    // Update usage count
-    appState.incrementUsage();
-    this.updateUsageCount();
-    
-    // Show loading state
-    convertBtn.disabled = true;
-    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
-    this.eventHandlers.clearAutoConvertTimer();
-    
-    try {
-      const useOpenAI = !!settingsManager.getApiKey();
-      const prompt = await this.promptGenerator.generate(
-        requirement,
-        appState.currentPreset,
-        useOpenAI
-      );
-      
-      // Update output
-      outputEl.value = prompt;
-      
-      // Update stats
-      updateStats(prompt, 'outputCharCount', 'outputWordCount', 'outputLineCount');
-      
-      // Save to history
-      historyManager.add(requirement, prompt);
-      
-      // Update state
-      appState.isConverted = true;
-      appState.lastConvertedText = requirement;
-      document.getElementById('convertedBadge').style.display = 'inline-flex';
-      aiToolsManager.setToolsEnabled(true);
-      
-      // Show voice output button
-      const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-      if (voiceOutputBtn) {
-        voiceOutputBtn.style.display = 'block';
-      }
-      
-      notifications.success('Prompt generated successfully');
-      
-      // Reset auto-convert timer if still enabled
-      if (appState.autoConvertEnabled) {
-        appState.autoConvertCountdown = appState.autoConvertDelay;
-        this.eventHandlers.resetAutoConvertTimer();
-      }
-      
-    } catch (error) {
-      console.error('Generation error:', error);
-      notifications.error(`Generation failed: ${error.message}`);
-      
-      // Fallback to local generation
-      const { role } = analyzeText(requirement);
-      const prompt = this.promptGenerator.generateLocally(requirement, role, appState.currentPreset);
-      outputEl.value = prompt;
-      updateStats(prompt, 'outputCharCount', 'outputWordCount', 'outputLineCount');
-      
-    } finally {
-      convertBtn.disabled = false;
-      convertBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Enhance Prompt';
-    }
-  }
-  
-  updateUsageCount() {
-    const usageCountEl = document.getElementById('usageCount');
-    if (usageCountEl) {
-      usageCountEl.innerHTML = `<i class="fas fa-bolt"></i>${appState.usageCount} prompts generated`;
-    }
-  }
-  
-  updatePresetUI() {
-    // Set active preset button
-    document.querySelectorAll('.preset-option').forEach((o) => {
-      o.classList.toggle('active', o.dataset.preset === appState.currentPreset);
-    });
-    
-    this.updatePresetInfo();
-  }
-  
-  updatePresetInfo() {
-    const el = document.getElementById('presetInfo');
-    if (!el) return;
-    
-    const nicePreset = getPresetName(appState.currentPreset);
-    el.textContent = `${appState.lastTaskLabel} • ${nicePreset} (${appState.lastPresetSource})`;
-  }
-  
-  updateAutoConvertToggle() {
-    const autoConvert = document.getElementById('autoConvert');
-    if (autoConvert) {
-      autoConvert.checked = appState.autoConvertEnabled;
-    }
-  }
-  
-  setupOutputStats() {
-    const outputEl = document.getElementById('output');
-    if (outputEl) {
-      outputEl.addEventListener('input', () => {
-        const text = outputEl.value;
-        updateStats(text, 'outputCharCount', 'outputWordCount', 'outputLineCount');
-        
-        // Show/hide voice output button
-        const voiceOutputBtn = document.getElementById('voiceOutputBtn');
-        if (voiceOutputBtn) {
-          voiceOutputBtn.style.display = text ? 'block' : 'none';
-        }
-      });
-    }
-  }
-  
-  // NEW: Auto-sync between Card 1 and Card 2
-  setupAutoSync() {
-    const requirementEl = document.getElementById('requirement');
-    if (requirementEl) {
-      requirementEl.addEventListener('input', () => {
-        const text = requirementEl.value.trim();
-        if (!text) {
-          // Clear Card 2 when Card 1 is empty
-          document.getElementById('output').value = '';
-          document.getElementById('convertedBadge').style.display = 'none';
-          aiToolsManager.setToolsEnabled(false);
-          
-          // Update stats
-          updateStats('', 'outputCharCount', 'outputWordCount', 'outputLineCount');
-        }
-      });
-    }
-  }
-  
-  // NEW: Global reset button in header
-  setupGlobalResetButton() {
-    const header = document.querySelector('.hero-top');
-    if (header) {
-      const resetBtn = document.createElement('button');
-      resetBtn.className = 'global-reset-btn';
-      resetBtn.id = 'globalResetBtn';
-      resetBtn.title = 'Reset all textarea sizes';
-      resetBtn.innerHTML = '<i class="fas fa-arrows-alt-v"></i> Reset Sizes';
-      
-      resetBtn.addEventListener('click', () => {
-        cardExpander.resetSizes();
-      });
-      
-      header.appendChild(resetBtn);
-    }
-  }
-  
-  // NEW: Responsive textarea sizing
-  setupResponsiveTextareas() {
-    // Responsive textarea sizing
-    const updateTextareaHeights = () => {
-      const viewportHeight = window.innerHeight;
-      const maxHeight = Math.min(viewportHeight * 0.6, 500); // Max 60% of viewport or 500px
-      
-      const requirementEl = document.getElementById('requirement');
-      const outputEl = document.getElementById('output');
-      
-      if (requirementEl) {
-        requirementEl.style.maxHeight = `${maxHeight}px`;
-      }
-      
-      if (outputEl) {
-        outputEl.style.maxHeight = `${maxHeight}px`;
-      }
-    };
-    
-    // Initial setup
-    updateTextareaHeights();
-    
-    // Update on resize
-    window.addEventListener('resize', updateTextareaHeights);
-    
-    // Auto-grow with content
-    const setupAutoGrow = (textarea) => {
-      textarea.addEventListener('input', () => {
-        textarea.style.height = 'auto';
-        const newHeight = Math.min(textarea.scrollHeight, parseInt(textarea.style.maxHeight));
-        textarea.style.height = `${newHeight}px`;
-      });
-    };
-    
-    const requirementEl = document.getElementById('requirement');
-    const outputEl = document.getElementById('output');
-    
-    if (requirementEl) setupAutoGrow(requirementEl);
-    if (outputEl) setupAutoGrow(outputEl);
-  }
-  
-  // Public API for external use
-  getState() {
-    return appState;
-  }
-  
-  getPromptGenerator() {
-    return this.promptGenerator;
-  }
-}
-
-// Initialize app when DOM is ready
+// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-  window.app = new PromptCrafterApp();
+  console.log('PromptCraft v3.2 Initializing...');
   
-  // Make app available globally for debugging
-  console.log('📱 App initialized:', window.app);
+  // Initialize all features
+  initFeatures();
+  setupEventListeners();
+  loadInitialState();
+  
+  // Add to window for debugging
+  window.appState = appState;
+  window.promptConverter = promptConverter;
+  window.templateManager = templateManager;
+  window.historyManager = historyManager;
+  
+  console.log('✅ PromptCraft initialized successfully');
 });
 
-// Export for module usage
-export default PromptCrafterApp;
+function initFeatures() {
+  // Features auto-initialize via their constructors
+  // Add maximize buttons to cards
+  setTimeout(() => {
+    cardMaximizer.addMaximizeButtons();
+  }, 200);
+  
+  // Load default templates if empty
+  setTimeout(() => {
+    if (templateManager.templates.length === 0) {
+      templateManager.loadDefaultTemplates();
+    }
+  }, 300);
+}
+
+function setupEventListeners() {
+  // Settings modal
+  const settingsBtn = document.getElementById('settingsBtn');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      document.getElementById('settingsModal').style.display = 'flex';
+    });
+  }
+  
+  if (closeSettingsBtn) {
+    closeSettingsBtn.addEventListener('click', () => {
+      document.getElementById('settingsModal').style.display = 'none';
+    });
+  }
+  
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener('click', () => {
+      const apiKey = document.getElementById('apiKeyInput').value;
+      if (apiKey) {
+        appState.apiKey = apiKey;
+        localStorage.setItem('promptCraftApiKey', apiKey);
+        notifications.success('API key saved successfully');
+        document.getElementById('settingsModal').style.display = 'none';
+      } else {
+        notifications.error('Please enter an API key');
+      }
+    });
+  }
+  
+  // Auto-convert toggle
+  const autoConvertToggle = document.getElementById('autoConvert');
+  if (autoConvertToggle) {
+    autoConvertToggle.addEventListener('change', (e) => {
+      appState.autoConvert = e.target.checked;
+      localStorage.setItem('autoConvert', e.target.checked);
+      notifications.info(`Auto-convert ${e.target.checked ? 'enabled' : 'disabled'}`);
+    });
+  }
+  
+  // Generate prompt button
+  const convertBtn = document.getElementById('convertBtn');
+  if (convertBtn) {
+    convertBtn.addEventListener('click', () => {
+      promptConverter.convert();
+    });
+  }
+  
+  // Clear input button
+  const clearInputBtn = document.getElementById('clearInputBtn');
+  if (clearInputBtn) {
+    clearInputBtn.addEventListener('click', () => {
+      document.getElementById('requirement').value = '';
+      intentDetector.clearDetection();
+      notifications.info('Input cleared');
+    });
+  }
+  
+  // Expand buttons
+  const expandInputBtn = document.getElementById('expandInputBtn');
+  const expandOutputBtn = document.getElementById('expandOutputBtn');
+  
+  if (expandInputBtn) {
+    expandInputBtn.addEventListener('click', () => {
+      const inputTextarea = document.getElementById('requirement');
+      if (inputTextarea.style.height === '300px') {
+        inputTextarea.style.height = '150px';
+      } else {
+        inputTextarea.style.height = '300px';
+      }
+    });
+  }
+  
+  if (expandOutputBtn) {
+    expandOutputBtn.addEventListener('click', () => {
+      const outputTextarea = document.getElementById('output');
+      if (outputTextarea.style.height === '400px') {
+        outputTextarea.style.height = '200px';
+      } else {
+        outputTextarea.style.height = '400px';
+      }
+    });
+  }
+  
+  // Voice input
+  const voiceInputBtn = document.getElementById('voiceInputBtn');
+  if (voiceInputBtn) {
+    voiceInputBtn.addEventListener('click', () => {
+      voiceHandler.startVoiceInput();
+    });
+  }
+  
+  // Export button
+  const exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportHandler.exportPrompt();
+    });
+  }
+  
+  // Global reset button
+  const globalResetBtn = document.getElementById('globalResetBtn');
+  if (globalResetBtn) {
+    globalResetBtn.addEventListener('click', () => {
+      if (confirm('Reset all cards to default layout?')) {
+        // Reset textarea sizes
+        const inputTextarea = document.getElementById('requirement');
+        const outputTextarea = document.getElementById('output');
+        if (inputTextarea) inputTextarea.style.height = '';
+        if (outputTextarea) outputTextarea.style.height = '';
+        
+        // Close open panels
+        const templatesPanel = document.getElementById('templatesPanel');
+        const historyPanel = document.getElementById('historyPanel');
+        if (templatesPanel) templatesPanel.style.display = 'none';
+        if (historyPanel) historyPanel.style.display = 'none';
+        
+        // Restore maximized card if any
+        cardMaximizer.restoreCurrentCard();
+        
+        notifications.success('Layout reset to default');
+      }
+    });
+  }
+  
+  // Handle outside modal clicks
+  window.addEventListener('click', (e) => {
+    const settingsModal = document.getElementById('settingsModal');
+    const templateModal = document.getElementById('templateModal');
+    
+    if (settingsModal && e.target === settingsModal) {
+      settingsModal.style.display = 'none';
+    }
+    
+    if (templateModal && e.target === templateModal) {
+      templateModal.style.display = 'none';
+    }
+  });
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + Enter to generate
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      promptConverter.convert();
+    }
+    
+    // Ctrl/Cmd + S to save
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      templateManager.openSaveModal();
+    }
+    
+    // Escape to restore maximized card
+    if (e.key === 'Escape') {
+      cardMaximizer.restoreCurrentCard();
+    }
+  });
+}
+
+function loadInitialState() {
+  // Load saved API key
+  const savedApiKey = localStorage.getItem('promptCraftApiKey');
+  if (savedApiKey) {
+    appState.apiKey = savedApiKey;
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    if (apiKeyInput) {
+      apiKeyInput.value = savedApiKey;
+    }
+  }
+  
+  // Load auto-convert setting
+  const savedAutoConvert = localStorage.getItem('autoConvert');
+  if (savedAutoConvert !== null) {
+    appState.autoConvert = savedAutoConvert === 'true';
+    const autoConvertToggle = document.getElementById('autoConvert');
+    if (autoConvertToggle) {
+      autoConvertToggle.checked = appState.autoConvert;
+    }
+  }
+  
+  // Update usage counter
+  templateManager.updateCounters();
+  
+  // Show welcome notification
+  setTimeout(() => {
+    notifications.success('Welcome to PromptCraft v3.2! Start by describing your task.', 3000);
+  }, 1000);
+}
