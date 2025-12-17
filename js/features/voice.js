@@ -1,4 +1,4 @@
-// Voice input/output functionality
+// Voice input/output functionality - FIXED MIC BUTTON
 export class VoiceFeatures {
   constructor() {
     this.isListening = false;
@@ -49,7 +49,7 @@ export class VoiceFeatures {
     this.recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       this.isListening = false;
-      this.updateVoiceUI('input', 'idle');
+      this.updateVoiceUI('input', 'muted'); // Changed from 'idle' to 'muted' on error
       
       import('../ui/notifications.js').then(module => {
         module.notifications.error(`Voice input error: ${event.error}`);
@@ -58,15 +58,20 @@ export class VoiceFeatures {
     
     this.recognition.onend = () => {
       this.isListening = false;
-      this.updateVoiceUI('input', 'idle');
+      this.updateVoiceUI('input', 'idle'); // Changed back to idle when done
     };
   }
   
   setupEventListeners() {
-    // Voice input button
+    // Voice input button - FIXED LOGIC
     const voiceInputBtn = document.getElementById('voiceInputBtn');
     if (voiceInputBtn) {
-      voiceInputBtn.addEventListener('click', () => this.startVoiceInput());
+      // Set initial state - Mic with cut sign (muted/off)
+      voiceInputBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+      voiceInputBtn.title = 'Click to enable voice input';
+      voiceInputBtn.classList.add('muted');
+      
+      voiceInputBtn.addEventListener('click', () => this.toggleVoiceInput());
     }
     
     // Voice output button
@@ -81,7 +86,7 @@ export class VoiceFeatures {
     }
   }
   
-  startVoiceInput() {
+  toggleVoiceInput() {
     if (!this.recognition) {
       import('../ui/notifications.js').then(module => {
         module.notifications.error('Speech recognition not supported in your browser');
@@ -91,13 +96,17 @@ export class VoiceFeatures {
     
     if (this.isListening) {
       this.stopVoiceInput();
-      return;
+    } else {
+      this.startVoiceInput();
     }
-    
+  }
+  
+  startVoiceInput() {
     try {
       this.recognition.start();
     } catch (error) {
       console.error('Failed to start recognition:', error);
+      this.updateVoiceUI('input', 'muted'); // Show muted state on error
       import('../ui/notifications.js').then(module => {
         module.notifications.error('Failed to start voice input');
       });
@@ -234,28 +243,25 @@ export class VoiceFeatures {
       
       if (state === 'listening') {
         buttonEl.classList.add('listening');
-        // FIX: Use proper listening icon (not muted/red)
+        // FIX: Show regular mic icon (no slash) when listening
         buttonEl.innerHTML = '<i class="fas fa-microphone"></i>';
-        buttonEl.title = 'Stop listening';
-        buttonEl.style.color = '#10b981'; // Green for active listening
+        buttonEl.title = 'Listening... Click to stop';
       } 
       else if (state === 'speaking') {
         buttonEl.classList.add('speaking');
         buttonEl.innerHTML = '<i class="fas fa-volume-up"></i>';
-        buttonEl.title = 'Stop speaking';
-        buttonEl.style.color = '#3b82f6'; // Blue for speaking
+        buttonEl.title = 'Speaking... Click to stop';
       }
       else if (state === 'muted') {
         buttonEl.classList.add('muted');
         buttonEl.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-        buttonEl.title = 'Microphone muted';
-        buttonEl.style.color = '#ef4444'; // Red for muted
+        buttonEl.title = 'Microphone muted. Click to enable';
       }
       else {
-        // Idle state
-        buttonEl.innerHTML = '<i class="fas fa-microphone"></i>';
-        buttonEl.title = type === 'input' ? 'Voice Input' : 'Read Aloud';
-        buttonEl.style.color = ''; // Reset color
+        // Idle state - Default to muted with slash
+        buttonEl.classList.add('muted');
+        buttonEl.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+        buttonEl.title = type === 'input' ? 'Click to enable voice input' : 'Read Aloud';
       }
     }
   }
