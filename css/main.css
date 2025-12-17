@@ -1,4 +1,4 @@
-/* ===== ULTRA-COMPACT CARD STYLES ===== */
+/* ===== ULTRA-COMPACT MAIN STYLES ===== */
 /* All 3 cards visible without scrolling */
 
 body {
@@ -8,14 +8,12 @@ body {
     color: #f1f5f9;
     margin: 0;
     padding: 0;
-    overflow: hidden;
 }
 
 .page {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    overflow: hidden;
 }
 
 /* SUPER COMPACT Cards */
@@ -23,7 +21,7 @@ body {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 12px;
-    padding: 1rem !important;
+    padding: 1rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
@@ -33,7 +31,7 @@ body {
     overflow: hidden;
 }
 
-/* Different border accents */
+/* Border accents */
 .step-card:nth-child(1) {
     border-top: 3px solid #3b82f6;
 }
@@ -44,7 +42,6 @@ body {
 
 .step-card:nth-child(3) {
     border-top: 3px solid #f59e0b;
-    border-right: 3px solid #f59e0b; /* Extra visual cue for Card 3 */
 }
 
 .step-card:hover {
@@ -57,10 +54,9 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 0.75rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid #334155;
-    min-height: auto;
 }
 
 .step-pill {
@@ -93,33 +89,29 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 0.5rem;
-    min-height: auto;
 }
 
 .step-header-main h2 {
     font-family: 'Poppins', sans-serif;
-    font-size: 1rem !important;
+    font-size: 1rem;
     font-weight: 600;
     color: #f1f5f9;
     margin: 0;
-    white-space: nowrap;
 }
 
 .step-subtitle {
-    font-size: 0.75rem !important;
+    font-size: 0.75rem;
     color: #cbd5e1;
     margin: 0;
     opacity: 0.8;
-    white-space: nowrap;
 }
 
 /* SUPER COMPACT Text areas */
 .textarea-idea,
 .output-textarea {
     width: 100%;
-    min-height: 120px !important;
+    min-height: 120px;
     max-height: 160px;
     padding: 0.75rem;
     background: #0f172a;
@@ -131,7 +123,6 @@ body {
     line-height: 1.5;
     resize: vertical;
     flex: 1;
-    overflow-y: auto;
 }
 
 .textarea-idea:focus,
@@ -141,7 +132,7 @@ body {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-/* SUPER COMPACT Textarea wrappers */
+/* Textarea wrappers */
 .textarea-wrapper {
     position: relative;
     width: 100%;
@@ -155,7 +146,6 @@ body {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.5rem;
-    justify-content: space-between;
 }
 
 .textarea-buttons button {
@@ -180,7 +170,7 @@ body {
     border-color: #3b82f6;
 }
 
-/* SUPER COMPACT Expand buttons */
+/* Expand buttons */
 .expand-btn {
     position: absolute;
     top: 0.5rem;
@@ -195,7 +185,7 @@ body {
     z-index: 2;
 }
 
-/* SUPER COMPACT Auto-row */
+/* Auto-row */
 .auto-row {
     display: flex;
     align-items: center;
@@ -237,7 +227,7 @@ input:checked + .toggle-slider:before {
     font-size: 0.75rem;
 }
 
-/* SUPER COMPACT Stats row */
+/* Stats row */
 .stats-row {
     display: flex;
     gap: 1rem;
@@ -257,7 +247,7 @@ input:checked + .toggle-slider:before {
     gap: 0.375rem;
 }
 
-/* SUPER COMPACT Step footer (Card 1 buttons) */
+/* Step footer (Card 1 buttons) */
 .step-footer {
     display: flex;
     gap: 0.5rem;
@@ -272,7 +262,7 @@ input:checked + .toggle-slider:before {
     border-radius: 8px;
 }
 
-/* SUPER COMPACT Output footer (Card 2 buttons) */
+/* Output footer (Card 2 buttons) */
 .output-footer {
     display: flex;
     gap: 0.5rem;
@@ -290,7 +280,7 @@ input:checked + .toggle-slider:before {
     justify-content: center;
 }
 
-/* SUPER COMPACT Voice buttons */
+/* Voice buttons */
 .voice-input-btn,
 .voice-output-btn {
     background: #1e293b;
@@ -313,10 +303,10 @@ input:checked + .toggle-slider:before {
 /* Card 3 - ULTRA COMPACT AI Tools */
 .step-card:nth-child(3) .launch-list {
     display: grid;
-    grid-template-columns: 1fr !important;
-    gap: 0.5rem !important;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
     margin-top: 0.75rem;
-    max-height: 280px !important;
+    max-height: 280px;
     overflow-y: auto;
     padding-right: 0.25rem;
     flex: 1;
@@ -326,11 +316,11 @@ input:checked + .toggle-slider:before {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
-    padding: 0.625rem !important;
+    padding: 0.625rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    min-height: 48px !important;
+    min-height: 48px;
 }
 
 .step-card:nth-child(3) .launch-icon {
@@ -348,36 +338,21 @@ input:checked + .toggle-slider:before {
 }
 
 .step-card:nth-child(3) .launch-name {
-    font-size: 0.8125rem !important;
+    font-size: 0.8125rem;
     font-weight: 500;
 }
 
 .step-card:nth-child(3) .launch-sub {
-    font-size: 0.6875rem !important;
+    font-size: 0.6875rem;
     opacity: 0.7;
-}
-
-/* History panel */
-.history-panel {
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    font-size: 0.75rem;
-}
-
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #334155;
 }
 
 /* Convert button styling */
 #convertBtn {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    justify-self: center;
     background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
     border: none;
@@ -391,6 +366,7 @@ input:checked + .toggle-slider:before {
     justify-content: center;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     transition: all 0.2s;
+    z-index: 10;
 }
 
 #convertBtn:hover {
@@ -435,61 +411,25 @@ input:checked + .toggle-slider:before {
     border-radius: 2px;
 }
 
-/* Ensure no overflow in cards */
-.step-card {
-    overflow: hidden;
-}
-
-.step-card .card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
 /* Mobile adjustments */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .step-card {
         min-height: 380px;
     }
     
     .textarea-idea,
     .output-textarea {
-        min-height: 140px !important;
+        min-height: 140px;
     }
     
     .step-card:nth-child(3) .launch-list {
-        max-height: 240px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .step-card {
-        min-height: 360px;
-        padding: 0.75rem !important;
+        max-height: 240px;
     }
     
-    .step-header {
-        gap: 0.5rem;
-    }
-    
-    .step-pill {
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-    }
-    
-    .step-header-main h2 {
-        font-size: 0.875rem !important;
-    }
-    
-    .step-subtitle {
-        font-size: 0.6875rem !important;
-    }
-    
-    .textarea-idea,
-    .output-textarea {
-        min-height: 120px !important;
-        font-size: 0.8125rem;
+    #convertBtn {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
     }
 }
