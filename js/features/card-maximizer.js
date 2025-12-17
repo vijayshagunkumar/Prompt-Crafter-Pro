@@ -4,7 +4,7 @@ export class CardMaximizer {
         this.maximizedCard = null;
         this.overlay = null;
         this.placeholder = null;
-        this.originalCardStyles = null;
+        this.originalStyles = {};
         this.setup();
     }
     
@@ -55,61 +55,54 @@ export class CardMaximizer {
     }
     
     maximizeCard(card) {
-        // Store original position and styles
-        this.originalCardStyles = {
-            gridColumn: card.style.gridColumn,
-            gridRow: card.style.gridRow,
+        // Store original card position and parent
+        const parent = card.parentElement;
+        const index = Array.from(parent.children).indexOf(card);
+        
+        // Store original styles
+        this.originalStyles = {
+            parent: parent,
+            index: index,
+            display: card.style.display,
             position: card.style.position,
             top: card.style.top,
             left: card.style.left,
             width: card.style.width,
             height: card.style.height,
             zIndex: card.style.zIndex,
-            margin: card.style.margin,
-            padding: card.style.padding,
-            border: card.style.border,
-            boxShadow: card.style.boxShadow,
-            borderRadius: card.style.borderRadius,
-            transform: card.style.transform,
-            transition: card.style.transition
+            gridColumn: card.style.gridColumn,
+            gridRow: card.style.gridRow
         };
         
-        // Get card position in the grid
-        const cardRect = card.getBoundingClientRect();
-        const gridRect = card.parentElement.getBoundingClientRect();
-        
-        // Create a placeholder to keep the grid layout intact
+        // Create placeholder to maintain grid layout
         this.placeholder = document.createElement('div');
-        this.placeholder.style.width = cardRect.width + 'px';
-        this.placeholder.style.height = cardRect.height + 'px';
+        this.placeholder.className = 'card-placeholder';
+        this.placeholder.style.width = card.offsetWidth + 'px';
+        this.placeholder.style.height = card.offsetHeight + 'px';
         this.placeholder.style.visibility = 'hidden';
-        this.placeholder.style.pointerEvents = 'none';
-        card.parentNode.insertBefore(this.placeholder, card);
+        parent.insertBefore(this.placeholder, card);
         
         // Create overlay
         this.createOverlay();
         
-        // Set fixed position for maximized card
+        // Maximize the card
         card.style.position = 'fixed';
         card.style.top = '20px';
         card.style.left = '20px';
         card.style.width = 'calc(100vw - 40px)';
         card.style.height = 'calc(100vh - 40px)';
         card.style.zIndex = '9999';
-        card.style.margin = '0';
-        card.style.padding = '40px';
+        card.style.display = 'block';
         card.style.border = '3px solid #3b82f6';
         card.style.boxShadow = '0 40px 120px rgba(0, 0, 0, 0.8)';
         card.style.borderRadius = '24px';
-        card.style.backgroundColor = '#1e293b';
-        card.style.transform = 'none';
-        card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        card.style.padding = '40px';
+        card.style.margin = '0';
         card.style.overflow = 'auto';
         
-        // Move to body to ensure proper z-index
+        // Move to body for proper z-index stacking
         document.body.appendChild(card);
         
-        // Add maximized class
         card.classList.add('maximized');
         this.maximizedCard = card;
         
@@ -133,22 +126,7 @@ export class CardMaximizer {
             background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(10px);
             z-index: 9998;
-            animation: overlayFadeIn 0.3s ease;
         `;
-        
-        // Add animation if not exists
-        if (!document.querySelector('#overlay-animation')) {
-            const style = document.createElement('style');
-            style.id = 'overlay-animation';
-            style.textContent = `
-                @keyframes overlayFadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
         document.body.appendChild(this.overlay);
     }
     
@@ -167,53 +145,49 @@ export class CardMaximizer {
             this.placeholder.remove();
             this.placeholder = null;
         }
-        
-        this.originalCardStyles = null;
     }
     
     restoreCard(card) {
-        // Remove maximized class
         card.classList.remove('maximized');
         
-        // Find original position in grid
-        const originalGrid = document.querySelector('.cards-grid');
+        // Remove from body
+        document.body.removeChild(card);
         
-        // Restore original styles
-        if (this.originalCardStyles) {
-            Object.assign(card.style, this.originalCardStyles);
-        } else {
-            // Reset to default
-            card.style.position = '';
-            card.style.top = '';
-            card.style.left = '';
-            card.style.width = '';
-            card.style.height = '';
-            card.style.zIndex = '';
-            card.style.margin = '';
-            card.style.padding = '';
-            card.style.border = '';
-            card.style.boxShadow = '';
-            card.style.borderRadius = '';
-            card.style.transform = '';
-            card.style.transition = '';
-            card.style.overflow = '';
+        // Restore to original position
+        if (this.originalStyles.parent && this.placeholder) {
+            this.placeholder.parentNode.replaceChild(card, this.placeholder);
+        } else if (this.originalStyles.parent && this.originalStyles.index !== undefined) {
+            // Insert at original position
+            const parent = this.originalStyles.parent;
+            const sibling = parent.children[this.originalStyles.index];
+            if (sibling) {
+                parent.insertBefore(card, sibling);
+            } else {
+                parent.appendChild(card);
+            }
         }
         
-        // Move card back to its original position
-        if (originalGrid && this.placeholder) {
-            originalGrid.insertBefore(card, this.placeholder);
-            this.placeholder.remove();
-            this.placeholder = null;
-        } else if (originalGrid) {
-            // If placeholder is missing, insert at the correct position
-            const cardIndex = Array.from(originalGrid.children).findIndex(child => 
-                child.classList.contains('step-card') && !child.classList.contains('maximized')
-            );
-            if (cardIndex !== -1) {
-                originalGrid.insertBefore(card, originalGrid.children[cardIndex]);
-            } else {
-                originalGrid.appendChild(card);
-            }
+        // Restore original styles
+        card.style.position = this.originalStyles.position || '';
+        card.style.top = this.originalStyles.top || '';
+        card.style.left = this.originalStyles.left || '';
+        card.style.width = this.originalStyles.width || '';
+        card.style.height = this.originalStyles.height || '';
+        card.style.zIndex = this.originalStyles.zIndex || '';
+        card.style.display = this.originalStyles.display || '';
+        card.style.border = '';
+        card.style.boxShadow = '';
+        card.style.borderRadius = '';
+        card.style.padding = '';
+        card.style.margin = '';
+        card.style.overflow = '';
+        
+        // Restore grid positioning
+        if (this.originalStyles.gridColumn) {
+            card.style.gridColumn = this.originalStyles.gridColumn;
+        }
+        if (this.originalStyles.gridRow) {
+            card.style.gridRow = this.originalStyles.gridRow;
         }
         
         // Update button icon
@@ -222,6 +196,8 @@ export class CardMaximizer {
             maxBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
             maxBtn.title = 'Maximize card';
         }
+        
+        this.originalStyles = {};
     }
 }
 
