@@ -16,19 +16,21 @@ body {
     height: 100vh;
 }
 
-/* SUPER COMPACT Cards */
+/* SUPER COMPACT Cards - MAKE SURE ALL ARE VISIBLE */
 .step-card {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 12px;
     padding: 1rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    display: flex;
+    display: flex !important; /* FORCE DISPLAY */
     flex-direction: column;
     transition: transform 0.2s ease;
     height: 100%;
     min-height: 0;
     overflow: hidden;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Border accents */
@@ -433,122 +435,18 @@ input:checked + .toggle-slider:before {
         transform: translate(-50%, -50%);
     }
 }
-/* ===== ADDITIONAL FIXES FOR ISSUES ===== */
 
-/* Ensure Card 3 layout stays single column */
-.step-card:nth-child(3) .launch-list {
-    grid-template-columns: 1fr !important;
+/* ===== CRITICAL FIX - ENSURE ALL CARDS ARE VISIBLE ===== */
+.cards-grid .step-card {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: 100% !important;
 }
 
-/* Prevent any multi-column overrides */
-@media (min-width: 768px) {
-    .step-card:nth-child(3) .launch-list {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-@media (min-width: 1024px) {
-    .step-card:nth-child(3) .launch-list {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* Analysis Results fixed height */
-.intent-badge {
-    max-height: 100px !important;
-    overflow-y: auto !important;
-}
-
-/* Ensure maximize button stays visible */
-.maximize-card-btn {
-    z-index: 100 !important;
-}
-
-/* Card grid positioning fixes */
-.cards-grid {
-    position: relative;
-}
-
-.cards-grid > .step-card {
-    position: relative;
-    transition: transform 0.3s ease;
-}
-
-/* Prevent card swapping on maximize */
-.step-card.maximized {
-    position: fixed !important;
-    z-index: 10000 !important;
-}
-
-/* Ensure Card 3 doesn't overflow */
-@media (min-width: 1024px) {
-    .step-card:nth-child(3) {
-        min-width: 280px;
-        max-width: 320px;
-    }
-    
-    .step-card:nth-child(3) .launch-list {
-        max-height: 300px;
-    }
-}
-
-/* ===== ADDITIONAL FIXES ===== */
-
-/* Ensure Card 3 has proper layout */
-.step-card:nth-child(3) .launch-list {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-}
-
-/* Desktop: Card 3 - 2 columns */
-@media (min-width: 768px) {
-  .step-card:nth-child(3) .launch-list {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-}
-
-/* Large desktop: Card 3 - 2 columns */
-@media (min-width: 1024px) {
-  .step-card:nth-child(3) .launch-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-    max-height: 320px !important;
-  }
-}
-
-/* Scrollbar for Card 3 */
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.3);
-}
-
-.step-card:nth-child(3) .launch-list::-webkit-scrollbar-thumb {
-  background: #3b82f6;
-  border-radius: 3px;
-}
-
-/* Analysis box fixes */
-.auto-detection-container {
-  position: relative;
-  z-index: 2;
-}
-
-.intent-badge {
-  max-height: 100px;
-  overflow-y: auto;
-}
-
-/* Maximize fixes */
-.step-card.maximized {
-  z-index: 10000 !important;
-}
-
-.card-maximize-overlay {
-  z-index: 9999 !important;
+/* Fix for any hidden cards */
+.step-card {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
