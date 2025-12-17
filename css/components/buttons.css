@@ -193,3 +193,34 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+/* Voice button states - ADD THESE TO YOUR EXISTING buttons.css */
+.voice-input-btn.listening {
+  color: #10b981 !important; /* Green for active listening */
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: #10b981 !important;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-input-btn.muted {
+  color: #ef4444 !important; /* Red for muted */
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: #ef4444 !important;
+}
+
+.voice-output-btn.speaking {
+  color: #3b82f6 !important; /* Blue for speaking */
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: #3b82f6 !important;
+  animation: pulse 1.5s infinite;
+}
+
+/* Convert button loading state */
+#convertBtn .fa-spinner {
+  margin-right: 8px;
+}
+
+/* Disable animation on hover when loading */
+#convertBtn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
