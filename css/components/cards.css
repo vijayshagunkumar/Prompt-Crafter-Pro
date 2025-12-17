@@ -154,50 +154,38 @@
   transform: scale(1.1);
 }
 
-/* Fixed maximize styles */
+/* Fixed maximize styles - NO DANCING */
 .step-card.maximized {
   position: fixed !important;
-  top: 1rem !important;
-  left: 1rem !important;
-  right: 1rem !important;
-  bottom: 1rem !important;
-  width: auto !important;
-  height: auto !important;
+  top: 20px !important;
+  left: 20px !important;
+  width: calc(100vw - 40px) !important;
+  height: calc(100vh - 40px) !important;
   z-index: 9999 !important;
   background: #1e293b !important;
-  border: 2px solid #3b82f6 !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
-  border-radius: 12px !important;
+  border: 3px solid #3b82f6 !important;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8) !important;
+  border-radius: 24px !important;
   margin: 0 !important;
-  padding: 1.5rem !important;
-  animation: maximizeCard 0.3s ease-out;
+  padding: 40px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   overflow: auto !important;
-  min-height: auto !important;
+  transform: none !important;
 }
 
-/* Overlay */
+/* Overlay - SOLID background */
 .card-maximize-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(15, 23, 42, 0.95) !important;
   backdrop-filter: blur(10px);
   z-index: 9998;
   animation: fadeIn 0.3s ease;
   display: block !important;
-}
-
-@keyframes maximizeCard {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 @keyframes fadeIn {
@@ -205,12 +193,12 @@
   to { opacity: 1; }
 }
 
-/* ===== AI TOOLS LAYOUT - ULTRA COMPACT ===== */
+/* ===== AI TOOLS LAYOUT - SINGLE COLUMN WITH SCROLL ===== */
 
-/* AI tools grid - COMPACT */
+/* AI tools grid - SINGLE COLUMN ONLY */
 .launch-list {
   display: grid !important;
-  grid-template-columns: 1fr !important;
+  grid-template-columns: 1fr !important; /* SINGLE COLUMN */
   gap: 8px !important;
   margin-top: 16px;
   width: 100%;
@@ -385,11 +373,11 @@
   }
   
   .step-card.maximized {
-    top: 8px !important;
-    left: 8px !important;
-    right: 8px !important;
-    bottom: 8px !important;
-    padding: 16px !important;
+    top: 10px !important;
+    left: 10px !important;
+    width: calc(100vw - 20px) !important;
+    height: calc(100vh - 20px) !important;
+    padding: 20px !important;
   }
   
   .launch-list {
@@ -462,3 +450,6 @@
     max-height: 300px;
   }
 }
+
+/* REMOVE ALL MULTI-COLUMN MEDIA QUERIES - SINGLE COLUMN ONLY */
+/* Delete any @media rules that set grid-template-columns to multiple columns for .launch-list */
