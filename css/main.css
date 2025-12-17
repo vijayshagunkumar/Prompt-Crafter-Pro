@@ -506,3 +506,86 @@ img, video {
 .step-card:nth-child(3) {
   border-left: 4px solid #f59e0b;
 }
+
+/* ===== QUICK FIXES FOR ALL ISSUES ===== */
+
+/* 1. FIX PURPLE COLORS IN HEADER */
+.hero {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+}
+
+/* 2. MAKE CARDS MORE DISTINGUISHABLE */
+.step-card {
+  border-left: 4px solid transparent !important;
+}
+
+.step-card:nth-child(1) {
+  border-left-color: #3b82f6 !important; /* Blue */
+}
+
+.step-card:nth-child(2) {
+  border-left-color: #10b981 !important; /* Green */
+}
+
+.step-card:nth-child(3) {
+  border-left-color: #f59e0b !important; /* Amber */
+}
+
+/* 3. FIX AI TOOLS SINGLE COLUMN */
+.launch-list {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+@media (min-width: 768px) {
+  .launch-list {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .launch-list {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* 4. FIX MAXIMIZE TRANSPARENCY */
+.step-card.maximized {
+  background: #1e293b !important;
+  opacity: 1 !important;
+}
+
+.card-maximize-overlay {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+
+/* 5. ENSURE NO BACKGROUND SHOWS THROUGH */
+body, .page, .workflow {
+  background: var(--bg-primary) !important;
+}
+
+.step-card {
+  position: relative;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-radius: inherit;
+  z-index: -1;
+}
+
+/* 6. FIX CHATGPT ICON */
+.fa-openai {
+  font-size: 20px !important;
+  color: #10a37f !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
