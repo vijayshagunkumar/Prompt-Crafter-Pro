@@ -67,6 +67,11 @@
           <i class="fas fa-cog"></i>
           Settings
         </button>
+        
+        <!-- NEW: Global Reset Button -->
+        <button class="global-reset-btn" id="globalResetBtn" title="Reset all textarea sizes">
+          <i class="fas fa-arrows-alt-v"></i> Reset Sizes
+        </button>
       </div>
     </header>
 
@@ -82,6 +87,11 @@
                 <h2>Your Idea</h2>
                 <p class="step-subtitle">Start with your requirement</p>
               </div>
+              <!-- NEW: Intent Badge -->
+              <span class="intent-badge" id="intentBadge" style="display:none;">
+                <i class="fas fa-lightbulb"></i>
+                Detecting...
+              </span>
             </div>
           </div>
 
@@ -313,11 +323,7 @@
             <div class="step-header-main">
               <div>
                 <h2>Launch</h2>
-                <!-- UPDATED TEXT - Same design as second card -->
-                <div class="launch-hint" style="margin-top: 8px;">
-                  <i class="fas fa-info-circle"></i>
-                  Choose your AI tool - Prompt is copied automatically when you click a tool
-                </div>
+                <!-- NEW: Best match display will be inserted here by JavaScript -->
               </div>
             </div>
           </div>
@@ -360,6 +366,28 @@
               <div class="launch-text">
                 <span class="launch-name">Perplexity</span>
                 <span class="launch-sub">perplexity.ai</span>
+              </div>
+            </button>
+
+            <!-- NEW: DALL·E Button -->
+            <button class="launch-btn launch-dalle" id="dalleBtn" disabled>
+              <div class="launch-icon">
+                <i class="fas fa-palette"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">DALL·E</span>
+                <span class="launch-sub">Image Generation</span>
+              </div>
+            </button>
+
+            <!-- NEW: Midjourney Button -->
+            <button class="launch-btn launch-midjourney" id="midjourneyBtn" disabled>
+              <div class="launch-icon">
+                <i class="fas fa-magic"></i>
+              </div>
+              <div class="launch-text">
+                <span class="launch-name">Midjourney</span>
+                <span class="launch-sub">Art Generation</span>
               </div>
             </button>
 
