@@ -2172,3 +2172,7 @@ textarea::placeholder {
 .card-output div.stats-row * {
   color: #ffffff !important;
 }
+/* 🚨 ABSOLUTE FORCE FIX — Card 2 stats */
+.stats-row {
+  color: #ffffff !important;
+}
