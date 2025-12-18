@@ -1,4 +1,9 @@
 // PromptCraft – app.js
+function updateSizeInfo(id, height) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = `${Math.round(height)}px`;
+}
 
 // API Configuration
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
