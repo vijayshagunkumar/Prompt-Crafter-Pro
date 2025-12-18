@@ -2164,3 +2164,11 @@ textarea::placeholder {
 .card-output .stats-row * {
   color: rgba(255, 255, 255, 0.9) !important;
 }
+/* 🚨 FORCE FIX: Card 2 stats text */
+.card-output div.stats-row {
+  color: #ffffff !important;
+}
+
+.card-output div.stats-row * {
+  color: #ffffff !important;
+}
