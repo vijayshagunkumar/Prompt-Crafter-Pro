@@ -1,17 +1,6 @@
-## 🏗️ Architecture
+📁 Project Structure
 
-PromptCraft follows a **modular, scalable, and separation-of-concerns–driven architecture**.
-The codebase is organized to keep **UI, core logic, AI integrations, and assets clearly isolated**, enabling faster iteration, easier debugging, and long-term maintainability.
-
-Replace your Project Structure section with this
-### 📁 Project Structure
-
-```text
 Prompt-Crafter-Pro/
-@vijayshagunkumar ➜ /workspaces/Prompt-Crafter-Pro (main) $ ls
-README.md  assets  css  index.html  js  settings-modal.html
-@vijayshagunkumar ➜ /workspaces/Prompt-Crafter-Pro (main) $ tree
-.
 ├── README.md
 ├── assets
 │   ├── icons
