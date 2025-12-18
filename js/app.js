@@ -1,4 +1,23 @@
 // PromptCraft – app.js
+function intentObjectToChips(intent) {
+  const chips = [];
+
+  if (intent.persona !== "neutral") chips.push(intent.persona);
+  if (intent.tone !== "neutral") chips.push(`tone: ${intent.tone}`);
+  if (intent.formality !== "neutral") chips.push(`formality: ${intent.formality}`);
+  if (intent.emotion !== "neutral") chips.push(`emotion: ${intent.emotion}`);
+  if (intent.urgency !== "normal") chips.push(`urgency: ${intent.urgency}`);
+  if (intent.audience !== "general") chips.push(`audience: ${intent.audience}`);
+  if (intent.format !== "free") chips.push(`format: ${intent.format}`);
+  if (intent.depth !== "normal") chips.push(`depth: ${intent.depth}`);
+
+  if (Array.isArray(intent.constraints)) {
+    intent.constraints.forEach(c => chips.push(c));
+  }
+
+  return chips;
+}
+
 function updateSizeInfo(id, height) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -301,7 +320,32 @@ function setLaunchButtonsEnabled(enabled) {
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
+/* ================================
+   INTENT CHIP RENDERING (Card 1)
+================================ */
 
+const intentRow = document.getElementById("intentRow");
+const intentScroll = document.getElementById("intentScroll");
+
+function renderIntentChips(chips) {
+  if (!intentRow || !intentScroll) return;
+
+  intentScroll.innerHTML = "";
+
+  if (!chips.length) {
+    intentRow.style.display = "none";
+    return;
+  }
+
+  chips.forEach(label => {
+    const chip = document.createElement("span");
+    chip.className = "intent-chip";
+    chip.textContent = label;
+    intentScroll.appendChild(chip);
+  });
+
+  intentRow.style.display = "block";
+}
 function initializeApp() {
   loadSettings();
   loadTemplates();
@@ -1068,6 +1112,8 @@ document.querySelectorAll(".preset-option").forEach((option) => {
   
   // NEW: Clear/Undo button functionality
   setupClearUndoButton();
+  updateStats("");
+
 }
 
 // NEW: Clear/Undo button functionality
@@ -1269,6 +1315,11 @@ function handleRequirementInput() {
     resetAutoConvertTimer();
   }
   updateStats(text);
+  // 🔍 Intent detection + UI chips
+const intent = detectIntentAttributes(text);
+const chips = intentObjectToChips(intent);
+renderIntentChips(chips);
+
 }
 
 function resetAutoConvertTimer() {
@@ -1486,7 +1537,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
     generatedPrompt = sanitizePrompt(generatedPrompt);
 
     outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
+   updateStats(raw);
     updateOutputStats();
     saveToHistory(raw, generatedPrompt);
 
