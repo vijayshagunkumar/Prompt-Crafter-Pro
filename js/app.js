@@ -1,5 +1,7 @@
 // PromptCraft – app.js
 function intentObjectToChips(intent) {
+  if (!intent) return [];
+
   const chips = [];
 
   if (intent.persona !== "neutral") chips.push(intent.persona);
@@ -345,6 +347,9 @@ function renderIntentChips(chips) {
   });
 
   intentRow.style.display = "block";
+  
+  /* 🔥 AUTO-SCROLL TO LAST CHIP */
+intentScroll.scrollLeft = intentScroll.scrollWidth;
 }
 function initializeApp() {
   loadSettings();
@@ -993,7 +998,7 @@ function setupEventListeners() {
   requirementEl.addEventListener("input", handleRequirementInput);
   
   // NEW: Also listen to keyup to handle voice input completion
-  requirementEl.addEventListener("keyup", handleRequirementInput);
+  
 
   // Auto-convert toggle
   document.getElementById("autoConvert").addEventListener("change", (e) => {
@@ -1316,9 +1321,17 @@ function handleRequirementInput() {
   }
   updateStats(text);
   // 🔍 Intent detection + UI chips
-const intent = detectIntentAttributes(text);
-const chips = intentObjectToChips(intent);
-renderIntentChips(chips);
+if (!text.trim()) {
+  renderIntentChips([]);
+} else {
+  const intent = window.detectIntentAttributes
+    ? window.detectIntentAttributes(text)
+    : null;
+
+  const chips = intentObjectToChips(intent);
+  renderIntentChips(chips);
+}
+
 
 }
 
