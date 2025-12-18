@@ -937,29 +937,30 @@ function setupEventListeners() {
   });
 
   // Preset selection
-  document.querySelectorAll(".preset-option").forEach((option) => {
-    option.addEventListener("click", () => {
-      const presetId = option.dataset.preset;
-      userPresetLocked = true;
-      lastPresetSource = "manual";
-      setCurrentPreset(presetId);
+  // Preset selection (FIXED – do NOT clear output)
+document.querySelectorAll(".preset-option").forEach((option) => {
+  option.addEventListener("click", () => {
+    const presetId = option.dataset.preset;
 
-      // NEW: Clear output when preset changes
-      if (isConverted) {
-        document.getElementById("output").value = "";
-        isConverted = false;
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-      }
+    userPresetLocked = true;
+    lastPresetSource = "manual";
+    setCurrentPreset(presetId);
 
-      if (document.getElementById("requirement").value.trim() && isConverted) {
-        isConverted = false;
-        generatePrompt();
-      } else {
-        updatePresetInfo(lastTaskLabel, currentPreset, "manual");
-      }
-    });
+    // ✅ Reformat existing prompt instead of clearing
+    if (isConverted) {
+      const requirement = document.getElementById("requirement").value.trim();
+      if (!requirement) return;
+
+      const role = lastRole || "expert assistant";
+      const reformatted = PRESETS[currentPreset](role, requirement);
+
+      document.getElementById("output").value = reformatted;
+      updateOutputStats();
+      setLaunchButtonsEnabled(true);
+      updatePresetInfo(lastTaskLabel, currentPreset, "manual");
+    }
   });
+});
 
   // Examples
   document.querySelectorAll(".example-btn").forEach((btn) => {
