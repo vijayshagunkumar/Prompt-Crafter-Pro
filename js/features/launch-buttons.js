@@ -7,7 +7,7 @@ export class LaunchButtons {
       'claudeBtn': 'https://claude.ai/new',
       'geminiBtn': 'https://gemini.google.com/app',
       'perplexityBtn': 'https://www.perplexity.ai/',
-      'dalleBtn': 'https://labs.openai.com/',
+      'dalleBtn':  'https://chatgpt.com/?model=image',
       'midjourneyBtn': 'https://www.midjourney.com/',
       'deepseekBtn': 'https://chat.deepseek.com/',
       'copilotBtn': 'https://copilot.microsoft.com/',
