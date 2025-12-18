@@ -2112,3 +2112,23 @@ textarea::placeholder {
         min-height: 300px !important;
     }
 }
+/* ================================
+   Card 2 Header Text Visibility Fix
+================================ */
+
+#presetInfo {
+  color: var(--text-primary, #ffffff);
+  font-weight: 600;
+}
+
+.output-stats,
+#outputCharCount,
+#outputWordCount,
+#outputLineCount {
+  color: var(--text-muted, rgba(255, 255, 255, 0.75));
+}
+
+/* Ensure stats stay readable on dark backgrounds */
+.card-output .output-stats {
+  background: transparent;
+}
