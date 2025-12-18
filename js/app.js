@@ -4,21 +4,47 @@ function intentObjectToChips(intent) {
 
   const chips = [];
 
-  if (intent.persona !== "neutral") chips.push(intent.persona);
-  if (intent.tone !== "neutral") chips.push(`tone: ${intent.tone}`);
-  if (intent.formality !== "neutral") chips.push(`formality: ${intent.formality}`);
-  if (intent.emotion !== "neutral") chips.push(`emotion: ${intent.emotion}`);
-  if (intent.urgency !== "normal") chips.push(`urgency: ${intent.urgency}`);
-  if (intent.audience !== "general") chips.push(`audience: ${intent.audience}`);
-  if (intent.format !== "free") chips.push(`format: ${intent.format}`);
-  if (intent.depth !== "normal") chips.push(`depth: ${intent.depth}`);
+  if (intent.persona !== "neutral") {
+    chips.push(`[${intent.persona}]`);
+  }
+
+  if (intent.tone !== "neutral") {
+    chips.push(`[tone: ${intent.tone}]`);
+  }
+
+  if (intent.formality !== "neutral") {
+    chips.push(`[formality: ${intent.formality}]`);
+  }
+
+  if (intent.emotion !== "neutral") {
+    chips.push(`[emotion: ${intent.emotion}]`);
+  }
+
+  if (intent.urgency !== "normal") {
+    chips.push(`[urgency: ${intent.urgency}]`);
+  }
+
+  if (intent.audience !== "general") {
+    chips.push(`[audience: ${intent.audience}]`);
+  }
+
+  if (intent.format !== "free") {
+    chips.push(`[format: ${intent.format}]`);
+  }
+
+  if (intent.depth !== "normal") {
+    chips.push(`[depth: ${intent.depth}]`);
+  }
 
   if (Array.isArray(intent.constraints)) {
-    intent.constraints.forEach(c => chips.push(c));
+    intent.constraints.forEach(c => {
+      chips.push(`[${c}]`);
+    });
   }
 
   return chips;
 }
+
 
 function updateSizeInfo(id, height) {
   const el = document.getElementById(id);
