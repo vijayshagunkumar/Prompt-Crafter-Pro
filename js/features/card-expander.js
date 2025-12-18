@@ -19,8 +19,18 @@ export class CardExpander {
     const outputEl = document.getElementById('output');
     
     if (!requirementEl || !outputEl) return;
+
+    // 🔑 Detect manual resize intent
+    [requirementEl, outputEl].forEach(el => {
+      el.addEventListener('mousedown', (e) => {
+        const rect = el.getBoundingClientRect();
+        if (e.clientX > rect.right - 20 && e.clientY > rect.bottom - 20) {
+          el.dataset.userResized = 'true';
+        }
+      });
+    });
     
-    // Apply saved sizes
+    // Apply saved sizes (ONLY ON LOAD)
     if (appState.textareaSizes.requirement.height) {
       requirementEl.style.height = `${appState.textareaSizes.requirement.height}px`;
       this.updateSizeInfo('inputSizeInfo', appState.textareaSizes.requirement.height);
@@ -31,37 +41,42 @@ export class CardExpander {
       this.updateSizeInfo('outputSizeInfo', appState.textareaSizes.output.height);
     }
     
-    // Setup resize observers
+    // Observe resize WITHOUT OVERRIDING USER CONTROL
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
+        const textarea = entry.target;
         const height = entry.contentRect.height;
-        const textareaId = entry.target.id;
-        
-        if (textareaId === 'requirement') {
+
+        // ❌ Do NOT fight user resize
+        if (textarea.dataset.userResized === 'true') {
+          if (textarea.id === 'requirement') {
+            appState.textareaSizes.requirement.height = height;
+            this.updateSizeInfo('inputSizeInfo', height);
+          } else if (textarea.id === 'output') {
+            appState.textareaSizes.output.height = height;
+            this.updateSizeInfo('outputSizeInfo', height);
+          }
+          debounce(() => appState.saveSizes(), 500)();
+          return;
+        }
+
+        // ✅ Programmatic resize only
+        if (textarea.id === 'requirement') {
           appState.textareaSizes.requirement.height = height;
           this.updateSizeInfo('inputSizeInfo', height);
-        } else if (textareaId === 'output') {
+        } else if (textarea.id === 'output') {
           appState.textareaSizes.output.height = height;
           this.updateSizeInfo('outputSizeInfo', height);
         }
-        
-        // Visual feedback
-        entry.target.classList.add('size-changing');
-        setTimeout(() => {
-          entry.target.classList.remove('size-changing');
-        }, 300);
-        
-        // Save with debounce
+
+        textarea.classList.add('size-changing');
+        setTimeout(() => textarea.classList.remove('size-changing'), 300);
         debounce(() => appState.saveSizes(), 500)();
       }
     });
     
     resizeObserver.observe(requirementEl);
     resizeObserver.observe(outputEl);
-    
-    // Manual drag events
-    requirementEl.addEventListener('mouseup', () => debounce(() => appState.saveSizes(), 300)());
-    outputEl.addEventListener('mouseup', () => debounce(() => appState.saveSizes(), 300)());
   }
   
   setupExpandButtons() {
@@ -83,27 +98,16 @@ export class CardExpander {
       if (this.isOutputExpanded) this.collapse('output');
     });
     
-    // Escape key to collapse
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        overlay.click();
-      }
+      if (e.key === 'Escape') overlay.click();
     });
   }
   
   toggleExpand(type) {
     if (type === 'input') {
-      if (this.isInputExpanded) {
-        this.collapse('input');
-      } else {
-        this.expand('input');
-      }
-    } else if (type === 'output') {
-      if (this.isOutputExpanded) {
-        this.collapse('output');
-      } else {
-        this.expand('output');
-      }
+      this.isInputExpanded ? this.collapse('input') : this.expand('input');
+    } else {
+      this.isOutputExpanded ? this.collapse('output') : this.expand('output');
     }
   }
   
@@ -113,26 +117,17 @@ export class CardExpander {
     const overlay = document.getElementById('expandOverlay');
     
     if (!textarea || !button || !overlay) return;
-    
-    // Save current height before expanding
-    const currentHeight = textarea.offsetHeight;
-    if (type === 'input' && currentHeight > 140) {
-      appState.textareaSizes.requirement.height = currentHeight;
-    } else if (type === 'output' && currentHeight > 200) {
-      appState.textareaSizes.output.height = currentHeight;
-    }
-    
-    // Expand
+
+    textarea.dataset.userResized = 'false';
+
     textarea.classList.add('textarea-expanded');
     button.classList.add('expanded');
     button.innerHTML = '<i class="fas fa-compress-alt"></i>';
-    button.title = 'Collapse';
     overlay.style.display = 'block';
     
     if (type === 'input') {
       this.isInputExpanded = true;
       textarea.focus();
-      // Scroll to cursor position
       textarea.scrollTop = textarea.scrollHeight;
     } else {
       this.isOutputExpanded = true;
@@ -145,61 +140,23 @@ export class CardExpander {
     const overlay = document.getElementById('expandOverlay');
     
     if (!textarea || !button) return;
-    
-    // Collapse
+
     textarea.classList.remove('textarea-expanded');
     button.classList.remove('expanded');
     button.innerHTML = '<i class="fas fa-expand-alt"></i>';
-    button.title = 'Expand';
-    
-    if (type === 'input') {
-      this.isInputExpanded = false;
-      // Restore saved height
-      if (appState.textareaSizes.requirement.height) {
-        textarea.style.height = `${appState.textareaSizes.requirement.height}px`;
-      }
-    } else {
-      this.isOutputExpanded = false;
-      // Restore saved height
-      if (appState.textareaSizes.output.height) {
-        textarea.style.height = `${appState.textareaSizes.output.height}px`;
-      }
-    }
-    
-    // Hide overlay if nothing is expanded
+
     if (!this.isInputExpanded && !this.isOutputExpanded) {
       overlay.style.display = 'none';
     }
+
+    textarea.dataset.userResized = 'false';
   }
   
   updateSizeInfo(elementId, height) {
-    const element = document.getElementById(elementId);
-    if (element) {
-      element.textContent = `${Math.round(height)}px`;
-    }
-  }
-  
-  resetSizes() {
-    appState.resetTextareaSizes();
-    
-    const requirementEl = document.getElementById('requirement');
-    const outputEl = document.getElementById('output');
-    
-    if (requirementEl) {
-      requirementEl.style.height = '140px';
-      this.updateSizeInfo('inputSizeInfo', 140);
-    }
-    
-    if (outputEl) {
-      outputEl.style.height = '200px';
-      this.updateSizeInfo('outputSizeInfo', 200);
-    }
-    
-    import('../ui/notifications.js').then(module => {
-      module.notifications.success('Textarea sizes reset to default');
-    });
+    const el = document.getElementById(elementId);
+    if (el) el.textContent = `${Math.round(height)}px`;
   }
 }
 
-// Singleton instance
+// Singleton
 export const cardExpander = new CardExpander();
