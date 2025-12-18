@@ -2176,3 +2176,8 @@ textarea::placeholder {
 .stats-row {
   color: #ffffff !important;
 }
+
+/* FINAL FIX — Card 2 stats visibility */
+.stats-row {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
