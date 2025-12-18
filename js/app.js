@@ -44,43 +44,6 @@ function initFeatures() {
       templateManager.loadDefaultTemplates();
     }
   }, 300);
-  
-  // Override promptConverter to add tool prioritization
-  overridePromptConverter();
-}
-
-function overridePromptConverter() {
-  // Store original convert method
-  const originalConvert = promptConverter.convert;
-  
-  // Override convert method
-  promptConverter.convert = async function() {
-    // Show loading state
-    const convertBtn = document.getElementById('convertBtn');
-    const originalHTML = convertBtn.innerHTML;
-    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-    convertBtn.disabled = true;
-    
-    try {
-      // Call original convert method
-      await originalConvert.call(this);
-      
-      // After successful conversion, prioritize AI tools
-      const input = document.getElementById('requirement');
-      if (input && input.value.trim()) {
-        setTimeout(() => {
-          toolPrioritizer.prioritizeTools(input.value);
-        }, 300);
-      }
-    } catch (error) {
-      console.error('Conversion error:', error);
-      notifications.error('Failed to generate prompt');
-      
-      // Reset button
-      convertBtn.innerHTML = originalHTML;
-      convertBtn.disabled = false;
-    }
-  };
 }
 
 function setupEventListeners() {
@@ -121,10 +84,8 @@ function setupEventListeners() {
     clearInputBtn.addEventListener('click', () => {
       document.getElementById('requirement').value = '';
       intentDetector.clearDetection();
-      // Also clear the generated prompt in Card 2
       document.getElementById('output').value = '';
       
-      // Update counters
       const charCount = document.getElementById('charCount');
       const wordCount = document.getElementById('wordCount');
       const lineCount = document.getElementById('lineCount');
@@ -132,23 +93,16 @@ function setupEventListeners() {
       if (wordCount) wordCount.textContent = '0 words';
       if (lineCount) lineCount.textContent = '0 lines';
       
-      // Disable AI buttons
       document.querySelectorAll('.launch-btn').forEach(btn => {
         btn.disabled = true;
       });
       
-      // Hide success badge
       const badge = document.getElementById('convertedBadge');
-      if (badge) {
-        badge.style.display = 'none';
-      }
+      if (badge) badge.style.display = 'none';
       
-      // Reset tool prioritization
       const launchList = document.querySelector('.launch-list');
       if (launchList) {
-        // Remove crowns
         launchList.querySelectorAll('.crown-icon').forEach(crown => crown.remove());
-        // Reset button classes
         launchList.querySelectorAll('.launch-btn').forEach(btn => {
           btn.classList.remove('best-tool');
         });
@@ -163,17 +117,14 @@ function setupEventListeners() {
   if (globalResetBtn) {
     globalResetBtn.addEventListener('click', () => {
       if (confirm('Reset all cards to default layout?')) {
-        // Clear all text areas
         document.getElementById('requirement').value = '';
         document.getElementById('output').value = '';
         
-        // Reset textarea sizes
         const inputTextarea = document.getElementById('requirement');
         const outputTextarea = document.getElementById('output');
         if (inputTextarea) inputTextarea.style.height = '';
         if (outputTextarea) outputTextarea.style.height = '';
         
-        // Reset counters
         const charCount = document.getElementById('charCount');
         const wordCount = document.getElementById('wordCount');
         const lineCount = document.getElementById('lineCount');
@@ -181,19 +132,16 @@ function setupEventListeners() {
         if (wordCount) wordCount.textContent = '0 words';
         if (lineCount) lineCount.textContent = '0 lines';
         
-        // Disable AI buttons
         document.querySelectorAll('.launch-btn').forEach(btn => {
           btn.disabled = true;
         });
         
-        // Hide badges
         const convertedBadge = document.getElementById('convertedBadge');
         if (convertedBadge) convertedBadge.style.display = 'none';
         
         const intentBadge = document.getElementById('intentBadge');
         if (intentBadge) intentBadge.style.display = 'none';
         
-        // Reset voice button state
         const voiceInputBtn = document.getElementById('voiceInputBtn');
         if (voiceInputBtn) {
           voiceInputBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
@@ -202,18 +150,12 @@ function setupEventListeners() {
           voiceInputBtn.classList.add('muted');
         }
         
-        // Close any maximized card
         cardMaximizer.closeAll();
-        
-        // Clear intent detection
         intentDetector.clearDetection();
         
-        // Reset tool prioritization
         const launchList = document.querySelector('.launch-list');
         if (launchList) {
-          // Remove crowns
           launchList.querySelectorAll('.crown-icon').forEach(crown => crown.remove());
-          // Reset button classes
           launchList.querySelectorAll('.launch-btn').forEach(btn => {
             btn.classList.remove('best-tool');
           });
@@ -232,7 +174,6 @@ function setupEventListeners() {
     });
   }
   
-  // Save template buttons
   const saveTemplateBtn1 = document.getElementById('saveTemplateBtn');
   const saveTemplateBtn2 = document.getElementById('saveTemplateBtn2');
   const saveTemplateBtnModal = document.getElementById('saveTemplateBtnModal');
@@ -261,7 +202,6 @@ function setupEventListeners() {
     });
   }
   
-  // History toggle
   const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
   if (toggleHistoryBtn) {
     toggleHistoryBtn.addEventListener('click', () => {
@@ -276,7 +216,6 @@ function setupEventListeners() {
     });
   }
   
-  // Clear history
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
   if (clearHistoryBtn) {
     clearHistoryBtn.addEventListener('click', () => {
@@ -286,7 +225,6 @@ function setupEventListeners() {
     });
   }
   
-  // Handle outside modal clicks
   window.addEventListener('click', (e) => {
     const settingsModal = document.getElementById('settingsModal');
     const templateModal = document.getElementById('templateModal');
@@ -300,23 +238,18 @@ function setupEventListeners() {
     }
   });
   
-  // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + Enter to generate
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       promptConverter.convert();
     }
     
-    // Ctrl/Cmd + S to save
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
       templateManager.openSaveModal();
     }
     
-    // Escape to close modals or restore maximized card
     if (e.key === 'Escape') {
-      // Close modals first
       const settingsModal = document.getElementById('settingsModal');
       const templateModal = document.getElementById('templateModal');
       
@@ -325,7 +258,6 @@ function setupEventListeners() {
       } else if (templateModal && templateModal.style.display === 'flex') {
         templateModal.style.display = 'none';
       } else {
-        // Then restore maximized card
         cardMaximizer.closeAll();
       }
     }
@@ -333,17 +265,13 @@ function setupEventListeners() {
 }
 
 function loadInitialState() {
-  // Load saved API key
   const savedApiKey = localStorage.getItem('promptCraftApiKey');
   if (savedApiKey) {
     appState.apiKey = savedApiKey;
     const apiKeyInput = document.getElementById('apiKeyInput');
-    if (apiKeyInput) {
-      apiKeyInput.value = savedApiKey;
-    }
+    if (apiKeyInput) apiKeyInput.value = savedApiKey;
   }
   
-  // Load auto-convert setting
   const savedAutoConvert = localStorage.getItem('autoConvert');
   if (savedAutoConvert !== null) {
     appState.autoConvert = savedAutoConvert === 'true';
@@ -353,7 +281,6 @@ function loadInitialState() {
     }
   }
   
-  // Load usage count
   const savedUsage = localStorage.getItem('promptCraftUsageCount');
   if (savedUsage) {
     appState.usageCount = parseInt(savedUsage) || 0;
@@ -363,10 +290,8 @@ function loadInitialState() {
     }
   }
   
-  // Update template counters
   templateManager.updateCounters();
   
-  // Show welcome notification
   setTimeout(() => {
     notifications.success('Welcome to PromptCraft v3.2! Start by describing your task.', 3000);
   }, 1000);
