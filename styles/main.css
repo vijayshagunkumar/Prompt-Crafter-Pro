@@ -2158,3 +2158,9 @@ textarea::placeholder {
 .card-output #outputLineCount {
   color: rgba(255, 255, 255, 0.85) !important;
 }
+
+/* 🔥 Card 2 stats-row visibility fix */
+.card-output .stats-row,
+.card-output .stats-row * {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
