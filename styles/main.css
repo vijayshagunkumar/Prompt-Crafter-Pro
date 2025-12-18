@@ -2200,3 +2200,55 @@ textarea::placeholder {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
 }
 
+/* ================================
+   Intent Detection Chips (Card 1)
+================================ */
+
+.intent-row {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.intent-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  overflow-x: auto;      /* ✅ ENABLE HORIZONTAL SCROLL */
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  padding-bottom: 6px;
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* WebKit scrollbar (Chrome, Edge, Safari) */
+.intent-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.intent-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.intent-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+}
+
+/* Individual chip styling */
+.intent-chip {
+  flex: 0 0 auto; /* 🔥 REQUIRED so chips don’t shrink */
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  color: #ffffff;              /* ✅ FIX BLACK TEXT */
+  background: rgba(59, 130, 246, 0.18);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+
+  backdrop-filter: blur(6px);
+}
