@@ -1324,10 +1324,17 @@ function updateOutputStats() {
     if (wordEl) wordEl.textContent = `${wordCount} words`;
     if (lineEl) lineEl.textContent = `${lineCount} lines`;
   } catch (error) {
-    // Ignore if elements don't exist
     console.log("Output stats elements not found - ignoring");
   }
+
+  // 🔥 FORCE Card 2 stats color (ALWAYS RUNS)
+  document
+    .querySelectorAll("#outputCharCount, #outputWordCount, #outputLineCount")
+    .forEach((el) => {
+      el.style.color = "rgba(255, 255, 255, 0.85)";
+    });
 }
+
 
 // Clean up output
 function sanitizePrompt(text) {
