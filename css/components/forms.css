@@ -267,3 +267,28 @@ textarea.size-changing {
   padding: 2px 6px;
   border-radius: var(--radius-sm);
 }
+/* ======================================
+   FORCE VISIBLE & DRAGGABLE RESIZE HANDLE
+   ====================================== */
+
+/* Ensure browser resize handle is usable */
+textarea {
+  resize: vertical !important;
+}
+
+/* Make the resize grip visible in dark UI */
+textarea::-webkit-resizer {
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    #3b82f6 40%,
+    #3b82f6 60%,
+    transparent 60%
+  );
+  border-radius: 4px;
+}
+
+/* Give the resize corner some breathing room */
+textarea {
+  padding-bottom: 24px;
+}
