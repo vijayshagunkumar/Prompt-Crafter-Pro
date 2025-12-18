@@ -4,6 +4,19 @@ function updateSizeInfo(id, height) {
   if (!el) return;
   el.textContent = `${Math.round(height)}px`;
 }
+// Auto-scroll active preset into view (horizontal)
+function scrollPresetIntoView(presetId) {
+  const btn = document.querySelector(
+    `.preset-option[data-preset="${presetId}"]`
+  );
+  if (!btn) return;
+
+  btn.scrollIntoView({
+    behavior: "smooth",
+    inline: "center",
+    block: "nearest"
+  });
+}
 
 // API Configuration
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
@@ -236,12 +249,19 @@ function getRoleAndPreset(text) {
 // Helper: set preset + sync UI & badge
 function setCurrentPreset(presetId) {
   if (!PRESETS[presetId]) return;
+
   currentPreset = presetId;
+
   document.querySelectorAll(".preset-option").forEach((o) => {
     o.classList.toggle("active", o.dataset.preset === presetId);
   });
+
+  // ✅ AUTO-SCROLL active preset into view
+  scrollPresetIntoView(presetId);
+
   updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
 }
+
 
 function updatePresetInfo(taskLabel, presetId, source) {
   const el = document.getElementById("presetInfo");
