@@ -1222,6 +1222,36 @@ textarea::placeholder {
   letter-spacing: 1px;
   font-family: 'Courier New', monospace;
 }
+/* ACTIVE PRESET – CLEAR SELECTED STATE */
+.preset-option.active {
+  background: linear-gradient(
+    135deg,
+    #FF5E00 0%,
+    #00F3FF 100%
+  );
+
+  color: #000; /* strong contrast */
+  font-weight: 700;
+
+  border-color: #00F3FF;
+
+  box-shadow:
+    0 0 12px rgba(255, 94, 0, 0.8),
+    0 0 22px rgba(0, 243, 255, 0.6),
+    inset 0 0 8px rgba(255, 255, 255, 0.35);
+
+  transform: scale(1.05);
+}
+
+/* Ensure hover does NOT override active */
+.preset-option.active:hover {
+  background: linear-gradient(
+    135deg,
+    #FF5E00 0%,
+    #00F3FF 100%
+  );
+  transform: scale(1.05);
+}
 
 
 /* OUTPUT FOOTER */
