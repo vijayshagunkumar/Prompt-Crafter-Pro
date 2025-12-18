@@ -1,4 +1,7 @@
-/* Form Elements */
+/* ================================
+   Form Elements
+================================ */
+
 .input-text {
   background: var(--surface-light);
   border: 1px solid var(--border);
@@ -20,6 +23,10 @@
   color: var(--text-muted);
 }
 
+/* ================================
+   Textarea – Idea Input
+================================ */
+
 .textarea-idea {
   background: var(--surface-light);
   border: 1px solid var(--border);
@@ -29,7 +36,8 @@
   font-size: var(--font-size-base);
   width: 100%;
   min-height: 140px;
-  resize: vertical;
+  resize: vertical;               /* ✅ allow drag */
+  overflow: auto;                 /* ✅ REQUIRED for resize */
   transition: all var(--transition-fast);
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
@@ -45,6 +53,7 @@
   color: var(--text-muted);
 }
 
+/* Expanded textarea (intentional no resize) */
 .textarea-idea.textarea-expanded {
   position: fixed;
   top: 0;
@@ -60,8 +69,12 @@
   background: var(--surface-dark);
   padding: var(--space-xl);
   font-size: var(--font-size-lg);
-  resize: none;
+  resize: none;                  /* intentional */
 }
+
+/* ================================
+   Output Textarea
+================================ */
 
 .output-textarea {
   background: var(--surface-light);
@@ -72,7 +85,8 @@
   font-size: var(--font-size-base);
   width: 100%;
   min-height: 200px;
-  resize: vertical;
+  resize: vertical;              /* ✅ allow drag */
+  overflow: auto;                /* ✅ REQUIRED */
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   line-height: 1.6;
   transition: all var(--transition-fast);
@@ -99,8 +113,12 @@
   background: var(--surface-dark);
   padding: var(--space-xl);
   font-size: var(--font-size-lg);
-  resize: none;
+  resize: none;                  /* intentional */
 }
+
+/* ================================
+   Search Input
+================================ */
 
 .input-search {
   background: var(--surface-light);
@@ -122,6 +140,10 @@
 .input-search::placeholder {
   color: var(--text-muted);
 }
+
+/* ================================
+   Toggle Switch
+================================ */
 
 .toggle-switch {
   display: flex;
@@ -172,6 +194,10 @@
   user-select: none;
 }
 
+/* ================================
+   Select Dropdown
+================================ */
+
 .select {
   background: var(--surface-light);
   border: 1px solid var(--border);
@@ -196,9 +222,19 @@
   box-shadow: 0 0 0 3px var(--glow);
 }
 
+/* ================================
+   Resize States & Indicators
+================================ */
+
 textarea.size-changing {
   border-color: var(--primary);
   box-shadow: 0 0 0 2px var(--glow);
+}
+
+/* Wrapper MUST allow resize drag */
+.textarea-wrapper {
+  position: relative;
+  overflow: visible;            /* ✅ CRITICAL FIX */
 }
 
 .resize-indicator {
