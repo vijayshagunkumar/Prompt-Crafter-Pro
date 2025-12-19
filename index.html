@@ -1,593 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="/Prompt-Crafter-Pro/">
-
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PromptCraft | Prompt Crafter Pro</title>
-
-  <!-- Fonts & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="assets/IconLogo.ico" />
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles/variables.css">
-  <link rel="stylesheet" href="styles/themes.css">
-  <link rel="stylesheet" href="styles/main.css">
+    <base href="/Prompt-Crafter-Pro/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptCraft | Prompt Crafter Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="icon" type="image/x-icon" href="assets/IconLogo.ico">
+    <link rel="stylesheet" href="styles/variables.css">
+    <link rel="stylesheet" href="styles/themes.css">
+    <link rel="stylesheet" href="styles/main.css">
 </head>
-
 <body>
-<div class="scan-line"></div>
-
-<!-- Particles effect -->
-<div id="particles" class="particles"></div>
-
-<!-- Expand overlay -->
-<div id="expandOverlay" class="expand-overlay" style="display: none;"></div>
-
-<!-- Notification -->
-<div id="notification" class="notification">
-  <i class="fas fa-info-circle"></i>
-  <span id="notificationText">Notification message</span>
-</div>
-
-<div class="page">
-
-  <!-- ================= HERO ================= -->
-  <header class="hero">
-    <div class="hero-top">
-      <div class="hero-brand">
-        <div class="hero-logo">
-          <div class="logo-text">ptC</div>
-        </div>
-        <div class="hero-title-block">
-          <h1 class="hero-title">
-            Master the Art of <span>Prompt Engineering</span>
-          </h1>
-          <p class="hero-subtitle">
-            Turn rough ideas into optimized, ready-to-run prompts for AI tools.
-          </p>
-        </div>
-      </div>
-
-      <!-- Theme Selector -->
-      <div class="theme-selector-container">
-        <div class="theme-selector">
-          <div class="theme-label">
-            <i class="fas fa-palette"></i> Theme:
-          </div>
-          <div class="theme-demo">
-            <div class="theme-sample sunset-glow active" data-theme="sunset-glow" title="Sunset Glow"></div>
-            <div class="theme-sample aurora-magic" data-theme="aurora-magic" title="Aurora Magic"></div>
-            <div class="theme-sample serenity-bliss" data-theme="serenity-bliss" title="Serenity Bliss"></div>
-            <div class="theme-sample cyberpunk-neon" data-theme="cyberpunk-neon" title="Cyberpunk Neon"></div>
-            <div class="theme-sample ocean-deep" data-theme="ocean-deep" title="Ocean Deep"></div>
-            <div class="theme-sample auto" data-theme="auto" title="Auto (System)"></div>
-          </div>
-        </div>
-      </div>
-
-      <button class="settings-btn" id="settingsBtn">
-        <i class="fas fa-cog"></i> Settings
-      </button>
+    <div class="scan-line"></div>
+    <div id="particles" class="particles"></div>
+    <div id="expandOverlay" class="expand-overlay" style="display: none;"></div>
+    
+    <div id="notification" class="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notificationText">Notification message</span>
     </div>
-  </header>
 
-  <!-- ================= MAIN ================= -->
-  <main class="workflow">
-    <div class="cards-grid">
+    <div class="page">
+        <!-- HERO SECTION -->
+        <header class="hero">
+            <div class="hero-top">
+                <div class="hero-brand">
+                    <div class="hero-logo">
+                        <div class="logo-text">ptC</div>
+                    </div>
+                    <div class="hero-title-block">
+                        <h1 class="hero-title">Master the Art of <span>Prompt Engineering</span></h1>
+                        <p class="hero-subtitle">Turn rough ideas into optimized, ready-to-run prompts for AI tools.</p>
+                    </div>
+                </div>
 
-      <!-- ========== STEP 1 : YOUR IDEA ========== -->
-      <section class="step-card">
-        <div class="step-header">
-          <div class="step-pill">1</div>
-          <div class="step-header-main">
-            <h2>YOUR IDEA</h2>
-            <p class="step-subtitle">Describe what you want the AI to do</p>
-          </div>
-          <div class="step-meta">
-            <span class="meta-pill">
-              <i class="fas fa-clock"></i>
-              <span id="timerValue">60s</span>
-            </span>
-            <div id="timerDisplay" class="meta-pill" style="display: none;">
-              <i class="fas fa-hourglass-half"></i>
-              <span id="timerValue">60s</span>
-            </div>
-          </div>
-        </div>
+                <div class="theme-selector-container">
+                    <div class="theme-selector">
+                        <div class="theme-label">
+                            <i class="fas fa-palette"></i> Theme:
+                        </div>
+                        <div class="theme-demo">
+                            <div class="theme-sample sunset-glow active" data-theme="sunset-glow" title="Sunset Glow"></div>
+                            <div class="theme-sample aurora-magic" data-theme="aurora-magic" title="Aurora Magic"></div>
+                            <div class="theme-sample serenity-bliss" data-theme="serenity-bliss" title="Serenity Bliss"></div>
+                            <div class="theme-sample cyberpunk-neon" data-theme="cyberpunk-neon" title="Cyberpunk Neon"></div>
+                            <div class="theme-sample ocean-deep" data-theme="ocean-deep" title="Ocean Deep"></div>
+                            <div class="theme-sample auto" data-theme="auto" title="Auto (System)"></div>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Preset Selector -->
-        <div class="preset-selector">
-          <div class="preset-option active" data-preset="default">
-            <i class="fas fa-star"></i> Standard
-          </div>
-          <div class="preset-option" data-preset="claude">
-            <i class="fas fa-brain"></i> Claude
-          </div>
-          <div class="preset-option" data-preset="chatgpt">
-            <i class="fas fa-robot"></i> ChatGPT
-          </div>
-          <div class="preset-option" data-preset="detailed">
-            <i class="fas fa-list-check"></i> Detailed
-          </div>
-        </div>
-
-        <!-- Intent chips -->
-        <div id="intentRow" class="intent-row" style="display:none;">
-          <div id="intentScroll" class="intent-scroll"></div>
-        </div>
-
-        <!-- Example chips -->
-        <div class="chip-row">
-          <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
-            <i class="fas fa-envelope"></i> Email
-          </div>
-          <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
-            <i class="fas fa-code"></i> Code
-          </div>
-          <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
-            <i class="fas fa-chart-line"></i> Analysis
-          </div>
-          <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
-            <i class="fas fa-pen"></i> Writing
-          </div>
-        </div>
-
-        <!-- Auto-convert toggle -->
-        <div class="auto-row">
-          <label class="toggle-switch">
-            <input type="checkbox" id="autoConvert" checked>
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">Auto-Convert</span>
-          </label>
-          <div class="timer-badge">
-            <i class="fas fa-clock"></i>
-            <span id="presetInfo">General • Standard (auto)</span>
-          </div>
-        </div>
-
-        <!-- Textarea with buttons -->
-        <div class="field-block">
-          <div class="textarea-wrapper">
-            <textarea
-              id="requirement"
-              class="textarea-idea"
-              placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."
-            ></textarea>
-            
-            <!-- Expand button -->
-            <button id="expandInputBtn" class="expand-btn" title="Expand">
-              <i class="fas fa-expand-alt"></i>
-            </button>
-            
-            <!-- Size info -->
-            <span id="inputSizeInfo" class="size-info">140px</span>
-            
-            <!-- Bottom buttons -->
-            <div class="textarea-buttons">
-              <!-- Left side: Clear button -->
-              <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
-                <i class="fas fa-broom"></i>
-              </button>
-              
-              <!-- Right side: Voice input -->
-              <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
-                <i class="fas fa-microphone"></i>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Voice status -->
-          <div id="voiceInputStatus" class="voice-status" style="display: none;">
-            <i class="fas fa-microphone"></i> Listening...
-          </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="stats-row">
-          <span id="charCount">0 characters</span>
-          <span id="wordCount">0 words</span>
-          <span id="lineCount">1 line</span>
-        </div>
-
-        <!-- Template section -->
-        <div class="template-section">
-          <div class="template-toggle" id="toggleTemplatesBtn">
-            <div class="template-toggle-left">
-              <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
-              <span>Template Library</span>
-            </div>
-            <i class="fas fa-chevron-down"></i>
-          </div>
-          
-          <div id="templatesPanel" class="templates-panel" style="display: none;">
-            <div class="templates-header">
-              <div class="templates-header-left">
-                <div class="templates-title">Templates</div>
-                <div class="templates-sub">Save and reuse prompt patterns</div>
-              </div>
-              <div class="templates-actions-inline">
-                <button id="newTemplateBtn" class="btn-ghost-small">
-                  <i class="fas fa-plus"></i> New
+                <button class="settings-btn" id="settingsBtn">
+                    <i class="fas fa-cog"></i> Settings
                 </button>
-              </div>
             </div>
-            
-            <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
-            
-            <div id="templateCategories" class="template-categories">
-              <!-- Categories will be loaded here -->
-            </div>
-            
-            <div id="templatesGrid" class="templates-grid">
-              <!-- Templates will be loaded here -->
-            </div>
-            
-            <div id="emptyTemplates" class="empty-state" style="display: none;">
-              <i class="fas fa-inbox"></i>
-              <div>No templates yet. Create your first one!</div>
-            </div>
-          </div>
-        </div>
+        </header>
 
-        <!-- Convert button -->
-        <button id="convertBtn" class="btn-primary btn-full" disabled>
-          <i class="fas fa-magic"></i> Convert
-        </button>
-      </section>
+        <!-- MAIN WORKFLOW -->
+        <main class="workflow">
+            <div class="cards-grid">
+                <!-- CARD 1: YOUR IDEA -->
+                <section class="step-card">
+                    <div class="step-header">
+                        <div class="step-pill">1</div>
+                        <div class="step-header-main">
+                            <h2>YOUR IDEA</h2>
+                            <p class="step-subtitle">Describe what you want the AI to do</p>
+                        </div>
+                        <div class="step-meta">
+                            <span class="meta-pill">
+                                <i class="fas fa-clock"></i>
+                                <span id="timerValue">60s</span>
+                            </span>
+                            <div id="timerDisplay" class="meta-pill" style="display: none;">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span id="timerValue">60s</span>
+                            </div>
+                        </div>
+                    </div>
 
-      <!-- ========== STEP 2 : STRUCTURED PROMPT ========== -->
-      <section class="step-card card-output">
-        <div class="step-header">
-          <div class="step-pill">2</div>
-          <div class="step-header-main">
-            <h2>STRUCTURED PROMPT</h2>
-            <p class="step-subtitle">Optimized, ready-to-run prompt</p>
-          </div>
-          <div class="step-meta">
-            <span id="convertedBadge" class="meta-pill" style="display: none;">
-              <i class="fas fa-check"></i> Converted
-            </span>
-          </div>
-        </div>
+                    <div id="intentRow" class="intent-row" style="display:none;">
+                        <div id="intentScroll" class="intent-scroll"></div>
+                    </div>
 
-        <div class="field-block-output">
-          <div class="textarea-wrapper">
-            <textarea
-              id="output"
-              class="output-textarea"
-              placeholder="Your structured prompt will appear here..."
-              readonly
-            ></textarea>
-            
-            <!-- Expand button -->
-            <button id="expandOutputBtn" class="expand-btn" title="Expand">
-              <i class="fas fa-expand-alt"></i>
-            </button>
-            
-            <!-- Size info -->
-            <span id="outputSizeInfo" class="size-info">200px</span>
-            
-            <!-- Bottom buttons -->
-            <div class="textarea-buttons">
-              <!-- Left side: Empty (for alignment) -->
-              <div></div>
-              
-              <!-- Right side: Voice output -->
-              <button id="voiceOutputBtn" class="voice-output-btn" title="Read Aloud" style="display: none;">
-                <i class="fas fa-volume-up"></i>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Voice status -->
-          <div id="voiceOutputStatus" class="voice-status" style="display: none;">
-            <i class="fas fa-volume-up"></i> Reading...
-          </div>
-        </div>
+                    <div class="chip-row">
+                        <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
+                            <i class="fas fa-envelope"></i> Email
+                        </div>
+                        <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
+                            <i class="fas fa-code"></i> Code
+                        </div>
+                        <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
+                            <i class="fas fa-chart-line"></i> Analysis
+                        </div>
+                        <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
+                            <i class="fas fa-pen"></i> Writing
+                        </div>
+                    </div>
 
-        <!-- Stats -->
-        <div class="stats-row output-stats">
-          <span id="outputCharCount">0 characters</span>
-          <span id="outputWordCount">0 words</span>
-          <span id="outputLineCount">1 line</span>
-        </div>
+                    <div class="auto-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoConvert" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Auto-Convert</span>
+                        </label>
+                    </div>
 
-        <!-- Output actions -->
-        <div class="output-footer">
-          <div class="output-actions">
-            <button id="exportBtn" class="btn-ghost-small">
-              <i class="fas fa-download"></i> Export
-            </button>
-          </div>
-          
-          <!-- History toggle -->
-          <button id="toggleHistoryBtn" class="btn-ghost-small">
-            <i class="fas fa-history"></i> History
-          </button>
-        </div>
+                    <div class="field-block">
+                        <div class="textarea-wrapper">
+                            <textarea id="requirement" class="textarea-idea" placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."></textarea>
+                            <button id="expandInputBtn" class="expand-btn" title="Expand">
+                                <i class="fas fa-expand-alt"></i>
+                            </button>
+                            <span id="inputSizeInfo" class="size-info">250px</span>
+                            <div class="textarea-buttons">
+                                <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
+                                    <i class="fas fa-broom"></i>
+                                </button>
+                                <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="voiceInputStatus" class="voice-status" style="display: none;">
+                            <i class="fas fa-microphone"></i> Listening...
+                        </div>
+                    </div>
 
-        <!-- History panel -->
-        <div id="historyPanel" class="history-panel" style="display: none;">
-          <div class="history-header">
-            <span>Recent Prompts</span>
-            <button id="clearHistoryBtn" class="btn-ghost-small danger">
-              <i class="fas fa-trash"></i> Clear
-            </button>
-          </div>
-          <div id="historyList">
-            <!-- History items will be loaded here -->
-          </div>
-        </div>
-      </section>
+                    <div class="stats-row">
+                        <span id="charCount">0 characters</span>
+                        <span id="wordCount">0 words</span>
+                        <span id="lineCount">1 line</span>
+                    </div>
 
-      <!-- ========== STEP 3 : LAUNCH ========== -->
-      <section class="step-card">
-        <div class="step-header">
-          <div class="step-pill">3</div>
-          <div class="step-header-main">
-            <h2>LAUNCH</h2>
-            <div class="launch-hint">
-              <i class="fas fa-info-circle"></i>
-              Choose your AI tool – Prompt is copied automatically
-            </div>
-          </div>
-        </div>
+                    <button id="convertBtn" class="btn-primary btn-full" disabled>
+                        <i class="fas fa-magic"></i> Convert
+                    </button>
 
-        <div class="launch-list">
-          <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-robot"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">ChatGPT</div>
-              <div class="launch-sub">chat.openai.com</div>
-            </div>
-          </button>
+                    <button id="resetBtn" class="btn-ghost-small" style="margin-top: 12px; width: 100%;">
+                        <i class="fas fa-redo"></i> Reset Everything
+                    </button>
 
-          <button class="launch-btn launch-claude" id="claudeBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-brain"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">Claude</div>
-              <div class="launch-sub">claude.ai</div>
-            </div>
-          </button>
+                    <div class="template-section" style="margin-top: 20px;">
+                        <div class="template-toggle" id="toggleTemplatesBtn">
+                            <div class="template-toggle-left">
+                                <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
+                                <span>Template Library</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        
+                        <div id="templatesPanel" class="templates-panel" style="display: none;">
+                            <div class="templates-header">
+                                <div class="templates-header-left">
+                                    <div class="templates-title">Templates</div>
+                                    <div class="templates-sub">Save and reuse prompt patterns</div>
+                                </div>
+                                <div class="templates-actions-inline">
+                                    <button id="newTemplateBtn" class="btn-ghost-small">
+                                        <i class="fas fa-plus"></i> New
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
+                            
+                            <div id="templateCategories" class="template-categories"></div>
+                            
+                            <div id="templatesGrid" class="templates-grid"></div>
+                            
+                            <div id="emptyTemplates" class="empty-state" style="display: none;">
+                                <i class="fas fa-inbox"></i>
+                                <div>No templates yet. Create your first one!</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-          <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-gem"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">Gemini</div>
-              <div class="launch-sub">gemini.google.com</div>
-            </div>
-          </button>
+                <!-- CARD 2: STRUCTURED PROMPT -->
+                <section class="step-card card-output">
+                    <div class="step-header">
+                        <div class="step-pill">2</div>
+                        <div class="step-header-main">
+                            <h2>STRUCTURED PROMPT</h2>
+                            <p class="step-subtitle">Optimized, ready-to-run prompt</p>
+                        </div>
+                        <div class="step-meta">
+                            <div class="timer-badge">
+                                <i class="fas fa-cog"></i>
+                                <span id="presetInfo">General • Standard (auto)</span>
+                            </div>
+                            <span id="convertedBadge" class="meta-pill" style="display: none;">
+                                <i class="fas fa-check"></i> Converted
+                            </span>
+                        </div>
+                    </div>
 
-          <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-search"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">Perplexity</div>
-              <div class="launch-sub">perplexity.ai</div>
-            </div>
-          </button>
+                    <div class="preset-selector">
+                        <div class="preset-option active" data-preset="default">
+                            <i class="fas fa-star"></i> Standard
+                        </div>
+                        <div class="preset-option" data-preset="claude">
+                            <i class="fas fa-brain"></i> Claude
+                        </div>
+                        <div class="preset-option" data-preset="chatgpt">
+                            <i class="fas fa-robot"></i> ChatGPT
+                        </div>
+                        <div class="preset-option" data-preset="detailed">
+                            <i class="fas fa-list-check"></i> Detailed
+                        </div>
+                    </div>
 
-          <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-code"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">DeepSeek</div>
-              <div class="launch-sub">chat.deepseek.com</div>
-            </div>
-          </button>
+                    <div class="field-block-output">
+                        <div class="textarea-wrapper">
+                            <textarea id="output" class="output-textarea" placeholder="Your structured prompt will appear here..." readonly></textarea>
+                            <button id="expandOutputBtn" class="expand-btn" title="Expand">
+                                <i class="fas fa-expand-alt"></i>
+                            </button>
+                            <span id="outputSizeInfo" class="size-info">200px</span>
+                            <div class="textarea-buttons">
+                                <div></div>
+                                <button id="voiceOutputBtn" class="voice-output-btn" title="Read Aloud" style="display: none;">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="voiceOutputStatus" class="voice-status" style="display: none;">
+                            <i class="fas fa-volume-up"></i> Reading...
+                        </div>
+                    </div>
 
-          <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-plane"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">Copilot</div>
-              <div class="launch-sub">copilot.microsoft.com</div>
-            </div>
-          </button>
+                    <div class="stats-row output-stats">
+                        <span id="outputCharCount">0 characters</span>
+                        <span id="outputWordCount">0 words</span>
+                        <span id="outputLineCount">1 line</span>
+                    </div>
 
-          <button class="launch-btn launch-grok" id="grokBtn" disabled>
-            <div class="launch-icon">
-              <i class="fas fa-bolt"></i>
-            </div>
-            <div class="launch-text">
-              <div class="launch-name">Grok</div>
-              <div class="launch-sub">x.ai</div>
-            </div>
-          </button>
-        </div>
+                    <div class="output-footer">
+                        <div class="output-actions">
+                            <button id="exportBtn" class="btn-ghost-small">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <button id="toggleHistoryBtn" class="btn-ghost-small">
+                            <i class="fas fa-history"></i> History
+                        </button>
+                    </div>
 
-        <!-- Ranking explanation -->
-        <div id="ai-ranking-explanation" class="ai-ranking-explanation hidden">
-          <i class="fas fa-sort-amount-down"></i>
-          <strong>Ranked by: </strong>
-          <span id="ai-ranking-reasons"></span>
-        </div>
-      </section>
+                    <div id="historyPanel" class="history-panel" style="display: none;">
+                        <div class="history-header">
+                            <span>Recent Prompts</span>
+                            <button id="clearHistoryBtn" class="btn-ghost-small danger">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                        <div id="historyList"></div>
+                    </div>
+                </section>
 
+                <!-- CARD 3: LAUNCH -->
+                <section class="step-card">
+                    <div class="step-header">
+                        <div class="step-pill">3</div>
+                        <div class="step-header-main">
+                            <h2>LAUNCH</h2>
+                            <div class="launch-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Choose your AI tool – Prompt is copied automatically
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="launch-list">
+                        <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">ChatGPT</div>
+                                <div class="launch-sub">chat.openai.com</div>
+                            </div>
+                        </button>
+
+                        <button class="launch-btn launch-claude" id="claudeBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Claude</div>
+                                <div class="launch-sub">claude.ai</div>
+                            </div>
+                        </button>
+
+                        <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Gemini</div>
+                                <div class="launch-sub">gemini.google.com</div>
+                            </div>
+                        </button>
+
+                        <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Perplexity</div>
+                                <div class="launch-sub">perplexity.ai</div>
+                            </div>
+                        </button>
+
+                        <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">DeepSeek</div>
+                                <div class="launch-sub">chat.deepseek.com</div>
+                            </div>
+                        </button>
+
+                        <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-plane"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Copilot</div>
+                                <div class="launch-sub">copilot.microsoft.com</div>
+                            </div>
+                        </button>
+
+                        <button class="launch-btn launch-grok" id="grokBtn" disabled>
+                            <div class="launch-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Grok</div>
+                                <div class="launch-sub">x.ai</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div id="ai-ranking-explanation" class="ai-ranking-explanation hidden">
+                        <i class="fas fa-sort-amount-down"></i>
+                        <strong>Ranked by: </strong>
+                        <span id="ai-ranking-reasons"></span>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span>
+                    <i class="fas fa-shield-alt"></i> Local processing • No data sent
+                </span>
+                <span class="dot">•</span>
+                <span>
+                    <i class="fas fa-code-branch"></i> v3.1
+                </span>
+            </div>
+            <div class="footer-right">
+                <div id="usageCount">
+                    <i class="fas fa-bolt"></i> 0 prompts generated
+                </div>
+            </div>
+        </footer>
     </div>
-  </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="footer">
-    <div class="footer-left">
-      <span>
-        <i class="fas fa-shield-alt"></i> Local processing • No data sent
-      </span>
-      <span class="dot">•</span>
-      <span>
-        <i class="fas fa-code-branch"></i> v3.1
-      </span>
-    </div>
-    <div class="footer-right">
-      <div id="usageCount">
-        <i class="fas fa-bolt"></i> 0 prompts generated
-      </div>
-    </div>
-  </footer>
-
-</div>
-
-<!-- ================= MODALS ================= -->
-
-<!-- Settings Modal -->
-<div id="settingsModal" class="modal-backdrop" style="display: none;">
-  <div class="modal">
-    <div class="modal-header">
-      <h3><i class="fas fa-cog"></i> Settings</h3>
-      <button id="closeSettingsBtn" class="modal-close">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label" for="apiKeyInput">
-          <i class="fas fa-key"></i> OpenAI API Key
-        </label>
-        <input type="password" id="apiKeyInput" class="input-text" placeholder="sk-...">
-        <div class="form-hint">
-          <i class="fas fa-info-circle"></i>
-          Optional. Without key, uses offline generation.
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal-backdrop" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Settings</h3>
+                <button id="closeSettingsBtn" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="apiKeyInput">
+                        <i class="fas fa-key"></i> OpenAI API Key
+                    </label>
+                    <input type="password" id="apiKeyInput" class="input-text" placeholder="sk-...">
+                    <div class="form-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Optional. Without key, uses offline generation.
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="autoConvertDelay">
+                        <i class="fas fa-clock"></i> Auto-Convert Delay
+                    </label>
+                    <input type="range" id="autoConvertDelay" min="5" max="120" value="60" class="input-text">
+                    <div class="form-hint">
+                        <i class="fas fa-sliders-h"></i>
+                        <span id="delayValue">Current: 60 seconds</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="voiceLanguage">
+                        <i class="fas fa-language"></i> Voice Language
+                    </label>
+                    <select id="voiceLanguage" class="input-text">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="ja-JP">Japanese</option>
+                    </select>
+                    <div class="form-hint">
+                        <i class="fas fa-microphone"></i>
+                        For voice input and output
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-expand-alt"></i> Textarea Sizing
+                    </label>
+                    <button id="resetSizesBtn" class="btn-ghost-small">
+                        <i class="fas fa-undo"></i> Reset to Default
+                    </button>
+                    <div class="form-hint">
+                        <i class="fas fa-arrows-alt-v"></i>
+                        Drag textarea edges to resize. Click expand button for full-screen.
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button id="clearDataBtn" class="btn-ghost-small danger">
+                        <i class="fas fa-trash"></i> Clear All Data
+                    </button>
+                    <button id="saveSettingsBtn" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="autoConvertDelay">
-          <i class="fas fa-clock"></i> Auto-Convert Delay
-        </label>
-        <input type="range" id="autoConvertDelay" min="5" max="120" value="60" class="input-text">
-        <div class="form-hint">
-          <i class="fas fa-sliders-h"></i>
-          <span id="delayValue">Current: 60 seconds</span>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="voiceLanguage">
-          <i class="fas fa-language"></i> Voice Language
-        </label>
-        <select id="voiceLanguage" class="input-text">
-          <option value="en-US">English (US)</option>
-          <option value="en-GB">English (UK)</option>
-          <option value="es-ES">Spanish</option>
-          <option value="fr-FR">French</option>
-          <option value="de-DE">German</option>
-          <option value="ja-JP">Japanese</option>
-        </select>
-        <div class="form-hint">
-          <i class="fas fa-microphone"></i>
-          For voice input and output
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">
-          <i class="fas fa-expand-alt"></i> Textarea Sizing
-        </label>
-        <button id="resetSizesBtn" class="btn-ghost-small">
-          <i class="fas fa-undo"></i> Reset to Default
-        </button>
-        <div class="form-hint">
-          <i class="fas fa-arrows-alt-v"></i>
-          Drag textarea edges to resize. Click expand button for full-screen.
-        </div>
-      </div>
-      
-      <div class="modal-actions">
-        <button id="clearDataBtn" class="btn-ghost-small danger">
-          <i class="fas fa-trash"></i> Clear All Data
-        </button>
-        <button id="saveSettingsBtn" class="btn-primary">
-          <i class="fas fa-save"></i> Save Settings
-        </button>
-      </div>
     </div>
-  </div>
-</div>
 
-<!-- Template Modal -->
-<div id="templateModal" class="modal-backdrop" style="display: none;">
-  <div class="modal">
-    <div class="modal-header">
-      <h3><i class="fas fa-save"></i> Save Template</h3>
-      <button id="closeTemplateBtn" class="modal-close">&times;</button>
+    <!-- TEMPLATE MODAL -->
+    <div id="templateModal" class="modal-backdrop" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-save"></i> Save Template</h3>
+                <button id="closeTemplateBtn" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="templateName">
+                        <i class="fas fa-heading"></i> Template Name
+                    </label>
+                    <input type="text" id="templateName" class="input-text" placeholder="Professional Email Template">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="templateDescription">
+                        <i class="fas fa-align-left"></i> Description
+                    </label>
+                    <input type="text" id="templateDescription" class="input-text" placeholder="Write professional business emails">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="templateCategory">
+                        <i class="fas fa-folder"></i> Category
+                    </label>
+                    <select id="templateCategory" class="input-text">
+                        <option value="communication">Communication</option>
+                        <option value="coding">Coding</option>
+                        <option value="writing">Writing</option>
+                        <option value="analysis">Analysis</option>
+                        <option value="business">Business</option>
+                        <option value="creative">Creative</option>
+                        <option value="education">Education</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="templateContent">
+                        <i class="fas fa-code"></i> Template Content
+                    </label>
+                    <textarea id="templateContent" class="input-text" rows="6" placeholder="Template content..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="templateExample">
+                        <i class="fas fa-lightbulb"></i> Example Requirement
+                    </label>
+                    <textarea id="templateExample" class="input-text" rows="3" placeholder="Example requirement that triggers this template..."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button id="cancelTemplateBtn" class="btn-ghost-small">
+                        Cancel
+                    </button>
+                    <button id="saveTemplateBtn" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Template
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label" for="templateName">
-          <i class="fas fa-heading"></i> Template Name
-        </label>
-        <input type="text" id="templateName" class="input-text" placeholder="Professional Email Template">
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="templateDescription">
-          <i class="fas fa-align-left"></i> Description
-        </label>
-        <input type="text" id="templateDescription" class="input-text" placeholder="Write professional business emails">
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="templateCategory">
-          <i class="fas fa-folder"></i> Category
-        </label>
-        <select id="templateCategory" class="input-text">
-          <option value="communication">Communication</option>
-          <option value="coding">Coding</option>
-          <option value="writing">Writing</option>
-          <option value="analysis">Analysis</option>
-          <option value="business">Business</option>
-          <option value="creative">Creative</option>
-          <option value="education">Education</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="templateContent">
-          <i class="fas fa-code"></i> Template Content
-        </label>
-        <textarea id="templateContent" class="input-text" rows="6" placeholder="Template content..."></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="templateExample">
-          <i class="fas fa-lightbulb"></i> Example Requirement
-        </label>
-        <textarea id="templateExample" class="input-text" rows="3" placeholder="Example requirement that triggers this template..."></textarea>
-      </div>
-      
-      <div class="modal-actions">
-        <button id="cancelTemplateBtn" class="btn-ghost-small">
-          Cancel
-        </button>
-        <button id="saveTemplateBtn" class="btn-primary">
-          <i class="fas fa-save"></i> Save Template
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- ================= SCRIPTS ================= -->
-<script src="js/theme.js"></script>
-<script src="js/voice.js"></script>
-<script src="js/intent.js"></script>
-<script src="js/ai-tool-ranker.js"></script>
-<script src="js/app.js"></script>
-
+    <!-- SCRIPTS -->
+    <script src="js/theme.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/intent.js"></script>
+    <script src="js/ai-tool-ranker.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
