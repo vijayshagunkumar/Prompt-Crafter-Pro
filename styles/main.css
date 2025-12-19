@@ -1634,24 +1634,7 @@ textarea::placeholder {
 
 /* === ENHANCED AI TOOL RANKING UI === */
 
-/* Best Match badge */
-.best-match-tag {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  padding: 3px 8px;
-  font-size: 10px;
-  font-weight: 700;
-  color: #000;
-  background: linear-gradient(135deg, #00FF41, #00F3FF);
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 0 8px rgba(0,255,65,.8);
-  pointer-events: none;
-  z-index: 2;
-  animation: glow-pulse 2s infinite;
-}
+
 
 @keyframes glow-pulse {
   0% { box-shadow: 0 0 8px rgba(0,255,65,.8); }
@@ -2195,22 +2178,6 @@ textarea::placeholder {
   padding-top: 10px; /* Make room for the tag */
 }
 
-.best-match-tag {
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
 .match-score {
   position: absolute;
   top: -22px;
@@ -2223,4 +2190,121 @@ textarea::placeholder {
   border-radius: 8px;
   white-space: nowrap;
   z-index: 10;
+}
+
+/* =================================== */
+/* FIXED: Best Match Tag Positioning   */
+/* =================================== */
+
+/* Override the earlier conflicting styles */
+.launch-btn.best-match {
+  position: relative;
+  padding-top: 10px; /* Make room for the tag above */
+  margin-top: 4px;
+  min-height: 56px; /* Ensure enough height */
+}
+
+/* Fix position: TOP CENTER instead of top right */
+.best-match-tag {
+  position: absolute !important;
+  top: -10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(135deg, #00FF41, #00F3FF) !important;
+  color: #000 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+  z-index: 10 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.8) !important;
+  border: 2px solid #000 !important;
+  pointer-events: none !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  font-family: 'Courier New', monospace !important;
+  text-align: center !important;
+  min-width: 100px !important;
+}
+
+/* Match score position - ABOVE the best match tag */
+.match-score {
+  position: absolute !important;
+  top: -24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(135deg, #FF5E00, #FF8C42) !important;
+  color: #000 !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+  border-radius: 10px !important;
+  white-space: nowrap !important;
+  z-index: 11 !important;
+  border: 1px solid #000 !important;
+  pointer-events: none !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-family: 'Courier New', monospace !important;
+}
+/* =================================== */
+/* FIX: Clear/Undo Button States       */
+/* =================================== */
+#clearInputBtn.undo-state {
+  background: linear-gradient(135deg, #00F3FF 0%, #00A3B5 100%) !important;
+  color: #000 !important;
+  border-color: #00F3FF !important;
+}
+
+#clearInputBtn.undo-state:hover {
+  background: linear-gradient(135deg, #00A3B5 0%, #007A8A 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.5) !important;
+}
+
+/* =================================== */
+/* FIX: Hide Converted Badge When Empty */
+/* =================================== */
+.converted-badge:empty {
+  display: none !important;
+}
+
+.converted-badge.hidden {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* =================================== */
+/* FIX: Ensure Card2 & Card3 Reset When Empty */
+/* =================================== */
+#output:empty ~ .output-footer .converted-badge {
+  display: none !important;
+}
+
+#output:empty + .output-actions button {
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+}
+
+/* =================================== */
+/* FIX: Prevent Tooltip Overlap */
+/* =================================== */
+.custom-tooltip {
+  max-width: 280px !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  line-height: 1.4 !important;
+  pointer-events: none !important;
+}
+
+/* Ensure tooltip doesn't overlap button text */
+.launch-btn {
+  overflow: visible !important;
+}
+
+.launch-btn:hover .launch-text {
+  z-index: 1 !important;
+  position: relative !important;
 }
