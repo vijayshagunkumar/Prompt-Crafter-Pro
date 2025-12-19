@@ -1400,8 +1400,8 @@ function tagBestMatchLaunchTool() {
 
 // Show explanation below Card 3
 function renderLaunchRankingExplanation(intent) {
-  const wrapper = document.getElementById("aiRankingExplanation");
-  const textEl = document.getElementById("aiRankingReasonText");
+  const wrapper = document.getElementById("ai-ranking-explanation");
+  const textEl = document.getElementById("ai-ranking-reasons");
 
   if (!wrapper || !textEl || !intent) return;
 
@@ -1421,12 +1421,12 @@ function renderLaunchRankingExplanation(intent) {
   }
 
   if (!reasons.length) {
-    wrapper.style.display = "none";
+    wrapper.classList.add("hidden");
     return;
   }
 
   textEl.textContent = reasons.join(" • ");
-  wrapper.style.display = "block";
+  wrapper.classList.remove("hidden");
 }
 
 // Auto-convert
