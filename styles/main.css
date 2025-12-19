@@ -2312,17 +2312,6 @@ textarea::placeholder {
 }
 
 /* Textarea must fill remaining space */
-.step-card .textarea {
-  flex: 1;
-  min-height: 0;
-  resize: none;
-
-  /* FIX white background */
-  background: var(--surface-dark);
-  color: var(--text-primary);
-
-  border: 1px solid var(--border-glow);
-  border-radius: 8px;
 
   padding: 14px;
   font-family: "Inter", monospace;
