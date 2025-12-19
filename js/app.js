@@ -1358,9 +1358,22 @@ if (!text.trim()) {
   renderIntentChips(chips);
 }
 
-// 🔥 Card-3 AI tool ranking (delegated)
+let intent = null;
+
+if (!text.trim()) {
+  renderIntentChips([]);
+} else {
+  intent = window.detectIntentAttributes
+    ? window.detectIntentAttributes(text)
+    : null;
+
+  const chips = intentObjectToChips(intent);
+  renderIntentChips(chips);
+}
+
+// ✅ NOW intent is in scope
 if (window.AIToolRanker && intent) {
-  window.AIToolRanker.rankAndReorder(intent);
+  window.AIToolRanker.apply(intent);
 }
 
 }
