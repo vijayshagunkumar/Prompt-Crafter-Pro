@@ -1462,12 +1462,18 @@ function handleRequirementInput() {
     convertBtn.disabled = true;
     if (clearBtn) {
       clearBtn.classList.remove("undo-state");
-      clearBtn.querySelector("i").className = "fas fa-broom";
+      clearBtn.querySelector('i').className = "fas fa-broom";
       clearBtn.title = "Clear text";
     }
     
     // Clear intent chips
     renderIntentChips([]);
+    
+    // Reset AI tool ranking to default order
+    if (window.AIToolRanker && window.AIToolRanker.resetToDefault) {
+      window.AIToolRanker.resetToDefault();
+    }
+    
     return;
   }
   
@@ -1477,11 +1483,11 @@ function handleRequirementInput() {
   // Update clear/undo button state
   if (clearBtn && isConverted && requirement === lastConvertedText) {
     clearBtn.classList.add("undo-state");
-    clearBtn.querySelector("i").className = "fas fa-undo";
+    clearBtn.querySelector('i').className = "fas fa-undo";
     clearBtn.title = "Undo to original";
   } else {
     clearBtn.classList.remove("undo-state");
-    clearBtn.querySelector("i").className = "fas fa-broom";
+    clearBtn.querySelector('i').className = "fas fa-broom";
     clearBtn.title = "Clear text";
   }
   
@@ -1497,6 +1503,11 @@ function handleRequirementInput() {
   
   // Update character stats
   updateStats(requirement);
+  
+  // 🔥 CRITICAL: Call AI Tool Ranking here
+  if (window.AIToolRanker && intent) {
+    window.AIToolRanker.rankAndReorder(intent);
+  }
 }
 
 /* ===============================
@@ -1517,7 +1528,7 @@ function toggleClearUndo() {
     
     // Update button
     clearBtn.classList.remove("undo-state");
-    clearBtn.querySelector("i").className = "fas fa-broom";
+    clearBtn.querySelector('i').className = "fas fa-broom";
     clearBtn.title = "Clear text";
     
     showNotification("Text restored");
@@ -1536,7 +1547,7 @@ function toggleClearUndo() {
     
     // Update button
     clearBtn.classList.add("undo-state");
-    clearBtn.querySelector("i").className = "fas fa-redo";
+    clearBtn.querySelector('i').className = "fas fa-redo";
     clearBtn.title = "Redo cleared text";
     
     // Disable convert button
@@ -2016,6 +2027,317 @@ function showNotification(message) {
     }, 300);
   }, 3000);
 }
+
+// ======================================================
+// AI TOOL RANKING ENGINE (CARD 3) - INTEGRATED
+// ======================================================
+
+(function () {
+  /* ------------------------------------------
+     AI Tool Capability Matrix (UPDATED)
+  ------------------------------------------ */
+
+  const AI_TOOL_PROFILES = {
+    chatgpt: {
+      name: "ChatGPT",
+      strengths: ["writing", "email", "education", "general", "analysis", "professional", "formal"],
+      tone: ["professional", "friendly", "formal", "authoritative"],
+      format: ["free", "bullet points", "numbered list", "paragraph"],
+      depth: ["normal", "detailed", "brief", "high-level"],
+      audience: ["general", "beginners", "experts", "technical", "non-technical"],
+      bestFor: ["emails", "content writing", "analysis", "education"]
+    },
+    claude: {
+      name: "Claude",
+      strengths: ["writing", "analysis", "business", "detailed", "structured"],
+      tone: ["professional", "formal", "authoritative", "serious"],
+      format: ["free", "paragraph", "structured"],
+      depth: ["detailed", "normal"],
+      audience: ["experts", "technical", "business"],
+      bestFor: ["long-form content", "analysis", "business documents"]
+    },
+    gemini: {
+      name: "Gemini",
+      strengths: ["research", "analysis", "education", "technical"],
+      tone: ["professional", "technical"],
+      format: ["free", "structured"],
+      depth: ["detailed", "normal"],
+      audience: ["technical", "experts", "beginners"],
+      bestFor: ["research", "technical analysis", "learning"]
+    },
+    perplexity: {
+      name: "Perplexity",
+      strengths: ["research", "analysis", "brief", "concise"],
+      tone: ["professional", "casual"],
+      format: ["free", "bullet points"],
+      depth: ["brief", "high-level"],
+      audience: ["general", "beginners"],
+      bestFor: ["quick research", "summaries", "facts"]
+    },
+    deepseek: {
+      name: "DeepSeek",
+      strengths: ["code", "technical", "structured"],
+      tone: ["technical", "professional"],
+      format: ["structured", "code"],
+      depth: ["detailed", "normal"],
+      audience: ["technical", "experts"],
+      bestFor: ["coding", "technical solutions", "APIs"]
+    },
+    copilot: {
+      name: "Copilot",
+      strengths: ["code", "quick", "assistance"],
+      tone: ["technical", "casual"],
+      format: ["code", "structured"],
+      depth: ["normal", "brief"],
+      audience: ["technical", "beginners"],
+      bestFor: ["quick code help", "snippets", "debugging"]
+    },
+    grok: {
+      name: "Grok",
+      strengths: ["creative", "general", "casual", "humorous"],
+      tone: ["casual", "humorous", "friendly"],
+      format: ["free", "paragraph"],
+      depth: ["normal", "brief"],
+      audience: ["general", "beginners"],
+      bestFor: ["creative writing", "casual chat", "entertainment"]
+    }
+  };
+
+  /* ------------------------------------------
+     Detect Task Type from Intent
+  ------------------------------------------ */
+
+  function detectTaskTypeFromIntent(intent) {
+    if (!intent) return "general";
+    
+    // Check for specific keywords in constraints
+    if (intent.constraints && intent.constraints.length > 0) {
+      const constraints = intent.constraints.join(' ').toLowerCase();
+      if (constraints.includes('code') || constraints.includes('programming')) return "code";
+      if (constraints.includes('email')) return "email";
+      if (constraints.includes('research')) return "research";
+      if (constraints.includes('creative')) return "creative";
+      if (constraints.includes('business')) return "business";
+      if (constraints.includes('analysis')) return "analysis";
+    }
+    
+    // Check format preference
+    if (intent.format === "code" || intent.format === "structured") return "code";
+    if (intent.format === "bullet points" || intent.format === "numbered list") return "structured";
+    
+    // Check audience
+    if (intent.audience === "technical" || intent.audience === "experts") return "technical";
+    if (intent.audience === "beginners") return "education";
+    
+    return "general";
+  }
+
+  /* ------------------------------------------
+     Rank AI Tools (UPDATED)
+  ------------------------------------------ */
+
+  function rankAITools(intent) {
+    if (!intent) return Object.keys(AI_TOOL_PROFILES);
+    
+    const taskType = detectTaskTypeFromIntent(intent);
+    const scores = {};
+    
+    // Initialize scores
+    Object.keys(AI_TOOL_PROFILES).forEach(k => (scores[k] = 0));
+    
+    // Score each tool based on intent
+    Object.entries(AI_TOOL_PROFILES).forEach(([toolKey, tool]) => {
+      let score = 0;
+      
+      // 1. Task type matching (highest weight)
+      if (tool.strengths.some(strength => 
+        taskType.includes(strength) || strength.includes(taskType)
+      )) {
+        score += 5;
+      }
+      
+      // 2. Tone matching
+      if (intent.tone && intent.tone !== "neutral") {
+        if (tool.tone.includes(intent.tone)) {
+          score += 3;
+        }
+      }
+      
+      // 3. Format matching
+      if (intent.format && intent.format !== "free") {
+        if (tool.format.includes(intent.format)) {
+          score += 3;
+        }
+      }
+      
+      // 4. Depth matching
+      if (intent.depth && intent.depth !== "normal") {
+        if (tool.depth.includes(intent.depth)) {
+          score += 2;
+        }
+      }
+      
+      // 5. Audience matching
+      if (intent.audience && intent.audience !== "general") {
+        if (tool.audience.includes(intent.audience)) {
+          score += 2;
+        }
+      }
+      
+      // 6. Urgency matching (for faster tools)
+      if (intent.urgency === "high") {
+        // Perplexity and Copilot are generally faster
+        if (toolKey === "perplexity" || toolKey === "copilot") {
+          score += 1;
+        }
+      }
+      
+      // 7. Emotion/creativity matching
+      if (intent.emotion === "creative" || intent.emotion === "excited") {
+        if (toolKey === "grok" || toolKey === "chatgpt") {
+          score += 2;
+        }
+      }
+      
+      scores[toolKey] = score;
+    });
+    
+    // Sort by score descending
+    return Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .map(([key]) => key);
+  }
+
+  /* ------------------------------------------
+     Reorder Card-3 Buttons & Add Best Match Tag
+  ------------------------------------------ */
+
+  function reorderLaunchButtons(toolOrder) {
+    const container = document.querySelector(".launch-list");
+    if (!container || !toolOrder.length) return;
+    
+    // Get all buttons
+    const buttons = Array.from(container.querySelectorAll(".launch-btn"));
+    if (!buttons.length) return;
+    
+    // Clear existing best-match tags
+    buttons.forEach(btn => {
+      btn.classList.remove("best-match");
+      const existingTag = btn.querySelector(".best-match-tag");
+      if (existingTag) existingTag.remove();
+    });
+    
+    // Reorder buttons based on ranking
+    toolOrder.forEach((toolKey, index) => {
+      const btn = buttons.find(b => b.id === `${toolKey}Btn`);
+      if (!btn) return;
+      
+      // Move to correct position
+      container.appendChild(btn);
+      
+      // Mark first one as "Best Match"
+      if (index === 0) {
+        btn.classList.add("best-match");
+        
+        // Add Best Match tag if not already present
+        if (!btn.querySelector(".best-match-tag")) {
+          const tag = document.createElement("span");
+          tag.className = "best-match-tag";
+          tag.textContent = "Best Match";
+          btn.appendChild(tag);
+        }
+      }
+    });
+  }
+
+  /* ------------------------------------------
+     Reset to Default Order
+  ------------------------------------------ */
+
+  function resetToDefault() {
+    const defaultOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
+    const container = document.querySelector(".launch-list");
+    
+    if (!container) return;
+    
+    // Clear existing best-match tags
+    const buttons = container.querySelectorAll(".launch-btn");
+    buttons.forEach(btn => {
+      btn.classList.remove("best-match");
+      const existingTag = btn.querySelector(".best-match-tag");
+      if (existingTag) existingTag.remove();
+    });
+    
+    // Reorder to default
+    defaultOrder.forEach(toolKey => {
+      const btn = document.getElementById(`${toolKey}Btn`);
+      if (btn) container.appendChild(btn);
+    });
+    
+    // Hide explanation
+    const explanationEl = document.getElementById("ai-ranking-explanation");
+    if (explanationEl) explanationEl.style.display = "none";
+  }
+
+  /* ------------------------------------------
+     Update Explanation in Card 3
+  ------------------------------------------ */
+
+  function updateRankingExplanation(intent, topTool) {
+    const explanationEl = document.getElementById("ai-ranking-explanation");
+    const reasonsEl = document.getElementById("ai-ranking-reasons");
+    
+    if (!explanationEl || !reasonsEl) return;
+    
+    const reasons = [];
+    const topToolName = AI_TOOL_PROFILES[topTool]?.name || topTool;
+    
+    if (intent.tone && intent.tone !== "neutral") {
+      reasons.push(`${intent.tone} tone`);
+    }
+    
+    if (intent.format && intent.format !== "free") {
+      reasons.push(`${intent.format} format`);
+    }
+    
+    if (intent.depth && intent.depth !== "normal") {
+      reasons.push(`${intent.depth} detail`);
+    }
+    
+    if (intent.audience && intent.audience !== "general") {
+      reasons.push(`${intent.audience} audience`);
+    }
+    
+    if (reasons.length > 0) {
+      reasonsEl.textContent = `${topToolName} best matches: ${reasons.join(", ")}`;
+      explanationEl.style.display = "block";
+    } else {
+      // If no specific intent detected, show generic message
+      reasonsEl.textContent = `${topToolName} is best for general tasks`;
+      explanationEl.style.display = "block";
+    }
+  }
+
+  /* ------------------------------------------
+     Public API
+  ------------------------------------------ */
+
+  window.AIToolRanker = {
+    rankAndReorder(intent) {
+      if (!intent) return;
+      
+      const ordered = rankAITools(intent);
+      reorderLaunchButtons(ordered);
+      
+      // Update explanation if we have a top tool
+      if (ordered.length > 0) {
+        updateRankingExplanation(intent, ordered[0]);
+      }
+    },
+    
+    resetToDefault
+  };
+})();
 
 // Make functions globally available
 window.generatePrompt = generatePrompt;
