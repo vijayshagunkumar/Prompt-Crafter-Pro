@@ -1268,49 +1268,59 @@ function setupEventListeners() {
   /* ===============================
      CLEAR INPUT BUTTON - FIXED (Issue #6)
   =============================== */
-  const clearBtn = document.getElementById("clearInputBtn");
-  if (clearBtn) {
-    clearBtn.addEventListener("click", function() {
-      const requirementEl = document.getElementById("requirement");
-      if (!requirementEl) return;
+  /* ===============================
+   CLEAR INPUT BUTTON - FIXED (Issues #2, #3, #6)
+   Now properly toggles clear/undo AND resets cards
+=============================== */
+const clearBtn = document.getElementById("clearInputBtn");
+if (clearBtn) {
+  clearBtn.addEventListener("click", function() {
+    const requirementEl = document.getElementById("requirement");
+    const outputEl = document.getElementById("output");
+    if (!requirementEl) return;
+    
+    if (isUndoState) {
+      // ✅ FIX 3: UNDO - Restore text AND trigger ranking
+      requirementEl.value = lastClearedText;
+      lastClearedText = "";
+      isUndoState = false;
       
-      if (isUndoState) {
-        // UNDO: Restore text
-        requirementEl.value = lastClearedText;
-        lastClearedText = "";
-        isUndoState = false;
-        
-        // Update button to CLEAR state (Issue #6 fix)
-        this.classList.remove("undo-state");
-        this.querySelector('i').className = "fas fa-broom";
-        this.title = "Clear text";
-        
-        showNotification("Text restored");
-      } else {
-        // CLEAR: Save and clear text
-        const currentText = requirementEl.value;
-        if (!currentText.trim()) {
-          showNotification("Nothing to clear");
-          return;
-        }
-        
-        lastClearedText = currentText;
-        requirementEl.value = "";
-        requirementEl.focus();
-        isUndoState = true;
-        
-        // Update button to UNDO state IMMEDIATELY (Issue #6 fix)
-        this.classList.add("undo-state");
-        this.querySelector('i').className = "fas fa-undo";
-        this.title = "Undo clear";
-        
-        showNotification("Text cleared. Click again to restore.");
+      // Update button to CLEAR state
+      this.classList.remove("undo-state");
+      this.querySelector('i').className = "fas fa-broom";
+      this.title = "Clear text";
+      
+      // ✅ FIX 2: Trigger ranking if there's content
+      if (requirementEl.value.trim()) {
+        handleRequirementInput();
       }
       
-      requirementEl.dispatchEvent(new Event("input"));
-    });
-  }
-
+      showNotification("Text restored");
+    } else {
+      // ✅ FIX 3: CLEAR - Save and clear everything
+      const currentText = requirementEl.value;
+      if (!currentText.trim()) {
+        showNotification("Nothing to clear");
+        return;
+      }
+      
+      lastClearedText = currentText;
+      requirementEl.value = "";
+      requirementEl.focus();
+      isUndoState = true;
+      
+      // Update button to UNDO state IMMEDIATELY
+      this.classList.add("undo-state");
+      this.querySelector('i').className = "fas fa-undo";
+      this.title = "Undo clear";
+      
+      // ✅ FIX 2: Trigger reset of Card2 & Card3
+      handleRequirementInput();
+      
+      showNotification("Text cleared. Click again to restore.");
+    }
+  });
+}
   /* ===============================
      COPY OUTPUT BUTTON
   =============================== */
@@ -1536,24 +1546,36 @@ function handleRequirementInput() {
   
   if (!requirement) {
     convertBtn.disabled = true;
-    if (clearBtn) {
-      // Reset clear button to normal state if text is empty (Issue #6)
-      clearBtn.classList.remove("undo-state");
-      clearBtn.querySelector('i').className = "fas fa-broom";
-      clearBtn.title = "Clear text";
-      isUndoState = false;
-    }
     
-    renderIntentChips([]);
+    // ✅ FIX 2: Reset Card2 & Card3 when prompt is empty
+    const outputEl = document.getElementById("output");
+    if (outputEl) outputEl.value = "";
     
     // Reset AI tool ranking to default
     if (window.AIToolRanker && window.AIToolRanker.resetToDefault) {
       window.AIToolRanker.resetToDefault();
     }
     
+    // ✅ FIX 4: Hide the converted badge
+    document.getElementById("convertedBadge").style.display = "none";
+    
+    // Disable launch buttons
+    setLaunchButtonsEnabled(false);
+    
+    // Reset stats
+    updateStats('');
+    updateOutputStats();
+    
+    // Reset other states
+    isConverted = false;
+    lastConvertedText = "";
+    
+    renderIntentChips([]);
+    
     return;
   }
   
+  // Rest of the existing code remains the same...
   convertBtn.disabled = false;
   
   const intent = detectIntentFromText(requirement);
