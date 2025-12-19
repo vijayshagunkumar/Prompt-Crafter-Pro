@@ -2304,3 +2304,41 @@ textarea::placeholder {
   flex: 1;
   resize: none;
 }
+/* ================================
+   FINAL FIX – TEXTAREA LAYOUT + THEME
+================================ */
+
+/* Make cards stretch properly */
+.step-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Textarea must fill remaining space */
+.step-card .textarea {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+
+  /* FIX white background */
+  background: var(--surface-dark);
+  color: var(--text-primary);
+
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+
+  padding: 14px;
+  font-family: "Inter", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Prevent resize observer visual artifact */
+.step-card .textarea:focus {
+  outline: none;
+}
+
+/* Kill the horizontal resize artifact line */
+.step-card textarea {
+  overflow: auto;
+}
