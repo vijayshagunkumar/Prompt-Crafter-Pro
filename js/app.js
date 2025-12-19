@@ -1021,8 +1021,7 @@ function setupEventListeners() {
     });
   }
 
-  document
-    .getElementById("resetSizesBtn")
+  document  .getElementById("resetSizesBtn")
     ?.addEventListener("click", resetTextareaSizes);
 
   /* ===============================
@@ -1092,8 +1091,12 @@ function setupEventListeners() {
       requirementEl.focus();
 
       isConverted = false;
-      document.getElementById("output")?.value = "";
-      document.getElementById("convertedBadge")?.style.setProperty("display", "none");
+const outputEl = document.getElementById("output");
+if (outputEl) outputEl.value = "";
+
+      const badge = document.getElementById("convertedBadge");
+if (badge) badge.style.display = "none";
+
       setLaunchButtonsEnabled(false);
       updateStats(requirementEl.value);
 
