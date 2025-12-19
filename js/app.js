@@ -2384,44 +2384,41 @@ function showNotification(message) {
      Update Best Match Display
   ------------------------------------------ */
 
-  function updateBestMatchDisplay(intent, topToolKey) {
-    if (!intent || !topToolKey) return;
-    
-    const topTool = AI_TOOL_PROFILES[topToolKey];
-    if (!topTool || topTool.score < 10) return;
-    
-    // Get the top tool button
-    const topToolBtn = document.getElementById(`${topToolKey}Btn`);
-    if (!topToolBtn) return;
-    
-    // Clear any existing explanation
-    const existingExplanation = topToolBtn.querySelector(".inline-explanation");
-    if (existingExplanation) existingExplanation.remove();
-    
-    // Add best match tag
-    topToolBtn.classList.add("best-match");
-    
-    const bestMatchTag = document.createElement("span");
-    bestMatchTag.className = "best-match-tag";
-    bestMatchTag.textContent = "✨ Best Match";
-    bestMatchTag.title = topTool.matchReason || topTool.tooltip;
-    topToolBtn.appendChild(bestMatchTag);
-    
-    // Add match score indicator
-    const scoreIndicator = document.createElement("div");
-    scoreIndicator.className = "match-score";
-    scoreIndicator.textContent = `Best Match: 100%`;
-    scoreIndicator.title = `Score: ${topTool.score}`;
-    topToolBtn.appendChild(scoreIndicator);
-    
-    // Visual feedback for ranking
-    setTimeout(() => {
-      topToolBtn.style.animation = "pulse-glow 1.5s ease-in-out";
-      setTimeout(() => {
-        topToolBtn.style.animation = "";
-      }, 1500);
-    }, 300);
-  }
+ function updateBestMatchDisplay(intent, orderedTools) {
+  if (!intent || !orderedTools || orderedTools.length === 0) return;
+  
+  // Only add "Best Match: 100%" to the FIRST tool (index 0)
+  const topToolKey = orderedTools[0];
+  const topTool = AI_TOOL_PROFILES[topToolKey];
+  
+  if (!topTool || topTool.score < 10) return;
+  
+  // Get the top tool button
+  const topToolBtn = document.getElementById(`${topToolKey}Btn`);
+  if (!topToolBtn) return;
+  
+  // Clear existing best-match tags from ALL buttons first
+  document.querySelectorAll('.launch-btn').forEach(btn => {
+    btn.classList.remove("best-match");
+    const existingTag = btn.querySelector(".best-match-tag");
+    if (existingTag) existingTag.remove();
+    const existingScore = btn.querySelector(".match-score");
+    if (existingScore) existingScore.remove();
+  });
+  
+  // Now add to only the top tool
+  topToolBtn.classList.add("best-match");
+  
+  const bestMatchTag = document.createElement("span");
+  bestMatchTag.className = "best-match-tag";
+  bestMatchTag.textContent = "✨ Best Match";
+  topToolBtn.appendChild(bestMatchTag);
+  
+  const scoreIndicator = document.createElement("div");
+  scoreIndicator.className = "match-score";
+  scoreIndicator.textContent = `Best Match: 100%`;
+  topToolBtn.appendChild(scoreIndicator);
+}
 
   /* ------------------------------------------
      Add Hover Tooltips (Issue #5)
