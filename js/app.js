@@ -2418,7 +2418,7 @@ function updateBestMatchDisplay(intent, orderedTools) {
     if (existingScore) existingScore.remove();
   });
   
-  // Only add "Best Match: 100%" to the FIRST tool (index 0) if it meets threshold
+  // Only add "Best Match" to the FIRST tool (index 0) if it meets threshold
   const topToolKey = orderedTools[0];
   const topTool = AI_TOOL_PROFILES[topToolKey];
   
@@ -2427,18 +2427,35 @@ function updateBestMatchDisplay(intent, orderedTools) {
   const topToolBtn = document.getElementById(`${topToolKey}Btn`);
   if (!topToolBtn) return;
   
-  // Add best match styling and tags to only the top tool
+  // Add best match styling to only the top tool
   topToolBtn.classList.add("best-match");
   
+  // Create ONLY ONE tag with 100% score
   const bestMatchTag = document.createElement("span");
   bestMatchTag.className = "best-match-tag";
-  bestMatchTag.textContent = "✨ Best Match";
-  topToolBtn.appendChild(bestMatchTag);
+  bestMatchTag.textContent = "✨ Best Match: 100%";
+  bestMatchTag.style.background = "linear-gradient(135deg, #00FF41, #00F3FF)";
+  bestMatchTag.style.color = "#000";
+  bestMatchTag.style.fontSize = "10px";
+  bestMatchTag.style.fontWeight = "700";
+  bestMatchTag.style.padding = "3px 10px";
+  bestMatchTag.style.borderRadius = "12px";
+  bestMatchTag.style.position = "absolute";
+  bestMatchTag.style.top = "-10px";
+  bestMatchTag.style.left = "50%";
+  bestMatchTag.style.transform = "translateX(-50%)";
+  bestMatchTag.style.zIndex = "10";
+  bestMatchTag.style.boxShadow = "0 0 10px rgba(0, 255, 65, 0.8)";
+  bestMatchTag.style.border = "2px solid #000";
+  bestMatchTag.style.pointerEvents = "none";
+  bestMatchTag.style.textTransform = "uppercase";
+  bestMatchTag.style.letterSpacing = "1px";
+  bestMatchTag.style.fontFamily = "'Courier New', monospace";
+  bestMatchTag.style.textAlign = "center";
+  bestMatchTag.style.minWidth = "120px";
+  bestMatchTag.style.whiteSpace = "nowrap";
   
-  const scoreIndicator = document.createElement("div");
-  scoreIndicator.className = "match-score";
-  scoreIndicator.textContent = `Best Match: 100%`;
-  topToolBtn.appendChild(scoreIndicator);
+  topToolBtn.appendChild(bestMatchTag);
 }
 
   /* ------------------------------------------
