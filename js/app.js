@@ -96,7 +96,7 @@ let isUndoState = false;
 // Textarea sizing state - BOTH SET TO 250px
 let textareaSizes = {
   requirement: { height: 250 },
-  output: { height: 250 }  // CHANGED FROM 200 TO 250
+  output: { height: 250 }
 };
 let isInputExpanded = false;
 let isOutputExpanded = false;
@@ -307,28 +307,10 @@ function setCurrentPreset(presetId) {
     o.classList.toggle("active", o.dataset.preset === presetId);
   });
 
-  // ✅ AUTO-SCROLL active preset into view
   scrollPresetIntoView(presetId);
-
-  updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
 }
 
-function updatePresetInfo(taskLabel, presetId, source) {
-  const el = document.getElementById("presetInfo");
-  if (!el) return;
-
-  const presetNames = {
-    default: "Standard",
-    chatgpt: "ChatGPT",
-    claude: "Claude",
-    detailed: "Detailed"
-  };
-
-  const nicePreset = presetNames[presetId] || presetId;
-  const srcLabel = source === "manual" ? "manual" : "auto";
-
-  el.textContent = `${taskLabel} • ${nicePreset} (${srcLabel})`;
-}
+// REMOVED: updatePresetInfo function - no longer needed (Issue #3)
 
 // Enable / disable all AI launch buttons
 function setLaunchButtonsEnabled(enabled) {
@@ -377,8 +359,6 @@ function renderIntentChips(chips) {
   });
 
   intentRow.style.display = "block";
-  
-  // Auto-scroll to last chip
   intentScroll.scrollLeft = intentScroll.scrollWidth;
 }
 
@@ -391,23 +371,20 @@ function initializeApp() {
   initializeUI();
   setCurrentPreset(currentPreset);
   
-  // INITIALLY HIDE presetInfo - FIX for issue #2
   const presetInfoEl = document.getElementById("presetInfo");
   if (presetInfoEl) {
-    presetInfoEl.style.display = "none";
+    presetInfoEl.style.display = "none"; // Keep hidden permanently (Issue #3)
   }
 
   const req = document.getElementById("requirement");
   if (req) req.focus();
 
   setLaunchButtonsEnabled(false);
-  
-  // NEW: Initialize textarea sizing
   initializeTextareaSizing();
 }
 
 // ===========================================
-// TEXTAREA RESIZING AND EXPAND FUNCTIONS
+// TEXTAREA RESIZING AND EXPAND FUNCTIONS - FIXED (Issue #2)
 // ===========================================
 
 // Initialize textarea sizing
@@ -417,7 +394,6 @@ function initializeTextareaSizing() {
   if (savedSizes) {
     textareaSizes = JSON.parse(savedSizes);
     
-    // Apply saved heights - BOTH SET TO 250px
     const requirementEl = document.getElementById('requirement');
     const outputEl = document.getElementById('output');
     
@@ -431,7 +407,6 @@ function initializeTextareaSizing() {
       updateSizeInfo('outputSizeInfo', textareaSizes.output.height || 250);
     }
   } else {
-    // If no saved sizes, set both to 250px
     const requirementEl = document.getElementById('requirement');
     const outputEl = document.getElementById('output');
     
@@ -448,39 +423,37 @@ function initializeTextareaSizing() {
     }
   }
   
-  // Setup resize observers
   setupResizeObservers();
-  
-  // Setup expand/collapse buttons
   setupExpandButtons();
 }
 
-// Setup resize observers to detect size changes
+// Setup resize observers
 function setupResizeObservers() {
   const requirementEl = document.getElementById('requirement');
   const outputEl = document.getElementById('output');
   
   if (!requirementEl || !outputEl) return;
   
-  // Use ResizeObserver to detect size changes
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
       const height = entry.contentRect.height;
       const textareaId = entry.target.id;
       
-      // Update size info display
-      if (textareaId === 'requirement') {
+      // Don't save sizes if we're in expanded mode (Issue #2 fix)
+      if (textareaId === 'requirement' && !isInputExpanded) {
         textareaSizes.requirement.height = height;
         updateSizeInfo('inputSizeInfo', height);
-      } else if (textareaId === 'output') {
+      } else if (textareaId === 'output' && !isOutputExpanded) {
         textareaSizes.output.height = height;
         updateSizeInfo('outputSizeInfo', height);
       }
       
-      // Save sizes with debounce
-      debounce(saveTextareaSizes, 500);
+      // Save sizes with debounce (only if not expanded)
+      if ((textareaId === 'requirement' && !isInputExpanded) || 
+          (textareaId === 'output' && !isOutputExpanded)) {
+        debounce(saveTextareaSizes, 500);
+      }
       
-      // Add visual feedback
       entry.target.classList.add('size-changing');
       setTimeout(() => {
         entry.target.classList.remove('size-changing');
@@ -491,9 +464,12 @@ function setupResizeObservers() {
   resizeObserver.observe(requirementEl);
   resizeObserver.observe(outputEl);
   
-  // Also track manual drag events
-  requirementEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
-  outputEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
+  requirementEl.addEventListener('mouseup', () => {
+    if (!isInputExpanded) debounce(saveTextareaSizes, 300);
+  });
+  outputEl.addEventListener('mouseup', () => {
+    if (!isOutputExpanded) debounce(saveTextareaSizes, 300);
+  });
 }
 
 // Save sizes to localStorage
@@ -501,7 +477,7 @@ function saveTextareaSizes() {
   localStorage.setItem('textareaSizes', JSON.stringify(textareaSizes));
 }
 
-// Setup expand/collapse buttons
+// Setup expand/collapse buttons - FIXED (Issue #2)
 function setupExpandButtons() {
   const expandInputBtn = document.getElementById('expandInputBtn');
   const expandOutputBtn = document.getElementById('expandOutputBtn');
@@ -509,13 +485,13 @@ function setupExpandButtons() {
   
   if (!expandInputBtn || !expandOutputBtn || !expandOverlay) return;
   
-  // Input expand/collapse
+  // Input expand/collapse - FIXED
   expandInputBtn.addEventListener('click', () => {
     const textarea = document.getElementById('requirement');
     if (!textarea) return;
     
     if (isInputExpanded) {
-      // Collapse
+      // Collapse - RESTORE to saved height (Issue #2 fix)
       textarea.classList.remove('textarea-expanded');
       expandInputBtn.classList.remove('expanded');
       expandInputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
@@ -526,12 +502,14 @@ function setupExpandButtons() {
       // Restore saved height
       if (textareaSizes.requirement.height) {
         textarea.style.height = `${textareaSizes.requirement.height}px`;
+      } else {
+        textarea.style.height = '250px';
       }
     } else {
       // Expand
       // Save current height before expanding
       const currentHeight = textarea.offsetHeight;
-      if (currentHeight > 250) {
+      if (currentHeight > 0) {
         textareaSizes.requirement.height = currentHeight;
       }
       
@@ -542,21 +520,18 @@ function setupExpandButtons() {
       expandOverlay.style.display = 'block';
       isInputExpanded = true;
       
-      // Focus the textarea when expanded
       textarea.focus();
-      
-      // Scroll to cursor position
       textarea.scrollTop = textarea.scrollHeight;
     }
   });
   
-  // Output expand/collapse
+  // Output expand/collapse - FIXED
   expandOutputBtn.addEventListener('click', () => {
     const textarea = document.getElementById('output');
     if (!textarea) return;
     
     if (isOutputExpanded) {
-      // Collapse
+      // Collapse - RESTORE to saved height (Issue #2 fix)
       textarea.classList.remove('textarea-expanded');
       expandOutputBtn.classList.remove('expanded');
       expandOutputBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
@@ -567,12 +542,14 @@ function setupExpandButtons() {
       // Restore saved height
       if (textareaSizes.output.height) {
         textarea.style.height = `${textareaSizes.output.height}px`;
+      } else {
+        textarea.style.height = '250px';
       }
     } else {
       // Expand
       // Save current height before expanding
       const currentHeight = textarea.offsetHeight;
-      if (currentHeight > 250) {
+      if (currentHeight > 0) {
         textareaSizes.output.height = currentHeight;
       }
       
@@ -600,6 +577,8 @@ function setupExpandButtons() {
       // Restore saved height
       if (textareaSizes.requirement.height) {
         inputTextarea.style.height = `${textareaSizes.requirement.height}px`;
+      } else {
+        inputTextarea.style.height = '250px';
       }
     }
     
@@ -613,6 +592,8 @@ function setupExpandButtons() {
       // Restore saved height
       if (textareaSizes.output.height) {
         outputTextarea.style.height = `${textareaSizes.output.height}px`;
+      } else {
+        outputTextarea.style.height = '250px';
       }
     }
     
@@ -622,8 +603,7 @@ function setupExpandButtons() {
   // Close expanded mode with Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      const expandOverlay = document.getElementById('expandOverlay');
-      if (expandOverlay) expandOverlay.click();
+      expandOverlay.click();
     }
   });
 }
@@ -662,14 +642,78 @@ function resetTextareaSizes() {
   showNotification('Textarea sizes reset to default (250px)');
 }
 
-// RESET EVERYTHING FUNCTION
+// RESET EVERYTHING FUNCTION - FIXED (Issue #4)
 function resetEverything() {
   if (isResetting) return;
   
-  if (!confirm("Are you sure you want to reset everything? This will clear both input and output areas.")) {
-    return;
-  }
+  // Create and show custom modal instead of browser confirm
+  showResetConfirmationModal();
+}
+
+// Show custom reset confirmation modal (Issue #4)
+function showResetConfirmationModal() {
+  // Create modal backdrop
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'modal-backdrop';
+  modalBackdrop.id = 'resetConfirmationModal';
+  modalBackdrop.style.display = 'flex';
+  modalBackdrop.style.zIndex = '2000';
   
+  // Create modal content
+  modalBackdrop.innerHTML = `
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-exclamation-triangle"></i> Reset Everything</h3>
+        <button id="closeResetModalBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; margin: 20px 0;">
+          <i class="fas fa-trash-alt" style="font-size: 48px; color: var(--danger); margin-bottom: 16px;"></i>
+          <p style="font-size: 16px; margin-bottom: 8px; color: var(--text-primary);">
+            Are you sure you want to reset everything?
+          </p>
+          <p style="font-size: 14px; color: var(--text-secondary);">
+            This will clear both input and output areas, reset presets, and clear all temporary data.
+          </p>
+        </div>
+        <div class="modal-actions" style="justify-content: center; gap: 16px;">
+          <button id="cancelResetBtn" class="btn-ghost" style="min-width: 100px;">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button id="confirmResetBtn" class="btn-primary" style="min-width: 100px; background: var(--danger); border-color: var(--danger);">
+            <i class="fas fa-check"></i> Yes, Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modalBackdrop);
+  
+  // Add event listeners
+  document.getElementById('closeResetModalBtn').addEventListener('click', () => {
+    document.body.removeChild(modalBackdrop);
+  });
+  
+  document.getElementById('cancelResetBtn').addEventListener('click', () => {
+    document.body.removeChild(modalBackdrop);
+  });
+  
+  document.getElementById('confirmResetBtn').addEventListener('click', () => {
+    document.body.removeChild(modalBackdrop);
+    performResetEverything();
+  });
+  
+  // Close on backdrop click
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) {
+      document.body.removeChild(modalBackdrop);
+    }
+  });
+}
+
+// Perform the actual reset
+function performResetEverything() {
   isResetting = true;
   
   // Clear both textareas
@@ -698,13 +742,12 @@ function resetEverything() {
   // Reset preset to default
   currentPreset = 'default';
   setCurrentPreset('default');
-  updatePresetInfo('General', 'default', 'auto');
   
   // Update UI elements
   document.getElementById('convertedBadge').style.display = 'none';
   document.getElementById('convertBtn').disabled = true;
   
-  // Clear clear button state - FIX for issue #4
+  // Clear clear button state - FIXED (Issue #6)
   const clearBtn = document.getElementById('clearInputBtn');
   if (clearBtn) {
     clearBtn.classList.remove("undo-state");
@@ -731,12 +774,11 @@ function resetEverything() {
     resetAutoConvertTimer();
   }
   
-  // Reset textarea sizes to 250px (Card 1 larger)
+  // Reset textarea sizes to 250px
   resetTextareaSizes();
   
   showNotification('Everything has been reset');
   
-  // Allow resetting again after a short delay
   setTimeout(() => {
     isResetting = false;
   }, 500);
@@ -774,7 +816,6 @@ function saveSettings() {
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
 
-  // Update voice language if voice features are available
   if (window.voiceFeatures && window.voiceFeatures.updateVoiceLanguage) {
     window.voiceFeatures.updateVoiceLanguage(voiceLang);
   }
@@ -787,7 +828,6 @@ function saveSettings() {
 function clearAllData() {
   localStorage.clear();
   
-  // Reset textarea sizes in memory
   textareaSizes = {
     requirement: { height: 250 },
     output: { height: 250 }
@@ -799,7 +839,7 @@ function clearAllData() {
   }, 800);
 }
 
-// Templates - FIX for issue #7
+// Templates
 function loadTemplates() {
   const savedTemplates = localStorage.getItem("promptTemplates");
   if (savedTemplates) {
@@ -808,7 +848,6 @@ function loadTemplates() {
     templates = DEFAULT_TEMPLATES;
     localStorage.setItem("promptTemplates", JSON.stringify(templates));
   }
-  console.log("Templates loaded:", templates.length);
 }
 
 function loadCategories() {
@@ -997,7 +1036,7 @@ function deleteTemplate(id) {
   showNotification("Template deleted");
 }
 
-// History - FIX for issue #7
+// History
 function loadHistory() {
   const saved = localStorage.getItem("promptHistory");
   if (saved) {
@@ -1005,7 +1044,6 @@ function loadHistory() {
   } else {
     historyItems = [];
   }
-  console.log("History loaded:", historyItems.length);
   renderHistory();
 }
 
@@ -1055,7 +1093,6 @@ function renderHistory() {
       setLaunchButtonsEnabled(true);
       showNotification("Loaded from history");
       
-      // Update preset based on the loaded requirement
       const { role, preset: autoPreset, label } = getRoleAndPreset(item.requirement);
       lastRole = role;
       lastTaskLabel = label;
@@ -1063,13 +1100,6 @@ function renderHistory() {
       if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
         lastPresetSource = "auto";
         setCurrentPreset(autoPreset);
-      }
-      updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
-      
-      // Show preset info
-      const presetInfoEl = document.getElementById("presetInfo");
-      if (presetInfoEl) {
-        presetInfoEl.style.display = "inline-flex";
       }
     });
     list.appendChild(div);
@@ -1091,17 +1121,16 @@ function initializeUI() {
   const historyPanel = document.getElementById("historyPanel");
   if (historyPanel) historyPanel.style.display = "none";
   
-  // Hide preset info initially - FIX for issue #2
   const presetInfoEl = document.getElementById("presetInfo");
   if (presetInfoEl) {
-    presetInfoEl.style.display = "none";
+    presetInfoEl.style.display = "none"; // Keep hidden (Issue #3)
   }
 }
 
 // Event Listeners
 function setupEventListeners() {
   /* ===============================
-     RESET BUTTON
+     RESET BUTTON - UPDATED (Issue #4)
   =============================== */
   const resetBtn = document.getElementById('resetBtn');
   if (resetBtn) {
@@ -1187,12 +1216,6 @@ function setupEventListeners() {
       lastPresetSource = "manual";
       setCurrentPreset(presetId);
 
-      // Show preset info when manually selected - FIX for issue #2
-      const presetInfoEl = document.getElementById("presetInfo");
-      if (presetInfoEl) {
-        presetInfoEl.style.display = "inline-flex";
-      }
-
       if (isConverted) {
         const requirement = document.getElementById("requirement")?.value.trim();
         if (!requirement) return;
@@ -1205,7 +1228,6 @@ function setupEventListeners() {
 
         updateOutputStats();
         setLaunchButtonsEnabled(true);
-        updatePresetInfo(lastTaskLabel, currentPreset, "manual");
       }
     });
   });
@@ -1244,7 +1266,7 @@ function setupEventListeners() {
     ?.addEventListener("click", generatePrompt);
 
   /* ===============================
-     CLEAR INPUT BUTTON (UNDO/REDO) - FIXED for issue #4
+     CLEAR INPUT BUTTON - FIXED (Issue #6)
   =============================== */
   const clearBtn = document.getElementById("clearInputBtn");
   if (clearBtn) {
@@ -1258,7 +1280,7 @@ function setupEventListeners() {
         lastClearedText = "";
         isUndoState = false;
         
-        // Update button to CLEAR state
+        // Update button to CLEAR state (Issue #6 fix)
         this.classList.remove("undo-state");
         this.querySelector('i').className = "fas fa-broom";
         this.title = "Clear text";
@@ -1277,7 +1299,7 @@ function setupEventListeners() {
         requirementEl.focus();
         isUndoState = true;
         
-        // Update button to UNDO state
+        // Update button to UNDO state IMMEDIATELY (Issue #6 fix)
         this.classList.add("undo-state");
         this.querySelector('i').className = "fas fa-undo";
         this.title = "Undo clear";
@@ -1285,7 +1307,6 @@ function setupEventListeners() {
         showNotification("Text cleared. Click again to restore.");
       }
       
-      // Trigger input event
       requirementEl.dispatchEvent(new Event("input"));
     });
   }
@@ -1329,7 +1350,7 @@ function setupEventListeners() {
     ?.addEventListener("click", exportPrompt);
 
   /* ===============================
-     TEMPLATE TOGGLE - FIX for issue #7
+     TEMPLATE TOGGLE
   =============================== */
   const toggleTemplatesBtn = document.getElementById("toggleTemplatesBtn");
   const templatesPanel = document.getElementById("templatesPanel");
@@ -1340,19 +1361,16 @@ function setupEventListeners() {
       
       templatesPanel.style.display = isHidden ? "block" : "none";
       
-      // Toggle icon
       const icon = this.querySelector(".fa-chevron-down");
       if (icon) {
         icon.className = isHidden ? "fas fa-chevron-up" : "fas fa-chevron-down";
       }
       
-      // Toggle eye icon
       const eyeIcon = this.querySelector(".template-toggle-eye i");
       if (eyeIcon) {
         eyeIcon.className = isHidden ? "fas fa-eye-slash" : "fas fa-eye";
       }
       
-      // Load templates if showing
       if (isHidden) {
         loadCategories();
         loadTemplatesToUI();
@@ -1361,7 +1379,7 @@ function setupEventListeners() {
   }
 
   /* ===============================
-     HISTORY TOGGLE - FIX for issue #7
+     HISTORY TOGGLE
   =============================== */
   const toggleHistoryBtn = document.getElementById("toggleHistoryBtn");
   const historyPanel = document.getElementById("historyPanel");
@@ -1372,7 +1390,6 @@ function setupEventListeners() {
       
       historyPanel.style.display = isHidden ? "block" : "none";
       
-      // Toggle button text
       if (isHidden) {
         this.innerHTML = '<i class="fas fa-times"></i> Close History';
       } else {
@@ -1443,7 +1460,6 @@ function setupEventListeners() {
      KEYBOARD SHORTCUTS
   =============================== */
   document.addEventListener("keydown", (e) => {
-    // Ctrl/Cmd + Enter to convert
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
       if (!document.getElementById("convertBtn").disabled) {
@@ -1451,7 +1467,6 @@ function setupEventListeners() {
       }
     }
     
-    // Ctrl/Cmd + S to save (in template modal)
     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
       const templateModal = document.getElementById("templateModal");
       if (templateModal && templateModal.style.display === "flex") {
@@ -1460,7 +1475,6 @@ function setupEventListeners() {
       }
     }
     
-    // Escape key to close expanded mode
     if (e.key === 'Escape') {
       const expandOverlay = document.getElementById('expandOverlay');
       if (expandOverlay) expandOverlay.click();
@@ -1483,7 +1497,6 @@ function convertToPrompt() {
     return;
   }
   
-  // Update role and preset based on content
   const { role, preset: autoPreset, label } = getRoleAndPreset(requirement);
   lastRole = role;
   lastTaskLabel = label;
@@ -1493,36 +1506,23 @@ function convertToPrompt() {
     setCurrentPreset(autoPreset);
   }
   
-  // Show preset info - FIX for issue #2
-  const presetInfoEl = document.getElementById("presetInfo");
-  if (presetInfoEl) {
-    presetInfoEl.style.display = "inline-flex";
-  }
-  
-  // Generate prompt using current preset
   const prompt = PRESETS[currentPreset](lastRole, requirement);
   
-  // Update output
   outputEl.value = prompt;
   isConverted = true;
   lastConvertedText = requirement;
   
-  // Update UI
   document.getElementById("convertedBadge").style.display = "inline-flex";
   setLaunchButtonsEnabled(true);
   
-  // Update stats
   updateStats(prompt);
   updateOutputStats();
   
-  // Save to history
   saveToHistory(requirement, prompt);
   
-  // Increment usage count
   usageCount++;
   localStorage.setItem("usageCount", usageCount.toString());
   
-  // Show success notification
   showNotification("Prompt generated successfully");
 }
 
@@ -1537,46 +1537,36 @@ function handleRequirementInput() {
   if (!requirement) {
     convertBtn.disabled = true;
     if (clearBtn) {
+      // Reset clear button to normal state if text is empty (Issue #6)
       clearBtn.classList.remove("undo-state");
       clearBtn.querySelector('i').className = "fas fa-broom";
       clearBtn.title = "Clear text";
       isUndoState = false;
     }
     
-    // Clear intent chips
     renderIntentChips([]);
     
-    // Reset AI tool ranking to default order
+    // Reset AI tool ranking to default
     if (window.AIToolRanker && window.AIToolRanker.resetToDefault) {
       window.AIToolRanker.resetToDefault();
-    }
-    
-    // Hide preset info when no text - FIX for issue #2
-    const presetInfoEl = document.getElementById("presetInfo");
-    if (presetInfoEl) {
-      presetInfoEl.style.display = "none";
     }
     
     return;
   }
   
-  // Enable convert button
   convertBtn.disabled = false;
   
-  // Auto-detect intent (for chip display)
   const intent = detectIntentFromText(requirement);
   const chips = intentObjectToChips(intent);
   renderIntentChips(chips);
   
-  // Auto-convert logic
   if (autoConvertEnabled && autoConvertDelay > 0) {
     resetAutoConvertTimer();
   }
   
-  // Update character stats
   updateStats(requirement);
   
-  // 🔥 CRITICAL: Call AI Tool Ranking here
+  // 🔥 FIXED AI TOOL RANKING (Issue #1)
   if (window.AIToolRanker && intent) {
     window.AIToolRanker.rankAndReorder(intent);
   }
@@ -1620,7 +1610,6 @@ function resetAutoConvertTimer() {
   clearAutoConvertTimer();
   autoConvertCountdown = autoConvertDelay;
   
-  // Update countdown display
   const countdownEl = document.getElementById("autoConvertCountdown");
   if (countdownEl) {
     countdownEl.textContent = `Auto-convert in ${autoConvertCountdown}s`;
@@ -1635,7 +1624,6 @@ function resetAutoConvertTimer() {
     clearAutoConvertTimer();
   }, autoConvertDelay * 1000);
   
-  // Update countdown every second
   countdownInterval = setInterval(() => {
     autoConvertCountdown--;
     
@@ -1722,7 +1710,6 @@ function detectIntentFromText(text) {
     taskType: "general"
   };
   
-  // Detect task type for AI tool ranking
   if (/code|program|script|python|javascript|java|c#|sql|api|function|debug|algorithm/i.test(lower)) {
     intent.taskType = "code";
     intent.constraints.push("code");
@@ -1746,14 +1733,12 @@ function detectIntentFromText(text) {
     intent.constraints.push("writing");
   }
   
-  // Detect persona
   if (/as a |i am a |i'm a /i.test(lower)) {
     intent.persona = "specific";
   } else if (/like a |similar to a |channeling /i.test(lower)) {
     intent.persona = "styled";
   }
   
-  // Detect tone
   if (/friendly|warm|cordial|nice|kind/i.test(lower)) {
     intent.tone = "friendly";
   } else if (/professional|formal|business|official/i.test(lower)) {
@@ -1768,7 +1753,6 @@ function detectIntentFromText(text) {
     intent.tone = "authoritative";
   }
   
-  // Detect formality
   if (/very formal|highly formal|extremely formal/i.test(lower)) {
     intent.formality = "very formal";
   } else if (/formal|professional|business/i.test(lower)) {
@@ -1781,7 +1765,6 @@ function detectIntentFromText(text) {
     intent.formality = "very informal";
   }
   
-  // Detect emotion
   if (/excited|enthusiastic|energetic/i.test(lower)) {
     intent.emotion = "excited";
   } else if (/urgent|important|critical|asap/i.test(lower)) {
@@ -1792,7 +1775,6 @@ function detectIntentFromText(text) {
     intent.emotion = "serious";
   }
   
-  // Detect urgency
   if (/urgent|asap|immediately|right away|emergency/i.test(lower)) {
     intent.urgency = "high";
   } else if (/soon|shortly|in a bit/i.test(lower)) {
@@ -1801,7 +1783,6 @@ function detectIntentFromText(text) {
     intent.urgency = "low";
   }
   
-  // Detect audience
   if (/beginners|newbies|novices|students/i.test(lower)) {
     intent.audience = "beginners";
   } else if (/experts|professionals|advanced/i.test(lower)) {
@@ -1812,7 +1793,6 @@ function detectIntentFromText(text) {
     intent.audience = "non-technical";
   }
   
-  // Detect format
   if (/bullet points|bulleted list|list format/i.test(lower)) {
     intent.format = "bullet points";
   } else if (/numbered list|step by step|instructions/i.test(lower)) {
@@ -1825,7 +1805,6 @@ function detectIntentFromText(text) {
     intent.format = "paragraph";
   }
   
-  // Detect depth
   if (/detailed|comprehensive|in-depth|thorough/i.test(lower)) {
     intent.depth = "detailed";
   } else if (/brief|concise|short|summary/i.test(lower)) {
@@ -1897,18 +1876,6 @@ async function generatePrompt() {
   if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
     lastPresetSource = "auto";
     setCurrentPreset(autoPreset);
-  } else {
-    updatePresetInfo(
-      lastTaskLabel,
-      currentPreset,
-      userPresetLocked ? "manual" : "auto"
-    );
-  }
-
-  // Show preset info - FIX for issue #2
-  const presetInfoEl = document.getElementById("presetInfo");
-  if (presetInfoEl) {
-    presetInfoEl.style.display = "inline-flex";
   }
 
   usageCount++;
@@ -1990,7 +1957,6 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
 
     showNotification("Prompt generated successfully");
 
-    // Reset auto-convert timer if there's still text
     if (autoConvertEnabled && raw) {
       autoConvertCountdown = autoConvertDelay;
       resetAutoConvertTimer();
@@ -2042,7 +2008,6 @@ function openAITool(name, url) {
     return;
   }
   
-  // Copy prompt to clipboard
   navigator.clipboard.writeText(prompt)
     .then(() => {
       showNotification(`Prompt copied! Opening ${name}...`);
@@ -2079,227 +2044,303 @@ function showNotification(message) {
 }
 
 // ======================================================
-// FIXED AI TOOL RANKING ENGINE (CARD 3) - INTEGRATED
+// FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
 // ======================================================
 
 (function () {
   /* ------------------------------------------
-     AI Tool Capability Matrix (FIXED)
+     ENHANCED AI Tool Capability Matrix
   ------------------------------------------ */
 
   const AI_TOOL_PROFILES = {
     chatgpt: {
       name: "ChatGPT",
-      strengths: ["general", "writing", "email", "education", "analysis", "professional", "formal"],
-      weaknesses: ["code", "technical"],
-      tone: ["professional", "friendly", "formal", "authoritative", "casual"],
-      format: ["free", "bullet points", "numbered list", "paragraph"],
-      depth: ["normal", "detailed", "brief", "high-level"],
-      audience: ["general", "beginners", "experts", "technical", "non-technical"],
-      bestFor: ["emails", "content writing", "analysis", "education", "general tasks"]
+      strengths: ["general", "writing", "email", "education", "analysis", "professional", "formal", "conversational", "creative", "technical"],
+      weaknesses: ["real-time", "latest", "free", "image"],
+      tone: ["professional", "friendly", "formal", "authoritative", "casual", "humorous", "persuasive"],
+      format: ["free", "bullet points", "numbered list", "paragraph", "email", "code"],
+      depth: ["normal", "detailed", "brief", "high-level", "step-by-step"],
+      audience: ["general", "beginners", "experts", "technical", "non-technical", "business", "students"],
+      bestFor: ["emails", "content writing", "analysis", "education", "general tasks", "brainstorming", "explanations"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Best for general tasks, writing, analysis, and explanations. Supports multiple formats."
     },
     claude: {
       name: "Claude",
-      strengths: ["writing", "analysis", "business", "detailed", "long-form"],
-      weaknesses: ["code", "creative"],
-      tone: ["professional", "formal", "authoritative", "serious"],
-      format: ["free", "paragraph", "structured"],
-      depth: ["detailed", "normal"],
-      audience: ["experts", "technical", "business"],
-      bestFor: ["long-form content", "analysis", "business documents", "detailed writing"]
+      strengths: ["writing", "analysis", "business", "detailed", "long-form", "reasoning", "ethical", "safe"],
+      weaknesses: ["code", "creative", "image", "real-time"],
+      tone: ["professional", "formal", "authoritative", "serious", "ethical"],
+      format: ["free", "paragraph", "structured", "long-form"],
+      depth: ["detailed", "normal", "comprehensive"],
+      audience: ["experts", "technical", "business", "professional"],
+      bestFor: ["long-form content", "analysis", "business documents", "detailed writing", "reasoning tasks"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Excellent for long-form content, analysis, and business writing with strong reasoning."
     },
     gemini: {
       name: "Gemini",
-      strengths: ["research", "analysis", "education", "technical", "code"],
-      weaknesses: ["creative", "casual"],
-      tone: ["professional", "technical"],
-      format: ["free", "structured", "code"],
-      depth: ["detailed", "normal"],
-      audience: ["technical", "experts", "beginners"],
-      bestFor: ["research", "technical analysis", "learning", "coding"]
+      strengths: ["research", "analysis", "education", "technical", "code", "multimodal", "latest", "real-time"],
+      weaknesses: ["creative", "casual", "long-form"],
+      tone: ["professional", "technical", "informative"],
+      format: ["free", "structured", "code", "bullet points"],
+      depth: ["detailed", "normal", "technical"],
+      audience: ["technical", "experts", "beginners", "students"],
+      bestFor: ["research", "technical analysis", "learning", "coding", "real-time information"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Great for research, technical tasks, coding, and real-time information with multimodal support."
     },
     perplexity: {
       name: "Perplexity",
-      strengths: ["research", "analysis", "brief", "concise", "factual"],
-      weaknesses: ["creative", "long-form"],
-      tone: ["professional", "casual"],
-      format: ["free", "bullet points"],
-      depth: ["brief", "high-level"],
-      audience: ["general", "beginners"],
-      bestFor: ["quick research", "summaries", "facts", "web searches"]
+      strengths: ["research", "analysis", "brief", "concise", "factual", "citations", "web", "latest"],
+      weaknesses: ["creative", "long-form", "conversational"],
+      tone: ["professional", "casual", "factual"],
+      format: ["free", "bullet points", "concise"],
+      depth: ["brief", "high-level", "factual"],
+      audience: ["general", "beginners", "researchers"],
+      bestFor: ["quick research", "summaries", "facts", "web searches", "citations", "news"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Perfect for research, fact-checking, summaries, and web searches with citations."
     },
     deepseek: {
       name: "DeepSeek",
-      strengths: ["code", "technical", "structured", "mathematical"],
-      weaknesses: ["creative", "casual", "general"],
-      tone: ["technical", "professional"],
-      format: ["structured", "code"],
-      depth: ["detailed", "normal"],
-      audience: ["technical", "experts"],
-      bestFor: ["coding", "technical solutions", "APIs", "algorithms"]
+      strengths: ["code", "technical", "structured", "mathematical", "programming", "algorithms", "free"],
+      weaknesses: ["creative", "casual", "general", "non-technical"],
+      tone: ["technical", "professional", "precise"],
+      format: ["structured", "code", "technical"],
+      depth: ["detailed", "normal", "technical"],
+      audience: ["technical", "experts", "developers"],
+      bestFor: ["coding", "technical solutions", "APIs", "algorithms", "debugging", "mathematical problems"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Specialized for coding, technical solutions, algorithms, and mathematical problems."
     },
     copilot: {
       name: "Copilot",
-      strengths: ["code", "quick", "assistance", "snippets"],
-      weaknesses: ["long-form", "creative", "analysis"],
-      tone: ["technical", "casual"],
-      format: ["code", "structured"],
-      depth: ["normal", "brief"],
-      audience: ["technical", "beginners"],
-      bestFor: ["quick code help", "snippets", "debugging", "code completion"]
+      strengths: ["code", "quick", "assistance", "snippets", "development", "integrated", "contextual"],
+      weaknesses: ["long-form", "creative", "analysis", "non-technical"],
+      tone: ["technical", "casual", "assistive"],
+      format: ["code", "structured", "snippets"],
+      depth: ["normal", "brief", "contextual"],
+      audience: ["technical", "beginners", "developers"],
+      bestFor: ["quick code help", "snippets", "debugging", "code completion", "development assistance"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Ideal for code assistance, snippets, debugging, and development workflow integration."
     },
     grok: {
       name: "Grok",
-      strengths: ["creative", "general", "casual", "humorous", "entertainment"],
-      weaknesses: ["professional", "technical", "serious"],
-      tone: ["casual", "humorous", "friendly"],
-      format: ["free", "paragraph"],
-      depth: ["normal", "brief"],
-      audience: ["general", "beginners"],
-      bestFor: ["creative writing", "casual chat", "entertainment", "humor"]
+      strengths: ["creative", "general", "casual", "humorous", "entertainment", "conversational", "trendy"],
+      weaknesses: ["professional", "technical", "serious", "formal"],
+      tone: ["casual", "humorous", "friendly", "sarcastic", "entertaining"],
+      format: ["free", "paragraph", "conversational"],
+      depth: ["normal", "brief", "casual"],
+      audience: ["general", "beginners", "casual"],
+      bestFor: ["creative writing", "casual chat", "entertainment", "humor", "trendy topics", "social"],
+      score: 0,
+      matchReason: "",
+      tooltip: "Fun for creative writing, casual chat, humor, entertainment, and trendy topics."
     }
   };
 
   /* ------------------------------------------
-     FIXED: Score AI Tools Based on Intent
+     ENHANCED: Score AI Tools Based on Intent
   ------------------------------------------ */
 
   function rankAITools(intent) {
-    if (!intent || !intent.taskType) return Object.keys(AI_TOOL_PROFILES);
+    if (!intent || !intent.taskType) {
+      // If no specific intent, return default order
+      return ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
+    }
     
-    const scores = {};
+    // Reset scores
+    Object.values(AI_TOOL_PROFILES).forEach(tool => {
+      tool.score = 0;
+      tool.matchReason = "";
+    });
     
-    // Initialize scores
-    Object.keys(AI_TOOL_PROFILES).forEach(k => (scores[k] = 0));
-    
-    // Score each tool based on intent
+    // Score each tool
     Object.entries(AI_TOOL_PROFILES).forEach(([toolKey, tool]) => {
       let score = 0;
+      let reasons = [];
       
       // 1. Task type matching (highest weight)
       if (tool.strengths.includes(intent.taskType)) {
-        score += 10;
+        score += 15;
+        reasons.push(`excels at ${intent.taskType}`);
       } else if (tool.strengths.some(strength => 
         strength.includes(intent.taskType) || intent.taskType.includes(strength)
       )) {
-        score += 7;
+        score += 10;
+        reasons.push(`good for ${intent.taskType}`);
       }
       
-      // 2. Penalize for weaknesses
-      if (tool.weaknesses.includes(intent.taskType)) {
-        score -= 8;
-      }
-      
-      // 3. Tone matching
+      // 2. Tone matching
       if (intent.tone && intent.tone !== "neutral") {
         if (tool.tone.includes(intent.tone)) {
-          score += 3;
+          score += 8;
+          reasons.push(`${intent.tone} tone`);
         } else if (intent.tone === "humorous" && toolKey === "grok") {
-          score += 5;
+          score += 10;
+          reasons.push("humorous style");
         } else if (intent.tone === "technical" && (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini")) {
-          score += 4;
+          score += 8;
+          reasons.push("technical expertise");
         }
       }
       
-      // 4. Format matching
+      // 3. Format matching
       if (intent.format && intent.format !== "free") {
-        if (intent.format === "code" || intent.format === "structured") {
-          if (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini") {
-            score += 5;
-          }
+        if ((intent.format === "code" || intent.format === "structured") && 
+            (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini")) {
+          score += 12;
+          reasons.push(`${intent.format} output`);
         } else if (tool.format.includes(intent.format)) {
-          score += 2;
+          score += 6;
+          reasons.push(`${intent.format} format`);
         }
       }
       
-      // 5. Depth matching
+      // 4. Depth matching
       if (intent.depth && intent.depth !== "normal") {
         if (intent.depth === "detailed" && (toolKey === "claude" || toolKey === "gemini")) {
-          score += 4;
+          score += 10;
+          reasons.push("detailed analysis");
         } else if (intent.depth === "brief" && (toolKey === "perplexity" || toolKey === "copilot")) {
-          score += 3;
+          score += 8;
+          reasons.push("concise answers");
         } else if (tool.depth.includes(intent.depth)) {
-          score += 2;
+          score += 5;
+          reasons.push(`${intent.depth} depth`);
         }
       }
       
-      // 6. Audience matching
+      // 5. Audience matching
       if (intent.audience && intent.audience !== "general") {
         if (intent.audience === "technical" && (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini")) {
-          score += 4;
+          score += 10;
+          reasons.push("technical audience");
         } else if (intent.audience === "beginners" && (toolKey === "chatgpt" || toolKey === "perplexity")) {
-          score += 3;
+          score += 8;
+          reasons.push("beginner-friendly");
         } else if (tool.audience.includes(intent.audience)) {
-          score += 2;
+          score += 6;
+          reasons.push(`${intent.audience} audience`);
         }
       }
       
-      // 7. Specific constraints
+      // 6. Specific constraints
       if (intent.constraints && intent.constraints.length > 0) {
+        // Code-related tasks
         if (intent.constraints.includes("code")) {
-          if (toolKey === "deepseek") score += 8;
-          if (toolKey === "copilot") score += 7;
-          if (toolKey === "gemini") score += 6;
+          if (toolKey === "deepseek") { score += 20; reasons.push("coding specialist"); }
+          if (toolKey === "copilot") { score += 18; reasons.push("code assistant"); }
+          if (toolKey === "gemini") { score += 15; reasons.push("technical coding"); }
         }
+        // Creative tasks
         if (intent.constraints.includes("creative")) {
-          if (toolKey === "grok") score += 8;
-          if (toolKey === "chatgpt") score += 5;
+          if (toolKey === "grok") { score += 18; reasons.push("creative specialist"); }
+          if (toolKey === "chatgpt") { score += 12; reasons.push("creative writing"); }
         }
+        // Research tasks
         if (intent.constraints.includes("research")) {
-          if (toolKey === "perplexity") score += 8;
-          if (toolKey === "gemini") score += 6;
+          if (toolKey === "perplexity") { score += 20; reasons.push("research specialist"); }
+          if (toolKey === "gemini") { score += 15; reasons.push("research & analysis"); }
         }
+        // Business tasks
         if (intent.constraints.includes("business")) {
-          if (toolKey === "claude") score += 7;
-          if (toolKey === "chatgpt") score += 5;
+          if (toolKey === "claude") { score += 16; reasons.push("business writing"); }
+          if (toolKey === "chatgpt") { score += 12; reasons.push("professional content"); }
+        }
+        // Educational tasks
+        if (intent.constraints.includes("education")) {
+          if (toolKey === "gemini") { score += 15; reasons.push("educational content"); }
+          if (toolKey === "chatgpt") { score += 12; reasons.push("learning assistance"); }
+        }
+        // Urgent tasks
+        if (intent.urgency === "high") {
+          if (toolKey === "perplexity") { score += 10; reasons.push("quick answers"); }
+          if (toolKey === "copilot") { score += 8; reasons.push("fast assistance"); }
         }
       }
       
-      scores[toolKey] = score;
+      // 7. Special enhancements
+      // Real-time info
+      if (/(news|latest|current|today|recent)/i.test(JSON.stringify(intent))) {
+        if (toolKey === "perplexity" || toolKey === "gemini") {
+          score += 10;
+          reasons.push("real-time info");
+        }
+      }
+      // Free tier preference
+      if (/(free|budget|cost|cheap)/i.test(JSON.stringify(intent))) {
+        if (toolKey === "deepseek" || toolKey === "perplexity") {
+          score += 8;
+          reasons.push("free access");
+        }
+      }
+      
+      // Penalize weaknesses
+      if (tool.weaknesses.includes(intent.taskType)) {
+        score -= 12;
+      }
+      
+      tool.score = score;
+      tool.matchReason = reasons.slice(0, 3).join(", ");
     });
     
     // Sort by score descending
-    return Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])
+    const sorted = Object.entries(AI_TOOL_PROFILES)
+      .sort((a, b) => b[1].score - a[1].score)
       .map(([key]) => key);
+    
+    // Only reorder if there's a clear winner (score difference > 5)
+    const topScore = AI_TOOL_PROFILES[sorted[0]].score;
+    const secondScore = AI_TOOL_PROFILES[sorted[1]].score;
+    
+    if (topScore - secondScore < 5 && topScore < 10) {
+      // No clear winner, return default order
+      return ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
+    }
+    
+    return sorted;
   }
 
   /* ------------------------------------------
-     Reorder Card-3 Buttons & Add Best Match Tag - FIX for issue #6
+     Reorder Card-3 Buttons & Add Best Match Tag
   ------------------------------------------ */
 
   function reorderLaunchButtons(toolOrder) {
     const container = document.querySelector(".launch-list");
     if (!container || !toolOrder.length) return;
     
-    // Get all buttons
     const buttons = Array.from(container.querySelectorAll(".launch-btn"));
     if (!buttons.length) return;
     
-    // Clear existing best-match tags and inline explanations
+    // Clear existing best-match tags and tooltips
     buttons.forEach(btn => {
       btn.classList.remove("best-match");
       const existingTag = btn.querySelector(".best-match-tag");
       if (existingTag) existingTag.remove();
       
-      // Remove inline explanation if exists
       const existingExplanation = btn.querySelector(".inline-explanation");
       if (existingExplanation) existingExplanation.remove();
     });
     
-    // Hide the old explanation panel
-    const oldExplanation = document.getElementById("ai-ranking-explanation");
-    if (oldExplanation) {
-      oldExplanation.style.display = "none";
-    }
-    
-    // Store original order for reference
+    // Store original order
     const originalOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
     
-    // If all scores are 0 or equal, keep original order
+    // Check if we should reorder
     const allSame = toolOrder.every((tool, i) => originalOrder[i] === tool);
-    if (allSame && toolOrder[0] === "chatgpt") {
-      return; // Keep ChatGPT first if nothing specific
+    const topTool = AI_TOOL_PROFILES[toolOrder[0]];
+    
+    if (allSame && (!topTool || topTool.score < 10)) {
+      // No significant ranking, keep default order
+      resetToDefault();
+      return;
     }
     
     // Reorder buttons based on ranking
@@ -2307,7 +2348,6 @@ function showNotification(message) {
       const btn = buttons.find(b => b.id === `${toolKey}Btn`);
       if (!btn) return;
       
-      // Move to correct position
       container.appendChild(btn);
     });
   }
@@ -2329,7 +2369,6 @@ function showNotification(message) {
       const existingTag = btn.querySelector(".best-match-tag");
       if (existingTag) existingTag.remove();
       
-      // Remove inline explanation
       const existingExplanation = btn.querySelector(".inline-explanation");
       if (existingExplanation) existingExplanation.remove();
     });
@@ -2339,73 +2378,112 @@ function showNotification(message) {
       const btn = document.getElementById(`${toolKey}Btn`);
       if (btn) container.appendChild(btn);
     });
-    
-    // Hide explanation
-    const explanationEl = document.getElementById("ai-ranking-explanation");
-    if (explanationEl) explanationEl.style.display = "none";
   }
 
   /* ------------------------------------------
-     Update Explanation - FIX for issue #6 (inline near the tool)
+     Update Best Match Display
   ------------------------------------------ */
 
-  function updateRankingExplanation(intent, topTool) {
-    if (!intent || !topTool) return;
+  function updateBestMatchDisplay(intent, topToolKey) {
+    if (!intent || !topToolKey) return;
     
-    const topToolName = AI_TOOL_PROFILES[topTool]?.name || topTool;
-    
-    // Only show explanation if it's not ChatGPT (default)
-    if (topTool === "chatgpt" && (!intent.taskType || intent.taskType === "general")) {
-      return;
-    }
+    const topTool = AI_TOOL_PROFILES[topToolKey];
+    if (!topTool || topTool.score < 10) return;
     
     // Get the top tool button
-    const topToolBtn = document.getElementById(`${topTool}Btn`);
+    const topToolBtn = document.getElementById(`${topToolKey}Btn`);
     if (!topToolBtn) return;
     
-    // Clear any existing explanation on this button
+    // Clear any existing explanation
     const existingExplanation = topToolBtn.querySelector(".inline-explanation");
     if (existingExplanation) existingExplanation.remove();
     
-    // Create reasons
-    const reasons = [];
+    // Add best match tag
+    topToolBtn.classList.add("best-match");
     
-    if (intent.taskType && intent.taskType !== "general") {
-      reasons.push(`${intent.taskType} tasks`);
-    }
+    const bestMatchTag = document.createElement("span");
+    bestMatchTag.className = "best-match-tag";
+    bestMatchTag.textContent = "✨ Best Match";
+    bestMatchTag.title = topTool.matchReason || topTool.tooltip;
+    topToolBtn.appendChild(bestMatchTag);
     
-    if (intent.tone && intent.tone !== "neutral") {
-      reasons.push(`${intent.tone} tone`);
-    }
+    // Add match score indicator
+    const scoreIndicator = document.createElement("div");
+    scoreIndicator.className = "match-score";
+    scoreIndicator.textContent = `Match: ${Math.min(100, Math.round(topTool.score * 3))}%`;
+    scoreIndicator.title = `Score: ${topTool.score}`;
+    topToolBtn.appendChild(scoreIndicator);
     
-    if (intent.constraints && intent.constraints.length > 0) {
-      // Filter out duplicates
-      const uniqueConstraints = [...new Set(intent.constraints)];
-      reasons.push(...uniqueConstraints);
-    }
+    // Visual feedback for ranking
+    setTimeout(() => {
+      topToolBtn.style.animation = "pulse-glow 1.5s ease-in-out";
+      setTimeout(() => {
+        topToolBtn.style.animation = "";
+      }, 1500);
+    }, 300);
+  }
+
+  /* ------------------------------------------
+     Add Hover Tooltips (Issue #5)
+  ------------------------------------------ */
+
+  function setupTooltips() {
+    const launchButtons = document.querySelectorAll(".launch-btn");
     
-    if (reasons.length > 0) {
-      // Create inline explanation element
-      const explanation = document.createElement("div");
-      explanation.className = "inline-explanation";
-      explanation.innerHTML = `
-        <div class="explanation-content">
-          <i class="fas fa-info-circle"></i>
-          <span>Best for: ${reasons.slice(0, 3).join(", ")}${reasons.length > 3 ? "..." : ""}</span>
-        </div>
-      `;
+    launchButtons.forEach(btn => {
+      const toolId = btn.id.replace("Btn", "");
+      const toolProfile = AI_TOOL_PROFILES[toolId];
       
-      // Add to the top tool button
-      topToolBtn.appendChild(explanation);
-      
-      // Add best match tag
-      topToolBtn.classList.add("best-match");
-      
-      const bestMatchTag = document.createElement("span");
-      bestMatchTag.className = "best-match-tag";
-      bestMatchTag.textContent = "Best Match";
-      topToolBtn.appendChild(bestMatchTag);
-    }
+      if (toolProfile) {
+        // Remove any existing tooltip
+        btn.removeAttribute("title");
+        
+        // Create custom tooltip
+        btn.addEventListener("mouseenter", function(e) {
+          if (!toolProfile) return;
+          
+          // Remove any existing custom tooltip
+          const existingTooltip = document.querySelector(".custom-tooltip");
+          if (existingTooltip) {
+            existingTooltip.remove();
+          }
+          
+          // Create new tooltip
+          const tooltip = document.createElement("div");
+          tooltip.className = "custom-tooltip";
+          tooltip.innerHTML = `
+            <div class="tooltip-header">
+              <strong>${toolProfile.name}</strong>
+              <span class="tooltip-match">${toolProfile.score > 0 ? `Match: ${Math.min(100, Math.round(toolProfile.score * 3))}%` : ''}</span>
+            </div>
+            <div class="tooltip-body">${toolProfile.tooltip}</div>
+            ${toolProfile.matchReason ? `<div class="tooltip-reason"><i class="fas fa-bullseye"></i> ${toolProfile.matchReason}</div>` : ''}
+            <div class="tooltip-footer">
+              <span><i class="fas fa-star"></i> Best for: ${toolProfile.bestFor.slice(0, 3).join(", ")}</span>
+            </div>
+          `;
+          
+          document.body.appendChild(tooltip);
+          
+          // Position tooltip
+          const rect = btn.getBoundingClientRect();
+          tooltip.style.left = `${rect.left + window.scrollX}px`;
+          tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight - 10}px`;
+          
+          // Adjust if tooltip goes off screen
+          if (rect.top - tooltip.offsetHeight - 10 < 0) {
+            tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+          }
+        });
+        
+        btn.addEventListener("mouseleave", function() {
+          const tooltip = document.querySelector(".custom-tooltip");
+          if (tooltip) {
+            tooltip.remove();
+          }
+        });
+      }
+    });
   }
 
   /* ------------------------------------------
@@ -2414,18 +2492,25 @@ function showNotification(message) {
 
   window.AIToolRanker = {
     rankAndReorder(intent) {
-      if (!intent) return;
+      if (!intent) {
+        resetToDefault();
+        return;
+      }
       
       const ordered = rankAITools(intent);
       reorderLaunchButtons(ordered);
       
-      // Update explanation if we have a top tool
+      // Update best match display
       if (ordered.length > 0) {
-        updateRankingExplanation(intent, ordered[0]);
+        updateBestMatchDisplay(intent, ordered[0]);
       }
+      
+      // Setup tooltips
+      setTimeout(setupTooltips, 100);
     },
     
-    resetToDefault
+    resetToDefault,
+    setupTooltips
   };
 })();
 
@@ -2453,7 +2538,6 @@ window.useTemplate = function (id) {
     setLaunchButtonsEnabled(true);
     showNotification("Template loaded into prompt");
     
-    // Load categories for template library
     loadCategories();
   }
 };
