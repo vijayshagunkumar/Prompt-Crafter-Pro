@@ -2410,7 +2410,7 @@ function showNotification(message) {
     // Add match score indicator
     const scoreIndicator = document.createElement("div");
     scoreIndicator.className = "match-score";
-    scoreIndicator.textContent = `Match: ${Math.min(100, Math.round(topTool.score * 3))}%`;
+    scoreIndicator.textContent = `Best Match: 100%`;
     scoreIndicator.title = `Score: ${topTool.score}`;
     topToolBtn.appendChild(scoreIndicator);
     
@@ -2454,7 +2454,7 @@ function showNotification(message) {
           tooltip.innerHTML = `
             <div class="tooltip-header">
               <strong>${toolProfile.name}</strong>
-              <span class="tooltip-match">${toolProfile.score > 0 ? `Match: ${Math.min(100, Math.round(toolProfile.score * 3))}%` : ''}</span>
+               <span class="tooltip-match">${toolProfile.score > 0 ? `Score: ${toolProfile.score}` : ''}</span>
             </div>
             <div class="tooltip-body">${toolProfile.tooltip}</div>
             ${toolProfile.matchReason ? `<div class="tooltip-reason"><i class="fas fa-bullseye"></i> ${toolProfile.matchReason}</div>` : ''}
