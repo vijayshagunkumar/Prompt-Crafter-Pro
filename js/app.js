@@ -2496,6 +2496,14 @@ function showNotification(message) {
       
       const ordered = rankAITools(intent);
       reorderLaunchButtons(ordered);
+      // Clear ALL best-match tags before adding new ones
+document.querySelectorAll('.launch-btn').forEach(btn => {
+  btn.classList.remove("best-match");
+  const existingTag = btn.querySelector(".best-match-tag");
+  if (existingTag) existingTag.remove();
+  const existingScore = btn.querySelector(".match-score");
+  if (existingScore) existingScore.remove();
+});
       
       // Update best match display
       if (ordered.length > 0) {
