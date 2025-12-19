@@ -1346,19 +1346,9 @@ function handleRequirementInput() {
     resetAutoConvertTimer();
   }
   updateStats(text);
-  // 🔍 Intent detection + UI chips
-if (!text.trim()) {
-  renderIntentChips([]);
-} else {
-  const intent = window.detectIntentAttributes
-    ? window.detectIntentAttributes(text)
-    : null;
 
-  const chips = intentObjectToChips(intent);
-  renderIntentChips(chips);
-}
-
-let intent = null;
+// 🔍 Intent detection + chips + AI tool ranking
+let intent = null;   // ✅ DECLARED IN FUNCTION SCOPE
 
 if (!text.trim()) {
   renderIntentChips([]);
@@ -1371,12 +1361,11 @@ if (!text.trim()) {
   renderIntentChips(chips);
 }
 
-// ✅ NOW intent is in scope
+// 🎯 Card 3 AI tool ranking
 if (window.AIToolRanker && intent) {
   window.AIToolRanker.apply(intent);
 }
 
-}
 
 function resetAutoConvertTimer() {
   clearAutoConvertTimer();
