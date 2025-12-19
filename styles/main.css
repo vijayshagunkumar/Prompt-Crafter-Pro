@@ -2300,10 +2300,7 @@ textarea::placeholder {
   flex-direction: column;
 }
 
-.step-card .textarea {
-  flex: 1;
-  resize: none;
-}
+
 /* ================================
    FINAL FIX – TEXTAREA LAYOUT + THEME
 ================================ */
@@ -2341,4 +2338,41 @@ textarea::placeholder {
 /* Kill the horizontal resize artifact line */
 .step-card textarea {
   overflow: auto;
+}
+/* =========================================
+   FINAL STABLE FIX – CARD + TEXTAREA LAYOUT
+========================================= */
+
+/* Cards behave as vertical containers */
+.step-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Textareas fill remaining height */
+.step-card .textarea-idea,
+.step-card .output-textarea {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Prevent resize ghost line */
+.step-card textarea {
+  overflow: auto;
+}
+
+/* Footer content stays at bottom */
+.step-card .template-section,
+.step-card .output-footer {
+  margin-top: auto;
 }
