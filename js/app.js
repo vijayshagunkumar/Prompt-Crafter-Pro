@@ -1326,47 +1326,59 @@ function loadUsageCount() {
 
 // Auto-convert
 function handleRequirementInput() {
-  const text = document.getElementById("requirement").value;
-  
-  // NEW: Clear output if user is typing new requirement
+  const requirementEl = document.getElementById("requirement");
+  const text = requirementEl.value;
+
+  /* --------------------------------
+     Reset converted state
+  -------------------------------- */
   if (isConverted && text !== lastConvertedText) {
     document.getElementById("output").value = "";
     isConverted = false;
     document.getElementById("convertedBadge").style.display = "none";
     setLaunchButtonsEnabled(false);
   }
-  
+
   isConverted = false;
   document.getElementById("convertedBadge").style.display = "none";
   document.getElementById("convertBtn").disabled = !text.trim();
-
   setLaunchButtonsEnabled(false);
 
+  /* --------------------------------
+     Auto-convert timer
+  -------------------------------- */
   if (autoConvertEnabled) {
     resetAutoConvertTimer();
   }
+
+  /* --------------------------------
+     Stats update
+  -------------------------------- */
   updateStats(text);
 
-// 🔍 Intent detection + chips + AI tool ranking
-let intent = null;   // ✅ DECLARED IN FUNCTION SCOPE
+  /* --------------------------------
+     INTENT DETECTION (single source)
+  -------------------------------- */
+  let intent = null;
 
-if (!text.trim()) {
-  renderIntentChips([]);
-} else {
-  intent = window.detectIntentAttributes
-    ? window.detectIntentAttributes(text)
-    : null;
+  if (!text.trim()) {
+    renderIntentChips([]);
+  } else {
+    intent = window.detectIntentAttributes
+      ? window.detectIntentAttributes(text)
+      : null;
 
-  const chips = intentObjectToChips(intent);
-  renderIntentChips(chips);
+    const chips = intentObjectToChips(intent);
+    renderIntentChips(chips);
+  }
+
+  /* --------------------------------
+     AI TOOL RANKING (Card 3)
+  -------------------------------- */
+  if (window.AIToolRanker && intent) {
+    window.AIToolRanker.apply(intent);
+  }
 }
-
-// 🎯 Card 3 AI tool ranking
-if (window.AIToolRanker && intent) {
-  window.AIToolRanker.apply(intent);
-}
-
-
 function resetAutoConvertTimer() {
   clearAutoConvertTimer();
 
