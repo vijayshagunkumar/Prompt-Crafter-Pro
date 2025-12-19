@@ -1709,20 +1709,6 @@ function updateOutputStats() {
   document.getElementById("outputLineCount").textContent = `Lines: ${lines}`;
 }
 
-function updateOutputStats() {
-  const outputEl = document.getElementById("output");
-  if (!outputEl) return;
-  
-  const text = outputEl.value;
-  const chars = text.length;
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lines = text ? text.split("\n").length : 0;
-  
-  document.getElementById("outputCharCount").textContent = chars;
-  document.getElementById("outputWordCount").textContent = words;
-  document.getElementById("outputLineCount").textContent = lines;
-}
-
 function loadUsageCount() {
   const saved = localStorage.getItem("usageCount");
   usageCount = saved ? parseInt(saved, 10) : 0;
