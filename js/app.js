@@ -1489,7 +1489,7 @@ function handleRequirementInput() {
     tagBestMatchLaunchTool();
     renderLaunchRankingExplanation(intent);
   }
-
+}
 
 // Stats
 function updateStats(text) {
