@@ -1323,6 +1323,54 @@ function loadUsageCount() {
     "usageCount"
   ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
 }
+function resetAutoConvertTimer() {
+  clearAutoConvertTimer();
+
+  const requirement = document.getElementById("requirement").value.trim();
+  if (autoConvertEnabled && requirement && !isConverted) {
+    autoConvertCountdown = autoConvertDelay;
+
+    const timerValue = document.getElementById("timerValue");
+    const timerDisplay = document.getElementById("timerDisplay");
+
+    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
+    if (timerDisplay) timerDisplay.style.display = "inline-flex";
+
+    countdownInterval = setInterval(() => {
+      autoConvertCountdown--;
+      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
+
+      if (autoConvertCountdown <= 0) {
+        clearInterval(countdownInterval);
+        if (timerDisplay) timerDisplay.style.display = "none";
+
+        const currentRequirement =
+          document.getElementById("requirement").value.trim();
+
+        if (currentRequirement && currentRequirement !== lastConvertedText) {
+          generatePrompt();
+        }
+      }
+    }, 1000);
+
+    autoConvertTimer = setTimeout(() => {
+      const currentRequirement =
+        document.getElementById("requirement").value.trim();
+
+      if (currentRequirement && currentRequirement !== lastConvertedText) {
+        generatePrompt();
+      }
+    }, autoConvertDelay * 1000);
+  }
+}
+
+function clearAutoConvertTimer() {
+  clearTimeout(autoConvertTimer);
+  clearInterval(countdownInterval);
+
+  const timerDisplay = document.getElementById("timerDisplay");
+  if (timerDisplay) timerDisplay.style.display = "none";
+}
 
 // Auto-convert
 function handleRequirementInput() {
@@ -1380,12 +1428,7 @@ function handleRequirementInput() {
     window.AIToolRanker.rankAndReorder(intent);
   }
 }
-function clearAutoConvertTimer() {
-  clearTimeout(autoConvertTimer);
-  clearInterval(countdownInterval);
-  const timerDisplay = document.getElementById("timerDisplay");
-  if (timerDisplay) timerDisplay.style.display = "none";
-}
+
 
 // Stats
 function updateStats(text) {
