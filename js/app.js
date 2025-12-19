@@ -93,10 +93,10 @@ let historyItems = [];
 let lastClearedText = "";
 let isUndoState = false;
 
-// Textarea sizing state
+// Textarea sizing state - BOTH SET TO 250px
 let textareaSizes = {
-  requirement: { height: 250 },  // CHANGED FROM 140 TO 250
-  output: { height: 200 }
+  requirement: { height: 250 },
+  output: { height: 250 }  // CHANGED FROM 200 TO 250
 };
 let isInputExpanded = false;
 let isOutputExpanded = false;
@@ -390,7 +390,12 @@ function initializeApp() {
   setupEventListeners();
   initializeUI();
   setCurrentPreset(currentPreset);
-  updatePresetInfo("General", currentPreset, "auto");
+  
+  // INITIALLY HIDE presetInfo - FIX for issue #2
+  const presetInfoEl = document.getElementById("presetInfo");
+  if (presetInfoEl) {
+    presetInfoEl.style.display = "none";
+  }
 
   const req = document.getElementById("requirement");
   if (req) req.focus();
@@ -412,26 +417,34 @@ function initializeTextareaSizing() {
   if (savedSizes) {
     textareaSizes = JSON.parse(savedSizes);
     
-    // Apply saved heights
+    // Apply saved heights - BOTH SET TO 250px
     const requirementEl = document.getElementById('requirement');
     const outputEl = document.getElementById('output');
     
-    if (requirementEl && textareaSizes.requirement.height) {
-      requirementEl.style.height = `${textareaSizes.requirement.height}px`;
-      updateSizeInfo('inputSizeInfo', textareaSizes.requirement.height);
+    if (requirementEl) {
+      requirementEl.style.height = `${textareaSizes.requirement.height || 250}px`;
+      updateSizeInfo('inputSizeInfo', textareaSizes.requirement.height || 250);
     }
     
-    if (outputEl && textareaSizes.output.height) {
-      outputEl.style.height = `${textareaSizes.output.height}px`;
-      updateSizeInfo('outputSizeInfo', textareaSizes.output.height);
+    if (outputEl) {
+      outputEl.style.height = `${textareaSizes.output.height || 250}px`;
+      updateSizeInfo('outputSizeInfo', textareaSizes.output.height || 250);
     }
   } else {
-    // If no saved sizes, set default to 250px for Card 1
+    // If no saved sizes, set both to 250px
     const requirementEl = document.getElementById('requirement');
+    const outputEl = document.getElementById('output');
+    
     if (requirementEl) {
       requirementEl.style.height = '250px';
       textareaSizes.requirement.height = 250;
       updateSizeInfo('inputSizeInfo', 250);
+    }
+    
+    if (outputEl) {
+      outputEl.style.height = '250px';
+      textareaSizes.output.height = 250;
+      updateSizeInfo('outputSizeInfo', 250);
     }
   }
   
@@ -559,7 +572,7 @@ function setupExpandButtons() {
       // Expand
       // Save current height before expanding
       const currentHeight = textarea.offsetHeight;
-      if (currentHeight > 200) {
+      if (currentHeight > 250) {
         textareaSizes.output.height = currentHeight;
       }
       
@@ -628,7 +641,7 @@ function debounce(func, wait) {
   };
 }
 
-// Reset textarea sizes to default
+// Reset textarea sizes to default - BOTH 250px
 function resetTextareaSizes() {
   const requirementEl = document.getElementById('requirement');
   const outputEl = document.getElementById('output');
@@ -640,13 +653,13 @@ function resetTextareaSizes() {
   }
   
   if (outputEl) {
-    outputEl.style.height = '200px';
-    textareaSizes.output.height = 200;
-    updateSizeInfo('outputSizeInfo', 200);
+    outputEl.style.height = '250px';
+    textareaSizes.output.height = 250;
+    updateSizeInfo('outputSizeInfo', 250);
   }
   
   saveTextareaSizes();
-  showNotification('Textarea sizes reset to default');
+  showNotification('Textarea sizes reset to default (250px)');
 }
 
 // RESET EVERYTHING FUNCTION
@@ -691,12 +704,13 @@ function resetEverything() {
   document.getElementById('convertedBadge').style.display = 'none';
   document.getElementById('convertBtn').disabled = true;
   
-  // Clear clear button state
+  // Clear clear button state - FIX for issue #4
   const clearBtn = document.getElementById('clearInputBtn');
   if (clearBtn) {
-    clearBtn.classList.remove('undo-state');
-    clearBtn.querySelector('i').className = 'fas fa-broom';
-    clearBtn.title = 'Clear text';
+    clearBtn.classList.remove("undo-state");
+    clearBtn.querySelector('i').className = "fas fa-broom";
+    clearBtn.title = "Clear text";
+    isUndoState = false;
   }
   
   // Clear timers
@@ -776,7 +790,7 @@ function clearAllData() {
   // Reset textarea sizes in memory
   textareaSizes = {
     requirement: { height: 250 },
-    output: { height: 200 }
+    output: { height: 250 }
   };
   
   showNotification("All data cleared. Reloading...");
@@ -785,7 +799,7 @@ function clearAllData() {
   }, 800);
 }
 
-// Templates
+// Templates - FIX for issue #7
 function loadTemplates() {
   const savedTemplates = localStorage.getItem("promptTemplates");
   if (savedTemplates) {
@@ -794,6 +808,7 @@ function loadTemplates() {
     templates = DEFAULT_TEMPLATES;
     localStorage.setItem("promptTemplates", JSON.stringify(templates));
   }
+  console.log("Templates loaded:", templates.length);
 }
 
 function loadCategories() {
@@ -982,7 +997,7 @@ function deleteTemplate(id) {
   showNotification("Template deleted");
 }
 
-// History
+// History - FIX for issue #7
 function loadHistory() {
   const saved = localStorage.getItem("promptHistory");
   if (saved) {
@@ -990,6 +1005,7 @@ function loadHistory() {
   } else {
     historyItems = [];
   }
+  console.log("History loaded:", historyItems.length);
   renderHistory();
 }
 
@@ -1049,6 +1065,12 @@ function renderHistory() {
         setCurrentPreset(autoPreset);
       }
       updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
+      
+      // Show preset info
+      const presetInfoEl = document.getElementById("presetInfo");
+      if (presetInfoEl) {
+        presetInfoEl.style.display = "inline-flex";
+      }
     });
     list.appendChild(div);
   });
@@ -1068,6 +1090,12 @@ function initializeUI() {
   if (templatesPanel) templatesPanel.style.display = "none";
   const historyPanel = document.getElementById("historyPanel");
   if (historyPanel) historyPanel.style.display = "none";
+  
+  // Hide preset info initially - FIX for issue #2
+  const presetInfoEl = document.getElementById("presetInfo");
+  if (presetInfoEl) {
+    presetInfoEl.style.display = "none";
+  }
 }
 
 // Event Listeners
@@ -1159,6 +1187,12 @@ function setupEventListeners() {
       lastPresetSource = "manual";
       setCurrentPreset(presetId);
 
+      // Show preset info when manually selected - FIX for issue #2
+      const presetInfoEl = document.getElementById("presetInfo");
+      if (presetInfoEl) {
+        presetInfoEl.style.display = "inline-flex";
+      }
+
       if (isConverted) {
         const requirement = document.getElementById("requirement")?.value.trim();
         if (!requirement) return;
@@ -1210,11 +1244,50 @@ function setupEventListeners() {
     ?.addEventListener("click", generatePrompt);
 
   /* ===============================
-     CLEAR INPUT BUTTON (UNDO/REDO)
+     CLEAR INPUT BUTTON (UNDO/REDO) - FIXED for issue #4
   =============================== */
   const clearBtn = document.getElementById("clearInputBtn");
   if (clearBtn) {
-    clearBtn.addEventListener("click", toggleClearUndo);
+    clearBtn.addEventListener("click", function() {
+      const requirementEl = document.getElementById("requirement");
+      if (!requirementEl) return;
+      
+      if (isUndoState) {
+        // UNDO: Restore text
+        requirementEl.value = lastClearedText;
+        lastClearedText = "";
+        isUndoState = false;
+        
+        // Update button to CLEAR state
+        this.classList.remove("undo-state");
+        this.querySelector('i').className = "fas fa-broom";
+        this.title = "Clear text";
+        
+        showNotification("Text restored");
+      } else {
+        // CLEAR: Save and clear text
+        const currentText = requirementEl.value;
+        if (!currentText.trim()) {
+          showNotification("Nothing to clear");
+          return;
+        }
+        
+        lastClearedText = currentText;
+        requirementEl.value = "";
+        requirementEl.focus();
+        isUndoState = true;
+        
+        // Update button to UNDO state
+        this.classList.add("undo-state");
+        this.querySelector('i').className = "fas fa-undo";
+        this.title = "Undo clear";
+        
+        showNotification("Text cleared. Click again to restore.");
+      }
+      
+      // Trigger input event
+      requirementEl.dispatchEvent(new Event("input"));
+    });
   }
 
   /* ===============================
@@ -1256,60 +1329,57 @@ function setupEventListeners() {
     ?.addEventListener("click", exportPrompt);
 
   /* ===============================
-     SIDEBAR TOGGLE
+     TEMPLATE TOGGLE - FIX for issue #7
   =============================== */
-  document.getElementById("toggleSidebar")?.addEventListener("click", () => {
-    const sidebar = document.getElementById("sidebar");
-    const mainContent = document.getElementById("mainContent");
-    const toggleBtn = document.getElementById("toggleSidebar");
-    
-    if (sidebar && mainContent && toggleBtn) {
-      sidebar.classList.toggle("collapsed");
-      mainContent.classList.toggle("sidebar-collapsed");
+  const toggleTemplatesBtn = document.getElementById("toggleTemplatesBtn");
+  const templatesPanel = document.getElementById("templatesPanel");
+  
+  if (toggleTemplatesBtn && templatesPanel) {
+    toggleTemplatesBtn.addEventListener("click", function() {
+      const isHidden = templatesPanel.style.display === "none" || templatesPanel.style.display === "";
       
-      // Update toggle button icon
-      const icon = toggleBtn.querySelector("i");
+      templatesPanel.style.display = isHidden ? "block" : "none";
+      
+      // Toggle icon
+      const icon = this.querySelector(".fa-chevron-down");
       if (icon) {
-        if (sidebar.classList.contains("collapsed")) {
-          icon.className = "fas fa-chevron-right";
-        } else {
-          icon.className = "fas fa-chevron-left";
-        }
+        icon.className = isHidden ? "fas fa-chevron-up" : "fas fa-chevron-down";
       }
-    }
-  });
-
-  /* ===============================
-     SIDEBAR TABS
-  =============================== */
-  document.querySelectorAll(".sidebar-tab").forEach((tab) => {
-    tab.addEventListener("click", (e) => {
-      const tabId = e.currentTarget.dataset.tab;
-      if (!tabId) return;
       
-      // Update active tab
-      document.querySelectorAll(".sidebar-tab").forEach((t) => {
-        t.classList.remove("active");
-      });
-      e.currentTarget.classList.add("active");
+      // Toggle eye icon
+      const eyeIcon = this.querySelector(".template-toggle-eye i");
+      if (eyeIcon) {
+        eyeIcon.className = isHidden ? "fas fa-eye-slash" : "fas fa-eye";
+      }
       
-      // Show corresponding panel
-      document.querySelectorAll(".sidebar-panel").forEach((panel) => {
-        panel.style.display = "none";
-      });
-      
-      const targetPanel = document.getElementById(`${tabId}Panel`);
-      if (targetPanel) {
-        targetPanel.style.display = "block";
-        
-        // Load templates if needed
-        if (tabId === "templates") {
-          loadCategories();
-          loadTemplatesToUI();
-        }
+      // Load templates if showing
+      if (isHidden) {
+        loadCategories();
+        loadTemplatesToUI();
       }
     });
-  });
+  }
+
+  /* ===============================
+     HISTORY TOGGLE - FIX for issue #7
+  =============================== */
+  const toggleHistoryBtn = document.getElementById("toggleHistoryBtn");
+  const historyPanel = document.getElementById("historyPanel");
+  
+  if (toggleHistoryBtn && historyPanel) {
+    toggleHistoryBtn.addEventListener("click", function() {
+      const isHidden = historyPanel.style.display === "none" || historyPanel.style.display === "";
+      
+      historyPanel.style.display = isHidden ? "block" : "none";
+      
+      // Toggle button text
+      if (isHidden) {
+        this.innerHTML = '<i class="fas fa-times"></i> Close History';
+      } else {
+        this.innerHTML = '<i class="fas fa-history"></i> History';
+      }
+    });
+  }
 
   /* ===============================
      TEMPLATE MODAL
@@ -1423,6 +1493,12 @@ function convertToPrompt() {
     setCurrentPreset(autoPreset);
   }
   
+  // Show preset info - FIX for issue #2
+  const presetInfoEl = document.getElementById("presetInfo");
+  if (presetInfoEl) {
+    presetInfoEl.style.display = "inline-flex";
+  }
+  
   // Generate prompt using current preset
   const prompt = PRESETS[currentPreset](lastRole, requirement);
   
@@ -1464,6 +1540,7 @@ function handleRequirementInput() {
       clearBtn.classList.remove("undo-state");
       clearBtn.querySelector('i').className = "fas fa-broom";
       clearBtn.title = "Clear text";
+      isUndoState = false;
     }
     
     // Clear intent chips
@@ -1474,22 +1551,17 @@ function handleRequirementInput() {
       window.AIToolRanker.resetToDefault();
     }
     
+    // Hide preset info when no text - FIX for issue #2
+    const presetInfoEl = document.getElementById("presetInfo");
+    if (presetInfoEl) {
+      presetInfoEl.style.display = "none";
+    }
+    
     return;
   }
   
   // Enable convert button
   convertBtn.disabled = false;
-  
-  // Update clear/undo button state
-  if (clearBtn && isConverted && requirement === lastConvertedText) {
-    clearBtn.classList.add("undo-state");
-    clearBtn.querySelector('i').className = "fas fa-undo";
-    clearBtn.title = "Undo to original";
-  } else {
-    clearBtn.classList.remove("undo-state");
-    clearBtn.querySelector('i').className = "fas fa-broom";
-    clearBtn.title = "Clear text";
-  }
   
   // Auto-detect intent (for chip display)
   const intent = detectIntentFromText(requirement);
@@ -1508,59 +1580,6 @@ function handleRequirementInput() {
   if (window.AIToolRanker && intent) {
     window.AIToolRanker.rankAndReorder(intent);
   }
-}
-
-/* ===============================
-   TOGGLE CLEAR/UNDO FUNCTION
-=============================== */
-function toggleClearUndo() {
-  const requirementEl = document.getElementById("requirement");
-  const clearBtn = document.getElementById("clearInputBtn");
-  
-  if (!requirementEl || !clearBtn) return;
-  
-  if (isUndoState) {
-    // Redo: restore last cleared text
-    requirementEl.value = lastClearedText;
-    requirementEl.focus();
-    lastClearedText = "";
-    isUndoState = false;
-    
-    // Update button
-    clearBtn.classList.remove("undo-state");
-    clearBtn.querySelector('i').className = "fas fa-broom";
-    clearBtn.title = "Clear text";
-    
-    showNotification("Text restored");
-  } else {
-    // Clear: save current text
-    const currentText = requirementEl.value;
-    if (!currentText.trim()) {
-      showNotification("Nothing to clear");
-      return;
-    }
-    
-    lastClearedText = currentText;
-    requirementEl.value = "";
-    requirementEl.focus();
-    isUndoState = true;
-    
-    // Update button
-    clearBtn.classList.add("undo-state");
-    clearBtn.querySelector('i').className = "fas fa-redo";
-    clearBtn.title = "Redo cleared text";
-    
-    // Disable convert button
-    document.getElementById("convertBtn").disabled = true;
-    
-    // Clear intent chips
-    renderIntentChips([]);
-    
-    showNotification("Text cleared. Click again to restore.");
-  }
-  
-  // Trigger input event to update other UI
-  requirementEl.dispatchEvent(new Event("input"));
 }
 
 /* ===============================
@@ -1700,7 +1719,7 @@ function detectIntentFromText(text) {
     format: "free",
     depth: "normal",
     constraints: [],
-    taskType: "general" // ADDED: For AI tool ranking
+    taskType: "general"
   };
   
   // Detect task type for AI tool ranking
@@ -1884,6 +1903,12 @@ async function generatePrompt() {
       currentPreset,
       userPresetLocked ? "manual" : "auto"
     );
+  }
+
+  // Show preset info - FIX for issue #2
+  const presetInfoEl = document.getElementById("presetInfo");
+  if (presetInfoEl) {
+    presetInfoEl.style.display = "inline-flex";
   }
 
   usageCount++;
@@ -2153,16 +2178,16 @@ function showNotification(message) {
       
       // 1. Task type matching (highest weight)
       if (tool.strengths.includes(intent.taskType)) {
-        score += 10; // High weight for exact match
+        score += 10;
       } else if (tool.strengths.some(strength => 
         strength.includes(intent.taskType) || intent.taskType.includes(strength)
       )) {
-        score += 7; // Medium weight for partial match
+        score += 7;
       }
       
       // 2. Penalize for weaknesses
       if (tool.weaknesses.includes(intent.taskType)) {
-        score -= 8; // Heavy penalty for wrong tool
+        score -= 8;
       }
       
       // 3. Tone matching
@@ -2170,9 +2195,9 @@ function showNotification(message) {
         if (tool.tone.includes(intent.tone)) {
           score += 3;
         } else if (intent.tone === "humorous" && toolKey === "grok") {
-          score += 5; // Extra for humor
+          score += 5;
         } else if (intent.tone === "technical" && (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini")) {
-          score += 4; // Extra for technical
+          score += 4;
         }
       }
       
@@ -2233,10 +2258,6 @@ function showNotification(message) {
       scores[toolKey] = score;
     });
     
-    // DEBUG: Log scores for testing
-    console.log("AI Tool Scores:", scores);
-    console.log("Detected Intent:", intent);
-    
     // Sort by score descending
     return Object.entries(scores)
       .sort((a, b) => b[1] - a[1])
@@ -2244,7 +2265,7 @@ function showNotification(message) {
   }
 
   /* ------------------------------------------
-     Reorder Card-3 Buttons & Add Best Match Tag
+     Reorder Card-3 Buttons & Add Best Match Tag - FIX for issue #6
   ------------------------------------------ */
 
   function reorderLaunchButtons(toolOrder) {
@@ -2255,25 +2276,30 @@ function showNotification(message) {
     const buttons = Array.from(container.querySelectorAll(".launch-btn"));
     if (!buttons.length) return;
     
-    // Clear existing best-match tags
+    // Clear existing best-match tags and inline explanations
     buttons.forEach(btn => {
       btn.classList.remove("best-match");
       const existingTag = btn.querySelector(".best-match-tag");
       if (existingTag) existingTag.remove();
+      
+      // Remove inline explanation if exists
+      const existingExplanation = btn.querySelector(".inline-explanation");
+      if (existingExplanation) existingExplanation.remove();
     });
+    
+    // Hide the old explanation panel
+    const oldExplanation = document.getElementById("ai-ranking-explanation");
+    if (oldExplanation) {
+      oldExplanation.style.display = "none";
+    }
     
     // Store original order for reference
     const originalOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
     
     // If all scores are 0 or equal, keep original order
-    const allZero = toolOrder.every((tool, i) => {
-      const originalIndex = originalOrder.indexOf(tool);
-      return originalIndex === i;
-    });
-    
-    if (allZero) {
-      console.log("All scores equal or zero, keeping original order");
-      return;
+    const allSame = toolOrder.every((tool, i) => originalOrder[i] === tool);
+    if (allSame && toolOrder[0] === "chatgpt") {
+      return; // Keep ChatGPT first if nothing specific
     }
     
     // Reorder buttons based on ranking
@@ -2283,19 +2309,6 @@ function showNotification(message) {
       
       // Move to correct position
       container.appendChild(btn);
-      
-      // Mark first one as "Best Match" if it's not ChatGPT by default
-      if (index === 0 && toolKey !== "chatgpt") {
-        btn.classList.add("best-match");
-        
-        // Add Best Match tag if not already present
-        if (!btn.querySelector(".best-match-tag")) {
-          const tag = document.createElement("span");
-          tag.className = "best-match-tag";
-          tag.textContent = "Best Match";
-          btn.appendChild(tag);
-        }
-      }
     });
   }
 
@@ -2315,6 +2328,10 @@ function showNotification(message) {
       btn.classList.remove("best-match");
       const existingTag = btn.querySelector(".best-match-tag");
       if (existingTag) existingTag.remove();
+      
+      // Remove inline explanation
+      const existingExplanation = btn.querySelector(".inline-explanation");
+      if (existingExplanation) existingExplanation.remove();
     });
     
     // Reorder to default
@@ -2329,23 +2346,29 @@ function showNotification(message) {
   }
 
   /* ------------------------------------------
-     Update Explanation in Card 3
+     Update Explanation - FIX for issue #6 (inline near the tool)
   ------------------------------------------ */
 
   function updateRankingExplanation(intent, topTool) {
-    const explanationEl = document.getElementById("ai-ranking-explanation");
-    const reasonsEl = document.getElementById("ai-ranking-reasons");
+    if (!intent || !topTool) return;
     
-    if (!explanationEl || !reasonsEl) return;
-    
-    const reasons = [];
     const topToolName = AI_TOOL_PROFILES[topTool]?.name || topTool;
     
     // Only show explanation if it's not ChatGPT (default)
     if (topTool === "chatgpt" && (!intent.taskType || intent.taskType === "general")) {
-      explanationEl.style.display = "none";
       return;
     }
+    
+    // Get the top tool button
+    const topToolBtn = document.getElementById(`${topTool}Btn`);
+    if (!topToolBtn) return;
+    
+    // Clear any existing explanation on this button
+    const existingExplanation = topToolBtn.querySelector(".inline-explanation");
+    if (existingExplanation) existingExplanation.remove();
+    
+    // Create reasons
+    const reasons = [];
     
     if (intent.taskType && intent.taskType !== "general") {
       reasons.push(`${intent.taskType} tasks`);
@@ -2355,20 +2378,33 @@ function showNotification(message) {
       reasons.push(`${intent.tone} tone`);
     }
     
-    if (intent.format && intent.format !== "free") {
-      reasons.push(`${intent.format} format`);
-    }
-    
     if (intent.constraints && intent.constraints.length > 0) {
-      reasons.push(intent.constraints.join(", "));
+      // Filter out duplicates
+      const uniqueConstraints = [...new Set(intent.constraints)];
+      reasons.push(...uniqueConstraints);
     }
     
     if (reasons.length > 0) {
-      reasonsEl.textContent = `${topToolName} best matches: ${reasons.join(", ")}`;
-      explanationEl.classList.remove("hidden");
-      explanationEl.style.display = "block";
-    } else {
-      explanationEl.style.display = "none";
+      // Create inline explanation element
+      const explanation = document.createElement("div");
+      explanation.className = "inline-explanation";
+      explanation.innerHTML = `
+        <div class="explanation-content">
+          <i class="fas fa-info-circle"></i>
+          <span>Best for: ${reasons.slice(0, 3).join(", ")}${reasons.length > 3 ? "..." : ""}</span>
+        </div>
+      `;
+      
+      // Add to the top tool button
+      topToolBtn.appendChild(explanation);
+      
+      // Add best match tag
+      topToolBtn.classList.add("best-match");
+      
+      const bestMatchTag = document.createElement("span");
+      bestMatchTag.className = "best-match-tag";
+      bestMatchTag.textContent = "Best Match";
+      topToolBtn.appendChild(bestMatchTag);
     }
   }
 
@@ -2416,6 +2452,9 @@ window.useTemplate = function (id) {
     document.getElementById("convertedBadge").style.display = "inline-flex";
     setLaunchButtonsEnabled(true);
     showNotification("Template loaded into prompt");
+    
+    // Load categories for template library
+    loadCategories();
   }
 };
 window.editTemplate = editTemplate;
