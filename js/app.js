@@ -88,7 +88,12 @@ let countdownInterval;
 let editingTemplateId = null;
 let templates = [];
 let historyItems = [];
-
+// ====================== SECURITY FIX ======================
+// Immediately clear any saved API key when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  localStorage.removeItem("OPENAI_API_KEY");
+});
+// ==========================================================
 // Clear/Undo button state
 let lastClearedText = "";
 let isUndoState = false;
@@ -786,16 +791,18 @@ function performResetEverything() {
 
 // Settings
 function loadSettings() {
-  const apiKey = localStorage.getItem("OPENAI_API_KEY") || "";
+  // ================= SECURITY FIX =================
+  // Delete any saved API key from localStorage
+  localStorage.removeItem("OPENAI_API_KEY");
+  // ================================================
+  
   const delay = localStorage.getItem("autoConvertDelay") || "60";
   const voiceLang = localStorage.getItem("voiceLanguage") || "en-US";
 
-  const apiKeyInput = document.getElementById("apiKeyInput");
   const autoDelayInput = document.getElementById("autoConvertDelay");
   const voiceLanguageSelect = document.getElementById("voiceLanguage");
   const delayValue = document.getElementById("delayValue");
 
-  if (apiKeyInput) apiKeyInput.value = apiKey;
   if (autoDelayInput) autoDelayInput.value = delay;
   if (voiceLanguageSelect) voiceLanguageSelect.value = voiceLang;
   if (delayValue) delayValue.textContent = `Current: ${delay} seconds`;
