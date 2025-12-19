@@ -2454,7 +2454,7 @@ function showNotification(message) {
           tooltip.innerHTML = `
             <div class="tooltip-header">
               <strong>${toolProfile.name}</strong>
-               <span class="tooltip-match">${toolProfile.score > 0 ? `Score: ${toolProfile.score}` : ''}</span>
+               <span class="tooltip-match">${toolProfile.score > 0 ? `Match Score: ${toolProfile.score}/50` : ''}</span>
             </div>
             <div class="tooltip-body">${toolProfile.tooltip}</div>
             ${toolProfile.matchReason ? `<div class="tooltip-reason"><i class="fas fa-bullseye"></i> ${toolProfile.matchReason}</div>` : ''}
