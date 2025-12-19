@@ -1329,9 +1329,9 @@ function handleRequirementInput() {
   const requirementEl = document.getElementById("requirement");
   const text = requirementEl.value;
 
-  /* --------------------------------
-     Reset converted state
-  -------------------------------- */
+  /* ----------------------------------
+     Reset converted state on typing
+  ---------------------------------- */
   if (isConverted && text !== lastConvertedText) {
     document.getElementById("output").value = "";
     isConverted = false;
@@ -1344,21 +1344,21 @@ function handleRequirementInput() {
   document.getElementById("convertBtn").disabled = !text.trim();
   setLaunchButtonsEnabled(false);
 
-  /* --------------------------------
+  /* ----------------------------------
      Auto-convert timer
-  -------------------------------- */
+  ---------------------------------- */
   if (autoConvertEnabled) {
     resetAutoConvertTimer();
   }
 
-  /* --------------------------------
-     Stats update
-  -------------------------------- */
+  /* ----------------------------------
+     Update stats
+  ---------------------------------- */
   updateStats(text);
 
-  /* --------------------------------
-     INTENT DETECTION (single source)
-  -------------------------------- */
+  /* ======================================================
+     🔍 INTENT DETECTION + CHIP RENDERING (Card 1)
+  ====================================================== */
   let intent = null;
 
   if (!text.trim()) {
@@ -1372,47 +1372,14 @@ function handleRequirementInput() {
     renderIntentChips(chips);
   }
 
-  /* --------------------------------
-     AI TOOL RANKING (Card 3)
-  -------------------------------- */
+  /* ======================================================
+     🧠 AI TOOL RANKING (Card 3)
+     Best match first, rest descending
+  ====================================================== */
   if (window.AIToolRanker && intent) {
-    window.AIToolRanker.apply(intent);
+    window.AIToolRanker.rankAndReorder(intent);
   }
 }
-function resetAutoConvertTimer() {
-  clearAutoConvertTimer();
-
-  const requirement = document.getElementById("requirement").value.trim();
-  if (autoConvertEnabled && requirement && !isConverted) {
-    autoConvertCountdown = autoConvertDelay;
-    const timerValue = document.getElementById("timerValue");
-    const timerDisplay = document.getElementById("timerDisplay");
-    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-    if (timerDisplay) timerDisplay.style.display = "inline-flex";
-
-    countdownInterval = setInterval(() => {
-      autoConvertCountdown--;
-      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-
-      if (autoConvertCountdown <= 0) {
-        clearInterval(countdownInterval);
-        if (timerDisplay) timerDisplay.style.display = "none";
-        if (requirement && requirement !== lastConvertedText) {
-          generatePrompt();
-        }
-      }
-    }, 1000);
-
-    autoConvertTimer = setTimeout(() => {
-      const currentRequirement =
-        document.getElementById("requirement").value.trim();
-      if (currentRequirement && currentRequirement !== lastConvertedText) {
-        generatePrompt();
-      }
-    }, autoConvertDelay * 1000);
-  }
-}
-
 function clearAutoConvertTimer() {
   clearTimeout(autoConvertTimer);
   clearInterval(countdownInterval);
