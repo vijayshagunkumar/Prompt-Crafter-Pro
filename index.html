@@ -9,7 +9,7 @@
 
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- Favicon -->
@@ -22,234 +22,178 @@
 </head>
 
 <body>
-  <div class="scan-line"></div>
+<div class="scan-line"></div>
 
-  <div class="page">
+<div class="page">
 
-    <!-- HERO -->
-    <header class="hero">
-      <div class="hero-top">
-        <div class="hero-brand">
-          <div class="hero-logo">
-            <div class="logo-text">PromptCraft</div>
-          </div>
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <div class="hero-top">
+      <div class="hero-brand">
+        <div class="hero-logo">ptC</div>
+        <div>
+          <h1 class="hero-title">
+            Master the Art of <span>Prompt Engineering</span>
+          </h1>
+          <p class="hero-subtitle">
+            Turn rough ideas into optimized, ready-to-run prompts for AI tools.
+          </p>
+        </div>
+      </div>
 
-          <div class="hero-title-block">
-            <h1 class="hero-title">
-              Master the Art of <span>Prompt Engineering</span>
-            </h1>
-            <p class="hero-subtitle">
-              Turn rough ideas into optimized, ready-to-run prompts for AI tools.
-            </p>
+      <button class="settings-btn" id="settingsBtn">
+        <i class="fas fa-cog"></i> Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN ================= -->
+  <main class="workflow">
+    <div class="cards-grid">
+
+      <!-- ========== STEP 1 : YOUR IDEA ========== -->
+      <section class="step-card">
+        <div class="step-header">
+          <div class="step-pill">1</div>
+          <div>
+            <h2>YOUR IDEA</h2>
+            <p class="step-subtitle">Describe what you want the AI to do</p>
           </div>
         </div>
 
-        <button class="settings-btn" id="settingsBtn">
-          <i class="fas fa-cog"></i>
-          Settings
-        </button>
-      </div>
-    </header>
+        <!-- Intent chips -->
+        <div id="intentRow" class="intent-row" style="display:none;">
+          <div id="intentScroll" class="intent-scroll"></div>
+        </div>
 
-    <!-- MAIN WORKFLOW -->
-    <main class="workflow">
-      <div class="cards-grid">
+        <textarea
+          id="requirement"
+          class="textarea"
+          placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."
+        ></textarea>
 
-        <!-- =========================
-             STEP 1 – YOUR IDEA
-        ========================== -->
-        <section class="step-card">
-          <div class="step-header">
-            <div class="step-pill">1</div>
-            <div class="step-header-main">
-              <h2>Your Idea</h2>
-              <p class="step-subtitle">
-                Describe what you want the AI to do
-              </p>
+        <div class="stats-row">
+          <span id="charCount">0 characters</span>
+          <span id="wordCount">0 words</span>
+          <span id="lineCount">1 line</span>
+        </div>
+
+        <div class="card-actions">
+          <button id="convertBtn" class="btn-primary" disabled>
+            <i class="fas fa-magic"></i> Convert
+          </button>
+
+          <button id="clearInputBtn" class="btn-ghost">
+            <i class="fas fa-broom"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========== STEP 2 : STRUCTURED PROMPT ========== -->
+      <section class="step-card">
+        <div class="step-header">
+          <div class="step-pill">2</div>
+          <div>
+            <h2>STRUCTURED PROMPT</h2>
+            <p class="step-subtitle">Optimized, ready-to-run prompt</p>
+          </div>
+        </div>
+
+        <textarea
+          id="output"
+          class="textarea"
+          placeholder="Your structured prompt will appear here..."
+          readonly
+        ></textarea>
+
+        <div class="stats-row">
+          <span id="outputCharCount">0 characters</span>
+          <span id="outputWordCount">0 words</span>
+          <span id="outputLineCount">1 line</span>
+        </div>
+
+        <div class="card-actions">
+          <button id="exportBtn" class="btn-ghost">
+            <i class="fas fa-download"></i> Export
+          </button>
+
+          <span id="convertedBadge" class="converted-badge" style="display:none;">
+            Converted
+          </span>
+        </div>
+      </section>
+
+      <!-- ========== STEP 3 : LAUNCH ========== -->
+      <section class="step-card">
+        <div class="step-header">
+          <div class="step-pill">3</div>
+          <div>
+            <h2>LAUNCH</h2>
+            <div class="launch-hint">
+              <i class="fas fa-info-circle"></i>
+              Choose your AI tool – Prompt is copied automatically
             </div>
           </div>
+        </div>
 
-          <!-- Intent chips row -->
-          <div id="intentRow" class="intent-row" style="display:none;">
-            <div id="intentScroll" class="intent-scroll"></div>
-          </div>
+        <div class="launch-list">
+          <button class="launch-btn" id="chatgptBtn" disabled>
+            <span>ChatGPT</span><small>chat.openai.com</small>
+          </button>
 
-          <!-- Requirement textarea -->
-          <textarea
-            id="requirement"
-            class="textarea textarea-idea"
-            placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."
-          ></textarea>
+          <button class="launch-btn" id="claudeBtn" disabled>
+            <span>Claude</span><small>claude.ai</small>
+          </button>
 
-          <!-- Stats -->
-          <div class="stats-row">
-            <span id="charCount">0 characters</span>
-            <span class="dot">•</span>
-            <span id="wordCount">0 words</span>
-            <span class="dot">•</span>
-            <span id="lineCount">1 line</span>
-          </div>
+          <button class="launch-btn" id="geminiBtn" disabled>
+            <span>Gemini</span><small>gemini.google.com</small>
+          </button>
 
-          <!-- Controls -->
-          <div class="card-actions">
-            <button id="convertBtn" class="primary-btn" disabled>
-              <i class="fas fa-magic"></i> Convert
-            </button>
+          <button class="launch-btn" id="perplexityBtn" disabled>
+            <span>Perplexity</span><small>perplexity.ai</small>
+          </button>
 
-            <button id="clearInputBtn" class="ghost-btn" title="Clear text">
-              <i class="fas fa-broom"></i>
-            </button>
-          </div>
-        </section>
+          <button class="launch-btn" id="deepseekBtn" disabled>
+            <span>DeepSeek</span><small>chat.deepseek.com</small>
+          </button>
 
-        <!-- =========================
-             STEP 2 – STRUCTURED PROMPT
-        ========================== -->
-        <section class="step-card">
-          <div class="step-header">
-            <div class="step-pill">2</div>
-            <div class="step-header-main">
-              <h2>Structured Prompt</h2>
-              <p class="step-subtitle">
-                Optimized, ready-to-run prompt
-              </p>
-            </div>
-          </div>
+          <button class="launch-btn" id="copilotBtn" disabled>
+            <span>Copilot</span><small>copilot.microsoft.com</small>
+          </button>
 
-          <textarea
-            id="output"
-            class="textarea textarea-output"
-            placeholder="Your structured prompt will appear here..."
-          ></textarea>
+          <button class="launch-btn" id="grokBtn" disabled>
+            <span>Grok</span><small>x.ai</small>
+          </button>
+        </div>
 
-          <!-- Output stats -->
-          <div class="stats-row">
-            <span id="outputCharCount">0 characters</span>
-            <span class="dot">•</span>
-            <span id="outputWordCount">0 words</span>
-            <span class="dot">•</span>
-            <span id="outputLineCount">1 line</span>
-          </div>
+        <!-- Ranking explanation -->
+        <div id="ai-ranking-explanation" class="ai-ranking-explanation hidden">
+          <strong>Why this ranking?</strong>
+          <span id="ai-ranking-reasons"></span>
+        </div>
+      </section>
 
-          <div class="card-actions">
-            <span id="convertedBadge" class="converted-badge" style="display:none;">
-              <i class="fas fa-check"></i> Converted
-            </span>
+    </div>
+  </main>
 
-            <button id="exportBtn" class="ghost-btn">
-              <i class="fas fa-download"></i> Export
-            </button>
-          </div>
-        </section>
+  <!-- ================= FOOTER ================= -->
+  <footer class="footer">
+    <div>
+      Uses structured, role-based prompt patterns • v3.1 • AI App Powered by RUPS
+    </div>
+    <div id="usageCount">
+      <i class="fas fa-bolt"></i> 0 prompts generated
+    </div>
+  </footer>
 
-        <!-- =========================
-             STEP 3 – LAUNCH
-        ========================== -->
-        <section class="step-card">
-          <div class="step-header">
-            <div class="step-pill">3</div>
-            <div class="step-header-main">
-              <div>
-                <h2>Launch</h2>
-                <div class="launch-hint">
-                  <i class="fas fa-info-circle"></i>
-                  Choose your AI tool — prompt is copied automatically
-                </div>
-              </div>
-            </div>
-          </div>
+</div>
 
-          <div class="launch-list">
-            <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
-              <div class="launch-icon"><i class="fa-brands fa-openai"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">ChatGPT</span>
-                <span class="launch-sub">chat.openai.com</span>
-              </div>
-            </button>
+<!-- ================= SCRIPTS ================= -->
+<script src="js/theme.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/intent.js"></script>
+<script src="js/ai-tool-ranker.js"></script>
+<script src="js/app.js"></script>
 
-            <button class="launch-btn launch-claude" id="claudeBtn" disabled>
-              <div class="launch-icon"><i class="fas fa-robot"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">Claude</span>
-                <span class="launch-sub">claude.ai</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
-              <div class="launch-icon"><i class="fa-brands fa-google"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">Gemini</span>
-                <span class="launch-sub">gemini.google.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
-              <div class="launch-icon"><i class="fas fa-compass"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">Perplexity</span>
-                <span class="launch-sub">perplexity.ai</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
-              <div class="launch-icon"><i class="fas fa-brain"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">DeepSeek</span>
-                <span class="launch-sub">chat.deepseek.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
-              <div class="launch-icon"><i class="fa-brands fa-microsoft"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">Copilot</span>
-                <span class="launch-sub">copilot.microsoft.com</span>
-              </div>
-            </button>
-
-            <button class="launch-btn launch-grok" id="grokBtn" disabled>
-              <div class="launch-icon"><i class="fas fa-bolt"></i></div>
-              <div class="launch-text">
-                <span class="launch-name">Grok</span>
-                <span class="launch-sub">x.ai</span>
-              </div>
-            </button>
-          </div>
-
-          <!-- Ranking explanation -->
-          <div id="ai-ranking-explanation" class="ai-ranking-explanation hidden">
-            <strong>Why this ranking?</strong>
-            <span id="ai-ranking-reasons"></span>
-          </div>
-        </section>
-
-      </div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-      <div class="footer-left">
-        <span><i class="fas fa-brain"></i> Uses structured, role-based prompt patterns</span>
-        <span class="dot">•</span>
-        <span>v3.1</span>
-        <span class="dot">•</span>
-        <span>AI App Powered by RUPS</span>
-      </div>
-
-      <div class="footer-right">
-        <span id="usageCount"><i class="fas fa-bolt"></i> 0 prompts generated</span>
-        <span class="dot">•</span>
-        <span><i class="fas fa-shield-alt"></i> Your data stays in your browser</span>
-      </div>
-    </footer>
-  </div>
-
-  <!-- SCRIPTS -->
-  <script src="js/theme.js"></script>
-  <script src="js/voice.js"></script>
-  <script src="js/intent.js"></script>
-  <script src="js/ai-tool-ranker.js"></script>
-  <script src="js/app.js"></script>
 </body>
 </html>
