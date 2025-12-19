@@ -1358,6 +1358,10 @@ if (!text.trim()) {
   renderIntentChips(chips);
 }
 
+// 🔥 Card-3 AI tool ranking (delegated)
+if (window.AIToolRanker && intent) {
+  window.AIToolRanker.rankAndReorder(intent);
+}
 
 }
 
