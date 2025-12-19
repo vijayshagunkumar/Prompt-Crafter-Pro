@@ -1699,8 +1699,33 @@ function detectIntentFromText(text) {
     audience: "general",
     format: "free",
     depth: "normal",
-    constraints: []
+    constraints: [],
+    taskType: "general" // ADDED: For AI tool ranking
   };
+  
+  // Detect task type for AI tool ranking
+  if (/code|program|script|python|javascript|java|c#|sql|api|function|debug|algorithm/i.test(lower)) {
+    intent.taskType = "code";
+    intent.constraints.push("code");
+  } else if (/email|mail|send.*to|message.*to|follow[- ]up/i.test(lower)) {
+    intent.taskType = "email";
+    intent.constraints.push("email");
+  } else if (/research|analyze|analysis|report|data|statistics|metrics/i.test(lower)) {
+    intent.taskType = "research";
+    intent.constraints.push("research");
+  } else if (/business|strategy|plan|proposal|pitch|market|growth/i.test(lower)) {
+    intent.taskType = "business";
+    intent.constraints.push("business");
+  } else if (/creative|story|poem|fiction|imaginative|artistic/i.test(lower)) {
+    intent.taskType = "creative";
+    intent.constraints.push("creative");
+  } else if (/explain|teach|tutorial|guide|lesson|education|learn/i.test(lower)) {
+    intent.taskType = "education";
+    intent.constraints.push("education");
+  } else if (/write|article|blog|content|copy|post|caption/i.test(lower)) {
+    intent.taskType = "writing";
+    intent.constraints.push("writing");
+  }
   
   // Detect persona
   if (/as a |i am a |i'm a /i.test(lower)) {
@@ -2029,117 +2054,94 @@ function showNotification(message) {
 }
 
 // ======================================================
-// AI TOOL RANKING ENGINE (CARD 3) - INTEGRATED
+// FIXED AI TOOL RANKING ENGINE (CARD 3) - INTEGRATED
 // ======================================================
 
 (function () {
   /* ------------------------------------------
-     AI Tool Capability Matrix (UPDATED)
+     AI Tool Capability Matrix (FIXED)
   ------------------------------------------ */
 
   const AI_TOOL_PROFILES = {
     chatgpt: {
       name: "ChatGPT",
-      strengths: ["writing", "email", "education", "general", "analysis", "professional", "formal"],
-      tone: ["professional", "friendly", "formal", "authoritative"],
+      strengths: ["general", "writing", "email", "education", "analysis", "professional", "formal"],
+      weaknesses: ["code", "technical"],
+      tone: ["professional", "friendly", "formal", "authoritative", "casual"],
       format: ["free", "bullet points", "numbered list", "paragraph"],
       depth: ["normal", "detailed", "brief", "high-level"],
       audience: ["general", "beginners", "experts", "technical", "non-technical"],
-      bestFor: ["emails", "content writing", "analysis", "education"]
+      bestFor: ["emails", "content writing", "analysis", "education", "general tasks"]
     },
     claude: {
       name: "Claude",
-      strengths: ["writing", "analysis", "business", "detailed", "structured"],
+      strengths: ["writing", "analysis", "business", "detailed", "long-form"],
+      weaknesses: ["code", "creative"],
       tone: ["professional", "formal", "authoritative", "serious"],
       format: ["free", "paragraph", "structured"],
       depth: ["detailed", "normal"],
       audience: ["experts", "technical", "business"],
-      bestFor: ["long-form content", "analysis", "business documents"]
+      bestFor: ["long-form content", "analysis", "business documents", "detailed writing"]
     },
     gemini: {
       name: "Gemini",
-      strengths: ["research", "analysis", "education", "technical"],
+      strengths: ["research", "analysis", "education", "technical", "code"],
+      weaknesses: ["creative", "casual"],
       tone: ["professional", "technical"],
-      format: ["free", "structured"],
+      format: ["free", "structured", "code"],
       depth: ["detailed", "normal"],
       audience: ["technical", "experts", "beginners"],
-      bestFor: ["research", "technical analysis", "learning"]
+      bestFor: ["research", "technical analysis", "learning", "coding"]
     },
     perplexity: {
       name: "Perplexity",
-      strengths: ["research", "analysis", "brief", "concise"],
+      strengths: ["research", "analysis", "brief", "concise", "factual"],
+      weaknesses: ["creative", "long-form"],
       tone: ["professional", "casual"],
       format: ["free", "bullet points"],
       depth: ["brief", "high-level"],
       audience: ["general", "beginners"],
-      bestFor: ["quick research", "summaries", "facts"]
+      bestFor: ["quick research", "summaries", "facts", "web searches"]
     },
     deepseek: {
       name: "DeepSeek",
-      strengths: ["code", "technical", "structured"],
+      strengths: ["code", "technical", "structured", "mathematical"],
+      weaknesses: ["creative", "casual", "general"],
       tone: ["technical", "professional"],
       format: ["structured", "code"],
       depth: ["detailed", "normal"],
       audience: ["technical", "experts"],
-      bestFor: ["coding", "technical solutions", "APIs"]
+      bestFor: ["coding", "technical solutions", "APIs", "algorithms"]
     },
     copilot: {
       name: "Copilot",
-      strengths: ["code", "quick", "assistance"],
+      strengths: ["code", "quick", "assistance", "snippets"],
+      weaknesses: ["long-form", "creative", "analysis"],
       tone: ["technical", "casual"],
       format: ["code", "structured"],
       depth: ["normal", "brief"],
       audience: ["technical", "beginners"],
-      bestFor: ["quick code help", "snippets", "debugging"]
+      bestFor: ["quick code help", "snippets", "debugging", "code completion"]
     },
     grok: {
       name: "Grok",
-      strengths: ["creative", "general", "casual", "humorous"],
+      strengths: ["creative", "general", "casual", "humorous", "entertainment"],
+      weaknesses: ["professional", "technical", "serious"],
       tone: ["casual", "humorous", "friendly"],
       format: ["free", "paragraph"],
       depth: ["normal", "brief"],
       audience: ["general", "beginners"],
-      bestFor: ["creative writing", "casual chat", "entertainment"]
+      bestFor: ["creative writing", "casual chat", "entertainment", "humor"]
     }
   };
 
   /* ------------------------------------------
-     Detect Task Type from Intent
-  ------------------------------------------ */
-
-  function detectTaskTypeFromIntent(intent) {
-    if (!intent) return "general";
-    
-    // Check for specific keywords in constraints
-    if (intent.constraints && intent.constraints.length > 0) {
-      const constraints = intent.constraints.join(' ').toLowerCase();
-      if (constraints.includes('code') || constraints.includes('programming')) return "code";
-      if (constraints.includes('email')) return "email";
-      if (constraints.includes('research')) return "research";
-      if (constraints.includes('creative')) return "creative";
-      if (constraints.includes('business')) return "business";
-      if (constraints.includes('analysis')) return "analysis";
-    }
-    
-    // Check format preference
-    if (intent.format === "code" || intent.format === "structured") return "code";
-    if (intent.format === "bullet points" || intent.format === "numbered list") return "structured";
-    
-    // Check audience
-    if (intent.audience === "technical" || intent.audience === "experts") return "technical";
-    if (intent.audience === "beginners") return "education";
-    
-    return "general";
-  }
-
-  /* ------------------------------------------
-     Rank AI Tools (UPDATED)
+     FIXED: Score AI Tools Based on Intent
   ------------------------------------------ */
 
   function rankAITools(intent) {
-    if (!intent) return Object.keys(AI_TOOL_PROFILES);
+    if (!intent || !intent.taskType) return Object.keys(AI_TOOL_PROFILES);
     
-    const taskType = detectTaskTypeFromIntent(intent);
     const scores = {};
     
     // Initialize scores
@@ -2150,57 +2152,90 @@ function showNotification(message) {
       let score = 0;
       
       // 1. Task type matching (highest weight)
-      if (tool.strengths.some(strength => 
-        taskType.includes(strength) || strength.includes(taskType)
+      if (tool.strengths.includes(intent.taskType)) {
+        score += 10; // High weight for exact match
+      } else if (tool.strengths.some(strength => 
+        strength.includes(intent.taskType) || intent.taskType.includes(strength)
       )) {
-        score += 5;
+        score += 7; // Medium weight for partial match
       }
       
-      // 2. Tone matching
+      // 2. Penalize for weaknesses
+      if (tool.weaknesses.includes(intent.taskType)) {
+        score -= 8; // Heavy penalty for wrong tool
+      }
+      
+      // 3. Tone matching
       if (intent.tone && intent.tone !== "neutral") {
         if (tool.tone.includes(intent.tone)) {
           score += 3;
+        } else if (intent.tone === "humorous" && toolKey === "grok") {
+          score += 5; // Extra for humor
+        } else if (intent.tone === "technical" && (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini")) {
+          score += 4; // Extra for technical
         }
       }
       
-      // 3. Format matching
+      // 4. Format matching
       if (intent.format && intent.format !== "free") {
-        if (tool.format.includes(intent.format)) {
-          score += 3;
+        if (intent.format === "code" || intent.format === "structured") {
+          if (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini") {
+            score += 5;
+          }
+        } else if (tool.format.includes(intent.format)) {
+          score += 2;
         }
       }
       
-      // 4. Depth matching
+      // 5. Depth matching
       if (intent.depth && intent.depth !== "normal") {
-        if (tool.depth.includes(intent.depth)) {
+        if (intent.depth === "detailed" && (toolKey === "claude" || toolKey === "gemini")) {
+          score += 4;
+        } else if (intent.depth === "brief" && (toolKey === "perplexity" || toolKey === "copilot")) {
+          score += 3;
+        } else if (tool.depth.includes(intent.depth)) {
           score += 2;
         }
       }
       
-      // 5. Audience matching
+      // 6. Audience matching
       if (intent.audience && intent.audience !== "general") {
-        if (tool.audience.includes(intent.audience)) {
+        if (intent.audience === "technical" && (toolKey === "deepseek" || toolKey === "copilot" || toolKey === "gemini")) {
+          score += 4;
+        } else if (intent.audience === "beginners" && (toolKey === "chatgpt" || toolKey === "perplexity")) {
+          score += 3;
+        } else if (tool.audience.includes(intent.audience)) {
           score += 2;
         }
       }
       
-      // 6. Urgency matching (for faster tools)
-      if (intent.urgency === "high") {
-        // Perplexity and Copilot are generally faster
-        if (toolKey === "perplexity" || toolKey === "copilot") {
-          score += 1;
+      // 7. Specific constraints
+      if (intent.constraints && intent.constraints.length > 0) {
+        if (intent.constraints.includes("code")) {
+          if (toolKey === "deepseek") score += 8;
+          if (toolKey === "copilot") score += 7;
+          if (toolKey === "gemini") score += 6;
         }
-      }
-      
-      // 7. Emotion/creativity matching
-      if (intent.emotion === "creative" || intent.emotion === "excited") {
-        if (toolKey === "grok" || toolKey === "chatgpt") {
-          score += 2;
+        if (intent.constraints.includes("creative")) {
+          if (toolKey === "grok") score += 8;
+          if (toolKey === "chatgpt") score += 5;
+        }
+        if (intent.constraints.includes("research")) {
+          if (toolKey === "perplexity") score += 8;
+          if (toolKey === "gemini") score += 6;
+        }
+        if (intent.constraints.includes("business")) {
+          if (toolKey === "claude") score += 7;
+          if (toolKey === "chatgpt") score += 5;
         }
       }
       
       scores[toolKey] = score;
     });
+    
+    // DEBUG: Log scores for testing
+    console.log("AI Tool Scores:", scores);
+    console.log("Detected Intent:", intent);
     
     // Sort by score descending
     return Object.entries(scores)
@@ -2227,6 +2262,20 @@ function showNotification(message) {
       if (existingTag) existingTag.remove();
     });
     
+    // Store original order for reference
+    const originalOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
+    
+    // If all scores are 0 or equal, keep original order
+    const allZero = toolOrder.every((tool, i) => {
+      const originalIndex = originalOrder.indexOf(tool);
+      return originalIndex === i;
+    });
+    
+    if (allZero) {
+      console.log("All scores equal or zero, keeping original order");
+      return;
+    }
+    
     // Reorder buttons based on ranking
     toolOrder.forEach((toolKey, index) => {
       const btn = buttons.find(b => b.id === `${toolKey}Btn`);
@@ -2235,8 +2284,8 @@ function showNotification(message) {
       // Move to correct position
       container.appendChild(btn);
       
-      // Mark first one as "Best Match"
-      if (index === 0) {
+      // Mark first one as "Best Match" if it's not ChatGPT by default
+      if (index === 0 && toolKey !== "chatgpt") {
         btn.classList.add("best-match");
         
         // Add Best Match tag if not already present
@@ -2292,6 +2341,16 @@ function showNotification(message) {
     const reasons = [];
     const topToolName = AI_TOOL_PROFILES[topTool]?.name || topTool;
     
+    // Only show explanation if it's not ChatGPT (default)
+    if (topTool === "chatgpt" && (!intent.taskType || intent.taskType === "general")) {
+      explanationEl.style.display = "none";
+      return;
+    }
+    
+    if (intent.taskType && intent.taskType !== "general") {
+      reasons.push(`${intent.taskType} tasks`);
+    }
+    
     if (intent.tone && intent.tone !== "neutral") {
       reasons.push(`${intent.tone} tone`);
     }
@@ -2300,21 +2359,16 @@ function showNotification(message) {
       reasons.push(`${intent.format} format`);
     }
     
-    if (intent.depth && intent.depth !== "normal") {
-      reasons.push(`${intent.depth} detail`);
-    }
-    
-    if (intent.audience && intent.audience !== "general") {
-      reasons.push(`${intent.audience} audience`);
+    if (intent.constraints && intent.constraints.length > 0) {
+      reasons.push(intent.constraints.join(", "));
     }
     
     if (reasons.length > 0) {
       reasonsEl.textContent = `${topToolName} best matches: ${reasons.join(", ")}`;
+      explanationEl.classList.remove("hidden");
       explanationEl.style.display = "block";
     } else {
-      // If no specific intent detected, show generic message
-      reasonsEl.textContent = `${topToolName} is best for general tasks`;
-      explanationEl.style.display = "block";
+      explanationEl.style.display = "none";
     }
   }
 
