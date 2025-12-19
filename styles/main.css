@@ -2365,3 +2365,39 @@ textarea::placeholder {
 .step-card .output-footer {
   margin-top: auto;
 }
+
+/* =========================================
+   FINAL STABLE TEXTAREA + CARD LAYOUT
+========================================= */
+
+.step-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card .textarea-idea,
+.step-card .output-textarea {
+  flex: 1;
+  min-height: 0;
+  resize: none; /* or vertical, but only here */
+
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Prevent resize artifact line */
+.step-card textarea {
+  overflow: auto;
+}
+
+/* Push footer buttons to bottom */
+.step-card .template-section,
+.step-card .output-footer {
+  margin-top: auto;
+}
