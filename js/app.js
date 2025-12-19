@@ -1680,14 +1680,33 @@ function clearAutoConvertTimer() {
 /* ===============================
    STATS FUNCTIONS
 =============================== */
+/* ===============================
+   STATS FUNCTIONS - FIXED WITH LABELS
+=============================== */
 function updateStats(text) {
   const chars = text.length;
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
   const lines = text ? text.split("\n").length : 0;
   
-  document.getElementById("charCount").textContent = chars;
-  document.getElementById("wordCount").textContent = words;
-  document.getElementById("lineCount").textContent = lines;
+  // Update with labels
+  document.getElementById("charCount").textContent = `Chars: ${chars}`;
+  document.getElementById("wordCount").textContent = `Words: ${words}`;
+  document.getElementById("lineCount").textContent = `Lines: ${lines}`;
+}
+
+function updateOutputStats() {
+  const outputEl = document.getElementById("output");
+  if (!outputEl) return;
+  
+  const text = outputEl.value;
+  const chars = text.length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lines = text ? text.split("\n").length : 0;
+  
+  // Update with labels
+  document.getElementById("outputCharCount").textContent = `Chars: ${chars}`;
+  document.getElementById("outputWordCount").textContent = `Words: ${words}`;
+  document.getElementById("outputLineCount").textContent = `Lines: ${lines}`;
 }
 
 function updateOutputStats() {
