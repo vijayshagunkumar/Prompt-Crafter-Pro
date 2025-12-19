@@ -37,8 +37,6 @@
                     </div>
                 </div>
 
-                <!-- REMOVED THEME SELECTOR - Issue #1 -->
-
                 <button class="settings-btn" id="settingsBtn">
                     <i class="fas fa-cog"></i> Settings
                 </button>
@@ -177,7 +175,7 @@
                         <div class="step-meta">
                             <div class="timer-badge">
                                 <i class="fas fa-cog"></i>
-                                <span id="presetInfo" style="display: none;">General • Standard (auto)</span>
+                                <span id="presetInfo" style="display: none;"></span> <!-- Issue #3: Hidden permanently -->
                             </div>
                             <span id="convertedBadge" class="meta-pill" style="display: none;">
                                 <i class="fas fa-check"></i> Converted
@@ -255,10 +253,7 @@
                         <div class="step-pill">3</div>
                         <div class="step-header-main">
                             <h2>LAUNCH</h2>
-                            <div class="launch-hint">
-                                <i class="fas fa-info-circle"></i>
-                                Choose your AI tool – Prompt is copied automatically
-                            </div>
+                            <!-- Issue #5: Removed the hint text, will show as tooltip on hover -->
                         </div>
                     </div>
 
@@ -400,7 +395,7 @@
                     <select id="voiceLanguage" class="input-text">
                         <option value="en-US">English (US)</option>
                         <option value="en-GB">English (UK)</option>
-                        <option value="hi-IN">Hindi (India)</option> <!-- ADDED for issue #3 -->
+                        <option value="hi-IN">Hindi (India)</option>
                         <option value="es-ES">Spanish</option>
                         <option value="fr-FR">French</option>
                         <option value="de-DE">German</option>
