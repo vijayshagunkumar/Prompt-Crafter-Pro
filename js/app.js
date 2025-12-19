@@ -348,14 +348,15 @@ function setLaunchButtonsEnabled(enabled) {
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
+
 /* ================================
    INTENT CHIP RENDERING (Card 1)
 ================================ */
 
-const intentRow = document.getElementById("intentRow");
-const intentScroll = document.getElementById("intentScroll");
-
 function renderIntentChips(chips) {
+  const intentRow = document.getElementById("intentRow");
+  const intentScroll = document.getElementById("intentScroll");
+  
   if (!intentRow || !intentScroll) return;
 
   intentScroll.innerHTML = "";
@@ -374,9 +375,10 @@ function renderIntentChips(chips) {
 
   intentRow.style.display = "block";
   
-  /* 🔥 AUTO-SCROLL TO LAST CHIP */
-intentScroll.scrollLeft = intentScroll.scrollWidth;
+  // Auto-scroll to last chip
+  intentScroll.scrollLeft = intentScroll.scrollWidth;
 }
+
 function initializeApp() {
   loadSettings();
   loadTemplates();
@@ -469,9 +471,6 @@ function setupResizeObservers() {
   requirementEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
   outputEl.addEventListener('mouseup', () => debounce(saveTextareaSizes, 300));
 }
-
-// Update size info display
-
 
 // Save sizes to localStorage
 function saveTextareaSizes() {
@@ -1419,6 +1418,7 @@ function clearAutoConvertTimer() {
   const timerDisplay = document.getElementById("timerDisplay");
   if (timerDisplay) timerDisplay.style.display = "none";
 }
+
 /* ======================================================
    🧠 AI TOOL RANKING UI HELPERS (Card 3)
    SAFE – UI ONLY
