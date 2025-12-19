@@ -1257,59 +1257,86 @@ function setupClearUndoButton() {
 }
 
 // Template listeners - UPDATED with eye icon toggle
+
 function setupTemplateListeners() {
-  document.getElementById("toggleTemplatesBtn").addEventListener("click", function() {
+  const toggleBtn = document.getElementById("toggleTemplatesBtn");
+  if (!toggleBtn) return;
+
+  toggleBtn.addEventListener("click", function () {
     const panel = document.getElementById("templatesPanel");
     const eyeIcon = this.querySelector(".template-toggle-eye i");
-    
-    if (panel.style.display === "none") {
-      panel.style.display = "block";
-      if (eyeIcon) {
-        eyeIcon.className = "fas fa-eye-slash"; // Change to closed eye
-      }
-    } else {
-      panel.style.display = "none";
-      if (eyeIcon) {
-        eyeIcon.className = "fas fa-eye"; // Change to open eye
-      }
+
+    if (!panel) return;
+
+    const isHidden =
+      panel.style.display === "none" || panel.style.display === "";
+
+    panel.style.display = isHidden ? "block" : "none";
+
+    if (eyeIcon) {
+      eyeIcon.className = isHidden
+        ? "fas fa-eye-slash"
+        : "fas fa-eye";
     }
-    
+
     loadCategories();
     loadTemplatesToUI();
   });
-  
-  document
-    .getElementById("templateSearch")
-    .addEventListener("input", function () {
+
+  const searchInput = document.getElementById("templateSearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
       const activeCategory =
         document.querySelector(".template-category.active")?.dataset.category ||
         "all";
       filterTemplatesUI(activeCategory, this.value);
     });
+  }
 
-  document.getElementById("newTemplateBtn").addEventListener("click", () => {
-    editingTemplateId = null;
-    document.getElementById("templateName").value = "";
-    document.getElementById("templateDescription").value = "";
-    document.getElementById("templateContent").value =
-      document.getElementById("output").value || "";
-    document.getElementById("templateCategory").value = "communication";
-    document.getElementById("templateExample").value =
-      document.getElementById("requirement").value || "";
-    document.getElementById("templateModal").style.display = "flex";
-  });
+  const newBtn = document.getElementById("newTemplateBtn");
+  if (newBtn) {
+    newBtn.addEventListener("click", () => {
+      editingTemplateId = null;
 
-  document
-    .getElementById("saveTemplateBtn")
-    .addEventListener("click", saveTemplate);
+      const nameEl = document.getElementById("templateName");
+      const descEl = document.getElementById("templateDescription");
+      const contentEl = document.getElementById("templateContent");
+      const catEl = document.getElementById("templateCategory");
+      const exampleEl = document.getElementById("templateExample");
+      const modal = document.getElementById("templateModal");
 
-  document.getElementById("closeTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
-  });
+      if (nameEl) nameEl.value = "";
+      if (descEl) descEl.value = "";
+      if (contentEl) {
+        const output = document.getElementById("output");
+        contentEl.value = output ? output.value : "";
+      }
+      if (catEl) catEl.value = "communication";
+      if (exampleEl) {
+        const req = document.getElementById("requirement");
+        exampleEl.value = req ? req.value : "";
+      }
 
-  document.getElementById("cancelTemplateBtn").addEventListener("click", () => {
-    document.getElementById("templateModal").style.display = "none";
-  });
+      if (modal) modal.style.display = "flex";
+    });
+  }
+
+  const saveBtn = document.getElementById("saveTemplateBtn");
+  if (saveBtn) saveBtn.addEventListener("click", saveTemplate);
+
+  const closeBtn = document.getElementById("closeTemplateBtn");
+  if (closeBtn)
+    closeBtn.addEventListener("click", () => {
+      const modal = document.getElementById("templateModal");
+      if (modal) modal.style.display = "none";
+    });
+
+  const cancelBtn = document.getElementById("cancelTemplateBtn");
+  if (cancelBtn)
+    cancelBtn.addEventListener("click", () => {
+      const modal = document.getElementById("templateModal");
+      if (modal) modal.style.display = "none";
+    });
 }
 
 // Make template functions globally available
