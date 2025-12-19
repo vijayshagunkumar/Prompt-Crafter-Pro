@@ -983,35 +983,54 @@ function initializeUI() {
 
 // Event Listeners
 function setupEventListeners() {
-  // Settings
-  document.getElementById("settingsBtn").addEventListener("click", () => {
-    document.getElementById("settingsModal").style.display = "flex";
-  });
 
-  document.getElementById("closeSettingsBtn").addEventListener("click", () => {
-    document.getElementById("settingsModal").style.display = "none";
-  });
+  /* ===============================
+     SETTINGS MODAL
+  =============================== */
+  const settingsBtn = document.getElementById("settingsBtn");
+  const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+  const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+  const settingsModal = document.getElementById("settingsModal");
+
+  if (settingsBtn && settingsModal) {
+    settingsBtn.addEventListener("click", () => {
+      settingsModal.style.display = "flex";
+    });
+  }
+
+  if (closeSettingsBtn && settingsModal) {
+    closeSettingsBtn.addEventListener("click", () => {
+      settingsModal.style.display = "none";
+    });
+  }
+
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener("click", saveSettings);
+  }
+
+  const clearDataBtn = document.getElementById("clearDataBtn");
+  if (clearDataBtn) {
+    clearDataBtn.addEventListener("click", () => {
+      if (
+        confirm(
+          "Are you sure you want to clear all data? This will delete all templates, history, and settings."
+        )
+      ) {
+        clearAllData();
+      }
+    });
+  }
 
   document
-    .getElementById("saveSettingsBtn")
-    .addEventListener("click", saveSettings);
+    .getElementById("resetSizesBtn")
+    ?.addEventListener("click", resetTextareaSizes);
 
-  document.getElementById("clearDataBtn").addEventListener("click", () => {
-    if (
-      confirm(
-        "Are you sure you want to clear all data? This will delete all templates, history, and settings."
-      )
-    ) {
-      clearAllData();
-    }
-  });
-
-  // NEW: Reset textarea sizes button
-  document.getElementById("resetSizesBtn")?.addEventListener("click", resetTextareaSizes);
-
-  // Auto-convert delay slider
+  /* ===============================
+     AUTO-CONVERT SETTINGS
+  =============================== */
   const delaySlider = document.getElementById("autoConvertDelay");
   const delayValue = document.getElementById("delayValue");
+
   if (delaySlider && delayValue) {
     delaySlider.addEventListener("input", () => {
       delayValue.textContent = `Current: ${delaySlider.value} seconds`;
@@ -1019,132 +1038,131 @@ function setupEventListeners() {
     });
   }
 
-  // Requirement input
-  const requirementEl = document.getElementById("requirement");
-  requirementEl.addEventListener("input", handleRequirementInput);
-  
-  // NEW: Also listen to keyup to handle voice input completion
-  
-
-  // Auto-convert toggle
-  document.getElementById("autoConvert").addEventListener("change", (e) => {
+  document.getElementById("autoConvert")?.addEventListener("change", (e) => {
     autoConvertEnabled = e.target.checked;
     if (!autoConvertEnabled) {
       clearAutoConvertTimer();
-    } else if (requirementEl.value.trim() && !isConverted) {
-      resetAutoConvertTimer();
     }
   });
 
-  // Preset selection
-  // Preset selection (FIXED – do NOT clear output)
-document.querySelectorAll(".preset-option").forEach((option) => {
-  option.addEventListener("click", () => {
-    const presetId = option.dataset.preset;
+  /* ===============================
+     REQUIREMENT INPUT
+  =============================== */
+  const requirementEl = document.getElementById("requirement");
+  if (requirementEl) {
+    requirementEl.addEventListener("input", handleRequirementInput);
+  }
 
-    userPresetLocked = true;
-    lastPresetSource = "manual";
-    setCurrentPreset(presetId);
+  /* ===============================
+     PRESET SELECTION
+  =============================== */
+  document.querySelectorAll(".preset-option").forEach((option) => {
+    option.addEventListener("click", () => {
+      const presetId = option.dataset.preset;
 
-    // ✅ Reformat existing prompt instead of clearing
-    if (isConverted) {
-      const requirement = document.getElementById("requirement").value.trim();
-      if (!requirement) return;
+      userPresetLocked = true;
+      lastPresetSource = "manual";
+      setCurrentPreset(presetId);
 
-      const role = lastRole || "expert assistant";
-      const reformatted = PRESETS[currentPreset](role, requirement);
+      if (isConverted) {
+        const requirement = document.getElementById("requirement")?.value.trim();
+        if (!requirement) return;
 
-      document.getElementById("output").value = reformatted;
-      updateOutputStats();
-      setLaunchButtonsEnabled(true);
-      updatePresetInfo(lastTaskLabel, currentPreset, "manual");
-    }
+        const role = lastRole || "expert assistant";
+        const reformatted = PRESETS[currentPreset](role, requirement);
+
+        const outputEl = document.getElementById("output");
+        if (outputEl) outputEl.value = reformatted;
+
+        updateOutputStats();
+        setLaunchButtonsEnabled(true);
+        updatePresetInfo(lastTaskLabel, currentPreset, "manual");
+      }
+    });
   });
-});
 
-  // Examples
+  /* ===============================
+     EXAMPLE BUTTONS
+  =============================== */
   document.querySelectorAll(".example-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (!requirementEl) return;
+
       requirementEl.value = btn.dataset.example;
       requirementEl.focus();
+
       isConverted = false;
-      document.getElementById("output").value = "";
-      document.getElementById("convertBtn").disabled = false;
-      document.getElementById("convertedBadge").style.display = "none";
+      document.getElementById("output")?.value = "";
+      document.getElementById("convertedBadge")?.style.setProperty("display", "none");
       setLaunchButtonsEnabled(false);
-      
-      // Update stats
       updateStats(requirementEl.value);
-      
-      // Auto-generate if there's text
+
       if (requirementEl.value.trim()) {
         generatePrompt();
       }
     });
   });
 
-  // Convert button
+  /* ===============================
+     CONVERT BUTTON
+  =============================== */
   document
     .getElementById("convertBtn")
-    .addEventListener("click", generatePrompt);
+    ?.addEventListener("click", generatePrompt);
 
-  // AI Tools
-  document
-    .getElementById("chatgptBtn")
-    .addEventListener("click", () =>
-      openAITool("ChatGPT", "https://chat.openai.com/")
-    );
+  /* ===============================
+     AI TOOL LAUNCH BUTTONS
+  =============================== */
+  document.getElementById("chatgptBtn")
+    ?.addEventListener("click", () => openAITool("ChatGPT", "https://chat.openai.com/"));
 
-  document.getElementById("claudeBtn").addEventListener("click", () =>
-    openAITool("Claude", "https://claude.ai/new")
-  );
+  document.getElementById("claudeBtn")
+    ?.addEventListener("click", () => openAITool("Claude", "https://claude.ai/new"));
 
-  document.getElementById("geminiBtn").addEventListener("click", () =>
-    openAITool("Gemini", "https://gemini.google.com/app")
-  );
+  document.getElementById("geminiBtn")
+    ?.addEventListener("click", () => openAITool("Gemini", "https://gemini.google.com/app"));
 
-  document.getElementById("perplexityBtn").addEventListener("click", () =>
-    openAITool("Perplexity", "https://www.perplexity.ai/")
-  );
+  document.getElementById("perplexityBtn")
+    ?.addEventListener("click", () => openAITool("Perplexity", "https://www.perplexity.ai/"));
 
-  document.getElementById("deepseekBtn").addEventListener("click", () =>
-    openAITool("DeepSeek", "https://chat.deepseek.com/")
-  );
+  document.getElementById("deepseekBtn")
+    ?.addEventListener("click", () => openAITool("DeepSeek", "https://chat.deepseek.com/"));
 
-  document.getElementById("copilotBtn").addEventListener("click", () =>
-    openAITool("Copilot", "https://copilot.microsoft.com/")
-  );
+  document.getElementById("copilotBtn")
+    ?.addEventListener("click", () => openAITool("Copilot", "https://copilot.microsoft.com/"));
 
-  document.getElementById("grokBtn").addEventListener("click", () =>
-    openAITool("Grok", "https://x.ai/")
-  );
+  document.getElementById("grokBtn")
+    ?.addEventListener("click", () => openAITool("Grok", "https://x.ai/"));
 
-  // Export
-  document.getElementById("exportBtn").addEventListener("click", exportPrompt);
-  
-  // Output textarea change
-  document.getElementById("output").addEventListener("input", updateOutputStats);
+  /* ===============================
+     EXPORT
+  =============================== */
+  document.getElementById("exportBtn")
+    ?.addEventListener("click", exportPrompt);
 
-  // History toggle + clear
-  document
-    .getElementById("toggleHistoryBtn")
-    .addEventListener("click", () => {
+  /* ===============================
+     HISTORY
+  =============================== */
+  document.getElementById("toggleHistoryBtn")
+    ?.addEventListener("click", () => {
       const panel = document.getElementById("historyPanel");
-      if (!panel) return;
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
+      if (panel) {
+        panel.style.display = panel.style.display === "none" ? "block" : "none";
+      }
     });
 
-  document
-    .getElementById("clearHistoryBtn")
-    .addEventListener("click", clearHistory);
+  document.getElementById("clearHistoryBtn")
+    ?.addEventListener("click", clearHistory);
 
-  // Template listeners
+  /* ===============================
+     TEMPLATES
+  =============================== */
   setupTemplateListeners();
-  
-  // NEW: Clear/Undo button functionality
-  setupClearUndoButton();
-  updateStats("");
 
+  /* ===============================
+     CLEAR / UNDO
+  =============================== */
+  setupClearUndoButton();
 }
 
 // NEW: Clear/Undo button functionality
