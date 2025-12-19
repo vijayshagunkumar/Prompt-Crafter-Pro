@@ -2252,3 +2252,46 @@ textarea::placeholder {
 
   backdrop-filter: blur(6px);
 }
+/* === AI TOOL RANKING UI === */
+
+/* Best Match badge */
+.launch-btn { position: relative; }
+
+.best-match-tag {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  background: linear-gradient(135deg, #00FF41, #00F3FF);
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 8px rgba(0,255,65,.8);
+  pointer-events: none;
+}
+
+.launch-btn.best-match {
+  border-color: #00FF41 !important;
+  box-shadow: 0 0 16px rgba(0,255,65,.5);
+}
+
+/* Ranking explanation */
+.ai-ranking-explanation {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--secondary);
+  background: rgba(0,243,255,.08);
+  border: 1px solid rgba(0,243,255,.35);
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.ai-ranking-explanation.hidden {
+  display: none;
+}
