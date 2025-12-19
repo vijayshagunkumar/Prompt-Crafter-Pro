@@ -2295,3 +2295,12 @@ textarea::placeholder {
 .ai-ranking-explanation.hidden {
   display: none;
 }
+.step-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card .textarea {
+  flex: 1;
+  resize: none;
+}
