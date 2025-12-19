@@ -1,4 +1,5 @@
 // PromptCraft – app.js
+
 function intentObjectToChips(intent) {
   if (!intent) return [];
 
@@ -45,12 +46,12 @@ function intentObjectToChips(intent) {
   return chips;
 }
 
-
 function updateSizeInfo(id, height) {
   const el = document.getElementById(id);
   if (!el) return;
   el.textContent = `${Math.round(height)}px`;
 }
+
 // Auto-scroll active preset into view (horizontal)
 function scrollPresetIntoView(presetId) {
   const btn = document.querySelector(
@@ -88,17 +89,20 @@ let editingTemplateId = null;
 let templates = [];
 let historyItems = [];
 
-// NEW: Clear/Undo button state
+// Clear/Undo button state
 let lastClearedText = "";
 let isUndoState = false;
 
-// NEW: Textarea sizing state
+// Textarea sizing state
 let textareaSizes = {
-  requirement: { height: 140 },
+  requirement: { height: 250 },  // CHANGED FROM 140 TO 250
   output: { height: 200 }
 };
 let isInputExpanded = false;
 let isOutputExpanded = false;
+
+// Reset state
+let isResetting = false;
 
 // Template categories for Template Library
 const TEMPLATE_CATEGORIES = {
@@ -309,7 +313,6 @@ function setCurrentPreset(presetId) {
   updatePresetInfo(lastTaskLabel, currentPreset, lastPresetSource);
 }
 
-
 function updatePresetInfo(taskLabel, presetId, source) {
   const el = document.getElementById("presetInfo");
   if (!el) return;
@@ -422,6 +425,14 @@ function initializeTextareaSizing() {
       outputEl.style.height = `${textareaSizes.output.height}px`;
       updateSizeInfo('outputSizeInfo', textareaSizes.output.height);
     }
+  } else {
+    // If no saved sizes, set default to 250px for Card 1
+    const requirementEl = document.getElementById('requirement');
+    if (requirementEl) {
+      requirementEl.style.height = '250px';
+      textareaSizes.requirement.height = 250;
+      updateSizeInfo('inputSizeInfo', 250);
+    }
   }
   
   // Setup resize observers
@@ -507,7 +518,7 @@ function setupExpandButtons() {
       // Expand
       // Save current height before expanding
       const currentHeight = textarea.offsetHeight;
-      if (currentHeight > 140) {
+      if (currentHeight > 250) {
         textareaSizes.requirement.height = currentHeight;
       }
       
@@ -623,9 +634,9 @@ function resetTextareaSizes() {
   const outputEl = document.getElementById('output');
   
   if (requirementEl) {
-    requirementEl.style.height = '140px';
-    textareaSizes.requirement.height = 140;
-    updateSizeInfo('inputSizeInfo', 140);
+    requirementEl.style.height = '250px';
+    textareaSizes.requirement.height = 250;
+    updateSizeInfo('inputSizeInfo', 250);
   }
   
   if (outputEl) {
@@ -636,6 +647,85 @@ function resetTextareaSizes() {
   
   saveTextareaSizes();
   showNotification('Textarea sizes reset to default');
+}
+
+// RESET EVERYTHING FUNCTION
+function resetEverything() {
+  if (isResetting) return;
+  
+  if (!confirm("Are you sure you want to reset everything? This will clear both input and output areas.")) {
+    return;
+  }
+  
+  isResetting = true;
+  
+  // Clear both textareas
+  const requirementEl = document.getElementById('requirement');
+  const outputEl = document.getElementById('output');
+  
+  if (requirementEl) {
+    requirementEl.value = '';
+    requirementEl.focus();
+  }
+  
+  if (outputEl) {
+    outputEl.value = '';
+  }
+  
+  // Reset UI state
+  isConverted = false;
+  isUndoState = false;
+  lastClearedText = '';
+  lastConvertedText = '';
+  userPresetLocked = false;
+  lastPresetSource = 'auto';
+  lastTaskLabel = 'General';
+  lastRole = 'expert assistant';
+  
+  // Reset preset to default
+  currentPreset = 'default';
+  setCurrentPreset('default');
+  updatePresetInfo('General', 'default', 'auto');
+  
+  // Update UI elements
+  document.getElementById('convertedBadge').style.display = 'none';
+  document.getElementById('convertBtn').disabled = true;
+  
+  // Clear clear button state
+  const clearBtn = document.getElementById('clearInputBtn');
+  if (clearBtn) {
+    clearBtn.classList.remove('undo-state');
+    clearBtn.querySelector('i').className = 'fas fa-broom';
+    clearBtn.title = 'Clear text';
+  }
+  
+  // Clear timers
+  clearAutoConvertTimer();
+  
+  // Reset stats
+  updateStats('');
+  updateOutputStats();
+  
+  // Disable launch buttons
+  setLaunchButtonsEnabled(false);
+  
+  // Clear intent chips
+  renderIntentChips([]);
+  
+  // Reset auto-convert timer if enabled
+  if (autoConvertEnabled && autoConvertDelay > 0) {
+    resetAutoConvertTimer();
+  }
+  
+  // Reset textarea sizes to 250px (Card 1 larger)
+  resetTextareaSizes();
+  
+  showNotification('Everything has been reset');
+  
+  // Allow resetting again after a short delay
+  setTimeout(() => {
+    isResetting = false;
+  }, 500);
 }
 
 // Settings
@@ -685,7 +775,7 @@ function clearAllData() {
   
   // Reset textarea sizes in memory
   textareaSizes = {
-    requirement: { height: 140 },
+    requirement: { height: 250 },
     output: { height: 200 }
   };
   
@@ -982,6 +1072,13 @@ function initializeUI() {
 
 // Event Listeners
 function setupEventListeners() {
+  /* ===============================
+     RESET BUTTON
+  =============================== */
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetEverything);
+  }
 
   /* ===============================
      SETTINGS MODAL
@@ -1020,7 +1117,7 @@ function setupEventListeners() {
     });
   }
 
-  document  .getElementById("resetSizesBtn")
+  document.getElementById("resetSizesBtn")
     ?.addEventListener("click", resetTextareaSizes);
 
   /* ===============================
@@ -1090,11 +1187,11 @@ function setupEventListeners() {
       requirementEl.focus();
 
       isConverted = false;
-const outputEl = document.getElementById("output");
-if (outputEl) outputEl.value = "";
+      const outputEl = document.getElementById("output");
+      if (outputEl) outputEl.value = "";
 
       const badge = document.getElementById("convertedBadge");
-if (badge) badge.style.display = "none";
+      if (badge) badge.style.display = "none";
 
       setLaunchButtonsEnabled(false);
       updateStats(requirementEl.value);
@@ -1111,6 +1208,22 @@ if (badge) badge.style.display = "none";
   document
     .getElementById("convertBtn")
     ?.addEventListener("click", generatePrompt);
+
+  /* ===============================
+     CLEAR INPUT BUTTON (UNDO/REDO)
+  =============================== */
+  const clearBtn = document.getElementById("clearInputBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", toggleClearUndo);
+  }
+
+  /* ===============================
+     COPY OUTPUT BUTTON
+  =============================== */
+  const copyBtn = document.getElementById("copyOutputBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", copyOutputToClipboard);
+  }
 
   /* ===============================
      AI TOOL LAUNCH BUTTONS
@@ -1143,450 +1256,535 @@ if (badge) badge.style.display = "none";
     ?.addEventListener("click", exportPrompt);
 
   /* ===============================
+     SIDEBAR TOGGLE
+  =============================== */
+  document.getElementById("toggleSidebar")?.addEventListener("click", () => {
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.getElementById("mainContent");
+    const toggleBtn = document.getElementById("toggleSidebar");
+    
+    if (sidebar && mainContent && toggleBtn) {
+      sidebar.classList.toggle("collapsed");
+      mainContent.classList.toggle("sidebar-collapsed");
+      
+      // Update toggle button icon
+      const icon = toggleBtn.querySelector("i");
+      if (icon) {
+        if (sidebar.classList.contains("collapsed")) {
+          icon.className = "fas fa-chevron-right";
+        } else {
+          icon.className = "fas fa-chevron-left";
+        }
+      }
+    }
+  });
+
+  /* ===============================
+     SIDEBAR TABS
+  =============================== */
+  document.querySelectorAll(".sidebar-tab").forEach((tab) => {
+    tab.addEventListener("click", (e) => {
+      const tabId = e.currentTarget.dataset.tab;
+      if (!tabId) return;
+      
+      // Update active tab
+      document.querySelectorAll(".sidebar-tab").forEach((t) => {
+        t.classList.remove("active");
+      });
+      e.currentTarget.classList.add("active");
+      
+      // Show corresponding panel
+      document.querySelectorAll(".sidebar-panel").forEach((panel) => {
+        panel.style.display = "none";
+      });
+      
+      const targetPanel = document.getElementById(`${tabId}Panel`);
+      if (targetPanel) {
+        targetPanel.style.display = "block";
+        
+        // Load templates if needed
+        if (tabId === "templates") {
+          loadCategories();
+          loadTemplatesToUI();
+        }
+      }
+    });
+  });
+
+  /* ===============================
+     TEMPLATE MODAL
+  =============================== */
+  const templateModal = document.getElementById("templateModal");
+  const closeTemplateBtn = document.getElementById("closeTemplateBtn");
+  const saveTemplateBtn = document.getElementById("saveTemplateBtn");
+  const templateSearch = document.getElementById("templateSearch");
+
+  document.getElementById("addTemplateBtn")?.addEventListener("click", () => {
+    editingTemplateId = null;
+    document.getElementById("templateName").value = "";
+    document.getElementById("templateDescription").value = "";
+    document.getElementById("templateContent").value = "";
+    document.getElementById("templateCategory").value = "other";
+    document.getElementById("templateExample").value = "";
+    
+    if (templateModal) {
+      templateModal.style.display = "flex";
+    }
+  });
+
+  if (closeTemplateBtn && templateModal) {
+    closeTemplateBtn.addEventListener("click", () => {
+      templateModal.style.display = "none";
+    });
+  }
+
+  if (saveTemplateBtn) {
+    saveTemplateBtn.addEventListener("click", saveTemplate);
+  }
+
+  if (templateSearch) {
+    templateSearch.addEventListener("input", (e) => {
+      const currentCategory = document.querySelector(".template-category.active")?.dataset.category || "all";
+      filterTemplatesUI(currentCategory, e.target.value);
+    });
+  }
+
+  /* ===============================
      HISTORY
   =============================== */
-  document.getElementById("toggleHistoryBtn")
-    ?.addEventListener("click", () => {
-      const panel = document.getElementById("historyPanel");
-      if (panel) {
-        panel.style.display = panel.style.display === "none" ? "block" : "none";
-      }
-    });
-
-  document.getElementById("clearHistoryBtn")
-    ?.addEventListener("click", clearHistory);
+  document.getElementById("clearHistoryBtn")?.addEventListener("click", clearHistory);
 
   /* ===============================
-     TEMPLATES
+     CLOSE MODALS ON OUTSIDE CLICK
   =============================== */
-  setupTemplateListeners();
-
-  /* ===============================
-     CLEAR / UNDO
-  =============================== */
-  setupClearUndoButton();
-}
-
-// NEW: Clear/Undo button functionality
-function setupClearUndoButton() {
-  const clearBtn = document.getElementById("clearInputBtn");
-  const requirementEl = document.getElementById("requirement");
-  
-  if (!clearBtn || !requirementEl) return;
-  
-  clearBtn.addEventListener("click", function() {
-    const icon = this.querySelector("i");
+  window.addEventListener("click", (e) => {
+    const settingsModal = document.getElementById("settingsModal");
+    if (settingsModal && e.target === settingsModal) {
+      settingsModal.style.display = "none";
+    }
     
-    if (!isUndoState) {
-      // First click: CLEAR text
-      if (requirementEl.value.trim()) {
-        lastClearedText = requirementEl.value;
-        requirementEl.value = "";
-        requirementEl.focus();
-        
-        // NEW: Clear output when clearing requirement
-        document.getElementById("output").value = "";
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-        // =================
-        
-        // Change button to UNDO state
-        isUndoState = true;
-        clearBtn.classList.add("undo-state");
-        clearBtn.title = "Undo clear";
-        icon.className = "fas fa-undo";
-        
-        // Update stats and state
-        updateStats("");
-        isConverted = false;
-        document.getElementById("convertBtn").disabled = true;
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-        
-        // Clear timers
-        clearAutoConvertTimer();
-        
-        showNotification("Text cleared. Click undo to restore.");
-      }
-    } else {
-      // Second click: UNDO (restore text)
-      requirementEl.value = lastClearedText;
-      requirementEl.focus();
-      
-      // Change button back to CLEAR state
-      isUndoState = false;
-      clearBtn.classList.remove("undo-state");
-      clearBtn.title = "Clear text";
-      icon.className = "fas fa-broom";
-      
-      // Update stats and state
-      updateStats(lastClearedText);
-      document.getElementById("convertBtn").disabled = !lastClearedText.trim();
-      
-      // Reset if there's text
-      if (lastClearedText.trim()) {
-        isConverted = false;
-        document.getElementById("convertedBadge").style.display = "none";
-        setLaunchButtonsEnabled(false);
-        
-        // Reset auto-convert timer if enabled
-        if (autoConvertEnabled) {
-          resetAutoConvertTimer();
-        }
-      }
-      
-      showNotification("Text restored");
-      lastClearedText = "";
+    const templateModal = document.getElementById("templateModal");
+    if (templateModal && e.target === templateModal) {
+      templateModal.style.display = "none";
     }
   });
-  
-  // Reset undo state when user starts typing
-  requirementEl.addEventListener("input", function() {
-    if (isUndoState) {
-      const clearBtn = document.getElementById("clearInputBtn");
-      const icon = clearBtn.querySelector("i");
-      
-      isUndoState = false;
-      clearBtn.classList.remove("undo-state");
-      clearBtn.title = "Clear text";
-      icon.className = "fas fa-broom";
-      lastClearedText = "";
-    }
-  });
-}
 
-// Template listeners - UPDATED with eye icon toggle
-
-function setupTemplateListeners() {
-  const toggleBtn = document.getElementById("toggleTemplatesBtn");
-  if (!toggleBtn) return;
-
-  toggleBtn.addEventListener("click", function () {
-    const panel = document.getElementById("templatesPanel");
-    const eyeIcon = this.querySelector(".template-toggle-eye i");
-
-    if (!panel) return;
-
-    const isHidden =
-      panel.style.display === "none" || panel.style.display === "";
-
-    panel.style.display = isHidden ? "block" : "none";
-
-    if (eyeIcon) {
-      eyeIcon.className = isHidden
-        ? "fas fa-eye-slash"
-        : "fas fa-eye";
-    }
-
-    loadCategories();
-    loadTemplatesToUI();
-  });
-
-  const searchInput = document.getElementById("templateSearch");
-  if (searchInput) {
-    searchInput.addEventListener("input", function () {
-      const activeCategory =
-        document.querySelector(".template-category.active")?.dataset.category ||
-        "all";
-      filterTemplatesUI(activeCategory, this.value);
-    });
-  }
-
-  const newBtn = document.getElementById("newTemplateBtn");
-  if (newBtn) {
-    newBtn.addEventListener("click", () => {
-      editingTemplateId = null;
-
-      const nameEl = document.getElementById("templateName");
-      const descEl = document.getElementById("templateDescription");
-      const contentEl = document.getElementById("templateContent");
-      const catEl = document.getElementById("templateCategory");
-      const exampleEl = document.getElementById("templateExample");
-      const modal = document.getElementById("templateModal");
-
-      if (nameEl) nameEl.value = "";
-      if (descEl) descEl.value = "";
-      if (contentEl) {
-        const output = document.getElementById("output");
-        contentEl.value = output ? output.value : "";
-      }
-      if (catEl) catEl.value = "communication";
-      if (exampleEl) {
-        const req = document.getElementById("requirement");
-        exampleEl.value = req ? req.value : "";
-      }
-
-      if (modal) modal.style.display = "flex";
-    });
-  }
-
-  const saveBtn = document.getElementById("saveTemplateBtn");
-  if (saveBtn) saveBtn.addEventListener("click", saveTemplate);
-
-  const closeBtn = document.getElementById("closeTemplateBtn");
-  if (closeBtn)
-    closeBtn.addEventListener("click", () => {
-      const modal = document.getElementById("templateModal");
-      if (modal) modal.style.display = "none";
-    });
-
-  const cancelBtn = document.getElementById("cancelTemplateBtn");
-  if (cancelBtn)
-    cancelBtn.addEventListener("click", () => {
-      const modal = document.getElementById("templateModal");
-      if (modal) modal.style.display = "none";
-    });
-}
-
-// Make template functions globally available
-window.clearHistory = clearHistory;
-window.useTemplate = function (id) {
-  const template = templates.find((t) => t.id === id);
-  if (template) {
-    template.usageCount = (template.usageCount || 0) + 1;
-    localStorage.setItem("promptTemplates", JSON.stringify(templates));
-
-    document.getElementById("requirement").value = template.example || "";
-    document.getElementById("output").value = template.content;
-    updateStats(template.content);
-    updateOutputStats();
-    isConverted = true;
-    lastConvertedText = template.example || "";
-    document.getElementById("convertedBadge").style.display = "inline-flex";
-    setLaunchButtonsEnabled(true);
-    showNotification("Template loaded into prompt");
-  }
-};
-window.editTemplate = editTemplate;
-window.deleteTemplate = deleteTemplate;
-
-// Usage Count
-function loadUsageCount() {
-  const savedUsage = localStorage.getItem("promptCrafterUsage");
-  if (savedUsage) {
-    usageCount = parseInt(savedUsage, 10);
-  }
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
-}
-function resetAutoConvertTimer() {
-  clearAutoConvertTimer();
-
-  const requirement = document.getElementById("requirement").value.trim();
-  if (autoConvertEnabled && requirement && !isConverted) {
-    autoConvertCountdown = autoConvertDelay;
-
-    const timerValue = document.getElementById("timerValue");
-    const timerDisplay = document.getElementById("timerDisplay");
-
-    if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-    if (timerDisplay) timerDisplay.style.display = "inline-flex";
-
-    countdownInterval = setInterval(() => {
-      autoConvertCountdown--;
-      if (timerValue) timerValue.textContent = `${autoConvertCountdown}s`;
-
-      if (autoConvertCountdown <= 0) {
-        clearInterval(countdownInterval);
-        if (timerDisplay) timerDisplay.style.display = "none";
-
-        const currentRequirement =
-          document.getElementById("requirement").value.trim();
-
-        if (currentRequirement && currentRequirement !== lastConvertedText) {
-          generatePrompt();
-        }
-      }
-    }, 1000);
-
-    autoConvertTimer = setTimeout(() => {
-      const currentRequirement =
-        document.getElementById("requirement").value.trim();
-
-      if (currentRequirement && currentRequirement !== lastConvertedText) {
+  /* ===============================
+     KEYBOARD SHORTCUTS
+  =============================== */
+  document.addEventListener("keydown", (e) => {
+    // Ctrl/Cmd + Enter to convert
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (!document.getElementById("convertBtn").disabled) {
         generatePrompt();
       }
-    }, autoConvertDelay * 1000);
+    }
+    
+    // Ctrl/Cmd + S to save (in template modal)
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      const templateModal = document.getElementById("templateModal");
+      if (templateModal && templateModal.style.display === "flex") {
+        e.preventDefault();
+        saveTemplate();
+      }
+    }
+    
+    // Escape key to close expanded mode
+    if (e.key === 'Escape') {
+      const expandOverlay = document.getElementById('expandOverlay');
+      if (expandOverlay) expandOverlay.click();
+    }
+  });
+}
+
+/* ===============================
+   MAIN CONVERSION FUNCTION
+=============================== */
+function convertToPrompt() {
+  const requirementEl = document.getElementById("requirement");
+  const outputEl = document.getElementById("output");
+  
+  if (!requirementEl || !outputEl) return;
+  
+  const requirement = requirementEl.value.trim();
+  if (!requirement) {
+    showNotification("Please enter a requirement first");
+    return;
   }
+  
+  // Update role and preset based on content
+  const { role, preset: autoPreset, label } = getRoleAndPreset(requirement);
+  lastRole = role;
+  lastTaskLabel = label;
+  
+  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
+    lastPresetSource = "auto";
+    setCurrentPreset(autoPreset);
+  }
+  
+  // Generate prompt using current preset
+  const prompt = PRESETS[currentPreset](lastRole, requirement);
+  
+  // Update output
+  outputEl.value = prompt;
+  isConverted = true;
+  lastConvertedText = requirement;
+  
+  // Update UI
+  document.getElementById("convertedBadge").style.display = "inline-flex";
+  setLaunchButtonsEnabled(true);
+  
+  // Update stats
+  updateStats(prompt);
+  updateOutputStats();
+  
+  // Save to history
+  saveToHistory(requirement, prompt);
+  
+  // Increment usage count
+  usageCount++;
+  localStorage.setItem("usageCount", usageCount.toString());
+  
+  // Show success notification
+  showNotification("Prompt generated successfully");
+}
+
+/* ===============================
+   HANDLE REQUIREMENT INPUT
+=============================== */
+function handleRequirementInput() {
+  const requirement = document.getElementById("requirement").value.trim();
+  const convertBtn = document.getElementById("convertBtn");
+  const clearBtn = document.getElementById("clearInputBtn");
+  
+  if (!requirement) {
+    convertBtn.disabled = true;
+    if (clearBtn) {
+      clearBtn.classList.remove("undo-state");
+      clearBtn.querySelector("i").className = "fas fa-broom";
+      clearBtn.title = "Clear text";
+    }
+    
+    // Clear intent chips
+    renderIntentChips([]);
+    return;
+  }
+  
+  // Enable convert button
+  convertBtn.disabled = false;
+  
+  // Update clear/undo button state
+  if (clearBtn && isConverted && requirement === lastConvertedText) {
+    clearBtn.classList.add("undo-state");
+    clearBtn.querySelector("i").className = "fas fa-undo";
+    clearBtn.title = "Undo to original";
+  } else {
+    clearBtn.classList.remove("undo-state");
+    clearBtn.querySelector("i").className = "fas fa-broom";
+    clearBtn.title = "Clear text";
+  }
+  
+  // Auto-detect intent (for chip display)
+  const intent = detectIntentFromText(requirement);
+  const chips = intentObjectToChips(intent);
+  renderIntentChips(chips);
+  
+  // Auto-convert logic
+  if (autoConvertEnabled && autoConvertDelay > 0) {
+    resetAutoConvertTimer();
+  }
+  
+  // Update character stats
+  updateStats(requirement);
+}
+
+/* ===============================
+   TOGGLE CLEAR/UNDO FUNCTION
+=============================== */
+function toggleClearUndo() {
+  const requirementEl = document.getElementById("requirement");
+  const clearBtn = document.getElementById("clearInputBtn");
+  
+  if (!requirementEl || !clearBtn) return;
+  
+  if (isUndoState) {
+    // Redo: restore last cleared text
+    requirementEl.value = lastClearedText;
+    requirementEl.focus();
+    lastClearedText = "";
+    isUndoState = false;
+    
+    // Update button
+    clearBtn.classList.remove("undo-state");
+    clearBtn.querySelector("i").className = "fas fa-broom";
+    clearBtn.title = "Clear text";
+    
+    showNotification("Text restored");
+  } else {
+    // Clear: save current text
+    const currentText = requirementEl.value;
+    if (!currentText.trim()) {
+      showNotification("Nothing to clear");
+      return;
+    }
+    
+    lastClearedText = currentText;
+    requirementEl.value = "";
+    requirementEl.focus();
+    isUndoState = true;
+    
+    // Update button
+    clearBtn.classList.add("undo-state");
+    clearBtn.querySelector("i").className = "fas fa-redo";
+    clearBtn.title = "Redo cleared text";
+    
+    // Disable convert button
+    document.getElementById("convertBtn").disabled = true;
+    
+    // Clear intent chips
+    renderIntentChips([]);
+    
+    showNotification("Text cleared. Click again to restore.");
+  }
+  
+  // Trigger input event to update other UI
+  requirementEl.dispatchEvent(new Event("input"));
+}
+
+/* ===============================
+   COPY OUTPUT TO CLIPBOARD
+=============================== */
+function copyOutputToClipboard() {
+  const outputEl = document.getElementById("output");
+  if (!outputEl || !outputEl.value.trim()) {
+    showNotification("No output to copy");
+    return;
+  }
+  
+  navigator.clipboard.writeText(outputEl.value)
+    .then(() => {
+      const copyBtn = document.getElementById("copyOutputBtn");
+      if (copyBtn) {
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied';
+        copyBtn.style.backgroundColor = "#10b981";
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalHTML;
+          copyBtn.style.backgroundColor = "";
+        }, 2000);
+      }
+      showNotification("Copied to clipboard");
+    })
+    .catch((err) => {
+      console.error("Copy failed:", err);
+      showNotification("Failed to copy");
+    });
+}
+
+/* ===============================
+   AUTO-CONVERT TIMER FUNCTIONS
+=============================== */
+function resetAutoConvertTimer() {
+  clearAutoConvertTimer();
+  autoConvertCountdown = autoConvertDelay;
+  
+  // Update countdown display
+  const countdownEl = document.getElementById("autoConvertCountdown");
+  if (countdownEl) {
+    countdownEl.textContent = `Auto-convert in ${autoConvertCountdown}s`;
+    countdownEl.style.display = "inline";
+  }
+  
+  autoConvertTimer = setTimeout(() => {
+    const requirement = document.getElementById("requirement").value.trim();
+    if (requirement && !isConverted) {
+      generatePrompt();
+    }
+    clearAutoConvertTimer();
+  }, autoConvertDelay * 1000);
+  
+  // Update countdown every second
+  countdownInterval = setInterval(() => {
+    autoConvertCountdown--;
+    
+    const countdownEl = document.getElementById("autoConvertCountdown");
+    if (countdownEl) {
+      countdownEl.textContent = `Auto-convert in ${autoConvertCountdown}s`;
+      
+      if (autoConvertCountdown <= 0) {
+        countdownEl.style.display = "none";
+      }
+    }
+  }, 1000);
 }
 
 function clearAutoConvertTimer() {
-  clearTimeout(autoConvertTimer);
-  clearInterval(countdownInterval);
-
-  const timerDisplay = document.getElementById("timerDisplay");
-  if (timerDisplay) timerDisplay.style.display = "none";
-}
-
-/* ======================================================
-   🧠 AI TOOL RANKING UI HELPERS (Card 3)
-   SAFE – UI ONLY
-====================================================== */
-
-// Tag the top-ranked AI tool as "Best Match"
-function tagBestMatchLaunchTool() {
-  const tools = document.querySelectorAll(".launch-list .launch-btn");
-  if (!tools.length) return;
-
-  // Clear old tags
-  tools.forEach(tool => {
-    tool.classList.remove("best-match");
-    tool.querySelector(".best-match-tag")?.remove();
-  });
-
-  // First tool = best match (after reorder)
-  const topTool = tools[0];
-  topTool.classList.add("best-match");
-
-  const badge = document.createElement("span");
-  badge.className = "best-match-tag";
-  badge.textContent = "Best Match";
-
-  topTool.appendChild(badge);
-}
-
-// Show explanation below Card 3
-function renderLaunchRankingExplanation(intent) {
-  const wrapper = document.getElementById("ai-ranking-explanation");
-  const textEl = document.getElementById("ai-ranking-reasons");
-
-  if (!wrapper || !textEl || !intent) return;
-
-  const reasons = [];
-
-  if (intent.tone && intent.tone !== "neutral") {
-    reasons.push(`tone: ${intent.tone}`);
+  if (autoConvertTimer) {
+    clearTimeout(autoConvertTimer);
+    autoConvertTimer = null;
   }
-  if (intent.audience && intent.audience !== "general") {
-    reasons.push(`audience: ${intent.audience}`);
+  
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
   }
-  if (intent.depth && intent.depth !== "normal") {
-    reasons.push(`depth: ${intent.depth}`);
-  }
-  if (intent.format && intent.format !== "free") {
-    reasons.push(`format: ${intent.format}`);
-  }
-
-  if (!reasons.length) {
-    wrapper.classList.add("hidden");
-    return;
-  }
-
-  textEl.textContent = reasons.join(" • ");
-  wrapper.classList.remove("hidden");
-}
-
-// Auto-convert
-function handleRequirementInput() {
-  const requirementEl = document.getElementById("requirement");
-  const text = requirementEl.value;
-
-  /* ----------------------------------
-     Reset converted state on typing
-  ---------------------------------- */
-  if (isConverted && text !== lastConvertedText) {
-    document.getElementById("output").value = "";
-    isConverted = false;
-    document.getElementById("convertedBadge").style.display = "none";
-    setLaunchButtonsEnabled(false);
-  }
-
-  isConverted = false;
-  document.getElementById("convertedBadge").style.display = "none";
-  document.getElementById("convertBtn").disabled = !text.trim();
-  setLaunchButtonsEnabled(false);
-
-  /* ----------------------------------
-     Auto-convert timer
-  ---------------------------------- */
-  if (autoConvertEnabled) {
-    resetAutoConvertTimer();
-  }
-
-  /* ----------------------------------
-     Update stats
-  ---------------------------------- */
-  updateStats(text);
-
-  /* ======================================================
-     🔍 INTENT DETECTION + CHIP RENDERING (Card 1)
-  ====================================================== */
-  let intent = null;
-
-  if (!text.trim()) {
-    renderIntentChips([]);
-  } else {
-    intent = window.detectIntentAttributes
-      ? window.detectIntentAttributes(text)
-      : null;
-
-    const chips = intentObjectToChips(intent);
-    renderIntentChips(chips);
-  }
-
-
-  /* ======================================================
-     🧠 AI TOOL RANKING (Card 3)
-     Best match first, rest descending
-  ====================================================== */
-  if (window.AIToolRanker && intent) {
-    window.AIToolRanker.rankAndReorder(intent);
-
-    // ✅ UI-only enhancements
-    tagBestMatchLaunchTool();
-    renderLaunchRankingExplanation(intent);
+  
+  const countdownEl = document.getElementById("autoConvertCountdown");
+  if (countdownEl) {
+    countdownEl.style.display = "none";
   }
 }
 
-// Stats
+/* ===============================
+   STATS FUNCTIONS
+=============================== */
 function updateStats(text) {
-  const charCount = text.length;
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lineCount = text.split("\n").length;
-
-  // SAFE VERSION - only update if elements exist
-  try {
-    const charEl = document.getElementById("charCount");
-    const wordEl = document.getElementById("wordCount");
-    const lineEl = document.getElementById("lineCount");
-    
-    if (charEl) charEl.textContent = `${charCount} characters`;
-    if (wordEl) wordEl.textContent = `${wordCount} words`;
-    if (lineEl) lineEl.textContent = `${lineCount} lines`;
-  } catch (error) {
-    // Ignore if elements don't exist
-    console.log("Stats elements not found - ignoring");
-  }
+  const chars = text.length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lines = text ? text.split("\n").length : 0;
+  
+  document.getElementById("charCount").textContent = chars;
+  document.getElementById("wordCount").textContent = words;
+  document.getElementById("lineCount").textContent = lines;
 }
 
 function updateOutputStats() {
-  const text = document.getElementById("output").value;
-  const charCount = text.length;
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lineCount = text.split("\n").length;
-
-  // SAFE VERSION - only update if elements exist
-  try {
-    const charEl = document.getElementById("outputCharCount");
-    const wordEl = document.getElementById("outputWordCount");
-    const lineEl = document.getElementById("outputLineCount");
-    
-    if (charEl) charEl.textContent = `${charCount} characters`;
-    if (wordEl) wordEl.textContent = `${wordCount} words`;
-    if (lineEl) lineEl.textContent = `${lineCount} lines`;
-  } catch (error) {
-    console.log("Output stats elements not found - ignoring");
-  }
-
-  // 🔥 FORCE Card 2 stats color (ALWAYS RUNS)
-  document
-    .querySelectorAll("#outputCharCount, #outputWordCount, #outputLineCount")
-    .forEach((el) => {
-      el.style.color = "rgba(255, 255, 255, 0.85)";
-    });
+  const outputEl = document.getElementById("output");
+  if (!outputEl) return;
+  
+  const text = outputEl.value;
+  const chars = text.length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lines = text ? text.split("\n").length : 0;
+  
+  document.getElementById("outputCharCount").textContent = chars;
+  document.getElementById("outputWordCount").textContent = words;
+  document.getElementById("outputLineCount").textContent = lines;
 }
 
+function loadUsageCount() {
+  const saved = localStorage.getItem("usageCount");
+  usageCount = saved ? parseInt(saved, 10) : 0;
+  
+  const usageEl = document.getElementById("usageCount");
+  if (usageEl) {
+    usageEl.textContent = usageCount;
+  }
+}
+
+/* ===============================
+   INTENT DETECTION
+=============================== */
+function detectIntentFromText(text) {
+  const lower = text.toLowerCase();
+  const intent = {
+    persona: "neutral",
+    tone: "neutral",
+    formality: "neutral",
+    emotion: "neutral",
+    urgency: "normal",
+    audience: "general",
+    format: "free",
+    depth: "normal",
+    constraints: []
+  };
+  
+  // Detect persona
+  if (/as a |i am a |i'm a /i.test(lower)) {
+    intent.persona = "specific";
+  } else if (/like a |similar to a |channeling /i.test(lower)) {
+    intent.persona = "styled";
+  }
+  
+  // Detect tone
+  if (/friendly|warm|cordial|nice|kind/i.test(lower)) {
+    intent.tone = "friendly";
+  } else if (/professional|formal|business|official/i.test(lower)) {
+    intent.tone = "professional";
+  } else if (/casual|informal|relaxed|laid-back/i.test(lower)) {
+    intent.tone = "casual";
+  } else if (/humorous|funny|witty|sarcastic/i.test(lower)) {
+    intent.tone = "humorous";
+  } else if (/persuasive|convincing|compelling/i.test(lower)) {
+    intent.tone = "persuasive";
+  } else if (/authoritative|confident|assertive/i.test(lower)) {
+    intent.tone = "authoritative";
+  }
+  
+  // Detect formality
+  if (/very formal|highly formal|extremely formal/i.test(lower)) {
+    intent.formality = "very formal";
+  } else if (/formal|professional|business/i.test(lower)) {
+    intent.formality = "formal";
+  } else if (/neutral|balanced|moderate/i.test(lower)) {
+    intent.formality = "neutral";
+  } else if (/informal|casual|relaxed/i.test(lower)) {
+    intent.formality = "informal";
+  } else if (/very informal|highly casual|slang/i.test(lower)) {
+    intent.formality = "very informal";
+  }
+  
+  // Detect emotion
+  if (/excited|enthusiastic|energetic/i.test(lower)) {
+    intent.emotion = "excited";
+  } else if (/urgent|important|critical|asap/i.test(lower)) {
+    intent.emotion = "urgent";
+  } else if (/calm|peaceful|serene|relaxed/i.test(lower)) {
+    intent.emotion = "calm";
+  } else if (/serious|grave|solemn/i.test(lower)) {
+    intent.emotion = "serious";
+  }
+  
+  // Detect urgency
+  if (/urgent|asap|immediately|right away|emergency/i.test(lower)) {
+    intent.urgency = "high";
+  } else if (/soon|shortly|in a bit/i.test(lower)) {
+    intent.urgency = "medium";
+  } else if (/no rush|whenever|at your convenience/i.test(lower)) {
+    intent.urgency = "low";
+  }
+  
+  // Detect audience
+  if (/beginners|newbies|novices|students/i.test(lower)) {
+    intent.audience = "beginners";
+  } else if (/experts|professionals|advanced/i.test(lower)) {
+    intent.audience = "experts";
+  } else if (/technical|developers|engineers/i.test(lower)) {
+    intent.audience = "technical";
+  } else if (/non-technical|general public|everyone/i.test(lower)) {
+    intent.audience = "non-technical";
+  }
+  
+  // Detect format
+  if (/bullet points|bulleted list|list format/i.test(lower)) {
+    intent.format = "bullet points";
+  } else if (/numbered list|step by step|instructions/i.test(lower)) {
+    intent.format = "numbered list";
+  } else if (/table|tabular|rows and columns/i.test(lower)) {
+    intent.format = "table";
+  } else if (/json|xml|yaml|code format/i.test(lower)) {
+    intent.format = "structured";
+  } else if (/paragraph|prose|essay format/i.test(lower)) {
+    intent.format = "paragraph";
+  }
+  
+  // Detect depth
+  if (/detailed|comprehensive|in-depth|thorough/i.test(lower)) {
+    intent.depth = "detailed";
+  } else if (/brief|concise|short|summary/i.test(lower)) {
+    intent.depth = "brief";
+  } else if (/high-level|overview|summary/i.test(lower)) {
+    intent.depth = "high-level";
+  }
+  
+  return intent;
+}
+
+/* ===============================
+   MISSING FUNCTIONS FROM ORIGINAL FILE
+=============================== */
 
 // Clean up output
 function sanitizePrompt(text) {
@@ -1618,7 +1816,14 @@ function sanitizePrompt(text) {
   return cleaned.trim();
 }
 
-// Generation - FIXED VERSION
+// Local formatter fallback
+function localFormatter(raw) {
+  const requirement = raw;
+  const { role } = getRoleAndPreset(requirement);
+  return PRESETS[currentPreset](role, requirement);
+}
+
+// API-based prompt generation
 async function generatePrompt() {
   const requirementEl = document.getElementById("requirement");
   const outputEl = document.getElementById("output");
@@ -1713,7 +1918,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
     generatedPrompt = sanitizePrompt(generatedPrompt);
 
     outputEl.value = generatedPrompt;
-   updateStats(raw);
+    updateStats(raw);
     updateOutputStats();
     saveToHistory(raw, generatedPrompt);
 
@@ -1744,13 +1949,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
   return generatedPrompt;
 }
 
-function localFormatter(raw) {
-  const requirement = raw;
-  const { role } = getRoleAndPreset(requirement);
-  return PRESETS[currentPreset](role, requirement);
-}
-
-// Export
+// Export prompt to file
 function exportPrompt() {
   const outputEl = document.getElementById("output");
   const prompt = outputEl.value;
@@ -1772,7 +1971,7 @@ function exportPrompt() {
   showNotification("Prompt exported");
 }
 
-// AI Tool opener
+// Open AI tool with prompt copied to clipboard
 function openAITool(name, url) {
   const outputEl = document.getElementById("output");
   const prompt = outputEl.value.trim();
@@ -1796,7 +1995,7 @@ function openAITool(name, url) {
     });
 }
 
-// Notification
+// Show notification toast
 function showNotification(message) {
   const notification = document.getElementById("notification");
   if (!notification) return;
@@ -1825,3 +2024,24 @@ window.openAITool = openAITool;
 window.saveSettings = saveSettings;
 window.clearAllData = clearAllData;
 window.resetTextareaSizes = resetTextareaSizes;
+window.clearHistory = clearHistory;
+window.useTemplate = function (id) {
+  const template = templates.find((t) => t.id === id);
+  if (template) {
+    template.usageCount = (template.usageCount || 0) + 1;
+    localStorage.setItem("promptTemplates", JSON.stringify(templates));
+
+    document.getElementById("requirement").value = template.example || "";
+    document.getElementById("output").value = template.content;
+    updateStats(template.content);
+    updateOutputStats();
+    isConverted = true;
+    lastConvertedText = template.example || "";
+    document.getElementById("convertedBadge").style.display = "inline-flex";
+    setLaunchButtonsEnabled(true);
+    showNotification("Template loaded into prompt");
+  }
+};
+window.editTemplate = editTemplate;
+window.deleteTemplate = deleteTemplate;
+window.resetEverything = resetEverything;
