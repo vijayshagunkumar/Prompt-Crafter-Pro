@@ -563,251 +563,6 @@ body {
   text-shadow: 0 0 5px var(--secondary);
 }
 
-/* ===========================================
-   RESIZABLE TEXT AREAS - CYBERPUNK STYLE
-   =========================================== */
-
-/* Enable vertical resizing for both textareas */
-.textarea-idea,
-.output-textarea {
-  resize: vertical !important;
-  min-height: 140px;
-  max-height: 800px;
-  transition: height 0.3s ease;
-  position: relative;
-}
-
-/* Remove the default resize handle styling */
-.textarea-idea::-webkit-resizer,
-.output-textarea::-webkit-resizer {
-  border-color: transparent;
-  background-color: transparent;
-}
-
-/* Custom cyberpunk resize handle */
-.textarea-idea::after,
-.output-textarea::after {
-  content: "";
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(135deg, 
-    transparent 50%, 
-    var(--primary) 50%, 
-    var(--primary) 60%, 
-    transparent 60%,
-    transparent 70%, 
-    var(--secondary) 70%, 
-    var(--secondary) 80%, 
-    transparent 80%);
-  opacity: 0.5;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  border-radius: 2px;
-}
-
-/* Hover effect for resize handle */
-.textarea-idea:hover::after,
-.output-textarea:hover::after {
-  opacity: 1;
-  animation: pulse-cyber 2s infinite;
-}
-
-@keyframes pulse-cyber {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
-}
-
-/* Resize indicator text */
-.resize-indicator {
-  position: absolute;
-  bottom: 6px;
-  right: 28px;
-  font-size: 10px;
-  color: var(--text-muted);
-  background: rgba(10, 14, 23, 0.8);
-  padding: 2px 6px;
-  border-radius: 2px;
-  border: 1px solid var(--border-subtle);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.textarea-wrapper:hover .resize-indicator {
-  opacity: 0.7;
-}
-
-/* Remove fixed heights from cards and make them flexible */
-.step-card {
-  min-height: auto !important;
-  height: auto;
-  transition: height 0.3s ease;
-}
-
-/* Adjust field blocks for flexible layout */
-.field-block,
-.field-block-output {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Expand/Collapse Buttons */
-.expand-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 30px;
-  height: 30px;
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 94, 0, 0.1);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.3s ease;
-  z-index: 10;
-  backdrop-filter: blur(5px);
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
-}
-
-.expand-btn:hover {
-  border-color: var(--primary);
-  background: rgba(255, 94, 0, 0.2);
-  box-shadow: 0 0 10px rgba(255, 94, 0, 0.4);
-  transform: scale(1.1);
-}
-
-.expand-btn.expanded {
-  background: rgba(0, 243, 255, 0.2);
-  border-color: var(--secondary);
-  color: var(--secondary);
-}
-
-.expand-btn.expanded:hover {
-  box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
-}
-
-/* Size info display */
-.size-info {
-  position: absolute;
-  top: 12px;
-  right: 50px;
-  font-size: 10px;
-  color: var(--text-muted);
-  background: rgba(10, 14, 23, 0.8);
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: none;
-}
-
-/* Expanded mode styling */
-.textarea-expanded {
-  position: fixed !important;
-  top: 50px !important;
-  left: 50px !important;
-  right: 50px !important;
-  bottom: 50px !important;
-  width: auto !important;
-  height: auto !important;
-  z-index: 1000 !important;
-  background: var(--panel-bg) !important;
-  border: 2px solid var(--primary) !important;
-  box-shadow: 
-    0 0 40px rgba(255, 94, 0, 0.5),
-    0 0 80px rgba(0, 243, 255, 0.3) !important;
-  resize: none !important;
-  max-height: none !important;
-  min-height: auto !important;
-  font-size: 16px !important;
-  padding: 20px !important;
-}
-
-.textarea-expanded + .expand-btn {
-  position: fixed;
-  top: 60px;
-  right: 60px;
-  z-index: 1001;
-  background: rgba(255, 94, 0, 0.3);
-}
-
-/* Full-screen overlay for expanded mode */
-.expand-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
-  z-index: 999;
-  display: none;
-}
-
-/* Improve textarea padding for resize buttons */
-.textarea-idea {
-  padding: 12px 12px 40px 12px !important;
-}
-
-.output-textarea {
-  padding: 12px 12px 40px 12px !important;
-}
-
-/* Adjust textarea-buttons position to avoid resize handle */
-.textarea-buttons {
-  bottom: 8px;
-  left: 12px;
-  right: 40px;
-}
-
-/* For Step 3 card, adjust launch list to be scrollable if needed */
-.step-card:nth-child(3) .launch-list {
-  max-height: 380px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-/* Custom scrollbar for launch list */
-.launch-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.launch-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.launch-list::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
-}
-
-/* Animation for size change */
-@keyframes size-change {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-
-.size-changing {
-  animation: size-change 0.3s ease;
-}
-
 /* INPUTS & TEXTAREAS */
 .field-block {
   margin-bottom: 16px;
@@ -956,6 +711,29 @@ textarea::placeholder {
 .btn-ghost-small.danger:hover {
   background: rgba(255, 68, 68, 0.2);
   box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+.btn-ghost {
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(255, 94, 0, 0.1);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.btn-ghost:hover {
+  border-color: var(--primary);
+  background: rgba(255, 94, 0, 0.2);
+  box-shadow: 0 0 10px rgba(255, 94, 0, 0.3);
 }
 
 /* TEMPLATES - UPDATED: Shortened with eye icon */
@@ -1253,6 +1031,12 @@ textarea::placeholder {
   transform: scale(1.05);
 }
 
+.preset-option:hover {
+  border-color: var(--primary);
+  background: rgba(255, 94, 0, 0.3);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
 
 /* OUTPUT FOOTER */
 .output-footer {
@@ -1696,6 +1480,147 @@ textarea::placeholder {
   text-shadow: 0 0 5px var(--success);
 }
 
+/* CARD ACTIONS */
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.converted-badge {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: rgba(0, 255, 65, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+/* STATS ROW */
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.stats-row span {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 94, 0, 0.05);
+  border: 1px solid rgba(255, 94, 0, 0.1);
+}
+
+/* Expand buttons */
+.expand-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 94, 0, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.expand-btn:hover {
+  border-color: var(--primary);
+  background: rgba(255, 94, 0, 0.2);
+  box-shadow: 0 0 10px rgba(255, 94, 0, 0.4);
+  transform: scale(1.1);
+}
+
+.expand-btn.expanded {
+  background: rgba(0, 243, 255, 0.2);
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.expand-btn.expanded:hover {
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+/* Expand overlay */
+.expand-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  display: none;
+}
+
+/* Size info */
+.size-info {
+  position: absolute;
+  top: 12px;
+  right: 50px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(10, 14, 23, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: none;
+}
+
+/* Textarea expanded mode */
+.textarea-expanded {
+  position: fixed !important;
+  top: 50px !important;
+  left: 50px !important;
+  right: 50px !important;
+  bottom: 50px !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 1000 !important;
+  background: var(--panel-bg) !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 
+    0 0 40px rgba(255, 94, 0, 0.5),
+    0 0 80px rgba(0, 243, 255, 0.3) !important;
+  resize: none !important;
+  max-height: none !important;
+  min-height: auto !important;
+  font-size: 16px !important;
+  padding: 20px !important;
+}
+
+.textarea-expanded + .expand-btn {
+  position: fixed;
+  top: 60px;
+  right: 60px;
+  z-index: 1001;
+  background: rgba(255, 94, 0, 0.3);
+}
+
 /* Responsive adjustments for resize features */
 @media (max-width: 768px) {
   .textarea-expanded {
@@ -1716,13 +1641,141 @@ textarea::placeholder {
     font-size: 9px;
     padding: 3px 6px;
   }
-  
-  .resize-indicator {
-    display: none; /* Hide on mobile for cleaner UI */
-  }
 }
 
-/* RESPONSIVE */
+/* === AI TOOL RANKING UI === */
+
+/* Best Match badge */
+.best-match-tag {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  background: linear-gradient(135deg, #00FF41, #00F3FF);
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 8px rgba(0,255,65,.8);
+  pointer-events: none;
+}
+
+.launch-btn.best-match {
+  border-color: #00FF41 !important;
+  box-shadow: 0 0 16px rgba(0,255,65,.5);
+}
+
+/* Ranking explanation */
+.ai-ranking-explanation {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--secondary);
+  background: rgba(0,243,255,.08);
+  border: 1px solid rgba(0,243,255,.35);
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.ai-ranking-explanation.hidden {
+  display: none;
+}
+
+/* ================================
+   Intent Detection Chips (Card 1)
+================================ */
+
+.intent-row {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.intent-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  overflow-x: auto;      /* ✅ ENABLE HORIZONTAL SCROLL */
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  padding-bottom: 6px;
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* WebKit scrollbar (Chrome, Edge, Safari) */
+.intent-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.intent-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.intent-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+}
+
+/* Individual chip styling */
+.intent-chip {
+  flex: 0 0 auto; /* 🔥 REQUIRED so chips don't shrink */
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  color: #ffffff;              /* ✅ FIX BLACK TEXT */
+  background: rgba(59, 130, 246, 0.18);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+
+  backdrop-filter: blur(6px);
+}
+
+/* ================================
+   FINAL STABLE TEXTAREA + CARD LAYOUT
+================================ */
+
+.step-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 550px;
+}
+
+.step-card .textarea-idea,
+.step-card .output-textarea {
+  flex: 1;
+  min-height: 0;
+  resize: vertical;
+
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Prevent resize artifact line */
+.step-card textarea {
+  overflow: auto;
+}
+
+/* Push footer buttons to bottom */
+.step-card .template-section,
+.step-card .output-footer {
+  margin-top: auto;
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
   .cards-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1773,7 +1826,7 @@ textarea::placeholder {
   }
 
   .step-card {
-    min-height: auto;
+    min-height: 500px;
   }
 
   .footer {
@@ -1789,6 +1842,13 @@ textarea::placeholder {
   .modal {
     width: 95%;
     margin: 10px;
+  }
+  
+  .textarea-expanded {
+    top: 10px !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
   }
 }
 
@@ -1853,7 +1913,7 @@ textarea::placeholder {
   .output-textarea {
     min-height: 100px;
     font-size: 13px;
-    padding: 10px 50px 10px 50px;
+    padding: 10px 40px 10px 10px;
   }
   
   .textarea-buttons {
@@ -1863,7 +1923,8 @@ textarea::placeholder {
   }
   
   .voice-input-btn,
-  .clear-input-btn {
+  .clear-input-btn,
+  .voice-output-btn {
     width: 36px;
     height: 36px;
     font-size: 14px;
@@ -1883,7 +1944,7 @@ textarea::placeholder {
 /* Landscape orientation fixes */
 @media (max-height: 600px) and (orientation: landscape) {
   .step-card {
-    min-height: 500px;
+    min-height: 400px;
   }
   
   .textarea-idea {
@@ -2000,404 +2061,4 @@ textarea::placeholder {
   .step-card:nth-child(3) .launch-btn {
     padding: 8px 12px;
   }
-}
-/* ===========================================
-   FIX: Remove scroll from 3rd card
-   =========================================== */
-
-/* 1. Make 3rd card taller */
-.step-card:nth-child(3) {
-  min-height: 550px !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-/* 2. Remove max-height from launch list */
-.step-card:nth-child(3) .launch-list {
-  max-height: none !important;
-  overflow: visible !important;
-  padding-right: 0 !important;
-}
-
-/* 3. Make launch buttons more compact */
-.launch-btn {
-  padding: 8px 12px !important;
-  margin-bottom: 6px !important;
-  min-height: 50px !important;
-}
-
-/* 4. Reduce icon size */
-.launch-icon {
-  width: 30px !important;
-  height: 30px !important;
-  font-size: 14px !important;
-}
-
-/* 5. Reduce text size */
-.launch-name {
-  font-size: 13px !important;
-}
-
-.launch-sub {
-  font-size: 11px !important;
-}
-
-/* 6. Reduce spacing between buttons */
-.launch-list {
-  gap: 6px !important;
-}
-
-/* 7. Make launch hint more compact */
-.launch-hint {
-  padding: 6px 10px !important;
-  font-size: 11px !important;
-  margin-bottom: 10px !important;
-  line-height: 1.3 !important;
-}
-
-/* ===========================================
-   FINAL SIMPLE FIX: MAKE CARDS 1 & 2 BIGGER
-   =========================================== */
-
-/* Clear ALL previous height settings first */
-.cards-grid {
-    align-items: stretch !important;
-}
-
-/* Card 1: Make it bigger */
-.step-card:nth-child(1) {
-    min-height: 650px !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* Card 2: Make it bigger */
-.step-card:nth-child(2) {
-    min-height: 650px !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* Card 3: Keep normal size */
-.step-card:nth-child(3) {
-    min-height: 550px !important;
-}
-
-/* Make textareas taller to fill space */
-.step-card:nth-child(1) .textarea-idea {
-    min-height: 400px !important;
-    flex: 1 !important;
-}
-
-.step-card:nth-child(2) .output-textarea {
-    min-height: 400px !important;
-    flex: 1 !important;
-}
-
-/* Ensure bottom buttons stay at bottom */
-.step-card:nth-child(1) .template-section {
-    margin-top: auto !important;
-    padding-top: 20px !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .step-card:nth-child(1),
-    .step-card:nth-child(2) {
-        min-height: 550px !important;
-    }
-    
-    .step-card:nth-child(1) .textarea-idea,
-    .step-card:nth-child(2) .output-textarea {
-        min-height: 300px !important;
-    }
-}
-/* ================================
-   Card 2 Header Text Visibility Fix
-================================ */
-
-#presetInfo {
-  color: var(--text-primary, #ffffff);
-  font-weight: 600;
-}
-
-.output-stats,
-#outputCharCount,
-#outputWordCount,
-#outputLineCount {
-  color: var(--text-muted, rgba(255, 255, 255, 0.75));
-}
-
-/* Ensure stats stay readable on dark backgrounds */
-.card-output .output-stats {
-  background: transparent;
-}
-
-/* ================================
-   FORCE FIX – Output Stats Text
-   (Overrides theme defaults)
-================================ */
-
-/* Card 2 stats container */
-.card-output .output-stats {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Individual stat spans */
-.card-output .output-stats span,
-.card-output #outputCharCount,
-.card-output #outputWordCount,
-.card-output #outputLineCount {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-/* FORCE visibility for Card 2 output stats */
-.card-output .output-stats,
-.card-output .output-stats span,
-.card-output #outputCharCount,
-.card-output #outputWordCount,
-.card-output #outputLineCount {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* FINAL FIX — Card 2 stats visibility */
-.stats-row {color: rgba(255, 255, 255, 0.9) !important;}
-.stats-row span {  color: rgba(255, 255, 255, 0.9);}
-/* ================================
-   Intent Chips (Card 1)
-================================ */
-
-#intentRow {
-  display: none;
-  margin-top: 8px;
-}
-
-#intentScroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  scrollbar-width: none;
-}
-
-#intentScroll::-webkit-scrollbar {
-  display: none;
-}
-
-.intent-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-
-  /* ✅ VISIBILITY FIX */
-  color: #e5e7eb;                 /* light text */
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.35);
-
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-}
-
-/* ================================
-   Intent Detection Chips (Card 1)
-================================ */
-
-.intent-row {
-  margin-top: 10px;
-  width: 100%;
-}
-
-.intent-scroll {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  overflow-x: auto;      /* ✅ ENABLE HORIZONTAL SCROLL */
-  overflow-y: hidden;
-  white-space: nowrap;
-
-  padding-bottom: 6px;
-  scrollbar-width: thin; /* Firefox */
-}
-
-/* WebKit scrollbar (Chrome, Edge, Safari) */
-.intent-scroll::-webkit-scrollbar {
-  height: 6px;
-}
-
-.intent-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.intent-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
-}
-
-/* Individual chip styling */
-.intent-chip {
-  flex: 0 0 auto; /* 🔥 REQUIRED so chips don’t shrink */
-
-  padding: 6px 10px;
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 500;
-
-  color: #ffffff;              /* ✅ FIX BLACK TEXT */
-  background: rgba(59, 130, 246, 0.18);
-  border: 1px solid rgba(59, 130, 246, 0.35);
-
-  backdrop-filter: blur(6px);
-}
-/* === AI TOOL RANKING UI === */
-
-/* Best Match badge */
-.launch-btn { position: relative; }
-
-.best-match-tag {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  padding: 3px 8px;
-  font-size: 10px;
-  font-weight: 700;
-  color: #000;
-  background: linear-gradient(135deg, #00FF41, #00F3FF);
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 0 8px rgba(0,255,65,.8);
-  pointer-events: none;
-}
-
-.launch-btn.best-match {
-  border-color: #00FF41 !important;
-  box-shadow: 0 0 16px rgba(0,255,65,.5);
-}
-
-/* Ranking explanation */
-.ai-ranking-explanation {
-  margin-top: 12px;
-  padding: 10px 12px;
-  font-size: 11px;
-  color: var(--secondary);
-  background: rgba(0,243,255,.08);
-  border: 1px solid rgba(0,243,255,.35);
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: 'Courier New', monospace;
-}
-
-.ai-ranking-explanation.hidden {
-  display: none;
-}
-.step-card {
-  display: flex;
-  flex-direction: column;
-}
-
-
-/* ================================
-   FINAL FIX – TEXTAREA LAYOUT + THEME
-================================ */
-
-/* Make cards stretch properly */
-.step-card {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Textarea must fill remaining space */
-
-  padding: 14px;
-  font-family: "Inter", monospace;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* Prevent resize observer visual artifact */
-.step-card .textarea:focus {
-  outline: none;
-}
-
-/* Kill the horizontal resize artifact line */
-.step-card textarea {
-  overflow: auto;
-}
-/* =========================================
-   FINAL STABLE FIX – CARD + TEXTAREA LAYOUT
-========================================= */
-
-/* Cards behave as vertical containers */
-.step-card {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Textareas fill remaining height */
-.step-card .textarea-idea,
-.step-card .output-textarea {
-  flex: 1;
-  min-height: 0;
-  resize: none;
-
-  background: var(--input-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* Prevent resize ghost line */
-.step-card textarea {
-  overflow: auto;
-}
-
-/* Footer content stays at bottom */
-.step-card .template-section,
-.step-card .output-footer {
-  margin-top: auto;
-}
-
-/* =========================================
-   FINAL STABLE TEXTAREA + CARD LAYOUT
-========================================= */
-
-.step-card {
-  display: flex;
-  flex-direction: column;
-}
-
-.step-card .textarea-idea,
-.step-card .output-textarea {
-  flex: 1;
-  min-height: 0;
-  resize: none; /* or vertical, but only here */
-
-  background: var(--input-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* Prevent resize artifact line */
-.step-card textarea {
-  overflow: auto;
-}
-
-/* Push footer buttons to bottom */
-.step-card .template-section,
-.step-card .output-footer {
-  margin-top: auto;
 }
