@@ -1235,28 +1235,47 @@ function setupEventListeners() {
   /* ===============================
      EXAMPLE BUTTONS
   =============================== */
-  document.querySelectorAll(".example-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (!requirementEl) return;
+/* ===============================
+   EXAMPLE BUTTONS - FIXED (Triggers AI ranking)
+=============================== */
+document.querySelectorAll(".example-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (!requirementEl) return;
 
-      requirementEl.value = btn.dataset.example;
-      requirementEl.focus();
+    requirementEl.value = btn.dataset.example;
+    requirementEl.focus();
 
-      isConverted = false;
-      const outputEl = document.getElementById("output");
-      if (outputEl) outputEl.value = "";
+    isConverted = false;
+    const outputEl = document.getElementById("output");
+    if (outputEl) outputEl.value = "";
 
-      const badge = document.getElementById("convertedBadge");
-      if (badge) badge.style.display = "none";
+    const badge = document.getElementById("convertedBadge");
+    if (badge) badge.style.display = "none";
 
-      setLaunchButtonsEnabled(false);
-      updateStats(requirementEl.value);
-
-      if (requirementEl.value.trim()) {
-        generatePrompt();
+    setLaunchButtonsEnabled(false);
+    updateStats(requirementEl.value);
+    
+    // ✅ FIX: Trigger AI tool ranking for examples
+    const requirement = requirementEl.value.trim();
+    if (requirement) {
+      const intent = detectIntentFromText(requirement);
+      
+      // Update AI tool ranking
+      if (window.AIToolRanker && intent) {
+        window.AIToolRanker.rankAndReorder(intent);
       }
-    });
+      
+      // Also trigger auto-convert if enabled
+      if (autoConvertEnabled && autoConvertDelay > 0) {
+        resetAutoConvertTimer();
+      }
+    }
+
+    if (requirementEl.value.trim()) {
+      generatePrompt();
+    }
   });
+});
 
   /* ===============================
      CONVERT BUTTON
