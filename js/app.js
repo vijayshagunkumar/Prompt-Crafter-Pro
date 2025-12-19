@@ -1371,6 +1371,63 @@ function clearAutoConvertTimer() {
   const timerDisplay = document.getElementById("timerDisplay");
   if (timerDisplay) timerDisplay.style.display = "none";
 }
+/* ======================================================
+   🧠 AI TOOL RANKING UI HELPERS (Card 3)
+   SAFE – UI ONLY
+====================================================== */
+
+// Tag the top-ranked AI tool as "Best Match"
+function tagBestMatchLaunchTool() {
+  const tools = document.querySelectorAll(".launch-list .launch-btn");
+  if (!tools.length) return;
+
+  // Clear old tags
+  tools.forEach(tool => {
+    tool.classList.remove("best-match");
+    tool.querySelector(".best-match-tag")?.remove();
+  });
+
+  // First tool = best match (after reorder)
+  const topTool = tools[0];
+  topTool.classList.add("best-match");
+
+  const badge = document.createElement("span");
+  badge.className = "best-match-tag";
+  badge.textContent = "Best Match";
+
+  topTool.appendChild(badge);
+}
+
+// Show explanation below Card 3
+function renderLaunchRankingExplanation(intent) {
+  const wrapper = document.getElementById("aiRankingExplanation");
+  const textEl = document.getElementById("aiRankingReasonText");
+
+  if (!wrapper || !textEl || !intent) return;
+
+  const reasons = [];
+
+  if (intent.tone && intent.tone !== "neutral") {
+    reasons.push(`tone: ${intent.tone}`);
+  }
+  if (intent.audience && intent.audience !== "general") {
+    reasons.push(`audience: ${intent.audience}`);
+  }
+  if (intent.depth && intent.depth !== "normal") {
+    reasons.push(`depth: ${intent.depth}`);
+  }
+  if (intent.format && intent.format !== "free") {
+    reasons.push(`format: ${intent.format}`);
+  }
+
+  if (!reasons.length) {
+    wrapper.style.display = "none";
+    return;
+  }
+
+  textEl.textContent = reasons.join(" • ");
+  wrapper.style.display = "block";
+}
 
 // Auto-convert
 function handleRequirementInput() {
@@ -1420,14 +1477,18 @@ function handleRequirementInput() {
     renderIntentChips(chips);
   }
 
+
   /* ======================================================
      🧠 AI TOOL RANKING (Card 3)
      Best match first, rest descending
   ====================================================== */
   if (window.AIToolRanker && intent) {
     window.AIToolRanker.rankAndReorder(intent);
+
+    // ✅ UI-only enhancements
+    tagBestMatchLaunchTool();
+    renderLaunchRankingExplanation(intent);
   }
-}
 
 
 // Stats
