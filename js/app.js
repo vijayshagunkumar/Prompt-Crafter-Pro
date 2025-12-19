@@ -2384,18 +2384,8 @@ function showNotification(message) {
      Update Best Match Display
   ------------------------------------------ */
 
- function updateBestMatchDisplay(intent, orderedTools) {
+function updateBestMatchDisplay(intent, orderedTools) {
   if (!intent || !orderedTools || orderedTools.length === 0) return;
-  
-  // Only add "Best Match: 100%" to the FIRST tool (index 0)
-  const topToolKey = orderedTools[0];
-  const topTool = AI_TOOL_PROFILES[topToolKey];
-  
-  if (!topTool || topTool.score < 10) return;
-  
-  // Get the top tool button
-  const topToolBtn = document.getElementById(`${topToolKey}Btn`);
-  if (!topToolBtn) return;
   
   // Clear existing best-match tags from ALL buttons first
   document.querySelectorAll('.launch-btn').forEach(btn => {
@@ -2406,7 +2396,16 @@ function showNotification(message) {
     if (existingScore) existingScore.remove();
   });
   
-  // Now add to only the top tool
+  // Only add "Best Match: 100%" to the FIRST tool (index 0) if it meets threshold
+  const topToolKey = orderedTools[0];
+  const topTool = AI_TOOL_PROFILES[topToolKey];
+  
+  if (!topTool || topTool.score < 10) return;
+  
+  const topToolBtn = document.getElementById(`${topToolKey}Btn`);
+  if (!topToolBtn) return;
+  
+  // Add best match styling and tags to only the top tool
   topToolBtn.classList.add("best-match");
   
   const bestMatchTag = document.createElement("span");
@@ -2507,7 +2506,7 @@ document.querySelectorAll('.launch-btn').forEach(btn => {
       
       // Update best match display
       if (ordered.length > 0) {
-        updateBestMatchDisplay(intent, ordered[0]);
+updateBestMatchDisplay(intent, ordered);
       }
       
       // Setup tooltips
