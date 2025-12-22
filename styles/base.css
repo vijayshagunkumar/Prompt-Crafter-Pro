@@ -1,0 +1,107 @@
+/* ======================================================
+   base.css
+   Purpose: Reset, body styles, typography, globals
+====================================================== */
+
+/* ------------------------------
+   CSS Reset
+------------------------------ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* ------------------------------
+   Body & Background
+------------------------------ */
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: 'Courier New', 'Inter', monospace, sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
+
+  /* Cyberpunk grid background */
+  background-image:
+    linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+}
+
+/* ------------------------------
+   Global Text Defaults
+------------------------------ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------
+   Utility Classes
+------------------------------ */
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  display: block !important;
+}
+
+/* Prevent text selection where needed */
+.no-select {
+  user-select: none;
+}
+
+/* ------------------------------
+   Scan Line Animation
+------------------------------ */
+.scan-line {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #00F3FF,
+    transparent
+  );
+  animation: scan-line-move 3s linear infinite;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes scan-line-move {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
