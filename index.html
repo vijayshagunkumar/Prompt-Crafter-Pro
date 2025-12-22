@@ -12,19 +12,19 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Styles (Will keep your structure) -->
+    <!-- Styles -->
     <link rel="stylesheet" href="styles/variables.css">
     <link rel="stylesheet" href="styles/themes.css">
     <link rel="stylesheet" href="styles/main.css">
 </head>
 
 <body>
-    <!-- Your existing overlay structure -->
+    <!-- Visual Effects -->
     <div class="scan-line"></div>
     <div id="particles" class="particles"></div>
     <div id="expandOverlay" class="expand-overlay hidden"></div>
 
-    <!-- Your notification -->
+    <!-- Notification -->
     <div id="notification" class="notification hidden">
         <i class="fas fa-info-circle"></i>
         <span id="notificationText"></span>
@@ -56,22 +56,24 @@
                         </div>
                     </div>
 
-                    <!-- Intent chips (your structure) -->
+                    <!-- Intent chips -->
                     <div id="intentRow" class="intent-row">
                         <div id="intentScroll" class="intent-scroll"></div>
                     </div>
 
-                    <!-- Textarea -->
+                    <!-- Textarea with Maximize Button -->
                     <div class="textarea-container">
                         <textarea 
                             id="requirement" 
                             class="textarea-idea"
-                            placeholder="Write a professional email to my manager requesting leave for 3 days..."
-                        ></textarea>
+                        >Write a professional email to my manager requesting leave for 3 days.</textarea>
+                        <button id="expandInputBtn" class="expand-btn" title="Maximize">
+                            <i class="fas fa-expand"></i>
+                        </button>
                     </div>
 
                     <!-- Buttons -->
-                    <button id="convertBtn" class="btn-primary" disabled>
+                    <button id="convertBtn" class="btn-primary">
                         <i class="fas fa-magic"></i> Convert
                     </button>
                     <button id="resetBtn" class="btn-secondary">
@@ -87,13 +89,12 @@
                             <h2>Structured Prompt</h2>
                             <p class="subtitle">Optimized prompt ready for AI</p>
                         </div>
-                        <!-- Your converted badge -->
                         <span id="convertedBadge" class="badge hidden">
                             <i class="fas fa-check"></i> Converted
                         </span>
                     </div>
 
-                    <!-- Textarea -->
+                    <!-- Textarea with Maximize Button -->
                     <div class="textarea-container">
                         <textarea 
                             id="output" 
@@ -101,6 +102,9 @@
                             placeholder="Your structured prompt will appear here..."
                             readonly
                         ></textarea>
+                        <button id="expandOutputBtn" class="expand-btn" title="Maximize">
+                            <i class="fas fa-expand"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -114,36 +118,49 @@
                         </div>
                     </div>
 
-                    <!-- AI Tools Grid (Your structure but clean) -->
-                    <div class="tools-grid">
-                        <button class="tool-btn" id="chatgptBtn" disabled>
+                    <!-- AI Tools Grid with Ranking -->
+                    <div class="tools-grid" id="aiToolsContainer">
+                        <button class="tool-btn" id="chatgptBtn" data-rank="1">
                             <span class="tool-icon">C</span>
                             <span class="tool-name">ChatGPT</span>
+                            <span class="tool-score">100%</span>
                         </button>
-                        <button class="tool-btn" id="claudeBtn" disabled>
+                        <button class="tool-btn" id="claudeBtn" data-rank="2">
                             <span class="tool-icon">C</span>
                             <span class="tool-name">Claude</span>
+                            <span class="tool-score">95%</span>
                         </button>
-                        <button class="tool-btn" id="geminiBtn" disabled>
+                        <button class="tool-btn" id="geminiBtn" data-rank="3">
                             <span class="tool-icon">G</span>
                             <span class="tool-name">Gemini</span>
+                            <span class="tool-score">90%</span>
                         </button>
-                        <button class="tool-btn" id="perplexityBtn" disabled>
+                        <button class="tool-btn" id="perplexityBtn" data-rank="4">
                             <span class="tool-icon">P</span>
                             <span class="tool-name">Perplexity</span>
+                            <span class="tool-score">85%</span>
                         </button>
-                        <button class="tool-btn" id="deepseekBtn" disabled>
+                        <button class="tool-btn" id="deepseekBtn" data-rank="5">
                             <span class="tool-icon">D</span>
                             <span class="tool-name">DeepSeek</span>
+                            <span class="tool-score">80%</span>
                         </button>
-                        <button class="tool-btn" id="copilotBtn" disabled>
+                        <button class="tool-btn" id="copilotBtn" data-rank="6">
                             <span class="tool-icon">M</span>
                             <span class="tool-name">Copilot</span>
+                            <span class="tool-score">75%</span>
                         </button>
-                        <button class="tool-btn" id="grokBtn" disabled>
+                        <button class="tool-btn" id="grokBtn" data-rank="7">
                             <span class="tool-icon">G</span>
                             <span class="tool-name">Grok</span>
+                            <span class="tool-score">70%</span>
                         </button>
+                    </div>
+                    
+                    <!-- Ranking Explanation -->
+                    <div class="ranking-explanation" id="rankingExplanation">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Tools are ranked based on your input intent</span>
                     </div>
                 </div>
             </div>
@@ -155,7 +172,7 @@
         </footer>
     </div>
 
-    <!-- Your scripts (single entry point) -->
+    <!-- Scripts -->
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
