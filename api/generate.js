@@ -1,20 +1,32 @@
+// PromptCraft – Secure Backend API
+// Purpose: Proxy OpenAI calls so API key is never exposed to browser
+
 export default async function handler(req, res) {
+  // Allow only POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { prompt } = req.body;
+    const { prompt } = req.body || {};
 
+    // Basic validation
     if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({ error: "Invalid prompt" });
     }
 
-    if (prompt.length > 3000) {
+    // Hard safety limits (protect your quota)
+    if (prompt.length > 3500) {
       return res.status(400).json({ error: "Prompt too long" });
     }
 
-    const openaiResponse = await fetch(
+    // Ensure API key exists
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "Server misconfigured" });
+    }
+
+    // Call OpenAI
+    const response = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
@@ -28,7 +40,7 @@ export default async function handler(req, res) {
             {
               role: "system",
               content:
-                "You are PromptCraft. Convert the user's idea into a clear, structured AI prompt with role, objective, context, instructions, and notes."
+                "You are PromptCraft. Convert the user's input into a clear, structured AI prompt with Role, Objective, Context, Instructions, and Notes."
             },
             {
               role: "user",
@@ -36,23 +48,26 @@ export default async function handler(req, res) {
             }
           ],
           temperature: 0.4,
-          max_tokens: 600
+          max_tokens: 700
         })
       }
     );
 
-    const data = await openaiResponse.json();
+    const data = await response.json();
 
-    if (!data.choices || !data.choices[0]) {
-      return res.status(500).json({ error: "Invalid OpenAI response" });
+    // Defensive checks
+    if (!response.ok || !data?.choices?.[0]?.message?.content) {
+      console.error("OpenAI error:", data);
+      return res.status(500).json({ error: "AI generation failed" });
     }
 
+    // Success
     return res.status(200).json({
       result: data.choices[0].message.content
     });
 
   } catch (err) {
-    console.error("PromptCraft API error:", err);
-    return res.status(500).json({ error: "Generation failed" });
+    console.error("PromptCraft backend error:", err);
+    return res.status(500).json({ error: "Unexpected server error" });
   }
 }
