@@ -105,3 +105,10 @@ a:hover {
   0% { top: 0; }
   100% { top: 100%; }
 }
+
+/* FIX: overlays must not block clicks */
+.scan-line,
+.particles,
+.expand-overlay {
+  pointer-events: none;
+}
