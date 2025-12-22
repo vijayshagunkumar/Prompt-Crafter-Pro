@@ -1892,9 +1892,14 @@ async function generatePrompt() {
   }
 
   usageCount++;
-  localStorage.setItem("usageCount", usageCount.toString());
-  document.getElementById("usageCount").innerHTML =
-    `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+localStorage.setItem("usageCount", usageCount.toString());
+
+// ✅ FIXED: Element doesn't exist, but we'll keep the code safe
+const usageElement = document.getElementById("usageCount");
+if (usageElement) {
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+}
+// If the element doesn't exist, no problem - we just skip updating it
 
   convertBtn.disabled = true;
   convertBtn.innerHTML =
@@ -1915,6 +1920,11 @@ async function generatePrompt() {
     isConverted = true;
     lastConvertedText = raw;
     document.getElementById("convertedBadge").style.display = "inline-flex";
+    // ✅ NEW (guarded)
+const badge = document.getElementById("convertedBadge");
+if (badge) {
+    badge.style.display = "inline-flex";
+}
     setLaunchButtonsEnabled(true);
 
     showNotification("Prompt generated successfully");
