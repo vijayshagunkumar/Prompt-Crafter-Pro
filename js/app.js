@@ -1660,16 +1660,25 @@ function clearAutoConvertTimer() {
 /* ===============================
    STATS FUNCTIONS - FIXED WITH LABELS
 =============================== */
-function updateStats(text) {
+function updateStats(text = "") {
+  const charEl = document.getElementById("charCount");
+  const wordEl = document.getElementById("wordCount");
+  const lineEl = document.getElementById("lineCount");
+
+  // HARD GUARD — stop all crashes
+  if (!charEl || !wordEl || !lineEl) {
+    return;
+  }
+
   const chars = text.length;
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const lines = text ? text.split("\n").length : 0;
-  
-  // Update with labels
-  document.getElementById("charCount").textContent = `Chars: ${chars}`;
-  document.getElementById("wordCount").textContent = `Words: ${words}`;
-  document.getElementById("lineCount").textContent = `Lines: ${lines}`;
+  const lines = text ? text.split("\n").length : 1;
+
+  charEl.textContent = `${chars} characters`;
+  wordEl.textContent = `${words} words`;
+  lineEl.textContent = `${lines} lines`;
 }
+
 
 function updateOutputStats() {
   const outputEl = document.getElementById("output");
