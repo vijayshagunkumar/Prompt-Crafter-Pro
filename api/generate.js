@@ -1,14 +1,27 @@
-// PromptCraft – Secure Backend API with Rate Limiting
-// Purpose: Proxy OpenAI calls so API key is never exposed to browser
-// Added: IP-based rate limiting (production hardening)
+// PromptCraft – Secure Backend API (Hardened)
+// Features:
+// 1. Server-side OpenAI proxy (no key exposure)
+// 2. IP-based rate limiting
+// 3. Strict CORS allowlist (domain locked)
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_REQUESTS_PER_WINDOW = 20;
 
-// In-memory store (safe for serverless burst protection)
+// CHANGE THIS to your real Vercel domain
+const ALLOWED_ORIGINS = [
+  "https://promptcraft.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5173"
+];
+
+// In-memory rate limit store (serverless-safe burst protection)
 const ipRequestStore = new Map();
 
-// Helper: get client IP (Vercel + fallback)
+/* ------------------------------
+   Helpers
+------------------------------ */
+
+// Get client IP (Vercel + fallback)
 function getClientIp(req) {
   return (
     req.headers["x-forwarded-for"]?.split(",")[0] ||
@@ -17,7 +30,7 @@ function getClientIp(req) {
   );
 }
 
-// Helper: rate limiter
+// Rate limiter
 function isRateLimited(ip) {
   const now = Date.now();
   const record = ipRequestStore.get(ip);
@@ -27,23 +40,40 @@ function isRateLimited(ip) {
     return false;
   }
 
-  // Reset window if expired
   if (now - record.startTime > RATE_LIMIT_WINDOW_MS) {
     ipRequestStore.set(ip, { count: 1, startTime: now });
     return false;
   }
 
-  // Increment count
   record.count += 1;
-
-  if (record.count > MAX_REQUESTS_PER_WINDOW) {
-    return true;
-  }
-
-  return false;
+  return record.count > MAX_REQUESTS_PER_WINDOW;
 }
 
+// CORS handler
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Max-Age", "86400");
+  }
+}
+
+/* ------------------------------
+   API Handler
+------------------------------ */
+
 export default async function handler(req, res) {
+  // Apply CORS headers early
+  applyCors(req, res);
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   // Allow only POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -51,7 +81,7 @@ export default async function handler(req, res) {
 
   const clientIp = getClientIp(req);
 
-  // Rate limit check
+  // Rate limiting
   if (isRateLimited(clientIp)) {
     return res.status(429).json({
       error: "Too many requests. Please wait and try again."
@@ -61,22 +91,20 @@ export default async function handler(req, res) {
   try {
     const { prompt } = req.body || {};
 
-    // Basic validation
+    // Validation
     if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({ error: "Invalid prompt" });
     }
 
-    // Hard safety limits (protect quota)
     if (prompt.length > 3500) {
       return res.status(400).json({ error: "Prompt too long" });
     }
 
-    // Ensure API key exists
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({ error: "Server misconfigured" });
     }
 
-    // Call OpenAI
+    // OpenAI call
     const response = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -111,7 +139,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "AI generation failed" });
     }
 
-    // Success
     return res.status(200).json({
       result: data.choices[0].message.content
     });
