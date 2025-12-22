@@ -1,0 +1,82 @@
+/* styles/variables.css – Cyberpunk/Neon Theme for PromptCraft */
+
+:root {
+  /* CYBERPUNK NEON COLOR PALETTE */
+  --primary: #FF5E00;                 /* Neon Orange - Primary accent */
+  --primary-dark: #FF4500;            /* Darker orange */
+  --primary-light: #FF8C42;           /* Lighter orange */
+  --secondary: #00F3FF;               /* Cyber Blue - Secondary accent */
+  --accent: #FF00FF;                  /* Neon Pink/Magenta */
+  --matrix-green: #00FF41;            /* Matrix green for special highlights */
+  
+  /* DARK BACKGROUNDS */
+  --bg-body: #0A0E17;                 /* Deep navy blue - main background */
+  --bg-primary: #111827;              /* Dark panel background */
+  --bg-secondary: #1E293B;            /* Slightly lighter dark */
+  --bg-tertiary: #2D3748;             /* Even lighter for contrast */
+  
+  /* PANELS / CARDS */
+  --panel-bg: #111827;                /* Card backgrounds */
+  --panel-border: #FF5E00;            /* Neon orange borders */
+  
+  /* INPUTS */
+  --input-bg: #0A0E17;                /* Dark input backgrounds */
+  --input-border: #2D3748;            /* Subtle borders */
+  --input-border-focus: #FF5E00;      /* Neon orange on focus */
+  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2); /* Orange glow */
+  
+  /* TEXT */
+  --text-primary: #F1F5F9;            /* Bright white for readability */
+  --text-secondary: #94A3B8;          /* Light gray for secondary text */
+  --text-muted: #64748B;              /* Gray for muted text */
+  --text-light: #CBD5E1;              /* Light gray */
+  --text-on-primary: #000000;         /* Black text on orange buttons */
+  
+  /* BORDERS */
+  --border-subtle: #2D3748;           /* Subtle borders */
+  
+  /* SHADOWS WITH GLOW EFFECTS */
+  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
+  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
+  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
+  
+  /* SHARP CORNERS (Cyberpunk aesthetic) */
+  --radius-sm: 2px;                   /* Very sharp */
+  --radius-md: 4px;                   /* Moderately sharp */
+  --radius-lg: 8px;                   /* Slightly rounded */
+  --radius-full: 999px;               /* For pills and circles */
+  
+  /* TRANSITIONS */
+  --transition-fast: all 0.2s ease-out;
+  
+  /* GRADIENTS */
+  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+  --gradient-subtle: linear-gradient(135deg, #111827 0%, #0A0E17 100%);
+  --gradient-neon: linear-gradient(90deg, #FF5E00, #FF00FF, #00F3FF);
+  
+  /* TOAST/NOTIFICATION */
+  --toast-bg: #1E293B;
+  --toast-text: #00F3FF;
+  
+  /* AI TOOL COLORS (Cyberpunk versions) */
+  --chatgpt: #74AA9C;
+  --chatgpt-purple: #AB68FF;
+  --claude: #DE7356;
+  --gemini: #4796E3;
+  --perplexity: #20808D;
+  --deepseek: #00F3FF;                /* Matches cyber blue */
+  --copilot: #199FD7;
+  --grok: #FF5E00;                    /* Matches neon orange */
+  
+  /* THEME VARIABLES */
+  --primary-color: #FF5E00;
+  --secondary-color: #00F3FF;
+  --accent-color: #FF00FF;
+  --gradient-primary: linear-gradient(135deg, #FF5E00, #00F3FF);
+  --primary-rgb: 255, 94, 0;
+  
+  /* GLOW INTENSITIES */
+  --glow-soft: 0 0 10px;
+  --glow-medium: 0 0 20px;
+  --glow-strong: 0 0 30px;
+}
