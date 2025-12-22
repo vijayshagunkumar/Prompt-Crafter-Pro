@@ -1,61 +1,86 @@
-/* ===============================
-   EXPANDED TEXTAREA FIX
-================================ */
+/* ======================================================
+   main.css
+   Purpose: Central stylesheet loader + critical UI fixes
+====================================================== */
+
+@import "./variables.css";
+@import "./base.css";
+@import "./layout.css";
+@import "./components/cards.css";
+@import "./components/inputs.css";
+@import "./components/modals.css";
+@import "./themes.css";
+
+/* ======================================================
+   EXPANDED TEXTAREA (MAX / MIN)
+====================================================== */
 
 .expanded-wrapper {
   position: fixed;
   inset: 40px;
-  z-index: 1001;
+  z-index: 1200;
   background: var(--panel-bg);
-  padding: 20px;
+  padding: 24px;
   border-radius: 12px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
 }
 
 .textarea-expanded {
+  width: 100%;
   height: calc(100vh - 160px) !important;
   resize: none;
 }
 
-/* Minimize (X) button */
+/* Visible Minimize (X) */
 .expanded-wrapper::after {
   content: "✕";
   position: absolute;
   top: 12px;
   right: 16px;
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .expanded-wrapper:hover::after {
   color: var(--primary);
 }
 
-/* Overlay must not block clicks internally */
+/* ======================================================
+   OVERLAYS MUST NOT BLOCK UI
+====================================================== */
+
+.scan-line,
+.particles {
+  pointer-events: none;
+}
+
 .expand-overlay {
   pointer-events: auto;
 }
 
-/* ===============================
+/* ======================================================
    AI TOOLS – CLICKABLE & CLEAN
-================================ */
+====================================================== */
 
 .launch-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .launch-list button {
   cursor: pointer;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-light);
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 
 .launch-list button:hover {
   background: var(--primary);
   color: #000;
+  transform: translateY(-1px);
 }
