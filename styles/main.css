@@ -1,20 +1,61 @@
-/* ======================================================
-   main.css
-   Purpose: Central stylesheet loader
-   NOTE: Do NOT write styles here
-====================================================== */
+/* ===============================
+   EXPANDED TEXTAREA FIX
+================================ */
 
-/* Core tokens */
-@import "./variables.css";
+.expanded-wrapper {
+  position: fixed;
+  inset: 40px;
+  z-index: 1001;
+  background: var(--panel-bg);
+  padding: 20px;
+  border-radius: 12px;
+}
 
-/* Base & layout */
-@import "./base.css";
-@import "./layout.css";
+.textarea-expanded {
+  height: calc(100vh - 160px) !important;
+  resize: none;
+}
 
-/* Components */
-@import "./components/cards.css";
-@import "./components/inputs.css";
-@import "./components/modals.css";
+/* Minimize (X) button */
+.expanded-wrapper::after {
+  content: "✕";
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #fff;
+}
 
-/* Themes */
-@import "./themes.css";
+.expanded-wrapper:hover::after {
+  color: var(--primary);
+}
+
+/* Overlay must not block clicks internally */
+.expand-overlay {
+  pointer-events: auto;
+}
+
+/* ===============================
+   AI TOOLS – CLICKABLE & CLEAN
+================================ */
+
+.launch-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.launch-list button {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-light);
+  transition: all 0.2s ease;
+}
+
+.launch-list button:hover {
+  background: var(--primary);
+  color: #000;
+}
