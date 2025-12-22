@@ -7,39 +7,36 @@
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Styles -->
+  <link rel="stylesheet" href="styles/variables.css" />
+  <link rel="stylesheet" href="styles/themes.css" />
   <link rel="stylesheet" href="styles/main.css" />
 </head>
 
 <body>
-
-  <!-- VISUAL EFFECTS (NON-INTERACTIVE) -->
+  <!-- VISUAL EFFECTS -->
   <div class="scan-line"></div>
   <div id="particles" class="particles"></div>
-
-  <!-- OVERLAY FOR EXPAND MODE -->
   <div id="expandOverlay" class="expand-overlay hidden"></div>
+
+  <!-- NOTIFICATION -->
+  <div id="notification" class="notification hidden">
+    <i class="fas fa-info-circle"></i>
+    <span id="notificationText"></span>
+  </div>
 
   <!-- APP -->
   <main class="page">
     <div class="cards-grid">
-
-      <!-- ================= CARD 1 ================= -->
+      <!-- CARD 1: Your Idea -->
       <section class="step-card">
         <h2>1 · Your Idea</h2>
-
-        <!-- Intent Chips -->
+        
         <div id="intentRow" class="intent-row hidden">
           <div id="intentScroll" class="intent-scroll"></div>
         </div>
@@ -50,32 +47,26 @@
             class="textarea-idea"
             placeholder="Write a professional email to my manager requesting leave for 3 days..."
           ></textarea>
-
-          <!-- Controls -->
           <button id="expandInputBtn" class="expand-btn" title="Maximize">
             <i class="fas fa-expand"></i>
-          </button>
-
-          <button class="minimize-btn" title="Minimize">
-            ✕
           </button>
         </div>
 
         <button id="convertBtn" class="btn-primary" disabled>
-          Convert
+          <i class="fas fa-magic"></i> Convert
         </button>
 
         <button id="resetBtn" class="btn-ghost-small">
-          Reset Everything
+          <i class="fas fa-redo"></i> Reset Everything
         </button>
       </section>
 
-      <!-- ================= CARD 2 ================= -->
+      <!-- CARD 2: Structured Prompt -->
       <section class="step-card">
         <h2>2 · Structured Prompt</h2>
-
+        
         <span id="convertedBadge" class="meta-pill hidden">
-          Converted
+          <i class="fas fa-check"></i> Converted
         </span>
 
         <div class="textarea-wrapper">
@@ -83,40 +74,74 @@
             id="output"
             class="output-textarea"
             placeholder="Your structured prompt will appear here..."
+            readonly
           ></textarea>
-
-          <!-- Controls -->
           <button id="expandOutputBtn" class="expand-btn" title="Maximize">
             <i class="fas fa-expand"></i>
-          </button>
-
-          <button class="minimize-btn" title="Minimize">
-            ✕
           </button>
         </div>
       </section>
 
-      <!-- ================= CARD 3 ================= -->
+      <!-- CARD 3: AI Tools -->
       <section class="step-card">
         <h2>3 · AI Tools</h2>
         <p class="step-subtitle">Click to open tool (prompt auto-copied)</p>
 
         <div class="launch-list">
-          <button id="chatgptBtn">ChatGPT</button>
-          <button id="claudeBtn">Claude</button>
-          <button id="geminiBtn">Gemini</button>
-          <button id="perplexityBtn">Perplexity</button>
-          <button id="deepseekBtn">DeepSeek</button>
-          <button id="copilotBtn">Copilot</button>
-          <button id="grokBtn">Grok</button>
+          <button id="chatgptBtn" class="launch-btn" disabled>
+            <span class="launch-icon">C</span>
+            <span class="launch-text">
+              <span class="launch-name">ChatGPT</span>
+            </span>
+          </button>
+          
+          <button id="claudeBtn" class="launch-btn" disabled>
+            <span class="launch-icon">C</span>
+            <span class="launch-text">
+              <span class="launch-name">Claude</span>
+            </span>
+          </button>
+          
+          <button id="geminiBtn" class="launch-btn" disabled>
+            <span class="launch-icon">G</span>
+            <span class="launch-text">
+              <span class="launch-name">Gemini</span>
+            </span>
+          </button>
+          
+          <button id="perplexityBtn" class="launch-btn" disabled>
+            <span class="launch-icon">P</span>
+            <span class="launch-text">
+              <span class="launch-name">Perplexity</span>
+            </span>
+          </button>
+          
+          <button id="deepseekBtn" class="launch-btn" disabled>
+            <span class="launch-icon">D</span>
+            <span class="launch-text">
+              <span class="launch-name">DeepSeek</span>
+            </span>
+          </button>
+          
+          <button id="copilotBtn" class="launch-btn" disabled>
+            <span class="launch-icon">M</span>
+            <span class="launch-text">
+              <span class="launch-name">Copilot</span>
+            </span>
+          </button>
+          
+          <button id="grokBtn" class="launch-btn" disabled>
+            <span class="launch-icon">G</span>
+            <span class="launch-text">
+              <span class="launch-name">Grok</span>
+            </span>
+          </button>
         </div>
       </section>
-
     </div>
   </main>
 
-  <!-- SINGLE ENTRY SCRIPT -->
-  <script type="module" src="js/app.js"></script>
-
+  <!-- SINGLE SCRIPT -->
+  <script src="js/app.js" type="module"></script>
 </body>
 </html>
