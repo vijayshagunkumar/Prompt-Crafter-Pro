@@ -1,6 +1,6 @@
 /* ======================================================
    events.js
-   Purpose: UI behavior, expand/minimize, convert, AI tools
+   Purpose: Stable UI behavior (no dead states)
 ====================================================== */
 
 import { callBackend } from "./api.js";
@@ -14,6 +14,8 @@ export function initializeEvents() {
   const resetBtn = $("resetBtn");
   const badge = $("convertedBadge");
   const overlay = $("expandOverlay");
+
+  let activeWrapper = null;
 
   /* ------------------------------
      Convert
@@ -50,32 +52,47 @@ export function initializeEvents() {
   /* ------------------------------
      Expand / Minimize
   ------------------------------ */
-  function expand(wrapper, textarea) {
+  function expand(textarea) {
+    collapse(); // safety
+
+    const wrapper = textarea.closest(".textarea-wrapper");
+    if (!wrapper) return;
+
     wrapper.classList.add("expanded-wrapper");
     textarea.classList.add("textarea-expanded");
     overlay.classList.remove("hidden");
+
+    activeWrapper = wrapper;
   }
 
-  function collapseAll() {
+  function collapse() {
     document.querySelectorAll(".expanded-wrapper")
       .forEach(w => w.classList.remove("expanded-wrapper"));
+
     document.querySelectorAll(".textarea-expanded")
       .forEach(t => t.classList.remove("textarea-expanded"));
+
     overlay.classList.add("hidden");
+    activeWrapper = null;
   }
 
-  $("expandInputBtn").addEventListener("click", () => {
-    expand(input.closest(".textarea-wrapper"), input);
-  });
+  $("expandInputBtn").addEventListener("click", () => expand(input));
+  $("expandOutputBtn").addEventListener("click", () => expand(output));
 
-  $("expandOutputBtn").addEventListener("click", () => {
-    expand(output.closest(".textarea-wrapper"), output);
-  });
-
-  overlay.addEventListener("click", collapseAll);
+  overlay.addEventListener("click", collapse);
 
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape") collapseAll();
+    if (e.key === "Escape") collapse();
+  });
+
+  /* ------------------------------
+     Explicit Minimize Button
+  ------------------------------ */
+  document.querySelectorAll(".textarea-wrapper").forEach(wrapper => {
+    const closeBtn = wrapper.querySelector(".minimize-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", collapse);
+    }
   });
 
   /* ------------------------------
