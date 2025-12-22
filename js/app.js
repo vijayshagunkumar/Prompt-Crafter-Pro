@@ -2511,3 +2511,7 @@ window.useTemplate = function (id) {
 window.editTemplate = editTemplate;
 window.deleteTemplate = deleteTemplate;
 window.resetEverything = resetEverything;
+
+function saveSettings() {
+  showNotification("Settings saved");
+}
