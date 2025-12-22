@@ -1,33 +1,24 @@
-// Import your modules
+// Main Application - Your Logic with Clean Implementation
 import { detectIntentAttributes } from './features/intent.js';
-import { initializeVoiceFeatures } from './features/voice.js';
-import { initializeTheme } from './theme.js';
 
 // App state
-let currentPreset = "default";
 let isConverted = false;
 let lastConvertedText = "";
+let isInputExpanded = false;
+let isOutputExpanded = false;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     console.log('PromptCraft initializing...');
     
-    // Initialize theme
-    initializeTheme();
-    
-    // Initialize voice features
-    initializeVoiceFeatures();
-    
     // Setup event listeners
     setupEventListeners();
     
     // Initialize AI tool ranking
-    if (window.AIToolRanker) {
-        window.AIToolRanker.setupTooltips();
-    }
+    initializeAIToolRanking();
     
-    // Load saved data
-    loadSavedData();
+    // Show initial ranking
+    updateAIToolRanking();
 });
 
 function setupEventListeners() {
@@ -37,6 +28,12 @@ function setupEventListeners() {
     const convertBtn = document.getElementById('convertBtn');
     const resetBtn = document.getElementById('resetBtn');
     const convertedBadge = document.getElementById('convertedBadge');
+    const expandInputBtn = document.getElementById('expandInputBtn');
+    const expandOutputBtn = document.getElementById('expandOutputBtn');
+    const expandOverlay = document.getElementById('expandOverlay');
+    
+    // Convert button is ENABLED by default since we have example text
+    convertBtn.disabled = false;
     
     // === REQUIREMENT INPUT ===
     requirement.addEventListener('input', function() {
@@ -49,10 +46,7 @@ function setupEventListeners() {
         updateIntentChips(text);
         
         // Update AI tool ranking
-        if (text && window.AIToolRanker) {
-            const intent = detectIntentAttributes(text);
-            window.AIToolRanker.rankAndReorder(intent);
-        }
+        updateAIToolRanking();
         
         // Clear output if input is cleared
         if (!text) {
@@ -68,11 +62,18 @@ function setupEventListeners() {
     // === RESET BUTTON ===
     resetBtn.addEventListener('click', resetEverything);
     
+    // === EXPAND BUTTONS ===
+    expandInputBtn.addEventListener('click', () => toggleExpand('input'));
+    expandOutputBtn.addEventListener('click', () => toggleExpand('output'));
+    
+    // Close expanded mode when clicking overlay
+    expandOverlay.addEventListener('click', () => {
+        if (isInputExpanded) toggleExpand('input');
+        if (isOutputExpanded) toggleExpand('output');
+    });
+    
     // === AI TOOL BUTTONS ===
     setupAIToolButtons();
-    
-    // === EXPAND BUTTONS ===
-    setupExpandButtons();
 }
 
 function updateIntentChips(text) {
@@ -109,6 +110,15 @@ function updateIntentChips(text) {
         chips.push('📄 ' + intent.format);
     }
     
+    // Add constraints chips
+    if (intent.constraints && intent.constraints.length > 0) {
+        intent.constraints.forEach(constraint => {
+            if (constraint !== 'general') {
+                chips.push('🔧 ' + constraint);
+            }
+        });
+    }
+    
     // Update UI
     if (chips.length > 0) {
         intentScroll.innerHTML = chips.map(chip => 
@@ -136,7 +146,7 @@ function getChipIcon(taskType) {
     return icons[taskType] || '✨';
 }
 
-function generatePrompt() {
+async function generatePrompt() {
     const requirement = document.getElementById('requirement');
     const output = document.getElementById('output');
     const convertBtn = document.getElementById('convertBtn');
@@ -150,15 +160,29 @@ function generatePrompt() {
     convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
     convertBtn.disabled = true;
     
-    // Your formatting logic
-    const formattedPrompt = formatStructuredPrompt(text);
-    
-    // Simulate processing time
-    setTimeout(() => {
-        output.value = formattedPrompt;
+    try {
+        // REAL API CALL to your Vercel endpoint
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: text })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Use OpenAI's response
+        output.value = data.result;
         convertedBadge.classList.remove('hidden');
-        convertBtn.innerHTML = originalText;
-        convertBtn.disabled = false;
         
         // Enable AI tools
         enableAITools();
@@ -168,15 +192,30 @@ function generatePrompt() {
         lastConvertedText = text;
         
         // Save to localStorage
-        saveToHistory(text, formattedPrompt);
+        saveToHistory(text, data.result);
         
         // Show notification
-        showNotification('Prompt converted successfully!');
-    }, 800);
+        showNotification('✅ Prompt generated with OpenAI!');
+        
+    } catch (error) {
+        console.error('API Error:', error);
+        
+        // Fallback to local formatting if API fails
+        const formattedPrompt = formatStructuredPrompt(text);
+        output.value = formattedPrompt;
+        convertedBadge.classList.remove('hidden');
+        enableAITools();
+        
+        showNotification(`⚠️ Using local formatting (API: ${error.message})`);
+    } finally {
+        // Reset button
+        convertBtn.innerHTML = originalText;
+        convertBtn.disabled = false;
+    }
 }
 
 function formatStructuredPrompt(text) {
-    // Your existing formatting logic
+    // Use your intent detection for better formatting
     const intent = detectIntentAttributes(text);
     
     let prompt = `# Prompt Structure\n\n`;
@@ -192,41 +231,64 @@ function formatStructuredPrompt(text) {
     if (intent.urgency && intent.urgency !== 'normal') {
         prompt += `- Urgency: ${intent.urgency}\n`;
     }
+    if (intent.persona && intent.persona !== 'neutral') {
+        prompt += `- Persona: ${intent.persona}\n`;
+    }
     
     prompt += `\n## Requirements\n`;
     
+    // Task-specific requirements
     switch(intent.taskType) {
         case 'email':
-            prompt += `- Professional email format\n`;
-            prompt += `- Clear subject line\n`;
-            prompt += `- Appropriate greeting and closing\n`;
-            prompt += `- Concise but complete message\n`;
+            prompt += `- Professional email format with subject line\n`;
+            prompt += `- Appropriate greeting and professional closing\n`;
+            prompt += `- Clear, concise message with specific details\n`;
+            prompt += `- Polite tone and proper formatting\n`;
             break;
         case 'code':
-            prompt += `- Clean, readable code\n`;
-            prompt += `- Proper comments and documentation\n`;
-            prompt += `- Error handling\n`;
-            prompt += `- Follow best practices\n`;
+            prompt += `- Clean, readable code with proper indentation\n`;
+            prompt += `- Comprehensive comments and documentation\n`;
+            prompt += `- Error handling and edge case consideration\n`;
+            prompt += `- Follow language-specific best practices\n`;
             break;
         case 'analysis':
-            prompt += `- Data-driven insights\n`;
-            prompt += `- Clear structure\n`;
-            prompt += `- Evidence-based conclusions\n`;
-            prompt += `- Actionable recommendations\n`;
+            prompt += `- Data-driven insights with evidence\n`;
+            prompt += `- Clear structure: introduction, findings, conclusions\n`;
+            prompt += `- Visual representations if applicable\n`;
+            prompt += `- Actionable recommendations with reasoning\n`;
+            break;
+        case 'writing':
+            prompt += `- Engaging opening and strong conclusion\n`;
+            prompt += `- Logical flow with transitions\n`;
+            prompt += `- Appropriate length for the medium\n`;
+            prompt += `- Target audience consideration\n`;
             break;
         default:
-            prompt += `- Professional tone\n`;
-            prompt += `- Clear structure\n`;
-            prompt += `- Complete response\n`;
+            prompt += `- Professional and clear communication\n`;
+            prompt += `- Well-structured response\n`;
+            prompt += `- Complete and comprehensive answer\n`;
             prompt += `- High quality output\n`;
     }
     
+    // Add constraints if any
+    if (intent.constraints && intent.constraints.length > 0) {
+        prompt += `\n## Constraints\n`;
+        intent.constraints.forEach(constraint => {
+            if (constraint !== 'general') {
+                prompt += `- ${constraint.charAt(0).toUpperCase() + constraint.slice(1)}\n`;
+            }
+        });
+    }
+    
     prompt += `\n## Instructions\n`;
-    prompt += `1. Address the objective directly\n`;
-    prompt += `2. Consider all requirements\n`;
-    prompt += `3. Provide complete response\n`;
-    prompt += `4. Maintain appropriate tone\n`;
-    prompt += `5. Ensure accuracy and quality\n`;
+    prompt += `1. Address the objective directly and completely\n`;
+    prompt += `2. Consider all context and requirements\n`;
+    prompt += `3. Provide ready-to-use output\n`;
+    prompt += `4. Maintain specified tone and format\n`;
+    prompt += `5. Ensure accuracy, quality, and professionalism\n`;
+    
+    prompt += `\n## Expected Output\n`;
+    prompt += `A complete, high-quality response that can be used immediately.`;
     
     return prompt;
 }
@@ -252,16 +314,185 @@ function resetEverything() {
         // Disable AI tools
         disableAITools();
         
-        // Reset AI tool ranking
-        if (window.AIToolRanker && window.AIToolRanker.resetToDefault) {
-            window.AIToolRanker.resetToDefault();
-        }
+        // Reset AI tool ranking to default
+        resetAIToolRanking();
         
         // Reset state
         isConverted = false;
         lastConvertedText = '';
         
-        showNotification('Everything has been reset');
+        showNotification('🔄 Everything has been reset');
+    }
+}
+
+function toggleExpand(type) {
+    const expandOverlay = document.getElementById('expandOverlay');
+    const textarea = type === 'input' 
+        ? document.getElementById('requirement')
+        : document.getElementById('output');
+    
+    if (type === 'input') {
+        isInputExpanded = !isInputExpanded;
+    } else {
+        isOutputExpanded = !isOutputExpanded;
+    }
+    
+    if (textarea.classList.contains('textarea-expanded')) {
+        // Collapse
+        textarea.classList.remove('textarea-expanded');
+        expandOverlay.classList.add('hidden');
+    } else {
+        // Expand
+        textarea.classList.add('textarea-expanded');
+        expandOverlay.classList.remove('hidden');
+        textarea.focus();
+        textarea.select();
+    }
+}
+
+function initializeAIToolRanking() {
+    // Your AI Tool Ranking Logic
+    const AI_TOOL_PROFILES = {
+        chatgpt: { name: "ChatGPT", strengths: ["general", "writing", "email", "analysis"], score: 100 },
+        claude: { name: "Claude", strengths: ["writing", "analysis", "business", "detailed"], score: 95 },
+        gemini: { name: "Gemini", strengths: ["research", "analysis", "education", "technical"], score: 90 },
+        perplexity: { name: "Perplexity", strengths: ["research", "analysis", "brief", "facts"], score: 85 },
+        deepseek: { name: "DeepSeek", strengths: ["code", "technical", "programming"], score: 80 },
+        copilot: { name: "Copilot", strengths: ["code", "quick", "development"], score: 75 },
+        grok: { name: "Grok", strengths: ["creative", "general", "casual", "humor"], score: 70 }
+    };
+    
+    window.AIToolRanker = {
+        rankAndReorder: function(intent) {
+            const taskType = intent.taskType || 'general';
+            const tools = Object.keys(AI_TOOL_PROFILES);
+            
+            // Calculate scores based on intent
+            tools.forEach(tool => {
+                const profile = AI_TOOL_PROFILES[tool];
+                if (profile.strengths.includes(taskType)) {
+                    profile.score = 100;
+                } else if (profile.strengths.some(s => taskType.includes(s) || s.includes(taskType))) {
+                    profile.score = 90;
+                } else if (taskType === 'general') {
+                    profile.score = profile.strengths.includes('general') ? 95 : 75;
+                } else {
+                    profile.score = 70;
+                }
+            });
+            
+            // Sort by score
+            const sortedTools = tools.sort((a, b) => AI_TOOL_PROFILES[b].score - AI_TOOL_PROFILES[a].score);
+            
+            // Update UI
+            updateToolScores(sortedTools);
+            reorderTools(sortedTools);
+            
+            // Show ranking explanation
+            const explanation = document.getElementById('rankingExplanation');
+            if (explanation) {
+                explanation.innerHTML = `<i class="fas fa-info-circle"></i> Ranked for: ${taskType} tasks`;
+            }
+        },
+        
+        resetToDefault: function() {
+            const defaultOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
+            resetAIToolRanking();
+        }
+    };
+}
+
+function updateAIToolRanking() {
+    const text = document.getElementById('requirement').value.trim();
+    if (!text) {
+        resetAIToolRanking();
+        return;
+    }
+    
+    const intent = detectIntentAttributes(text);
+    if (window.AIToolRanker) {
+        window.AIToolRanker.rankAndReorder(intent);
+    }
+}
+
+function updateToolScores(sortedTools) {
+    const AI_TOOL_PROFILES = {
+        chatgpt: { name: "ChatGPT", baseScore: 100 },
+        claude: { name: "Claude", baseScore: 95 },
+        gemini: { name: "Gemini", baseScore: 90 },
+        perplexity: { name: "Perplexity", baseScore: 85 },
+        deepseek: { name: "DeepSeek", baseScore: 80 },
+        copilot: { name: "Copilot", baseScore: 75 },
+        grok: { name: "Grok", baseScore: 70 }
+    };
+    
+    // Update scores based on position
+    sortedTools.forEach((tool, index) => {
+        const btn = document.getElementById(`${tool}Btn`);
+        if (btn) {
+            const scoreElement = btn.querySelector('.tool-score');
+            if (scoreElement) {
+                // Calculate dynamic score based on position
+                const score = 100 - (index * 4);
+                scoreElement.textContent = `${score}%`;
+                
+                // Mark best match
+                if (index === 0) {
+                    btn.classList.add('best-match');
+                } else {
+                    btn.classList.remove('best-match');
+                }
+            }
+        }
+    });
+}
+
+function reorderTools(sortedTools) {
+    const container = document.getElementById('aiToolsContainer');
+    if (!container) return;
+    
+    // Clear container
+    container.innerHTML = '';
+    
+    // Add tools in new order
+    sortedTools.forEach(tool => {
+        const btn = document.getElementById(`${tool}Btn`);
+        if (btn) {
+            container.appendChild(btn);
+        }
+    });
+}
+
+function resetAIToolRanking() {
+    const defaultOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
+    const container = document.getElementById('aiToolsContainer');
+    
+    if (!container) return;
+    
+    // Clear container
+    container.innerHTML = '';
+    
+    // Add tools in default order
+    defaultOrder.forEach(tool => {
+        const btn = document.getElementById(`${tool}Btn`);
+        if (btn) {
+            btn.classList.remove('best-match');
+            if (tool === 'chatgpt') {
+                btn.classList.add('best-match');
+            }
+            const scoreElement = btn.querySelector('.tool-score');
+            if (scoreElement) {
+                const scores = { chatgpt: 100, claude: 95, gemini: 90, perplexity: 85, deepseek: 80, copilot: 75, grok: 70 };
+                scoreElement.textContent = `${scores[tool]}%`;
+            }
+            container.appendChild(btn);
+        }
+    });
+    
+    // Reset explanation
+    const explanation = document.getElementById('rankingExplanation');
+    if (explanation) {
+        explanation.innerHTML = `<i class="fas fa-info-circle"></i> Tools are ranked based on your input intent`;
     }
 }
 
@@ -292,11 +523,12 @@ function setupAIToolButtons() {
                 navigator.clipboard.writeText(prompt).then(() => {
                     // Show copied state
                     const originalHTML = btn.innerHTML;
+                    const toolName = btn.querySelector('.tool-name').textContent;
                     btn.innerHTML = `<span class="tool-icon">✓</span><span class="tool-name">Copied!</span>`;
                     btn.style.background = '#10b981';
                     btn.style.borderColor = '#10b981';
                     
-                    showNotification('Prompt copied! Opening AI tool...');
+                    showNotification(`📋 Copied! Opening ${toolName}...`);
                     
                     // Reset button after 1.5s
                     setTimeout(() => {
@@ -312,6 +544,7 @@ function setupAIToolButtons() {
                     
                 }).catch(err => {
                     console.error('Copy failed:', err);
+                    showNotification('Failed to copy to clipboard');
                     window.open(tools[id], '_blank');
                 });
             });
@@ -331,26 +564,7 @@ function disableAITools() {
     });
 }
 
-function setupExpandButtons() {
-    // You can implement expand functionality here
-}
-
-function showNotification(message) {
-    const notification = document.getElementById('notification');
-    const notificationText = document.getElementById('notificationText');
-    
-    if (notification && notificationText) {
-        notificationText.textContent = message;
-        notification.classList.remove('hidden');
-        
-        setTimeout(() => {
-            notification.classList.add('hidden');
-        }, 3000);
-    }
-}
-
 function saveToHistory(requirement, prompt) {
-    // Your history saving logic
     const history = JSON.parse(localStorage.getItem('promptHistory') || '[]');
     history.unshift({
         id: Date.now(),
@@ -364,14 +578,22 @@ function saveToHistory(requirement, prompt) {
     localStorage.setItem('promptHistory', JSON.stringify(limitedHistory));
 }
 
-function loadSavedData() {
-    // Load history if needed
-    const history = localStorage.getItem('promptHistory');
-    if (history) {
-        console.log('Loaded history:', JSON.parse(history).length, 'items');
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notificationText');
+    
+    if (notification && notificationText) {
+        notificationText.textContent = message;
+        notification.classList.remove('hidden');
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('hidden');
+        }, 3000);
     }
 }
 
 // Make functions available globally
 window.generatePrompt = generatePrompt;
 window.resetEverything = resetEverything;
+window.updateAIToolRanking = updateAIToolRanking;
