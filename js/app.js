@@ -1,313 +1,311 @@
-// Main application entry point
-import './features/intent.js';
-import './features/ai-tool-ranker.js';
-import './features/voice.js';
-import './core/events.js';
+// PromptCraft - Complete Working App
 
-// Initialize the app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('PromptCraft initialized');
-  
-  // Set up event listeners
-  setupEventListeners();
-  
-  // Initialize AI tool ranking
-  if (window.AIToolRanker) {
-    window.AIToolRanker.setupTooltips();
-  }
-});
-
-function setupEventListeners() {
-  const requirement = document.getElementById('requirement');
-  const convertBtn = document.getElementById('convertBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const output = document.getElementById('output');
-  
-  // Requirement input handler
-  if (requirement) {
-    requirement.addEventListener('input', handleRequirementInput);
-  }
-  
-  // Convert button
-  if (convertBtn) {
-    convertBtn.addEventListener('click', generatePrompt);
-  }
-  
-  // Reset button
-  if (resetBtn) {
-    resetBtn.addEventListener('click', resetEverything);
-  }
-  
-  // AI Tool buttons
-  setupAIToolButtons();
-  
-  // Expand buttons
-  setupExpandButtons();
-}
-
-function handleRequirementInput() {
-  const requirement = document.getElementById('requirement');
-  const convertBtn = document.getElementById('convertBtn');
-  const text = requirement.value.trim();
-  
-  // Enable/disable convert button
-  convertBtn.disabled = !text;
-  
-  // Show/hide intent chips
-  updateIntentChips(text);
-  
-  // Update AI tool ranking
-  if (window.AIToolRanker && text) {
-    const intent = window.detectIntentAttributes?.(text) || { taskType: 'general' };
-    window.AIToolRanker.rankAndReorder(intent);
-  }
-}
-
-function updateIntentChips(text) {
-  const intentRow = document.getElementById('intentRow');
-  const intentScroll = document.getElementById('intentScroll');
-  
-  if (!text) {
-    intentRow.classList.add('hidden');
-    intentScroll.innerHTML = '';
-    return;
-  }
-  
-  const chips = [];
-  
-  // Simple intent detection
-  if (text.toLowerCase().includes('email') || text.toLowerCase().includes('mail')) {
-    chips.push('📧 Email');
-  }
-  if (text.toLowerCase().includes('code') || text.toLowerCase().includes('program')) {
-    chips.push('💻 Code');
-  }
-  if (text.toLowerCase().includes('urgent') || text.toLowerCase().includes('asap')) {
-    chips.push('🚨 Urgent');
-  }
-  if (text.toLowerCase().includes('creative') || text.toLowerCase().includes('story')) {
-    chips.push('🎨 Creative');
-  }
-  if (text.toLowerCase().includes('analysis') || text.toLowerCase().includes('analyze')) {
-    chips.push('📊 Analysis');
-  }
-  
-  if (chips.length > 0) {
-    intentScroll.innerHTML = chips.map(chip => 
-      `<span class="intent-chip">${chip}</span>`
-    ).join('');
-    intentRow.classList.remove('hidden');
-  } else {
-    intentRow.classList.add('hidden');
-    intentScroll.innerHTML = '';
-  }
-}
-
-function generatePrompt() {
-  const requirement = document.getElementById('requirement');
-  const output = document.getElementById('output');
-  const convertBtn = document.getElementById('convertBtn');
-  const convertedBadge = document.getElementById('convertedBadge');
-  
-  const text = requirement.value.trim();
-  if (!text) return;
-  
-  // Show loading state
-  convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
-  convertBtn.disabled = true;
-  
-  // Format the prompt
-  const prompt = formatStructuredPrompt(text);
-  
-  // Simulate API call with timeout
-  setTimeout(() => {
-    output.value = prompt;
-    convertedBadge.classList.remove('hidden');
-    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
-    convertBtn.disabled = false;
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('PromptCraft loaded successfully!');
     
-    // Enable AI tool buttons
-    enableAIToolButtons();
+    // Get all elements
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const convertBtn = document.getElementById('convertBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const convertedBadge = document.getElementById('convertedBadge');
+    const intentChips = document.getElementById('intentChips');
     
-    // Show notification
-    showNotification('Prompt converted successfully!');
-  }, 800);
-}
-
-function formatStructuredPrompt(rawText) {
-  const lines = rawText.split('\n').filter(line => line.trim());
-  
-  let prompt = '# Prompt Structure\n\n';
-  prompt += '## Objective\n';
-  prompt += `${rawText}\n\n`;
-  
-  prompt += '## Context\n';
-  prompt += '- Professional tone\n';
-  prompt += '- Clear and concise\n';
-  prompt += '- Action-oriented\n\n';
-  
-  prompt += '## Requirements\n';
-  if (rawText.toLowerCase().includes('email')) {
-    prompt += '- Subject line\n- Professional greeting\n- Clear request\n- Polite closing\n- Contact information\n';
-  } else if (rawText.toLowerCase().includes('code')) {
-    prompt += '- Clean, readable code\n- Comments for explanation\n- Error handling\n- Best practices\n';
-  } else {
-    prompt += '- Professional tone\n- Clear objectives\n- Specific requirements\n- Expected outcome\n';
-  }
-  
-  prompt += '\n## Output Format\n';
-  prompt += 'Well-structured, professional response';
-  
-  return prompt;
-}
-
-function resetEverything() {
-  const requirement = document.getElementById('requirement');
-  const output = document.getElementById('output');
-  const convertBtn = document.getElementById('convertBtn');
-  const convertedBadge = document.getElementById('convertedBadge');
-  const intentRow = document.getElementById('intentRow');
-  const intentScroll = document.getElementById('intentScroll');
-  
-  // Clear textareas
-  requirement.value = '';
-  output.value = '';
-  
-  // Reset UI
-  convertBtn.disabled = true;
-  convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
-  convertedBadge.classList.add('hidden');
-  intentRow.classList.add('hidden');
-  intentScroll.innerHTML = '';
-  
-  // Disable AI tool buttons
-  disableAIToolButtons();
-  
-  // Reset AI tool ranking
-  if (window.AIToolRanker && window.AIToolRanker.resetToDefault) {
-    window.AIToolRanker.resetToDefault();
-  }
-  
-  showNotification('Everything has been reset');
-}
-
-function setupAIToolButtons() {
-  const aiTools = {
-    'chatgptBtn': 'https://chat.openai.com',
-    'claudeBtn': 'https://claude.ai',
-    'geminiBtn': 'https://gemini.google.com',
-    'perplexityBtn': 'https://www.perplexity.ai',
-    'deepseekBtn': 'https://chat.deepseek.com',
-    'copilotBtn': 'https://copilot.microsoft.com',
-    'grokBtn': 'https://x.com/i/grok'
-  };
-  
-  Object.keys(aiTools).forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) {
-      btn.addEventListener('click', () => {
-        const output = document.getElementById('output');
-        const prompt = output.value.trim();
+    // AI Tool buttons
+    const chatgptBtn = document.getElementById('chatgptBtn');
+    const claudeBtn = document.getElementById('claudeBtn');
+    const geminiBtn = document.getElementById('geminiBtn');
+    const perplexityBtn = document.getElementById('perplexityBtn');
+    const deepseekBtn = document.getElementById('deepseekBtn');
+    const copilotBtn = document.getElementById('copilotBtn');
+    const grokBtn = document.getElementById('grokBtn');
+    
+    // AI Tool URLs
+    const toolUrls = {
+        chatgptBtn: 'https://chat.openai.com',
+        claudeBtn: 'https://claude.ai',
+        geminiBtn: 'https://gemini.google.com',
+        perplexityBtn: 'https://www.perplexity.ai',
+        deepseekBtn: 'https://chat.deepseek.com',
+        copilotBtn: 'https://copilot.microsoft.com',
+        grokBtn: 'https://x.com/i/grok'
+    };
+    
+    // Initialize
+    updateIntentChips();
+    enableAITools(false);
+    
+    // === EVENT LISTENERS ===
+    
+    // Input text change
+    inputText.addEventListener('input', function() {
+        updateIntentChips();
+        convertBtn.disabled = !this.value.trim();
+    });
+    
+    // Convert button click
+    convertBtn.addEventListener('click', function() {
+        convertPrompt();
+    });
+    
+    // Reset button click
+    resetBtn.addEventListener('click', function() {
+        resetEverything();
+    });
+    
+    // AI Tool buttons
+    Object.keys(toolUrls).forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', function() {
+                openAITool(btnId);
+            });
+        }
+    });
+    
+    // === FUNCTIONS ===
+    
+    // Update intent chips based on input
+    function updateIntentChips() {
+        const text = inputText.value.toLowerCase();
+        intentChips.innerHTML = '';
         
+        const chips = [];
+        
+        if (text.includes('email') || text.includes('mail')) {
+            chips.push('📧 Email');
+        }
+        if (text.includes('code') || text.includes('program')) {
+            chips.push('💻 Code');
+        }
+        if (text.includes('urgent') || text.includes('asap')) {
+            chips.push('🚨 Urgent');
+        }
+        if (text.includes('creative') || text.includes('story')) {
+            chips.push('🎨 Creative');
+        }
+        if (text.includes('analysis') || text.includes('analyze')) {
+            chips.push('📊 Analysis');
+        }
+        if (text.includes('professional') || text.includes('business')) {
+            chips.push('💼 Professional');
+        }
+        if (text.includes('summary') || text.includes('summarize')) {
+            chips.push('📝 Summary');
+        }
+        
+        chips.forEach(chipText => {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.textContent = chipText;
+            intentChips.appendChild(chip);
+        });
+    }
+    
+    // Convert prompt
+    function convertPrompt() {
+        const input = inputText.value.trim();
+        if (!input) return;
+        
+        // Show loading
+        convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        convertBtn.disabled = true;
+        
+        // Generate structured prompt
+        setTimeout(() => {
+            const structuredPrompt = createStructuredPrompt(input);
+            outputText.value = structuredPrompt;
+            
+            // Show converted badge
+            convertedBadge.style.display = 'inline-block';
+            
+            // Enable AI tools
+            enableAITools(true);
+            
+            // Reset button
+            convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
+            convertBtn.disabled = false;
+            
+            // Show success message
+            showNotification('✅ Prompt converted successfully!');
+        }, 800);
+    }
+    
+    // Create structured prompt
+    function createStructuredPrompt(text) {
+        let prompt = `# Structured Prompt\n\n`;
+        prompt += `## Objective\n`;
+        prompt += `${text}\n\n`;
+        
+        prompt += `## Context & Requirements\n`;
+        
+        if (text.toLowerCase().includes('email')) {
+            prompt += `- Target: Professional communication\n`;
+            prompt += `- Tone: Formal but approachable\n`;
+            prompt += `- Structure: Subject line, greeting, body, closing\n`;
+            prompt += `- Length: Concise (100-200 words)\n`;
+            prompt += `- Key elements: Clear request, polite tone, contact info\n`;
+        } 
+        else if (text.toLowerCase().includes('code')) {
+            prompt += `- Language: [Specify programming language]\n`;
+            prompt += `- Purpose: [Describe functionality]\n`;
+            prompt += `- Requirements: Clean, documented, efficient\n`;
+            prompt += `- Output: Complete code with comments\n`;
+            prompt += `- Constraints: Best practices, error handling\n`;
+        }
+        else if (text.toLowerCase().includes('analysis')) {
+            prompt += `- Approach: Data-driven, evidence-based\n`;
+            prompt += `- Depth: Comprehensive but focused\n`;
+            prompt += `- Structure: Introduction, findings, conclusions\n`;
+            prompt += `- Tone: Objective, professional\n`;
+            prompt += `- Output: Clear insights with supporting data\n`;
+        }
+        else {
+            prompt += `- Tone: Professional and clear\n`;
+            prompt += `- Structure: Logical flow with headings\n`;
+            prompt += `- Depth: Appropriate for the task\n`;
+            prompt += `- Format: Well-organized content\n`;
+            prompt += `- Goal: Achieve the stated objective\n`;
+        }
+        
+        prompt += `\n## Instructions\n`;
+        prompt += `1. Read the objective carefully\n`;
+        prompt += `2. Consider the context and requirements\n`;
+        prompt += `3. Generate a complete, ready-to-use response\n`;
+        prompt += `4. Ensure quality, accuracy, and professionalism\n`;
+        prompt += `5. Do not add meta-commentary or disclaimers\n`;
+        
+        prompt += `\n## Expected Output\n`;
+        prompt += `A complete, high-quality response that directly addresses the objective.`;
+        
+        return prompt;
+    }
+    
+    // Reset everything
+    function resetEverything() {
+        if (confirm('Are you sure you want to reset everything?')) {
+            inputText.value = '';
+            outputText.value = '';
+            intentChips.innerHTML = '';
+            convertedBadge.style.display = 'none';
+            convertBtn.disabled = true;
+            enableAITools(false);
+            showNotification('🔄 Everything has been reset');
+        }
+    }
+    
+    // Enable/disable AI tools
+    function enableAITools(enable) {
+        const tools = [
+            chatgptBtn, claudeBtn, geminiBtn, perplexityBtn, 
+            deepseekBtn, copilotBtn, grokBtn
+        ];
+        
+        tools.forEach(tool => {
+            if (tool) {
+                tool.disabled = !enable;
+                tool.style.opacity = enable ? '1' : '0.4';
+            }
+        });
+    }
+    
+    // Open AI tool with copied prompt
+    function openAITool(btnId) {
+        const prompt = outputText.value.trim();
         if (!prompt) {
-          showNotification('Please generate a prompt first!');
-          return;
+            showNotification('⚠️ Please convert a prompt first!');
+            return;
         }
         
         // Copy to clipboard
         navigator.clipboard.writeText(prompt).then(() => {
-          // Show copied notification
-          const originalText = btn.querySelector('.launch-name')?.textContent || btn.textContent;
-          btn.innerHTML = '<span class="launch-icon">✓</span><span class="launch-text"><span class="launch-name">Copied!</span></span>';
-          btn.style.background = '#10b981';
-          
-          setTimeout(() => {
-            btn.innerHTML = `<span class="launch-icon">${originalText.charAt(0)}</span><span class="launch-text"><span class="launch-name">${originalText}</span></span>`;
-            btn.style.background = '';
-          }, 1000);
-          
-          // Open AI tool
-          setTimeout(() => {
-            window.open(aiTools[id], '_blank');
-          }, 300);
+            // Show success on button
+            const btn = document.getElementById(btnId);
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            btn.style.background = '#10b981';
+            btn.style.borderColor = '#10b981';
+            
+            // Show notification
+            const toolName = originalText;
+            showNotification(`📋 Copied! Opening ${toolName}...`);
+            
+            // Reset button after 1.5 seconds
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.style.borderColor = '';
+            }, 1500);
+            
+            // Open tool after short delay
+            setTimeout(() => {
+                window.open(toolUrls[btnId], '_blank');
+            }, 500);
+            
         }).catch(err => {
-          console.error('Failed to copy:', err);
-          window.open(aiTools[id], '_blank');
+            console.error('Failed to copy:', err);
+            showNotification('❌ Failed to copy to clipboard');
+            window.open(toolUrls[btnId], '_blank');
         });
-      });
     }
-  });
-}
-
-function enableAIToolButtons() {
-  document.querySelectorAll('.launch-btn').forEach(btn => {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-  });
-}
-
-function disableAIToolButtons() {
-  document.querySelectorAll('.launch-btn').forEach(btn => {
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-  });
-}
-
-function setupExpandButtons() {
-  const expandInputBtn = document.getElementById('expandInputBtn');
-  const expandOutputBtn = document.getElementById('expandOutputBtn');
-  const expandOverlay = document.getElementById('expandOverlay');
-  
-  if (expandInputBtn) {
-    expandInputBtn.addEventListener('click', () => toggleExpand('input'));
-  }
-  
-  if (expandOutputBtn) {
-    expandOutputBtn.addEventListener('click', () => toggleExpand('output'));
-  }
-  
-  if (expandOverlay) {
-    expandOverlay.addEventListener('click', () => {
-      expandOverlay.classList.add('hidden');
-      document.querySelectorAll('.textarea-expanded').forEach(el => {
-        el.classList.remove('textarea-expanded');
-      });
-    });
-  }
-}
-
-function toggleExpand(type) {
-  const expandOverlay = document.getElementById('expandOverlay');
-  const textarea = type === 'input' 
-    ? document.getElementById('requirement')
-    : document.getElementById('output');
-  
-  if (textarea.classList.contains('textarea-expanded')) {
-    // Collapse
-    textarea.classList.remove('textarea-expanded');
-    expandOverlay.classList.add('hidden');
-  } else {
-    // Expand
-    textarea.classList.add('textarea-expanded');
-    expandOverlay.classList.remove('hidden');
-    textarea.focus();
-  }
-}
-
-function showNotification(message) {
-  const notification = document.getElementById('notification');
-  const notificationText = document.getElementById('notificationText');
-  
-  if (notification && notificationText) {
-    notificationText.textContent = message;
-    notification.classList.remove('hidden');
     
+    // Show notification
+    function showNotification(message) {
+        // Create notification element
+        let notification = document.getElementById('flashNotification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'flashNotification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #1e293b;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                border-left: 4px solid #3b82f6;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 1000;
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+        }
+        
+        notification.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+        notification.style.display = 'block';
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 300);
+        }, 3000);
+        
+        // Add animation styles
+        if (!document.getElementById('notificationStyles')) {
+            const style = document.createElement('style');
+            style.id = 'notificationStyles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+    
+    // Auto-test: Try conversion after 1 second
     setTimeout(() => {
-      notification.classList.add('hidden');
-    }, 3000);
-  }
-}
-
-// Make functions available globally
-window.generatePrompt = generatePrompt;
-window.resetEverything = resetEverything;
+        if (inputText.value.trim()) {
+            convertBtn.click();
+        }
+    }, 1000);
+});
