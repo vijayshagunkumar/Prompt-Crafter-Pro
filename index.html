@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PromptCraft | Prompt Crafter Pro</title>
 
-  <!-- Fonts & Icons -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
+
+  <!-- Icons -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -24,16 +26,17 @@
 </head>
 
 <body>
+  <!-- Visual Effects -->
   <div class="scan-line"></div>
   <div id="particles" class="particles"></div>
 
-  <!-- Overlay (hidden by default via CSS) -->
+  <!-- Overlay -->
   <div id="expandOverlay" class="expand-overlay hidden"></div>
 
   <!-- Notification -->
   <div id="notification" class="notification hidden">
     <i class="fas fa-info-circle"></i>
-    <span id="notificationText">Notification message</span>
+    <span id="notificationText"></span>
   </div>
 
   <div class="page">
@@ -42,17 +45,6 @@
     <header class="hero">
       <div class="hero-top">
         <div class="hero-brand">
-          <div class="hero-logo">
-            <div class="logo-circuit">
-              <div class="circuit-line circuit-horizontal"></div>
-              <div class="circuit-line circuit-vertical"></div>
-              <div class="circuit-node circuit-node-1"></div>
-              <div class="circuit-node circuit-node-2"></div>
-              <div class="circuit-node circuit-node-3"></div>
-              <div class="circuit-node circuit-node-4"></div>
-            </div>
-          </div>
-
           <div class="hero-title-block">
             <h1 class="hero-title">
               Master the Art of <span>Prompt Engineering</span>
@@ -83,7 +75,6 @@
             </div>
           </div>
 
-          <!-- Intent chips -->
           <div id="intentRow" class="intent-row hidden">
             <div id="intentScroll" class="intent-scroll"></div>
           </div>
@@ -169,10 +160,7 @@
     </main>
   </div>
 
-  <!-- Scripts -->
-  <script src="js/intent.js"></script>
-  <script src="js/ai-tool-ranker.js"></script>
-  <script src="js/voice.js"></script>
-  <script src="js/app.js"></script>
+  <!-- 🚨 IMPORTANT: ONLY ONE SCRIPT, MODULE MODE -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
