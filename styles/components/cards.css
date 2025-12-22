@@ -1,0 +1,131 @@
+/* ======================================================
+   cards.css
+   Purpose: Step cards, headers, pills, meta badges
+====================================================== */
+
+/* ------------------------------
+   Step Card Container
+------------------------------ */
+.step-card {
+  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  box-shadow:
+    0 0 20px rgba(255, 94, 0, 0.2),
+    inset 0 0 20px rgba(0, 243, 255, 0.05);
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    45deg,
+    var(--primary) 0%,
+    var(--secondary) 50%,
+    var(--primary) 100%
+  );
+  z-index: -1;
+  opacity: 0.1;
+}
+
+/* ------------------------------
+   Step Header
+------------------------------ */
+.step-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.step-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: var(--primary);
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--secondary);
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.step-header-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 4px;
+}
+
+.step-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.step-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ------------------------------
+   Header Meta Pills
+------------------------------ */
+.step-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.meta-pill {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(0, 255, 65, 0.1);
+  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--success);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ------------------------------
+   Intent Chips (Card 1)
+------------------------------ */
+.intent-row {
+  margin-bottom: 12px;
+}
+
+.intent-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.intent-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 94, 0, 0.1);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
