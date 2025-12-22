@@ -1,8 +1,4 @@
-/* ======================================================
-   PromptCraft – Intent Detection Engine
-   Purpose: Detect task, tone, audience, depth, etc.
-====================================================== */
-
+// This is YOUR file - keep it exactly as is
 (function () {
   function detectIntentAttributes(text) {
     const t = (text || "").toLowerCase();
@@ -99,6 +95,6 @@
     return intent;
   }
 
-  // 🌍 Expose globally (safe & simple)
+  // 🌍 Expose globally
   window.detectIntentAttributes = detectIntentAttributes;
 })();
