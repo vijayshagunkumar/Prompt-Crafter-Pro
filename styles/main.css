@@ -222,6 +222,31 @@ body {
     opacity: 0.9;
 }
 
+/* Expand Button */
+.expand-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.expand-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
 /* ==================== BUTTONS ==================== */
 .btn-primary,
 .btn-secondary {
@@ -288,6 +313,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    position: relative;
 }
 
 .tool-btn:hover:not(:disabled) {
@@ -300,6 +326,16 @@ body {
 .tool-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.tool-btn.best-match {
+    border: 2px solid var(--success);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.tool-btn.best-match .tool-score {
+    background: var(--success);
+    color: #000;
 }
 
 .tool-icon {
@@ -317,6 +353,32 @@ body {
 .tool-name {
     flex: 1;
     text-align: left;
+}
+
+.tool-score {
+    font-size: 0.75rem;
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* Ranking Explanation */
+.ranking-explanation {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ranking-explanation i {
+    color: var(--primary);
 }
 
 /* ==================== NOTIFICATION ==================== */
@@ -348,6 +410,31 @@ body {
     }
 }
 
+/* ==================== EXPAND OVERLAY ==================== */
+.expand-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    backdrop-filter: blur(5px);
+}
+
+/* Expanded textarea mode */
+.textarea-expanded {
+    position: fixed !important;
+    top: 50px !important;
+    left: 50px !important;
+    right: 50px !important;
+    bottom: 50px !important;
+    z-index: 1000 !important;
+    font-size: 18px !important;
+    border: 2px solid var(--primary) !important;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.5) !important;
+}
+
 /* ==================== FOOTER ==================== */
 .footer {
     text-align: center;
@@ -361,16 +448,4 @@ body {
 .footer i {
     color: var(--primary);
     margin-right: 8px;
-}
-
-/* ==================== EXPAND OVERLAY ==================== */
-.expand-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 999;
-    backdrop-filter: blur(5px);
 }
