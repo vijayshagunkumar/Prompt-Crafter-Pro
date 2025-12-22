@@ -1,0 +1,35 @@
+/* AI Tools Cards Specific Styles */
+.launch-btn.launch-chatgpt .launch-icon {
+  background: rgba(16, 163, 127, 0.1);
+  color: #10a37f;
+}
+
+.launch-btn.launch-claude .launch-icon {
+  background: rgba(212, 165, 116, 0.1);
+  color: #d4a574;
+}
+
+.launch-btn.launch-gemini .launch-icon {
+  background: rgba(66, 133, 244, 0.1);
+  color: #4285f4;
+}
+
+.launch-btn.launch-perplexity .launch-icon {
+  background: rgba(155, 89, 182, 0.1);
+  color: #9b59b6;
+}
+
+.launch-btn.launch-deepseek .launch-icon {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.launch-btn.launch-copilot .launch-icon {
+  background: rgba(0, 120, 215, 0.1);
+  color: #0078d7;
+}
+
+.launch-btn.launch-grok .launch-icon {
+  background: rgba(243, 118, 38, 0.1);
+  color: #f37626;
+}
