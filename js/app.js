@@ -67,8 +67,19 @@ function scrollPresetIntoView(presetId) {
 }
 
 // API Configuration
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-3.5-turbo";
+async function callBackend(prompt) {
+  const res = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt })
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Generation failed");
+
+  return data.result;
+}
+
 
 // Application State
 let currentPreset = "default";
@@ -811,26 +822,6 @@ function loadSettings() {
   autoConvertCountdown = autoConvertDelay;
 }
 
-function saveSettings() {
-  const apiKey = (document.getElementById("apiKeyInput").value || "").trim();
-  const delay = document.getElementById("autoConvertDelay").value || "60";
-  const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
-
-  localStorage.setItem("OPENAI_API_KEY", apiKey);
-  localStorage.setItem("autoConvertDelay", delay);
-  localStorage.setItem("voiceLanguage", voiceLang);
-
-  autoConvertDelay = parseInt(delay, 10);
-  autoConvertCountdown = autoConvertDelay;
-
-  if (window.voiceFeatures && window.voiceFeatures.updateVoiceLanguage) {
-    window.voiceFeatures.updateVoiceLanguage(voiceLang);
-  }
-
-  showNotification("Settings saved");
-  const modal = document.getElementById("settingsModal");
-  if (modal) modal.style.display = "none";
-}
 
 function clearAllData() {
   localStorage.clear();
@@ -1521,46 +1512,6 @@ if (clearBtn) {
 /* ===============================
    MAIN CONVERSION FUNCTION
 =============================== */
-function convertToPrompt() {
-  const requirementEl = document.getElementById("requirement");
-  const outputEl = document.getElementById("output");
-  
-  if (!requirementEl || !outputEl) return;
-  
-  const requirement = requirementEl.value.trim();
-  if (!requirement) {
-    showNotification("Please enter a requirement first");
-    return;
-  }
-  
-  const { role, preset: autoPreset, label } = getRoleAndPreset(requirement);
-  lastRole = role;
-  lastTaskLabel = label;
-  
-  if (!userPresetLocked && autoPreset && PRESETS[autoPreset]) {
-    lastPresetSource = "auto";
-    setCurrentPreset(autoPreset);
-  }
-  
-  const prompt = PRESETS[currentPreset](lastRole, requirement);
-  
-  outputEl.value = prompt;
-  isConverted = true;
-  lastConvertedText = requirement;
-  
-  document.getElementById("convertedBadge").style.display = "inline-flex";
-  setLaunchButtonsEnabled(true);
-  
-  updateStats(prompt);
-  updateOutputStats();
-  
-  saveToHistory(requirement, prompt);
-  
-  usageCount++;
-  localStorage.setItem("usageCount", usageCount.toString());
-  
-  showNotification("Prompt generated successfully");
-}
 
 /* ===============================
    HANDLE REQUIREMENT INPUT
@@ -1932,71 +1883,20 @@ async function generatePrompt() {
   }
 
   usageCount++;
-  localStorage.setItem("promptCrafterUsage", usageCount);
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
-
-  const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
+  localStorage.setItem("usageCount", usageCount.toString());
+  document.getElementById("usageCount").innerHTML =
+    `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
 
   convertBtn.disabled = true;
   convertBtn.innerHTML =
     '<i class="fas fa-spinner fa-spin"></i> Converting...';
-  clearAutoConvertTimer();
 
   let generatedPrompt;
 
   try {
-    if (!apiKey) {
-      generatedPrompt = localFormatter(raw);
-    } else {
-      const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
+    generatedPrompt = await callBackend(raw);
 
-      const system = `
-You write structured task instructions for AI models.
-
-Using the TEMPLATE below, replace [ROLE] with an appropriate expert role (for example: "${role}")
-and [REQUIREMENT] with the user's requirement. Return ONLY the completed template and nothing else.
-
-TEMPLATE:
-${templateSkeleton}
-
-Important:
-- The template you return must tell the AI to directly perform the task and return the final result.
-- Do NOT mention prompts, prompt generation, or rewriting instructions in your output.
-`.trim();
-
-      const userMessage = `User requirement: "${raw}"
-
-Fill the template accordingly in the current preset format ("${currentPreset}") and return only the filled template.`;
-
-      const response = await fetch(OPENAI_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + apiKey
-        },
-        body: JSON.stringify({
-          model: OPENAI_MODEL,
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: userMessage }
-          ],
-          temperature: 0.1,
-          max_tokens: 700
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        generatedPrompt =
-          data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
-      } else {
-        generatedPrompt = localFormatter(raw);
-      }
-    }
-
-    generatedPrompt = sanitizePrompt(generatedPrompt);
+    clearAutoConvertTimer();
 
     outputEl.value = generatedPrompt;
     updateStats(raw);
@@ -2014,14 +1914,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
       autoConvertCountdown = autoConvertDelay;
       resetAutoConvertTimer();
     }
-  } catch (error) {
-    console.error("Generation error:", error);
-    generatedPrompt = localFormatter(raw);
-    outputEl.value = generatedPrompt;
-    updateStats(generatedPrompt);
-    updateOutputStats();
-    showNotification("Using offline generation");
-  } finally {
+  }  finally {
     convertBtn.disabled = false;
     convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
   }
