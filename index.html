@@ -5,68 +5,102 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PromptCraft</title>
 
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="styles/main.css" />
 </head>
 
 <body>
-  <!-- VISUAL LAYERS (DO NOT BLOCK CLICKS) -->
+
+  <!-- VISUAL EFFECTS (NON-INTERACTIVE) -->
   <div class="scan-line"></div>
   <div id="particles" class="particles"></div>
 
-  <!-- OVERLAY -->
+  <!-- OVERLAY FOR EXPAND MODE -->
   <div id="expandOverlay" class="expand-overlay hidden"></div>
 
-  <!-- NOTIFICATION -->
-  <div id="notification" class="notification hidden">
-    <span id="notificationText"></span>
-  </div>
-
+  <!-- APP -->
   <main class="page">
     <div class="cards-grid">
 
-      <!-- CARD 1 -->
+      <!-- ================= CARD 1 ================= -->
       <section class="step-card">
         <h2>1 · Your Idea</h2>
 
+        <!-- Intent Chips -->
         <div id="intentRow" class="intent-row hidden">
           <div id="intentScroll" class="intent-scroll"></div>
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="requirement" class="textarea-idea"
-            placeholder="Write a professional email to my manager requesting leave for 3 days..."></textarea>
+          <textarea
+            id="requirement"
+            class="textarea-idea"
+            placeholder="Write a professional email to my manager requesting leave for 3 days..."
+          ></textarea>
 
-          <button id="expandInputBtn" class="expand-btn">
+          <!-- Controls -->
+          <button id="expandInputBtn" class="expand-btn" title="Maximize">
             <i class="fas fa-expand"></i>
+          </button>
+
+          <button class="minimize-btn" title="Minimize">
+            ✕
           </button>
         </div>
 
-        <button id="convertBtn" class="btn-primary" disabled>Convert</button>
-        <button id="resetBtn" class="btn-ghost-small">Reset Everything</button>
+        <button id="convertBtn" class="btn-primary" disabled>
+          Convert
+        </button>
+
+        <button id="resetBtn" class="btn-ghost-small">
+          Reset Everything
+        </button>
       </section>
 
-      <!-- CARD 2 -->
+      <!-- ================= CARD 2 ================= -->
       <section class="step-card">
         <h2>2 · Structured Prompt</h2>
 
-        <span id="convertedBadge" class="meta-pill hidden">Converted</span>
+        <span id="convertedBadge" class="meta-pill hidden">
+          Converted
+        </span>
 
         <div class="textarea-wrapper">
-          <textarea id="output" class="output-textarea"
-            placeholder="Your structured prompt will appear here..."></textarea>
+          <textarea
+            id="output"
+            class="output-textarea"
+            placeholder="Your structured prompt will appear here..."
+          ></textarea>
 
-          <button id="expandOutputBtn" class="expand-btn">
+          <!-- Controls -->
+          <button id="expandOutputBtn" class="expand-btn" title="Maximize">
             <i class="fas fa-expand"></i>
+          </button>
+
+          <button class="minimize-btn" title="Minimize">
+            ✕
           </button>
         </div>
       </section>
 
-      <!-- CARD 3 -->
+      <!-- ================= CARD 3 ================= -->
       <section class="step-card">
         <h2>3 · AI Tools</h2>
+        <p class="step-subtitle">Click to open tool (prompt auto-copied)</p>
+
         <div class="launch-list">
           <button id="chatgptBtn">ChatGPT</button>
           <button id="claudeBtn">Claude</button>
@@ -81,7 +115,8 @@
     </div>
   </main>
 
-  <!-- ONLY SCRIPT -->
+  <!-- SINGLE ENTRY SCRIPT -->
   <script type="module" src="js/app.js"></script>
+
 </body>
 </html>
