@@ -3,14 +3,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { prompt } = req.body;
-
-  if (!prompt || prompt.length > 3000) {
-    return res.status(400).json({ error: "Invalid prompt" });
-  }
-
   try {
-    const response = await fetch(
+    const { prompt } = req.body;
+
+    if (!prompt || typeof prompt !== "string") {
+      return res.status(400).json({ error: "Invalid prompt" });
+    }
+
+    if (prompt.length > 3000) {
+      return res.status(400).json({ error: "Prompt too long" });
+    }
+
+    const openaiResponse = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
@@ -24,9 +28,12 @@ export default async function handler(req, res) {
             {
               role: "system",
               content:
-                "You are PromptCraft. Convert the user's idea into a clear, structured AI prompt."
+                "You are PromptCraft. Convert the user's idea into a clear, structured AI prompt with role, objective, context, instructions, and notes."
             },
-            { role: "user", content: prompt }
+            {
+              role: "user",
+              content: prompt
+            }
           ],
           temperature: 0.4,
           max_tokens: 600
@@ -34,13 +41,18 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    const data = await openaiResponse.json();
 
-    res.status(200).json({
+    if (!data.choices || !data.choices[0]) {
+      return res.status(500).json({ error: "Invalid OpenAI response" });
+    }
+
+    return res.status(200).json({
       result: data.choices[0].message.content
     });
 
   } catch (err) {
-    res.status(500).json({ error: "Prompt generation failed" });
+    console.error("PromptCraft API error:", err);
+    return res.status(500).json({ error: "Generation failed" });
   }
 }
