@@ -1,3 +1,8 @@
+/* ======================================================
+   events.js
+   Purpose: UI behavior, expand/minimize, convert, AI tools
+====================================================== */
+
 import { callBackend } from "./api.js";
 
 const $ = id => document.getElementById(id);
@@ -10,23 +15,31 @@ export function initializeEvents() {
   const badge = $("convertedBadge");
   const overlay = $("expandOverlay");
 
-  /* ---------------- Convert ---------------- */
+  /* ------------------------------
+     Convert
+  ------------------------------ */
   input.addEventListener("input", () => {
     convertBtn.disabled = !input.value.trim();
   });
 
   convertBtn.addEventListener("click", async () => {
     convertBtn.disabled = true;
+    convertBtn.textContent = "Converting…";
+
     try {
       output.value = await callBackend(input.value);
       badge.classList.remove("hidden");
     } catch (e) {
-      alert(e.message);
+      alert(e.message || "Generation failed");
     } finally {
+      convertBtn.textContent = "Convert";
       convertBtn.disabled = false;
     }
   });
 
+  /* ------------------------------
+     Reset
+  ------------------------------ */
   resetBtn.addEventListener("click", () => {
     input.value = "";
     output.value = "";
@@ -34,26 +47,50 @@ export function initializeEvents() {
     $("intentRow").classList.add("hidden");
   });
 
-  /* ---------------- Expand / Minimize ---------------- */
-  function expand(el) {
-    el.classList.add("textarea-expanded");
+  /* ------------------------------
+     Expand / Minimize
+  ------------------------------ */
+  function expand(wrapper, textarea) {
+    wrapper.classList.add("expanded-wrapper");
+    textarea.classList.add("textarea-expanded");
     overlay.classList.remove("hidden");
-    el.parentElement.classList.add("expanded-wrapper");
   }
 
   function collapseAll() {
-    document.querySelectorAll(".textarea-expanded")
-      .forEach(el => el.classList.remove("textarea-expanded"));
     document.querySelectorAll(".expanded-wrapper")
-      .forEach(el => el.classList.remove("expanded-wrapper"));
+      .forEach(w => w.classList.remove("expanded-wrapper"));
+    document.querySelectorAll(".textarea-expanded")
+      .forEach(t => t.classList.remove("textarea-expanded"));
     overlay.classList.add("hidden");
   }
 
-  $("expandInputBtn").onclick = () => expand(input);
-  $("expandOutputBtn").onclick = () => expand(output);
-  overlay.onclick = collapseAll;
+  $("expandInputBtn").addEventListener("click", () => {
+    expand(input.closest(".textarea-wrapper"), input);
+  });
 
-  /* ---------------- AI Tool Clicks ---------------- */
+  $("expandOutputBtn").addEventListener("click", () => {
+    expand(output.closest(".textarea-wrapper"), output);
+  });
+
+  overlay.addEventListener("click", collapseAll);
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") collapseAll();
+  });
+
+  /* ------------------------------
+     AI Tool Buttons
+  ------------------------------ */
+  const toolUrls = {
+    chatgptBtn: "https://chat.openai.com/",
+    claudeBtn: "https://claude.ai/",
+    geminiBtn: "https://gemini.google.com/",
+    perplexityBtn: "https://www.perplexity.ai/",
+    deepseekBtn: "https://chat.deepseek.com/",
+    copilotBtn: "https://copilot.microsoft.com/",
+    grokBtn: "https://x.ai/"
+  };
+
   document.querySelectorAll(".launch-list button").forEach(btn => {
     btn.addEventListener("click", () => {
       if (!output.value.trim()) {
@@ -61,19 +98,8 @@ export function initializeEvents() {
         return;
       }
 
-      navigator.clipboard.writeText(output.value);
-
-      const map = {
-        chatgptBtn: "https://chat.openai.com/",
-        claudeBtn: "https://claude.ai/",
-        geminiBtn: "https://gemini.google.com/",
-        perplexityBtn: "https://www.perplexity.ai/",
-        deepseekBtn: "https://chat.deepseek.com/",
-        copilotBtn: "https://copilot.microsoft.com/",
-        grokBtn: "https://x.ai/"
-      };
-
-      const url = map[btn.id];
+      navigator.clipboard.writeText(output.value).catch(() => {});
+      const url = toolUrls[btn.id];
       if (url) window.open(url, "_blank");
     });
   });
