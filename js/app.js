@@ -67,8 +67,8 @@ function scrollPresetIntoView(presetId) {
 }
 
 // API Configuration
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-3.5-turbo";
+// API Configuration - Cloudflare Worker URL
+const CLOUDFLARE_WORKER_URL = "https://promptcraft-api.vijay-shagunkumar.workers.dev";
 
 // Application State
 let currentPreset = "default";
@@ -1911,6 +1911,7 @@ function localFormatter(raw) {
 }
 
 // API-based prompt generation
+// API-based prompt generation
 async function generatePrompt() {
   const requirementEl = document.getElementById("requirement");
   const outputEl = document.getElementById("output");
@@ -1932,69 +1933,37 @@ async function generatePrompt() {
   }
 
   usageCount++;
-  localStorage.setItem("promptCrafterUsage", usageCount);
-  document.getElementById(
-    "usageCount"
-  ).innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
-
-  const apiKey = localStorage.getItem("OPENAI_API_KEY")?.trim();
+  localStorage.setItem("usageCount", usageCount.toString());
+  
+  const usageElement = document.getElementById("usageCount");
+  if (usageElement) {
+    usageElement.innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
+  }
 
   convertBtn.disabled = true;
-  convertBtn.innerHTML =
-    '<i class="fas fa-spinner fa-spin"></i> Converting...';
-  clearAutoConvertTimer();
+  convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
 
   let generatedPrompt;
 
   try {
-    if (!apiKey) {
-      generatedPrompt = localFormatter(raw);
-    } else {
-      const templateSkeleton = PRESETS[currentPreset]("[ROLE]", "[REQUIREMENT]");
+    // Call Cloudflare Worker
+    const WORKER_URL = "https://promptcraft-api.vijay-shagunkumar.workers.dev";
+    
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt: raw })
+    });
 
-      const system = `
-You write structured task instructions for AI models.
-
-Using the TEMPLATE below, replace [ROLE] with an appropriate expert role (for example: "${role}")
-and [REQUIREMENT] with the user's requirement. Return ONLY the completed template and nothing else.
-
-TEMPLATE:
-${templateSkeleton}
-
-Important:
-- The template you return must tell the AI to directly perform the task and return the final result.
-- Do NOT mention prompts, prompt generation, or rewriting instructions in your output.
-`.trim();
-
-      const userMessage = `User requirement: "${raw}"
-
-Fill the template accordingly in the current preset format ("${currentPreset}") and return only the filled template.`;
-
-      const response = await fetch(OPENAI_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + apiKey
-        },
-        body: JSON.stringify({
-          model: OPENAI_MODEL,
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: userMessage }
-          ],
-          temperature: 0.1,
-          max_tokens: 700
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        generatedPrompt =
-          data.choices?.[0]?.message?.content?.trim() || localFormatter(raw);
-      } else {
-        generatedPrompt = localFormatter(raw);
-      }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Generation failed");
     }
+    
+    const data = await response.json();
+    generatedPrompt = data.result;
 
     generatedPrompt = sanitizePrompt(generatedPrompt);
 
@@ -2016,6 +1985,7 @@ Fill the template accordingly in the current preset format ("${currentPreset}") 
     }
   } catch (error) {
     console.error("Generation error:", error);
+    // Fallback to local formatter if Cloudflare Worker fails
     generatedPrompt = localFormatter(raw);
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
