@@ -1,18 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<base href="/">
+    <!-- Ultimate PromptCraft Favicon - BRAIN + SPARKLES -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%238B5CF6'>🧠✨</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%238B5CF6'>🧠✨</text></svg>">
+    
+    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8B5CF6">
+    <meta name="apple-mobile-web-app-title" content="PromptCraft">
+    
     <title>PromptCraft | Prompt Crafter Pro</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <link rel="icon" type="image/x-icon" href="assets/IconLogo.ico">
+    
     <link rel="stylesheet" href="styles/variables.css">
     <link rel="stylesheet" href="styles/themes.css">
     <link rel="stylesheet" href="styles/main.css">
 </head>
+
 <body>
     <div class="scan-line"></div>
     <div id="particles" class="particles"></div>
@@ -182,7 +191,7 @@
                         <div class="step-meta">
                             <div class="timer-badge">
                                 <i class="fas fa-cog"></i>
-                                <span id="presetInfo" style="display: none;"></span> <!-- Issue #3: Hidden permanently -->
+                                <span id="presetInfo" style="display: none;"></span>
                             </div>
                             <span id="convertedBadge" class="meta-pill" style="display: none;">
                                 <i class="fas fa-check"></i> Converted
@@ -260,7 +269,6 @@
                         <div class="step-pill">3</div>
                         <div class="step-header-main">
                             <h2>LAUNCH</h2>
-                            <!-- Issue #5: Removed the hint text, will show as tooltip on hover -->
                         </div>
                     </div>
 
@@ -335,13 +343,6 @@
                             </div>
                         </button>
                     </div>
-
-                    <!-- OLD EXPLANATION - KEPT FOR CSS COMPATIBILITY -->
-                    <div id="ai-ranking-explanation" class="ai-ranking-explanation hidden">
-                        <i class="fas fa-sort-amount-down"></i>
-                        <strong>Ranked by: </strong>
-                        <span id="ai-ranking-reasons"></span>
-                    </div>
                 </section>
             </div>
         </main>
@@ -373,7 +374,7 @@
                 <button id="closeSettingsBtn" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- ===================== SECURITY FIX: API KEY SECTION COMMENTED OUT ===================== -->
+                <!-- SECURITY FIX: API KEY SECTION COMMENTED OUT -->
                 <!--
                 <div class="form-group">
                     <label class="form-label" for="apiKeyInput">
@@ -386,7 +387,7 @@
                     </div>
                 </div>
                 -->
-                <!-- ===================== END OF COMMENTED SECTION ===================== -->
+                <!-- END OF COMMENTED SECTION -->
                 
                 <div class="form-group">
                     <label class="form-label" for="autoConvertDelay">
@@ -511,7 +512,6 @@
     <script src="js/theme.js"></script>
     <script src="js/voice.js"></script>
     <script src="js/intent.js"></script>
-    <!-- AI TOOL RANKER IS NOW INTEGRATED INTO app.js -->
     <script src="js/app.js"></script>
 </body>
 </html>
