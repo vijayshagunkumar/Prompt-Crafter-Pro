@@ -1951,7 +1951,8 @@ async function generatePrompt() {
     const response = await fetch(WORKER_URL, {
       method: "POST",
       headers: { 
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-api-key": "promptcraft-app-secret-123"
       },
       body: JSON.stringify({ prompt: raw })
     });
