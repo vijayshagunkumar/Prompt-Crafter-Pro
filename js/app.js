@@ -816,7 +816,6 @@ function saveSettings() {
   const delay = document.getElementById("autoConvertDelay").value || "60";
   const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
 
-  localStorage.setItem("OPENAI_API_KEY", apiKey);
   localStorage.setItem("autoConvertDelay", delay);
   localStorage.setItem("voiceLanguage", voiceLang);
 
