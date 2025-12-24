@@ -57,7 +57,85 @@
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
 }
+/* ==========================================
+   THEME 0: SIMPLE (Default - Clean & Minimal)
+   ========================================== */
+[data-theme="simple"] {
+  --primary: #4F46E5;       /* Indigo */
+  --secondary: #6B7280;     /* Gray */
+  --accent: #8B5CF6;        /* Purple */
+  --danger: #DC2626;        /* Red */
+  --warning: #D97706;       /* Amber */
+  --success: #059669;       /* Emerald */
+  
+  --bg-body: #FFFFFF;       /* White */
+  --bg-secondary: #F9FAFB;  /* Gray 50 */
+  --panel-bg: #FFFFFF;
+  --input-bg: #FFFFFF;
+  
+  --text-primary: #111827;  /* Gray 900 */
+  --text-secondary: #6B7280; /* Gray 500 */
+  --text-muted: #9CA3AF;    /* Gray 400 */
+  --text-on-primary: #FFFFFF;
+  
+  --border-subtle: #E5E7EB; /* Gray 200 */
+  --panel-border: #D1D5DB;  /* Gray 300 */
+  --input-border: #D1D5DB;
+  --input-border-focus: #4F46E5;
+  
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --input-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  
+  --gradient-brand: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%);
+  --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  --gradient-secondary: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
+  
+  --primary-rgb: 79, 70, 229;
+  --secondary-rgb: 107, 114, 128;
+}
 
+/* Simple theme background grid */
+body[data-theme="simple"] {
+  background-image: none;
+  background-color: var(--bg-body);
+}
+
+/* Hide scan line for simple theme */
+body[data-theme="simple"] .scan-line {
+  display: none;
+}
+
+/* Simple theme preview */
+.simple-preview {
+  background: linear-gradient(135deg, #F9FAFB, #FFFFFF, #F3F4F6);
+}
+
+.simple-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.2;
+}
+
+.simple-line-h {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: #6B7280;
+}
+
+.simple-line-v {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: #6B7280;
+}
 /* ==========================================
    THEME 1: CYBERPUNK NEON (DEFAULT)
    ========================================== */
