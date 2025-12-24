@@ -19,69 +19,94 @@
   --theme-solar: 'Solar Flare';
   --theme-deep-space: 'Deep Space';
   --theme-monochrome: 'Monochrome';
-}
-
-/* ==========================================
-   THEME 1: CYBERPUNK CORE (DEFAULT)
-   ========================================== */
-[data-theme="cyberpunk"] {
-  /* Brand Colors */
-  --primary: #FF5E00;       /* Bright Orange */
-  --secondary: #00F3FF;     /* Cyan Blue */
-  --accent: #FF00FF;        /* Magenta Pink */
-  --danger: #FF4444;        /* Bright Red */
-  --warning: #FFD700;       /* Gold */
-  --success: #00FF41;       /* Matrix Green */
   
-  /* Background Colors */
-  --bg-body: #0A0E17;       /* Deep Navy */
+  /* Default theme (will be overridden) */
+  --primary: #FF5E00;
+  --secondary: #00F3FF;
+  --accent: #FF00FF;
+  --danger: #FF4444;
+  --warning: #FFD700;
+  --success: #00FF41;
+  
+  --bg-body: #0A0E17;
   --bg-secondary: #0F1629;
   --panel-bg: rgba(17, 24, 39, 0.95);
   --input-bg: rgba(10, 14, 23, 0.8);
   
-  /* Text Colors */
   --text-primary: #FFFFFF;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
   --text-on-primary: #000000;
   
-  /* Border Colors */
   --border-subtle: rgba(255, 94, 0, 0.3);
   --panel-border: rgba(0, 243, 255, 0.3);
   --input-border: rgba(255, 94, 0, 0.4);
   --input-border-focus: rgba(0, 243, 255, 0.8);
   
-  /* Shadows */
   --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
   --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
   
-  /* Gradients */
   --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
   --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
   --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
   
-  /* RGB values for animations */
   --primary-rgb: 255, 94, 0;
   --secondary-rgb: 0, 243, 255;
   
-  /* Transitions */
   --transition-fast: 0.2s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
 }
 
 /* ==========================================
+   THEME 1: CYBERPUNK CORE (DEFAULT)
+   ========================================== */
+[data-theme="cyberpunk"] {
+  --primary: #FF5E00;
+  --secondary: #00F3FF;
+  --accent: #FF00FF;
+  --danger: #FF4444;
+  --warning: #FFD700;
+  --success: #00FF41;
+  
+  --bg-body: #0A0E17;
+  --bg-secondary: #0F1629;
+  --panel-bg: rgba(17, 24, 39, 0.95);
+  --input-bg: rgba(10, 14, 23, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 94, 0, 0.3);
+  --panel-border: rgba(0, 243, 255, 0.3);
+  --input-border: rgba(255, 94, 0, 0.4);
+  --input-border-focus: rgba(0, 243, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+  
+  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+  --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+  
+  --primary-rgb: 255, 94, 0;
+  --secondary-rgb: 0, 243, 255;
+}
+
+/* ==========================================
    THEME 2: SUNSET ORANGE
    ========================================== */
 [data-theme="sunset"] {
-  --primary: #FF6B35;       /* Sunset Orange */
-  --secondary: #FFA500;     /* Bright Orange */
-  --accent: #FFD700;        /* Gold */
+  --primary: #FF6B35;
+  --secondary: #FFA500;
+  --accent: #FFD700;
   --danger: #FF4444;
   --warning: #FF8C00;
   --success: #00C853;
   
-  --bg-body: #1A0B0B;       /* Deep Red-Black */
+  --bg-body: #1A0B0B;
   --bg-secondary: #2A1515;
   --panel-bg: rgba(42, 21, 21, 0.95);
   --input-bg: rgba(26, 11, 11, 0.8);
@@ -111,14 +136,14 @@
    THEME 3: AURORA PURPLE
    ========================================== */
 [data-theme="aurora"] {
-  --primary: #8A2BE2;       /* Blue Violet */
-  --secondary: #00CED1;     /* Dark Turquoise */
-  --accent: #9370DB;        /* Medium Purple */
+  --primary: #8A2BE2;
+  --secondary: #00CED1;
+  --accent: #9370DB;
   --danger: #FF4444;
   --warning: #FFD700;
   --success: #00FF7F;
   
-  --bg-body: #0A0A1A;       /* Deep Purple-Black */
+  --bg-body: #0A0A1A;
   --bg-secondary: #151530;
   --panel-bg: rgba(21, 21, 48, 0.95);
   --input-bg: rgba(10, 10, 26, 0.8);
@@ -148,14 +173,14 @@
    THEME 4: SERENITY GREEN
    ========================================== */
 [data-theme="serenity"] {
-  --primary: #2E8B57;       /* Sea Green */
-  --secondary: #87CEEB;     /* Sky Blue */
-  --accent: #98FB98;        /* Pale Green */
+  --primary: #2E8B57;
+  --secondary: #87CEEB;
+  --accent: #98FB98;
   --danger: #FF6B6B;
   --warning: #FFD93D;
   --success: #4CAF50;
   
-  --bg-body: #0A140F;       /* Deep Green-Black */
+  --bg-body: #0A140F;
   --bg-secondary: #1A291F;
   --panel-bg: rgba(26, 41, 31, 0.95);
   --input-bg: rgba(10, 20, 15, 0.8);
@@ -185,14 +210,14 @@
    THEME 5: OCEAN BLUE
    ========================================== */
 [data-theme="ocean"] {
-  --primary: #1E3A8A;       /* Dark Blue */
-  --secondary: #3B82F6;     /* Bright Blue */
-  --accent: #06D6A0;        /* Mint Green */
+  --primary: #1E3A8A;
+  --secondary: #3B82F6;
+  --accent: #06D6A0;
   --danger: #EF476F;
   --warning: #FFD166;
   --success: #06D6A0;
   
-  --bg-body: #0A0E17;       /* Deep Navy */
+  --bg-body: #0A0E17;
   --bg-secondary: #1A2B4A;
   --panel-bg: rgba(26, 43, 74, 0.95);
   --input-bg: rgba(10, 14, 23, 0.8);
@@ -219,17 +244,17 @@
 }
 
 /* ==========================================
-   THEME 6: THE MATRIX (NEW)
+   THEME 6: THE MATRIX
    ========================================== */
 [data-theme="matrix"] {
-  --primary: #00FF41;       /* Matrix Green */
-  --secondary: #008F11;     /* Darker Green */
-  --accent: #003B00;        /* Deep Green */
+  --primary: #00FF41;
+  --secondary: #008F11;
+  --accent: #003B00;
   --danger: #FF003C;
   --warning: #FFFF00;
   --success: #00FF41;
   
-  --bg-body: #000000;       /* Pure Black */
+  --bg-body: #000000;
   --bg-secondary: #001100;
   --panel-bg: rgba(0, 17, 0, 0.95);
   --input-bg: rgba(0, 0, 0, 0.8);
@@ -256,17 +281,17 @@
 }
 
 /* ==========================================
-   THEME 7: CYBER NOIR (NEW)
+   THEME 7: CYBER NOIR
    ========================================== */
 [data-theme="cybernoir"] {
-  --primary: #FF0000;       /* Bright Red */
-  --secondary: #FFFFFF;     /* White */
-  --accent: #808080;        /* Gray */
+  --primary: #FF0000;
+  --secondary: #FFFFFF;
+  --accent: #808080;
   --danger: #FF0000;
   --warning: #FFFF00;
   --success: #00FF00;
   
-  --bg-body: #000000;       /* Black */
+  --bg-body: #000000;
   --bg-secondary: #1A1A1A;
   --panel-bg: rgba(26, 26, 26, 0.95);
   --input-bg: rgba(0, 0, 0, 0.8);
@@ -293,17 +318,17 @@
 }
 
 /* ==========================================
-   THEME 8: NEON DREAM (NEW)
+   THEME 8: NEON DREAM
    ========================================== */
 [data-theme="neon-dream"] {
-  --primary: #FF00FF;       /* Magenta */
-  --secondary: #00FFFF;     /* Cyan */
-  --accent: #FFFF00;        /* Yellow */
+  --primary: #FF00FF;
+  --secondary: #00FFFF;
+  --accent: #FFFF00;
   --danger: #FF0000;
   --warning: #FFA500;
   --success: #00FF00;
   
-  --bg-body: #0A0A1A;       /* Dark Blue */
+  --bg-body: #0A0A1A;
   --bg-secondary: #1A1A2A;
   --panel-bg: rgba(26, 26, 42, 0.95);
   --input-bg: rgba(10, 10, 26, 0.8);
@@ -330,17 +355,17 @@
 }
 
 /* ==========================================
-   THEME 9: VAPORWAVE (NEW)
+   THEME 9: VAPORWAVE
    ========================================== */
 [data-theme="vaporwave"] {
-  --primary: #FF71CE;       /* Pink */
-  --secondary: #01CDFE;     /* Cyan */
-  --accent: #05FFA1;        /* Mint */
+  --primary: #FF71CE;
+  --secondary: #01CDFE;
+  --accent: #05FFA1;
   --danger: #FF6B6B;
   --warning: #FFE66D;
   --success: #4ECDC4;
   
-  --bg-body: #1D1D2B;       /* Dark Purple */
+  --bg-body: #1D1D2B;
   --bg-secondary: #2A2A3C;
   --panel-bg: rgba(42, 42, 60, 0.95);
   --input-bg: rgba(29, 29, 43, 0.8);
@@ -367,17 +392,17 @@
 }
 
 /* ==========================================
-   THEME 10: TOXIC GREEN (NEW)
+   THEME 10: TOXIC GREEN
    ========================================== */
 [data-theme="toxic"] {
-  --primary: #39FF14;       /* Neon Green */
-  --secondary: #CCFF00;     /* Lime */
-  --accent: #7CFC00;        /* Lawn Green */
+  --primary: #39FF14;
+  --secondary: #CCFF00;
+  --accent: #7CFC00;
   --danger: #FF073A;
   --warning: #FFD700;
   --success: #39FF14;
   
-  --bg-body: #001100;       /* Deep Green */
+  --bg-body: #001100;
   --bg-secondary: #002200;
   --panel-bg: rgba(0, 34, 0, 0.95);
   --input-bg: rgba(0, 17, 0, 0.8);
@@ -404,17 +429,17 @@
 }
 
 /* ==========================================
-   THEME 11: SOLAR FLARE (NEW)
+   THEME 11: SOLAR FLARE
    ========================================== */
 [data-theme="solar"] {
-  --primary: #FF9500;       /* Orange */
-  --secondary: #FFD700;     /* Gold */
-  --accent: #FF4500;        /* Red-Orange */
+  --primary: #FF9500;
+  --secondary: #FFD700;
+  --accent: #FF4500;
   --danger: #FF0000;
   --warning: #FFD700;
   --success: #32CD32;
   
-  --bg-body: #1A0B0B;       /* Dark Red */
+  --bg-body: #1A0B0B;
   --bg-secondary: #2A1515;
   --panel-bg: rgba(42, 21, 21, 0.95);
   --input-bg: rgba(26, 11, 11, 0.8);
@@ -441,17 +466,17 @@
 }
 
 /* ==========================================
-   THEME 12: DEEP SPACE (NEW)
+   THEME 12: DEEP SPACE
    ========================================== */
 [data-theme="deep-space"] {
-  --primary: #4169E1;       /* Royal Blue */
-  --secondary: #9370DB;     /* Medium Purple */
-  --accent: #00BFFF;        /* Deep Sky Blue */
+  --primary: #4169E1;
+  --secondary: #9370DB;
+  --accent: #00BFFF;
   --danger: #DC143C;
   --warning: #FFD700;
   --success: #00FA9A;
   
-  --bg-body: #000033;       /* Deep Blue */
+  --bg-body: #000033;
   --bg-secondary: #0A0A2A;
   --panel-bg: rgba(10, 10, 42, 0.95);
   --input-bg: rgba(0, 0, 51, 0.8);
@@ -478,17 +503,17 @@
 }
 
 /* ==========================================
-   THEME 13: MONOCHROME (NEW)
+   THEME 13: MONOCHROME
    ========================================== */
 [data-theme="monochrome"] {
-  --primary: #FFFFFF;       /* White */
-  --secondary: #CCCCCC;     /* Light Gray */
-  --accent: #999999;        /* Medium Gray */
+  --primary: #FFFFFF;
+  --secondary: #CCCCCC;
+  --accent: #999999;
   --danger: #666666;
   --warning: #999999;
   --success: #CCCCCC;
   
-  --bg-body: #000000;       /* Black */
+  --bg-body: #000000;
   --bg-secondary: #1A1A1A;
   --panel-bg: rgba(26, 26, 26, 0.95);
   --input-bg: rgba(0, 0, 0, 0.8);
@@ -592,46 +617,88 @@
 /* ==========================================
    BODY BACKGROUND GRID FOR EACH THEME
    ========================================== */
-[data-theme="cyberpunk"] body {
+body[data-theme="cyberpunk"] {
   background-image: 
     linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
     linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
 }
 
-[data-theme="sunset"] body {
+body[data-theme="sunset"] {
   background-image: 
     linear-gradient(rgba(139, 69, 19, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(139, 69, 19, 0.2) 1px, transparent 1px);
 }
 
-[data-theme="aurora"] body {
+body[data-theme="aurora"] {
   background-image: 
     linear-gradient(rgba(75, 0, 130, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(75, 0, 130, 0.2) 1px, transparent 1px);
 }
 
-[data-theme="serenity"] body {
+body[data-theme="serenity"] {
   background-image: 
     linear-gradient(rgba(46, 139, 87, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(46, 139, 87, 0.2) 1px, transparent 1px);
 }
 
-[data-theme="ocean"] body {
+body[data-theme="ocean"] {
   background-image: 
     linear-gradient(rgba(30, 58, 138, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(30, 58, 138, 0.2) 1px, transparent 1px);
 }
 
-[data-theme="matrix"] body {
+body[data-theme="matrix"] {
   background-image: 
     linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
 }
 
-[data-theme="monochrome"] body {
+body[data-theme="cybernoir"] {
   background-image: 
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+body[data-theme="neon-dream"] {
+  background-image: 
+    linear-gradient(rgba(255, 0, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="vaporwave"] {
+  background-image: 
+    linear-gradient(rgba(255, 113, 206, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 113, 206, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="toxic"] {
+  background-image: 
+    linear-gradient(rgba(57, 255, 20, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 20, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="solar"] {
+  background-image: 
+    linear-gradient(rgba(255, 149, 0, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 149, 0, 0.2) 1px, transparent 1px);
+}
+
+body[data-theme="deep-space"] {
+  background-image: 
+    linear-gradient(rgba(65, 105, 225, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(65, 105, 225, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="monochrome"] {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+body[data-theme="auto"] {
+  background-image: 
+    linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
 }
 
 /* ==========================================
@@ -642,46 +709,4 @@
               border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ==========================================
-   DEFAULT THEME FALLBACK
-   ========================================== */
-:root {
-  /* Default fallback values */
-  --primary: #FF5E00;
-  --secondary: #00F3FF;
-  --accent: #FF00FF;
-  --danger: #FF4444;
-  --warning: #FFD700;
-  --success: #00FF41;
-  
-  --bg-body: #0A0E17;
-  --bg-secondary: #0F1629;
-  --panel-bg: rgba(17, 24, 39, 0.95);
-  --input-bg: rgba(10, 14, 23, 0.8);
-  
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-on-primary: #000000;
-  
-  --border-subtle: rgba(255, 94, 0, 0.3);
-  --panel-border: rgba(0, 243, 255, 0.3);
-  --input-border: rgba(255, 94, 0, 0.4);
-  --input-border-focus: rgba(0, 243, 255, 0.8);
-  
-  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
-  
-  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
-  --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
-  --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
-  
-  --primary-rgb: 255, 94, 0;
-  --secondary-rgb: 0, 243, 255;
-  
-  --transition-fast: 0.2s ease;
-  --transition-medium: 0.3s ease;
-  --transition-slow: 0.5s ease;
 }
