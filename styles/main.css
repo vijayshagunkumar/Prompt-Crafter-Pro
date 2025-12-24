@@ -5,46 +5,24 @@
 
 /* IMPORTANT: CSS Variables are now in themes.css */
 /* Base fallback values (will be overridden by theme system) */
-:root {
-  /* Colors - BASE VALUES ONLY (will be overridden) */
-  --bg-body: #0A0E17;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-on-primary: #000000;
-  --primary: #FF5E00;
-  --primary-light: #FF8C42;
-  --primary-rgb: 255, 94, 0;
-  --success: #00FF41;
-  --danger: #FF4444;
-  
-  /* Gradients */
-  --gradient-brand: linear-gradient(135deg, #FF5E00, #00F3FF);
-  
-  /* Backgrounds */
-  --panel-bg: #111827;
-  --input-bg: #0A0E17;
-  --bg-soft: #1E293B;
-  
-  /* Borders */
-  --panel-border: #FF5E00;
-  --border-subtle: #2D3748;
-  --input-border: #2D3748;
-  --input-border-focus: #FF5E00;
-  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2);
-  
-  /* Shadows */
-  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
-  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
-  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
-  
-  /* Toasts */
-  --toast-bg: #1E293B;
-  --toast-text: #00F3FF;
-  
-  /* Transitions */
-  --transition-fast: all 0.2s ease;
+/* main.css – Cyberpunk/Neon Theme Layout & Components */
+
+/* CSS VARIABLES ARE IN themes.css - This file only has layout/styles */
+
+/* CYBERPUNK BACKGROUND GRID */
+body {
+  background: var(--bg-body);
+  position: relative;
+  overflow-x: hidden;
+  font-family: 'Courier New', 'Inter', monospace, sans-serif;
+  background-image: 
+    linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
 }
+
+/* The rest of your main.css remains as is... */
 
 /* CYBERPUNK BACKGROUND GRID */
 body {
