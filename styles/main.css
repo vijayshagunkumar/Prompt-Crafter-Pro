@@ -1,8 +1,12 @@
 /* main.css – Cyberpunk/Neon Theme Layout & Components */
 
 /* CSS VARIABLES - ADD THIS SECTION AT THE TOP */
+/* main.css – Cyberpunk/Neon Theme Layout & Components */
+
+/* IMPORTANT: CSS Variables are now in themes.css */
+/* Base fallback values (will be overridden by theme system) */
 :root {
-  /* Colors */
+  /* Colors - BASE VALUES ONLY (will be overridden) */
   --bg-body: #0A0E17;
   --text-primary: #F1F5F9;
   --text-secondary: #94A3B8;
@@ -11,7 +15,7 @@
   --primary: #FF5E00;
   --primary-light: #FF8C42;
   --primary-rgb: 255, 94, 0;
-  --success: #00FF41;  /* Matrix green */
+  --success: #00FF41;
   --danger: #FF4444;
   
   /* Gradients */
