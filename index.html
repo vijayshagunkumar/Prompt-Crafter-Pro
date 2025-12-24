@@ -514,9 +514,9 @@
         </div>
     </div>
 
-    <!-- THEME MODAL -->
+    <!-- THEME MODAL - UPDATED WITH ALL 14 THEMES -->
     <div id="themeModal" class="modal-backdrop" style="display: none;">
-        <div class="modal" style="max-width: 500px;">
+        <div class="modal" style="max-width: 550px;">
             <div class="modal-header">
                 <h3><i class="fas fa-palette"></i> Select Theme</h3>
                 <button class="modal-close" id="closeThemeBtn">&times;</button>
@@ -529,10 +529,10 @@
                         <div id="currentThemeMood" class="current-theme-mood">Energetic & Futuristic</div>
                     </div>
                     
-                    <div class="theme-grid">
+                    <div class="theme-grid" id="themeGrid">
                         <!-- Theme 1: Cyberpunk Neon -->
                         <div class="theme-card active" data-theme="cyberpunk-neon">
-                            <div class="theme-card-preview cyberpunk-preview">
+                            <div class="theme-card-preview cyberpunk-neon-preview">
                                 <div class="circuit-overlay">
                                     <div class="circuit-line-h"></div>
                                     <div class="circuit-line-v"></div>
@@ -551,7 +551,7 @@
                         
                         <!-- Theme 2: Sunset Glow -->
                         <div class="theme-card" data-theme="sunset-glow">
-                            <div class="theme-card-preview sunset-preview">
+                            <div class="theme-card-preview sunset-glow-preview">
                                 <div class="sun-overlay"></div>
                             </div>
                             <div class="theme-card-info">
@@ -564,7 +564,7 @@
                         
                         <!-- Theme 3: Aurora Magic -->
                         <div class="theme-card" data-theme="aurora-magic">
-                            <div class="theme-card-preview aurora-preview">
+                            <div class="theme-card-preview aurora-magic-preview">
                                 <div class="aurora-overlay"></div>
                             </div>
                             <div class="theme-card-info">
@@ -577,7 +577,7 @@
                         
                         <!-- Theme 4: Serenity Bliss -->
                         <div class="theme-card" data-theme="serenity-bliss">
-                            <div class="theme-card-preview serenity-preview">
+                            <div class="theme-card-preview serenity-bliss-preview">
                                 <div class="leaf-overlay"></div>
                             </div>
                             <div class="theme-card-info">
@@ -590,7 +590,7 @@
                         
                         <!-- Theme 5: Ocean Deep -->
                         <div class="theme-card" data-theme="ocean-deep">
-                            <div class="theme-card-preview ocean-preview">
+                            <div class="theme-card-preview ocean-deep-preview">
                                 <div class="wave-overlay"></div>
                             </div>
                             <div class="theme-card-info">
@@ -601,7 +601,120 @@
                             </div>
                         </div>
                         
-                        <!-- Theme 6: Auto -->
+                        <!-- Theme 6: The Matrix -->
+                        <div class="theme-card" data-theme="matrix">
+                            <div class="theme-card-preview matrix-preview">
+                                <div class="circuit-overlay" style="opacity:0.4;">
+                                    <div class="circuit-line-h" style="background:#00FF41;"></div>
+                                    <div class="circuit-line-v" style="background:#00FF41;"></div>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-terminal"></i> The Matrix
+                                </div>
+                                <div class="theme-card-mood">Green Digital Rain</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 7: Cyber Noir -->
+                        <div class="theme-card" data-theme="cybernoir">
+                            <div class="theme-card-preview cybernoir-preview">
+                                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;color:white;opacity:0.8;">🎬</div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-film"></i> Cyber Noir
+                                </div>
+                                <div class="theme-card-mood">Black/White/Red Noir</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 8: Neon Dream -->
+                        <div class="theme-card" data-theme="neon-dream">
+                            <div class="theme-card-preview neon-dream-preview">
+                                <div class="circuit-overlay" style="opacity:0.6;">
+                                    <div class="circuit-line-h" style="background:#FF00FF;"></div>
+                                    <div class="circuit-line-v" style="background:#00FFFF;"></div>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-star"></i> Neon Dream
+                                </div>
+                                <div class="theme-card-mood">Magenta & Cyan Neon</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 9: Vaporwave -->
+                        <div class="theme-card" data-theme="vaporwave">
+                            <div class="theme-card-preview vaporwave-preview">
+                                <div class="aurora-overlay" style="background:linear-gradient(45deg, transparent 30%, rgba(255,113,206,0.4) 50%, transparent 70%);"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-cloud"></i> Vaporwave
+                                </div>
+                                <div class="theme-card-mood">Pink/Cyan Aesthetic</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 10: Toxic Green -->
+                        <div class="theme-card" data-theme="toxic-green">
+                            <div class="theme-card-preview toxic-green-preview">
+                                <div class="circuit-overlay" style="opacity:0.6;">
+                                    <div class="circuit-line-h" style="background:#39FF14;"></div>
+                                    <div class="circuit-line-v" style="background:#CCFF00;"></div>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-skull-crossbones"></i> Toxic Green
+                                </div>
+                                <div class="theme-card-mood">Neon Toxic Green</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 11: Solar Flare -->
+                        <div class="theme-card" data-theme="solar-flare">
+                            <div class="theme-card-preview solar-flare-preview">
+                                <div class="sun-overlay" style="background:radial-gradient(circle, #FFD700, transparent 70%);"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-fire"></i> Solar Flare
+                                </div>
+                                <div class="theme-card-mood">Orange & Gold Solar</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 12: Deep Space -->
+                        <div class="theme-card" data-theme="deep-space">
+                            <div class="theme-card-preview deep-space-preview">
+                                <div class="aurora-overlay" style="background:linear-gradient(45deg, transparent 30%, rgba(65,105,225,0.4) 50%, transparent 70%);"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-rocket"></i> Deep Space
+                                </div>
+                                <div class="theme-card-mood">Cosmic Purple & Blue</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 13: Monochrome -->
+                        <div class="theme-card" data-theme="monochrome">
+                            <div class="theme-card-preview monochrome-preview">
+                                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;color:white;opacity:0.8;">⚫⚪</div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-moon"></i> Monochrome
+                                </div>
+                                <div class="theme-card-mood">Black & White Minimal</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 14: Auto -->
                         <div class="theme-card" data-theme="auto">
                             <div class="theme-card-preview auto-preview">
                                 <div class="auto-icon">
@@ -624,18 +737,255 @@
                         <i class="fas fa-info-circle"></i>
                         Click any theme to apply. Changes take effect immediately.
                     </div>
+                    
+                    <div class="modal-actions">
+                        <button id="closeThemeModalBtn" class="btn-ghost">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                        <button id="resetThemeBtn" class="btn-primary">
+                            <i class="fas fa-redo"></i> Reset to Default
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- SCRIPTS -->
-<script src="js/theme-manager.js"></script>
-<script src="js/voice.js"></script>
-<script src="js/intent.js"></script>
-<script src="js/app.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/intent.js"></script>
+    <script src="js/app.js"></script>
     
-<!-- Notification -->
-<div class="notification" id="notification"></div>   
+    <!-- Theme Manager Script -->
+    <script>
+    // Theme Manager - Complete Implementation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize theme
+        const savedTheme = localStorage.getItem('selectedTheme') || 'cyberpunk-neon';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // Update theme button
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if (themeBtn) {
+            const themeNames = {
+                'cyberpunk-neon': 'Cyberpunk Neon',
+                'sunset-glow': 'Sunset Glow',
+                'aurora-magic': 'Aurora Magic',
+                'serenity-bliss': 'Serenity Bliss',
+                'ocean-deep': 'Ocean Deep',
+                'matrix': 'The Matrix',
+                'cybernoir': 'Cyber Noir',
+                'neon-dream': 'Neon Dream',
+                'vaporwave': 'Vaporwave',
+                'toxic-green': 'Toxic Green',
+                'solar-flare': 'Solar Flare',
+                'deep-space': 'Deep Space',
+                'monochrome': 'Monochrome',
+                'auto': 'Auto (System)'
+            };
+            themeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeNames[savedTheme] || 'Theme'}`;
+        }
+        
+        // Theme modal functionality
+        const themeModal = document.getElementById('themeModal');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const closeThemeBtn = document.getElementById('closeThemeBtn');
+        const closeThemeModalBtn = document.getElementById('closeThemeModalBtn');
+        const resetThemeBtn = document.getElementById('resetThemeBtn');
+        
+        // Open theme modal
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                if (themeModal) {
+                    themeModal.style.display = 'block';
+                    updateCurrentThemeDisplay();
+                    updateActiveThemeCard();
+                }
+            });
+        }
+        
+        // Close theme modal
+        if (closeThemeBtn) {
+            closeThemeBtn.addEventListener('click', closeThemeModal);
+        }
+        
+        if (closeThemeModalBtn) {
+            closeThemeModalBtn.addEventListener('click', closeThemeModal);
+        }
+        
+        // Close on backdrop click
+        if (themeModal) {
+            themeModal.addEventListener('click', function(e) {
+                if (e.target === themeModal) {
+                    closeThemeModal();
+                }
+            });
+        }
+        
+        // Escape key to close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && themeModal && themeModal.style.display === 'block') {
+                closeThemeModal();
+            }
+        });
+        
+        // Theme card click handlers
+        const themeCards = document.querySelectorAll('.theme-card');
+        themeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const themeId = this.getAttribute('data-theme');
+                if (themeId) {
+                    setTheme(themeId);
+                }
+            });
+        });
+        
+        // Reset theme
+        if (resetThemeBtn) {
+            resetThemeBtn.addEventListener('click', function() {
+                setTheme('cyberpunk-neon');
+            });
+        }
+        
+        // Functions
+        function closeThemeModal() {
+            if (themeModal) {
+                themeModal.style.display = 'none';
+            }
+        }
+        
+        function setTheme(themeId) {
+            // Set theme attribute
+            document.documentElement.setAttribute('data-theme', themeId);
+            
+            // Save to localStorage
+            localStorage.setItem('selectedTheme', themeId);
+            
+            // Update theme button
+            const themeNames = {
+                'cyberpunk-neon': 'Cyberpunk Neon',
+                'sunset-glow': 'Sunset Glow',
+                'aurora-magic': 'Aurora Magic',
+                'serenity-bliss': 'Serenity Bliss',
+                'ocean-deep': 'Ocean Deep',
+                'matrix': 'The Matrix',
+                'cybernoir': 'Cyber Noir',
+                'neon-dream': 'Neon Dream',
+                'vaporwave': 'Vaporwave',
+                'toxic-green': 'Toxic Green',
+                'solar-flare': 'Solar Flare',
+                'deep-space': 'Deep Space',
+                'monochrome': 'Monochrome',
+                'auto': 'Auto (System)'
+            };
+            
+            if (themeBtn) {
+                themeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeNames[themeId] || 'Theme'}`;
+            }
+            
+            // Update current theme display
+            updateCurrentThemeDisplay();
+            
+            // Update active theme card
+            updateActiveThemeCard();
+            
+            // Show notification
+            showNotification(`Theme changed to "${themeNames[themeId] || themeId}"`);
+            
+            // Close modal after selection
+            setTimeout(() => {
+                closeThemeModal();
+            }, 500);
+        }
+        
+        function updateCurrentThemeDisplay() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeNames = {
+                'cyberpunk-neon': 'Cyberpunk Neon',
+                'sunset-glow': 'Sunset Glow',
+                'aurora-magic': 'Aurora Magic',
+                'serenity-bliss': 'Serenity Bliss',
+                'ocean-deep': 'Ocean Deep',
+                'matrix': 'The Matrix',
+                'cybernoir': 'Cyber Noir',
+                'neon-dream': 'Neon Dream',
+                'vaporwave': 'Vaporwave',
+                'toxic-green': 'Toxic Green',
+                'solar-flare': 'Solar Flare',
+                'deep-space': 'Deep Space',
+                'monochrome': 'Monochrome',
+                'auto': 'Auto (System)'
+            };
+            
+            const themeMoods = {
+                'cyberpunk-neon': 'Energetic & Futuristic',
+                'sunset-glow': 'Warm & Inviting',
+                'aurora-magic': 'Magical & Dreamy',
+                'serenity-bliss': 'Calm & Peaceful',
+                'ocean-deep': 'Professional & Deep',
+                'matrix': 'Green Digital Rain',
+                'cybernoir': 'Black/White/Red Noir',
+                'neon-dream': 'Magenta & Cyan Neon',
+                'vaporwave': 'Pink/Cyan Aesthetic',
+                'toxic-green': 'Neon Toxic Green',
+                'solar-flare': 'Orange & Gold Solar',
+                'deep-space': 'Cosmic Purple & Blue',
+                'monochrome': 'Black & White Minimal',
+                'auto': 'Follows System Preference'
+            };
+            
+            const currentThemeName = document.getElementById('currentThemeName');
+            const currentThemeMood = document.getElementById('currentThemeMood');
+            
+            if (currentThemeName) {
+                currentThemeName.textContent = themeNames[currentTheme] || currentTheme;
+            }
+            if (currentThemeMood) {
+                currentThemeMood.textContent = themeMoods[currentTheme] || '';
+            }
+        }
+        
+        function updateActiveThemeCard() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeCards = document.querySelectorAll('.theme-card');
+            
+            themeCards.forEach(card => {
+                card.classList.remove('active');
+                
+                // Remove existing active badges
+                const badges = card.querySelectorAll('.theme-card-badge.active-badge');
+                badges.forEach(badge => badge.remove());
+                
+                // Add active class and badge to current theme
+                if (card.getAttribute('data-theme') === currentTheme) {
+                    card.classList.add('active');
+                    card.insertAdjacentHTML('beforeend', 
+                        '<div class="theme-card-badge active-badge"><i class="fas fa-check"></i> Active</div>'
+                    );
+                }
+            });
+        }
+        
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.innerHTML = `
+                    <i class="fas fa-palette"></i>
+                    <span>${message}</span>
+                `;
+                notification.style.display = 'flex';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Initialize display
+        updateCurrentThemeDisplay();
+        updateActiveThemeCard();
+    });
+    </script>
 </body>
 </html>
