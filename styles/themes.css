@@ -1,202 +1,521 @@
-/* styles/themes.css - Elegant Theme System Integration with Cyberpunk */
+/* themes.css - Complete Theme System for PromptCraft */
 
-/* Theme selector container */
-.theme-selector-container {
-  flex: 1;
-  margin: 0 16px;
-  max-width: 350px;
+/* ===========================================
+   Theme Variables & Definitions
+   =========================================== */
+
+/* Cyberpunk Neon (Your Current Theme) */
+[data-app-theme="cyberpunk-neon"] {
+  --primary: #FF5E00;
+  --secondary: #00F3FF;
+  --bg-body: #0A0E17;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-on-primary: #000000;
+  --primary-light: #FF8C42;
+  --primary-rgb: 255, 94, 0;
+  --success: #00FF41;
+  --danger: #FF4444;
+  --gradient-brand: linear-gradient(135deg, #FF5E00, #00F3FF);
+  --panel-bg: #111827;
+  --input-bg: #0A0E17;
+  --bg-soft: #1E293B;
+  --panel-border: #FF5E00;
+  --border-subtle: #2D3748;
+  --input-border: #2D3748;
+  --input-border-focus: #FF5E00;
+  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2);
+  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
+  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
+  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
+  --toast-bg: #1E293B;
+  --toast-text: #00F3FF;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
 }
 
-.theme-selector {
+/* Sunset Glow Theme */
+[data-app-theme="sunset-glow"] {
+  --primary: #FF6B35;
+  --secondary: #FFA500;
+  --bg-body: #FFF8F0;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-on-primary: #000000;
+  --primary-light: #FF8C42;
+  --primary-rgb: 255, 107, 53;
+  --success: #10B981;
+  --danger: #EF4444;
+  --gradient-brand: linear-gradient(135deg, #FF6B35, #FFA500);
+  --panel-bg: #FFFFFF;
+  --input-bg: #FFF8F0;
+  --bg-soft: #FFF0E6;
+  --panel-border: #FFA500;
+  --border-subtle: #E0E0E0;
+  --input-border: #D0D0D0;
+  --input-border-focus: #FF6B35;
+  --input-shadow-focus: 0 0 0 3px rgba(255, 107, 53, 0.2);
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --toast-bg: #FFFFFF;
+  --toast-text: #FF6B35;
+  --overlay-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* Aurora Magic Theme */
+[data-app-theme="aurora-magic"] {
+  --primary: #8A2BE2;
+  --secondary: #00CED1;
+  --bg-body: #0A0A1A;
+  --text-primary: #E6E6FA;
+  --text-secondary: #B0B0FF;
+  --text-muted: #8888CC;
+  --text-on-primary: #000000;
+  --primary-light: #A855F7;
+  --primary-rgb: 138, 43, 226;
+  --success: #00FFAA;
+  --danger: #FF44AA;
+  --gradient-brand: linear-gradient(135deg, #8A2BE2, #00CED1);
+  --panel-bg: #1A1A2E;
+  --input-bg: #0A0A1A;
+  --bg-soft: #2A2A4A;
+  --panel-border: #8A2BE2;
+  --border-subtle: #3A3A6A;
+  --input-border: #4A4A8A;
+  --input-border-focus: #8A2BE2;
+  --input-shadow-focus: 0 0 0 3px rgba(138, 43, 226, 0.3);
+  --shadow-soft: 0 1px 3px rgba(138, 43, 226, 0.3);
+  --shadow-card: 0 4px 6px -1px rgba(138, 43, 226, 0.4);
+  --shadow-elevated: 0 10px 15px -3px rgba(138, 43, 226, 0.5);
+  --toast-bg: #1A1A2E;
+  --toast-text: #00CED1;
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+}
+
+/* Serenity Bliss Theme */
+[data-app-theme="serenity-bliss"] {
+  --primary: #2E8B57;
+  --secondary: #87CEEB;
+  --bg-body: #F0F8FF;
+  --text-primary: #2F4F4F;
+  --text-secondary: #5F7A7A;
+  --text-muted: #8FA9A9;
+  --text-on-primary: #FFFFFF;
+  --primary-light: #3CB371;
+  --primary-rgb: 46, 139, 87;
+  --success: #2E8B57;
+  --danger: #DC143C;
+  --gradient-brand: linear-gradient(135deg, #2E8B57, #87CEEB);
+  --panel-bg: #FFFFFF;
+  --input-bg: #F0F8FF;
+  --bg-soft: #E0F0FF;
+  --panel-border: #2E8B57;
+  --border-subtle: #D0E0E0;
+  --input-border: #C0D0D0;
+  --input-border-focus: #2E8B57;
+  --input-shadow-focus: 0 0 0 3px rgba(46, 139, 87, 0.2);
+  --shadow-soft: 0 1px 3px rgba(0, 100, 0, 0.1);
+  --shadow-card: 0 4px 6px -1px rgba(0, 100, 0, 0.1);
+  --shadow-elevated: 0 10px 15px -3px rgba(0, 100, 0, 0.1);
+  --toast-bg: #FFFFFF;
+  --toast-text: #2E8B57;
+  --overlay-bg: rgba(255, 255, 255, 0.9);
+}
+
+/* Ocean Deep Theme */
+[data-app-theme="ocean-deep"] {
+  --primary: #1E3A8A;
+  --secondary: #3B82F6;
+  --bg-body: #F0F9FF;
+  --text-primary: #1E3A8A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-on-primary: #FFFFFF;
+  --primary-light: #2563EB;
+  --primary-rgb: 30, 58, 138;
+  --success: #059669;
+  --danger: #DC2626;
+  --gradient-brand: linear-gradient(135deg, #1E3A8A, #3B82F6);
+  --panel-bg: #FFFFFF;
+  --input-bg: #F0F9FF;
+  --bg-soft: #E0F2FF;
+  --panel-border: #1E3A8A;
+  --border-subtle: #CBD5E1;
+  --input-border: #94A3B8;
+  --input-border-focus: #1E3A8A;
+  --input-shadow-focus: 0 0 0 3px rgba(30, 58, 138, 0.2);
+  --shadow-soft: 0 1px 3px rgba(30, 58, 138, 0.1);
+  --shadow-card: 0 4px 6px -1px rgba(30, 58, 138, 0.1);
+  --shadow-elevated: 0 10px 15px -3px rgba(30, 58, 138, 0.1);
+  --toast-bg: #FFFFFF;
+  --toast-text: #1E3A8A;
+  --overlay-bg: rgba(255, 255, 255, 0.9);
+}
+
+/* ===========================================
+   Theme Modal UI Styles
+   =========================================== */
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  background: linear-gradient(135deg, 
+    rgba(255, 94, 0, 0.2), 
+    rgba(0, 243, 255, 0.2));
+  color: var(--primary);
+  position: relative;
+  overflow: hidden;
+  animation: theme-btn-glow 3s infinite;
+}
+
+@keyframes theme-btn-glow {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(255, 94, 0, 0.3),
+                0 0 20px rgba(0, 243, 255, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(255, 94, 0, 0.5),
+                0 0 30px rgba(0, 243, 255, 0.4);
+  }
+}
+
+.theme-toggle-btn:hover {
+  background: linear-gradient(135deg, 
+    rgba(255, 94, 0, 0.3), 
+    rgba(0, 243, 255, 0.3));
+  transform: translateY(-2px);
+}
+
+.hero-actions {
   display: flex;
-  align-items: center;
   gap: 12px;
-  padding: 8px 16px;
-  background: var(--panel-bg);
-  border-radius: 8px; /* Cyberpunk sharp corners */
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(10px);
+  align-items: center;
 }
 
-.theme-label {
-  font-size: 13px;
-  font-weight: 600;
+/* Theme Modal */
+.theme-modal-content {
+  padding: 8px;
+}
+
+.theme-current-display {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid var(--primary);
+}
+
+.current-theme-label {
+  font-size: 12px;
   color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.current-theme-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: 'Courier New', monospace;
 }
 
-.theme-label i {
-  color: var(--primary);
+.current-theme-mood {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
-.theme-demo {
-  display: flex;
-  gap: 8px;
+/* Theme Grid */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.theme-sample {
-  width: 30px;
-  height: 30px;
-  border-radius: 4px; /* Cyberpunk sharp corners */
+.theme-card {
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
   cursor: pointer;
-  border: 2px solid transparent;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--panel-bg);
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
 }
 
-.theme-sample:hover {
-  transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  z-index: 2;
+.theme-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
 }
 
-.theme-sample.active {
-  border-color: white;
-  box-shadow: 0 0 0 3px var(--primary-color), 0 8px 24px rgba(0, 0, 0, 0.3);
-  transform: scale(1.15);
-  animation: pulse 2s infinite;
+.theme-card.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3),
+              0 8px 25px rgba(var(--primary-rgb), 0.3);
+  animation: active-pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 3px var(--primary-color), 0 8px 24px rgba(0, 0, 0, 0.3);
+@keyframes active-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3),
+                0 8px 25px rgba(var(--primary-rgb), 0.3);
   }
-  50% {
-    box-shadow: 0 0 0 5px var(--primary-color), 0 12px 30px rgba(0, 0, 0, 0.4);
-  }
-  100% {
-    box-shadow: 0 0 0 3px var(--primary-color), 0 8px 24px rgba(0, 0, 0, 0.3);
+  50% { 
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.5),
+                0 12px 35px rgba(var(--primary-rgb), 0.5);
   }
 }
 
-/* CYBERPUNK THEME SAMPLE */
-.theme-sample.cyberpunk-neon { 
-  background: linear-gradient(135deg, #FF5E00, #00F3FF, #0A0E17); 
-  border: 2px solid rgba(255, 94, 0, 0.5);
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.5);
+/* Theme Preview Areas */
+.theme-card-preview {
+  height: 80px;
   position: relative;
   overflow: hidden;
 }
 
-.theme-sample.cyberpunk-neon::before {
-  content: '';
+/* Cyberpunk Preview */
+.cyberpunk-preview {
+  background: linear-gradient(135deg, #FF5E00, #00F3FF, #0A0E17);
+}
+
+.circuit-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(0, 243, 255, 0.3), 
-    transparent);
-  animation: cyber-shine 2s infinite linear;
-  z-index: 1;
+  opacity: 0.3;
 }
 
-@keyframes cyber-shine {
+.circuit-line-h {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #00F3FF;
+  box-shadow: 0 0 10px #00F3FF;
+  animation: circuit-pulse 2s infinite;
+}
+
+.circuit-line-v {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  bottom: 20%;
+  width: 2px;
+  background: #FF5E00;
+  box-shadow: 0 0 10px #FF5E00;
+  animation: circuit-pulse 2s infinite reverse;
+}
+
+@keyframes circuit-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Sunset Preview */
+.sunset-preview {
+  background: linear-gradient(135deg, #FF6B35, #FFA500, #FFF8F0);
+}
+
+.sun-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, #FFA500, transparent 70%);
+  border-radius: 50%;
+  animation: sun-glow 3s infinite;
+}
+
+@keyframes sun-glow {
+  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+/* Aurora Preview */
+.aurora-preview {
+  background: linear-gradient(135deg, #0A0A1A, #8A2BE2, #00CED1);
+}
+
+.aurora-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(138, 43, 226, 0.4) 50%, 
+    transparent 70%);
+  animation: aurora-flow 4s infinite linear;
+}
+
+@keyframes aurora-flow {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
 
-.theme-sample.cyberpunk-neon.active {
-  border-color: #00F3FF;
-  box-shadow: 
-    0 0 20px rgba(0, 243, 255, 0.7), 
-    0 0 0 3px rgba(255, 94, 0, 0.5);
+/* Serenity Preview */
+.serenity-preview {
+  background: linear-gradient(135deg, #2E8B57, #87CEEB, #F0F8FF);
 }
 
-.theme-sample.cyberpunk-neon::after {
-  content: '✦';
+.leaf-overlay {
   position: absolute;
-  color: #00F3FF;
-  font-size: 16px;
-  text-shadow: 0 0 10px #00F3FF;
-  z-index: 2;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: 
+    radial-gradient(circle at 30% 30%, #2E8B57, transparent 50%),
+    radial-gradient(circle at 70% 70%, #87CEEB, transparent 50%);
+  opacity: 0.6;
+  animation: leaf-float 4s infinite ease-in-out;
 }
 
-/* OTHER THEME SAMPLES */
-.theme-sample.sunset-glow { 
-  background: linear-gradient(135deg, #FF6B6B, #FFA726); 
-  border: 2px solid rgba(255, 107, 107, 0.3);
+@keyframes leaf-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
 }
-.theme-sample.aurora-magic { 
-  background: linear-gradient(135deg, #00D4AA, #667EEA, #8B5CF6); 
-  border: 2px solid rgba(0, 212, 170, 0.3);
+
+/* Ocean Preview */
+.ocean-preview {
+  background: linear-gradient(135deg, #1E3A8A, #3B82F6, #F0F9FF);
 }
-.theme-sample.serenity-bliss { 
-  background: linear-gradient(135deg, #7C3AED, #60A5FA); 
-  border: 2px solid rgba(124, 58, 237, 0.3);
+
+.wave-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: 
+    repeating-linear-gradient(90deg, 
+      transparent, 
+      transparent 10px, 
+      rgba(59, 130, 246, 0.5) 10px, 
+      rgba(59, 130, 246, 0.5) 20px);
+  animation: wave-move 2s infinite linear;
 }
-.theme-sample.ocean-deep { 
-  background: linear-gradient(135deg, #2563EB, #06B6D4); 
-  border: 2px solid rgba(37, 99, 235, 0.3);
+
+@keyframes wave-move {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-20px); }
 }
-.theme-sample.auto { 
-  background: linear-gradient(135deg, #666, #999);
-  border: 2px solid rgba(100, 100, 100, 0.3);
+
+/* Auto Preview */
+.auto-preview {
+  background: linear-gradient(135deg, #666, #999, #CCC);
   position: relative;
 }
 
-.theme-sample.auto::before {
-  content: '';
+.auto-icon {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #7C3AED 50%, #0F172A 50%);
-  opacity: 0.7;
-  border-radius: inherit;
-}
-
-/* Tooltip for theme samples */
-.theme-sample::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  background: var(--toast-bg);
-  color: var(--toast-text);
-  padding: 6px 10px;
-  border-radius: 4px; /* Cyberpunk sharp corners */
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-soft);
-  z-index: 100;
-  pointer-events: none;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  animation: auto-spin 4s infinite linear;
+}
+
+@keyframes auto-spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Theme Card Info */
+.theme-card-info {
+  padding: 12px;
+  background: var(--panel-bg);
+}
+
+.theme-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   font-family: 'Courier New', monospace;
-  border: 1px solid var(--panel-border);
 }
 
-.theme-sample:hover::after {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(-5px);
+.theme-card-name i {
+  color: var(--primary);
 }
 
-/* Particles effect */
+.theme-card-mood {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* Theme Badges */
+.theme-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+.active-badge {
+  background: linear-gradient(135deg, #00FF41, #00F3FF);
+  color: #000;
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+.system-badge {
+  background: rgba(100, 100, 100, 0.8);
+  color: white;
+}
+
+/* Theme Hint */
+.theme-hint {
+  text-align: center;
+  padding: 12px;
+  border-radius: 6px;
+  background: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.theme-hint i {
+  color: var(--primary);
+}
+
+/* Particles */
 .particles {
   position: fixed;
   top: 0;
@@ -209,7 +528,7 @@
 
 .particle {
   position: absolute;
-  background: var(--primary-color);
+  background: var(--primary);
   border-radius: 50%;
   opacity: 0.08;
   animation: float 20s infinite linear;
@@ -231,187 +550,61 @@
   animation: themeChange 0.4s ease;
 }
 
-/* Responsive theme selector */
-@media (max-width: 1024px) {
-  .theme-selector-container {
-    order: 3;
-    width: 100%;
-    max-width: 100%;
-    margin: 12px 0 0 0;
-  }
-  
-  .theme-selector {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
-  }
-  
-  .theme-label {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-  }
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
-  .theme-selector {
-    gap: 6px;
+  .hero-actions {
+    gap: 8px;
   }
   
-  .theme-sample {
-    width: 28px;
-    height: 28px;
+  .theme-toggle-btn,
+  .settings-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .theme-toggle-btn i,
+  .settings-btn i {
+    font-size: 12px;
+  }
+  
+  .theme-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .theme-card-preview {
+    height: 60px;
+  }
+  
+  .theme-card-name {
+    font-size: 13px;
+  }
+  
+  .theme-card-mood {
     font-size: 11px;
   }
 }
-/* ===========================================
-   Theme selector readability tweaks
-   =========================================== */
 
-.theme-label {
-  font-size: 14px;
-}
-
-.theme-sample {
-  font-size: 13px;
-}
-
-/* Tooltip text slightly larger */
-.theme-sample::after {
-  font-size: 12px;
-}
-
-/* CYBERPUNK ENHANCEMENTS FOR THEME SELECTOR */
-[data-app-theme="cyberpunk-neon"] .theme-selector {
-  background: rgba(17, 24, 39, 0.9);
-  border: 1px solid var(--primary);
-  box-shadow: 
-    0 0 15px rgba(255, 94, 0, 0.3),
-    inset 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-[data-app-theme="cyberpunk-neon"] .theme-label {
-  color: var(--primary);
-  text-shadow: 0 0 5px rgba(255, 94, 0, 0.3);
-}
-
-[data-app-theme="cyberpunk-neon"] .theme-label i {
-  color: var(--secondary);
-}
-
-/* Enhanced active state for cyberpunk */
-[data-app-theme="cyberpunk-neon"] .theme-sample.cyberpunk-neon.active {
-  animation: cyberpunk-pulse 1.5s infinite;
-}
-
-@keyframes cyberpunk-pulse {
-  0% {
-    box-shadow: 
-      0 0 0 3px var(--primary-color),
-      0 0 15px rgba(255, 94, 0, 0.5);
+@media (max-width: 480px) {
+  .hero-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
   }
-  50% {
-    box-shadow: 
-      0 0 0 3px var(--secondary-color),
-      0 0 25px rgba(0, 243, 255, 0.7);
+  
+  .theme-toggle-btn,
+  .settings-btn {
+    width: 100%;
+    justify-content: center;
   }
-  100% {
-    box-shadow: 
-      0 0 0 3px var(--primary-color),
-      0 0 15px rgba(255, 94, 0, 0.5);
+  
+  .modal {
+    width: 95%;
+    margin: 10px;
   }
 }
 
-/* Cyberpunk particles effect */
-[data-app-theme="cyberpunk-neon"] .particle {
-  background: var(--secondary-color);
-  opacity: 0.05;
-  animation: cyber-float 15s infinite linear;
-}
-
-@keyframes cyber-float {
-  0% { 
-    transform: translateY(100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% { opacity: 0.1; }
-  90% { opacity: 0.1; }
-  100% { 
-    transform: translateY(-100px) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-/* Matrix-like grid effect for cyberpunk background */
-[data-app-theme="cyberpunk-neon"] .particles::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
-  animation: matrix-grid 20s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes matrix-grid {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(50px); }
-}
-
-/* Theme selector cyberpunk hover effects */
-[data-app-theme="cyberpunk-neon"] .theme-sample:hover {
-  transform: translateY(-3px) scale(1.15);
-  box-shadow: 0 0 20px currentColor;
-}
-
-/* Specific hover effects for each theme */
-[data-app-theme="cyberpunk-neon"] .theme-sample.sunset-glow:hover {
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.7);
-}
-[data-app-theme="cyberpunk-neon"] .theme-sample.aurora-magic:hover {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.7);
-}
-[data-app-theme="cyberpunk-neon"] .theme-sample.serenity-bliss:hover {
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.7);
-}
-[data-app-theme="cyberpunk-neon"] .theme-sample.ocean-deep:hover {
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.7);
-}
-[data-app-theme="cyberpunk-neon"] .theme-sample.auto:hover {
-  box-shadow: 0 0 20px rgba(100, 100, 100, 0.7);
-}
-
-/* Cyberpunk theme change animation */
-[data-app-theme="cyberpunk-neon"] .theme-change {
-  animation: cyber-theme-change 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes cyber-theme-change {
-  0% {
-    opacity: 0.8;
-    filter: hue-rotate(0deg);
-  }
-  50% {
-    opacity: 0.9;
-    filter: hue-rotate(180deg);
-  }
-  100% {
-    opacity: 1;
-    filter: hue-rotate(360deg);
-  }
-}
-
-/* Theme tooltip cyberpunk style */
-[data-app-theme="cyberpunk-neon"] .theme-sample::after {
-  background: rgba(17, 24, 39, 0.95);
-  border: 1px solid var(--primary);
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.5);
-  color: var(--secondary);
-  backdrop-filter: blur(10px);
+/* Ensure particles don't interfere with modal */
+#themeModal .particles {
+  display: none;
 }
