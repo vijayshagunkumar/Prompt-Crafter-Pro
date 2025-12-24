@@ -34,21 +34,10 @@
 
     <div class="page">
         <!-- HERO SECTION -->
-         <button class="settings-btn" id="settingsBtn">
-        <i class="fas fa-cog"></i> Settings
-    </button>
-    
-    <!-- WITH this wrapper and two buttons: -->
-    <div class="hero-actions">
-        <button class="theme-toggle-btn settings-btn" id="themeToggleBtn">
-            <i class="fas fa-palette"></i> Theme
-        </button>
-        
-        <button class="settings-btn" id="settingsBtn">
-            <i class="fas fa-cog"></i> Settings
-        </button>
-    </div>
-</div>
+        <header class="hero">
+            <div class="hero-top">
+                <div class="hero-brand">
+                   <div class="hero-logo">
   <div class="logo-circuit">
     <div class="circuit-line circuit-horizontal"></div>
     <div class="circuit-line circuit-vertical"></div>
@@ -64,9 +53,15 @@
                     </div>
                 </div>
 
-                <button class="settings-btn" id="settingsBtn">
-                    <i class="fas fa-cog"></i> Settings
-                </button>
+                <div class="hero-actions">
+                    <button class="theme-toggle-btn settings-btn" id="themeToggleBtn">
+                        <i class="fas fa-palette"></i> Theme
+                    </button>
+                    
+                    <button class="settings-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -514,6 +509,121 @@
                     <button id="saveTemplateBtn" class="btn-primary">
                         <i class="fas fa-save"></i> Save Template
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THEME MODAL -->
+    <div id="themeModal" class="modal-backdrop" style="display: none;">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-palette"></i> Select Theme</h3>
+                <button class="modal-close" id="closeThemeBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="theme-modal-content">
+                    <div class="theme-current-display">
+                        <div class="current-theme-label">Current Theme:</div>
+                        <div id="currentThemeName" class="current-theme-name">Cyberpunk Neon</div>
+                        <div id="currentThemeMood" class="current-theme-mood">Energetic & Futuristic</div>
+                    </div>
+                    
+                    <div class="theme-grid">
+                        <!-- Theme 1: Cyberpunk Neon -->
+                        <div class="theme-card active" data-theme="cyberpunk-neon">
+                            <div class="theme-card-preview cyberpunk-preview">
+                                <div class="circuit-overlay">
+                                    <div class="circuit-line-h"></div>
+                                    <div class="circuit-line-v"></div>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-bolt"></i> Cyberpunk Neon
+                                </div>
+                                <div class="theme-card-mood">Energetic & Futuristic</div>
+                            </div>
+                            <div class="theme-card-badge active-badge">
+                                <i class="fas fa-check"></i> Active
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 2: Sunset Glow -->
+                        <div class="theme-card" data-theme="sunset-glow">
+                            <div class="theme-card-preview sunset-preview">
+                                <div class="sun-overlay"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-sun"></i> Sunset Glow
+                                </div>
+                                <div class="theme-card-mood">Warm & Inviting</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 3: Aurora Magic -->
+                        <div class="theme-card" data-theme="aurora-magic">
+                            <div class="theme-card-preview aurora-preview">
+                                <div class="aurora-overlay"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-magic"></i> Aurora Magic
+                                </div>
+                                <div class="theme-card-mood">Magical & Dreamy</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 4: Serenity Bliss -->
+                        <div class="theme-card" data-theme="serenity-bliss">
+                            <div class="theme-card-preview serenity-preview">
+                                <div class="leaf-overlay"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-spa"></i> Serenity Bliss
+                                </div>
+                                <div class="theme-card-mood">Calm & Peaceful</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 5: Ocean Deep -->
+                        <div class="theme-card" data-theme="ocean-deep">
+                            <div class="theme-card-preview ocean-preview">
+                                <div class="wave-overlay"></div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-water"></i> Ocean Deep
+                                </div>
+                                <div class="theme-card-mood">Professional & Deep</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme 6: Auto -->
+                        <div class="theme-card" data-theme="auto">
+                            <div class="theme-card-preview auto-preview">
+                                <div class="auto-icon">
+                                    <i class="fas fa-desktop"></i>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-robot"></i> Auto (System)
+                                </div>
+                                <div class="theme-card-mood">Follows System Preference</div>
+                            </div>
+                            <div class="theme-card-badge system-badge">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Click any theme to apply. Changes take effect immediately.
+                    </div>
                 </div>
             </div>
         </div>
