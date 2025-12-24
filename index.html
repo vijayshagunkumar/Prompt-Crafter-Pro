@@ -634,5 +634,42 @@
     <script src="js/voice.js"></script>
     <script src="js/intent.js"></script>
     <script src="js/app.js"></script>
+ <!-- Theme Modal -->
+<div class="modal-backdrop" id="themeModalBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-palette"></i> Theme Selector</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body theme-modal-content">
+      <div class="theme-current-display">
+        <div class="current-theme-label">CURRENT THEME</div>
+        <div class="current-theme-name" id="currentThemeName">Cyberpunk Core</div>
+        <div class="current-theme-mood" id="currentThemeMood">Classic orange/cyan cyberpunk aesthetic</div>
+      </div>
+      
+      <div class="theme-grid" id="themeGrid">
+        <!-- Theme cards will be inserted here by JavaScript -->
+      </div>
+      
+      <div class="theme-hint">
+        <i class="fas fa-info-circle"></i>
+        Themes change colors, backgrounds, and effects. Choose what fits your mood!
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeThemeModal()">
+          <i class="fas fa-times"></i> Close
+        </button>
+        <button class="btn-primary" onclick="setTheme('cyberpunk')">
+          <i class="fas fa-redo"></i> Reset to Default
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification"></div>   
 </body>
 </html>
