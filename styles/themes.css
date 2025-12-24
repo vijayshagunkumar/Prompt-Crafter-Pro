@@ -6,17 +6,17 @@
 
 :root {
   /* THEME NAMES for reference */
-  --theme-cyberpunk: 'Cyberpunk Core';
-  --theme-sunset: 'Sunset Orange';
-  --theme-aurora: 'Aurora Purple';
-  --theme-serenity: 'Serenity Green';
-  --theme-ocean: 'Ocean Blue';
+  --theme-cyberpunk-neon: 'Cyberpunk Neon';
+  --theme-sunset-glow: 'Sunset Glow';
+  --theme-aurora-magic: 'Aurora Magic';
+  --theme-serenity-bliss: 'Serenity Bliss';
+  --theme-ocean-deep: 'Ocean Deep';
   --theme-matrix: 'The Matrix';
   --theme-cybernoir: 'Cyber Noir';
   --theme-neon-dream: 'Neon Dream';
   --theme-vaporwave: 'Vaporwave';
-  --theme-toxic: 'Toxic Green';
-  --theme-solar: 'Solar Flare';
+  --theme-toxic-green: 'Toxic Green';
+  --theme-solar-flare: 'Solar Flare';
   --theme-deep-space: 'Deep Space';
   --theme-monochrome: 'Monochrome';
   
@@ -59,9 +59,9 @@
 }
 
 /* ==========================================
-   THEME 1: CYBERPUNK CORE (DEFAULT)
+   THEME 1: CYBERPUNK NEON (DEFAULT)
    ========================================== */
-[data-theme="cyberpunk"] {
+[data-theme="cyberpunk-neon"] {
   --primary: #FF5E00;
   --secondary: #00F3FF;
   --accent: #FF00FF;
@@ -96,9 +96,9 @@
 }
 
 /* ==========================================
-   THEME 2: SUNSET ORANGE
+   THEME 2: SUNSET GLOW
    ========================================== */
-[data-theme="sunset"] {
+[data-theme="sunset-glow"] {
   --primary: #FF6B35;
   --secondary: #FFA500;
   --accent: #FFD700;
@@ -133,9 +133,9 @@
 }
 
 /* ==========================================
-   THEME 3: AURORA PURPLE
+   THEME 3: AURORA MAGIC
    ========================================== */
-[data-theme="aurora"] {
+[data-theme="aurora-magic"] {
   --primary: #8A2BE2;
   --secondary: #00CED1;
   --accent: #9370DB;
@@ -170,9 +170,9 @@
 }
 
 /* ==========================================
-   THEME 4: SERENITY GREEN
+   THEME 4: SERENITY BLISS
    ========================================== */
-[data-theme="serenity"] {
+[data-theme="serenity-bliss"] {
   --primary: #2E8B57;
   --secondary: #87CEEB;
   --accent: #98FB98;
@@ -207,9 +207,9 @@
 }
 
 /* ==========================================
-   THEME 5: OCEAN BLUE
+   THEME 5: OCEAN DEEP
    ========================================== */
-[data-theme="ocean"] {
+[data-theme="ocean-deep"] {
   --primary: #1E3A8A;
   --secondary: #3B82F6;
   --accent: #06D6A0;
@@ -394,7 +394,7 @@
 /* ==========================================
    THEME 10: TOXIC GREEN
    ========================================== */
-[data-theme="toxic"] {
+[data-theme="toxic-green"] {
   --primary: #39FF14;
   --secondary: #CCFF00;
   --accent: #7CFC00;
@@ -431,7 +431,7 @@
 /* ==========================================
    THEME 11: SOLAR FLARE
    ========================================== */
-[data-theme="solar"] {
+[data-theme="solar-flare"] {
   --primary: #FF9500;
   --secondary: #FFD700;
   --accent: #FF4500;
@@ -617,31 +617,31 @@
 /* ==========================================
    BODY BACKGROUND GRID FOR EACH THEME
    ========================================== */
-body[data-theme="cyberpunk"] {
+body[data-theme="cyberpunk-neon"] {
   background-image: 
     linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
     linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
 }
 
-body[data-theme="sunset"] {
+body[data-theme="sunset-glow"] {
   background-image: 
     linear-gradient(rgba(139, 69, 19, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(139, 69, 19, 0.2) 1px, transparent 1px);
 }
 
-body[data-theme="aurora"] {
+body[data-theme="aurora-magic"] {
   background-image: 
     linear-gradient(rgba(75, 0, 130, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(75, 0, 130, 0.2) 1px, transparent 1px);
 }
 
-body[data-theme="serenity"] {
+body[data-theme="serenity-bliss"] {
   background-image: 
     linear-gradient(rgba(46, 139, 87, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(46, 139, 87, 0.2) 1px, transparent 1px);
 }
 
-body[data-theme="ocean"] {
+body[data-theme="ocean-deep"] {
   background-image: 
     linear-gradient(rgba(30, 58, 138, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(30, 58, 138, 0.2) 1px, transparent 1px);
@@ -671,13 +671,13 @@ body[data-theme="vaporwave"] {
     linear-gradient(90deg, rgba(255, 113, 206, 0.1) 1px, transparent 1px);
 }
 
-body[data-theme="toxic"] {
+body[data-theme="toxic-green"] {
   background-image: 
     linear-gradient(rgba(57, 255, 20, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(57, 255, 20, 0.1) 1px, transparent 1px);
 }
 
-body[data-theme="solar"] {
+body[data-theme="solar-flare"] {
   background-image: 
     linear-gradient(rgba(255, 149, 0, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 149, 0, 0.2) 1px, transparent 1px);
