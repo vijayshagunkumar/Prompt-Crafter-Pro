@@ -514,7 +514,7 @@
         </div>
     </div>
 
-    <!-- THEME MODAL - UPDATED WITH ALL 14 THEMES -->
+    <!-- THEME MODAL - UPDATED WITH SIMPLE THEME FIRST -->
     <div id="themeModal" class="modal-backdrop" style="display: none;">
         <div class="modal" style="max-width: 550px;">
             <div class="modal-header">
@@ -525,13 +525,32 @@
                 <div class="theme-modal-content">
                     <div class="theme-current-display">
                         <div class="current-theme-label">Current Theme:</div>
-                        <div id="currentThemeName" class="current-theme-name">Cyberpunk Neon</div>
-                        <div id="currentThemeMood" class="current-theme-mood">Energetic & Futuristic</div>
+                        <div id="currentThemeName" class="current-theme-name">Simple</div>
+                        <div id="currentThemeMood" class="current-theme-mood">Clean & Minimal</div>
                     </div>
                     
                     <div class="theme-grid" id="themeGrid">
+                        <!-- Theme 0: SIMPLE (Default) -->
+                        <div class="theme-card active" data-theme="simple">
+                            <div class="theme-card-preview simple-preview">
+                                <div class="simple-overlay">
+                                    <div class="simple-line-h"></div>
+                                    <div class="simple-line-v"></div>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <div class="theme-card-name">
+                                    <i class="fas fa-window-maximize"></i> Simple
+                                </div>
+                                <div class="theme-card-mood">Clean & Minimal</div>
+                            </div>
+                            <div class="theme-card-badge active-badge">
+                                <i class="fas fa-check"></i> Active
+                            </div>
+                        </div>
+                        
                         <!-- Theme 1: Cyberpunk Neon -->
-                        <div class="theme-card active" data-theme="cyberpunk-neon">
+                        <div class="theme-card" data-theme="cyberpunk-neon">
                             <div class="theme-card-preview cyberpunk-neon-preview">
                                 <div class="circuit-overlay">
                                     <div class="circuit-line-h"></div>
@@ -543,9 +562,6 @@
                                     <i class="fas fa-bolt"></i> Cyberpunk Neon
                                 </div>
                                 <div class="theme-card-mood">Energetic & Futuristic</div>
-                            </div>
-                            <div class="theme-card-badge active-badge">
-                                <i class="fas fa-check"></i> Active
                             </div>
                         </div>
                         
@@ -743,7 +759,7 @@
                             <i class="fas fa-times"></i> Close
                         </button>
                         <button id="resetThemeBtn" class="btn-primary">
-                            <i class="fas fa-redo"></i> Reset to Default
+                            <i class="fas fa-redo"></i> Reset to Simple
                         </button>
                     </div>
                 </div>
@@ -762,13 +778,19 @@
     // Theme Manager - Complete Implementation
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize theme
-        const savedTheme = localStorage.getItem('selectedTheme') || 'cyberpunk-neon';
+        const savedTheme = localStorage.getItem('selectedTheme') || 'simple';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // Hide scan line for simple theme
+        if (savedTheme === 'simple') {
+            document.querySelector('.scan-line').style.display = 'none';
+        }
         
         // Update theme button
         const themeBtn = document.getElementById('themeToggleBtn');
         if (themeBtn) {
             const themeNames = {
+                'simple': 'Simple',
                 'cyberpunk-neon': 'Cyberpunk Neon',
                 'sunset-glow': 'Sunset Glow',
                 'aurora-magic': 'Aurora Magic',
@@ -841,10 +863,10 @@
             });
         });
         
-        // Reset theme
+        // Reset theme to Simple
         if (resetThemeBtn) {
             resetThemeBtn.addEventListener('click', function() {
-                setTheme('cyberpunk-neon');
+                setTheme('simple');
             });
         }
         
@@ -862,8 +884,17 @@
             // Save to localStorage
             localStorage.setItem('selectedTheme', themeId);
             
+            // Show/hide scan line
+            const scanLine = document.querySelector('.scan-line');
+            if (themeId === 'simple') {
+                scanLine.style.display = 'none';
+            } else {
+                scanLine.style.display = 'block';
+            }
+            
             // Update theme button
             const themeNames = {
+                'simple': 'Simple',
                 'cyberpunk-neon': 'Cyberpunk Neon',
                 'sunset-glow': 'Sunset Glow',
                 'aurora-magic': 'Aurora Magic',
@@ -902,6 +933,7 @@
         function updateCurrentThemeDisplay() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const themeNames = {
+                'simple': 'Simple',
                 'cyberpunk-neon': 'Cyberpunk Neon',
                 'sunset-glow': 'Sunset Glow',
                 'aurora-magic': 'Aurora Magic',
@@ -919,6 +951,7 @@
             };
             
             const themeMoods = {
+                'simple': 'Clean & Minimal',
                 'cyberpunk-neon': 'Energetic & Futuristic',
                 'sunset-glow': 'Warm & Inviting',
                 'aurora-magic': 'Magical & Dreamy',
