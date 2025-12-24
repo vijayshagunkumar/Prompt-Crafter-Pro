@@ -2415,3 +2415,388 @@ textarea::placeholder {
   animation-duration: 1s;
   opacity: 0.5;
 }
+/* ===========================================
+   Theme System Additions
+   =========================================== */
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.theme-toggle-btn {
+  background: linear-gradient(135deg, 
+    rgba(255, 94, 0, 0.2), 
+    rgba(0, 243, 255, 0.2));
+  color: var(--primary);
+  position: relative;
+  overflow: hidden;
+  animation: theme-btn-glow 3s infinite;
+}
+
+@keyframes theme-btn-glow {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(255, 94, 0, 0.3),
+                0 0 20px rgba(0, 243, 255, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(255, 94, 0, 0.5),
+                0 0 30px rgba(0, 243, 255, 0.4);
+  }
+}
+
+.theme-toggle-btn:hover {
+  background: linear-gradient(135deg, 
+    rgba(255, 94, 0, 0.3), 
+    rgba(0, 243, 255, 0.3));
+  transform: translateY(-2px);
+}
+
+/* Theme Modal Styles */
+.theme-modal-content {
+  padding: 8px;
+}
+
+.theme-current-display {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid var(--primary);
+}
+
+.current-theme-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.current-theme-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.current-theme-mood {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.theme-card {
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--panel-bg);
+  position: relative;
+}
+
+.theme-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
+}
+
+.theme-card.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3),
+              0 8px 25px rgba(var(--primary-rgb), 0.3);
+  animation: active-pulse 2s infinite;
+}
+
+@keyframes active-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3),
+                0 8px 25px rgba(var(--primary-rgb), 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.5),
+                0 12px 35px rgba(var(--primary-rgb), 0.5);
+  }
+}
+
+.theme-card-preview {
+  height: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Theme preview backgrounds */
+.cyberpunk-preview { background: linear-gradient(135deg, #FF5E00, #00F3FF, #0A0E17); }
+.sunset-preview { background: linear-gradient(135deg, #FF6B35, #FFA500, #FFF8F0); }
+.aurora-preview { background: linear-gradient(135deg, #0A0A1A, #8A2BE2, #00CED1); }
+.serenity-preview { background: linear-gradient(135deg, #2E8B57, #87CEEB, #F0F8FF); }
+.ocean-preview { background: linear-gradient(135deg, #1E3A8A, #3B82F6, #F0F9FF); }
+.auto-preview { background: linear-gradient(135deg, #666, #999, #CCC); }
+
+/* Theme overlays */
+.circuit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.3;
+}
+
+.circuit-line-h {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #00F3FF;
+  box-shadow: 0 0 10px #00F3FF;
+  animation: circuit-pulse 2s infinite;
+}
+
+.circuit-line-v {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  bottom: 20%;
+  width: 2px;
+  background: #FF5E00;
+  box-shadow: 0 0 10px #FF5E00;
+  animation: circuit-pulse 2s infinite reverse;
+}
+
+@keyframes circuit-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.sun-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, #FFA500, transparent 70%);
+  border-radius: 50%;
+  animation: sun-glow 3s infinite;
+}
+
+@keyframes sun-glow {
+  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+.aurora-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(138, 43, 226, 0.4) 50%, 
+    transparent 70%);
+  animation: aurora-flow 4s infinite linear;
+}
+
+@keyframes aurora-flow {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.leaf-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: 
+    radial-gradient(circle at 30% 30%, #2E8B57, transparent 50%),
+    radial-gradient(circle at 70% 70%, #87CEEB, transparent 50%);
+  opacity: 0.6;
+  animation: leaf-float 4s infinite ease-in-out;
+}
+
+@keyframes leaf-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.wave-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: 
+    repeating-linear-gradient(90deg, 
+      transparent, 
+      transparent 10px, 
+      rgba(59, 130, 246, 0.5) 10px, 
+      rgba(59, 130, 246, 0.5) 20px);
+  animation: wave-move 2s infinite linear;
+}
+
+@keyframes wave-move {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-20px); }
+}
+
+.auto-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  animation: auto-spin 4s infinite linear;
+}
+
+@keyframes auto-spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.theme-card-info {
+  padding: 12px;
+  background: var(--panel-bg);
+}
+
+.theme-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+.theme-card-name i {
+  color: var(--primary);
+}
+
+.theme-card-mood {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.theme-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+.active-badge {
+  background: linear-gradient(135deg, #00FF41, #00F3FF);
+  color: #000;
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+.system-badge {
+  background: rgba(100, 100, 100, 0.8);
+  color: white;
+}
+
+.theme-hint {
+  text-align: center;
+  padding: 12px;
+  border-radius: 6px;
+  background: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.theme-hint i {
+  color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-actions {
+    gap: 8px;
+  }
+  
+  .theme-toggle-btn,
+  .settings-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .theme-toggle-btn i,
+  .settings-btn i {
+    font-size: 12px;
+  }
+  
+  .theme-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .theme-card-preview {
+    height: 60px;
+  }
+  
+  .theme-card-name {
+    font-size: 13px;
+  }
+  
+  .theme-card-mood {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  .theme-toggle-btn,
+  .settings-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .theme-grid {
+    grid-template-columns: 1fr;
+  }
+}
