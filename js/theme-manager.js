@@ -2,33 +2,33 @@
 
 const themes = [
   { 
-    id: 'cyberpunk', 
-    name: 'Cyberpunk Core', 
-    mood: 'Classic orange/cyan cyberpunk aesthetic',
+    id: 'cyberpunk-neon', 
+    name: 'Cyberpunk Neon', 
+    mood: 'Energetic & Futuristic',
     icon: 'fas fa-bolt'
   },
   { 
-    id: 'sunset', 
-    name: 'Sunset Orange', 
-    mood: 'Warm sunset tones and gradients',
+    id: 'sunset-glow', 
+    name: 'Sunset Glow', 
+    mood: 'Warm & Inviting',
     icon: 'fas fa-sun'
   },
   { 
-    id: 'aurora', 
-    name: 'Aurora Purple', 
-    mood: 'Purple and teal aurora effects',
+    id: 'aurora-magic', 
+    name: 'Aurora Magic', 
+    mood: 'Magical & Dreamy',
     icon: 'fas fa-magic'
   },
   { 
-    id: 'serenity', 
-    name: 'Serenity Green', 
-    mood: 'Calm green and blue nature tones',
-    icon: 'fas fa-leaf'
+    id: 'serenity-bliss', 
+    name: 'Serenity Bliss', 
+    mood: 'Calm & Peaceful',
+    icon: 'fas fa-spa'
   },
   { 
-    id: 'ocean', 
-    name: 'Ocean Blue', 
-    mood: 'Deep ocean blues and waves',
+    id: 'ocean-deep', 
+    name: 'Ocean Deep', 
+    mood: 'Professional & Deep',
     icon: 'fas fa-water'
   },
   { 
@@ -56,13 +56,13 @@ const themes = [
     icon: 'fas fa-cloud'
   },
   { 
-    id: 'toxic', 
+    id: 'toxic-green', 
     name: 'Toxic Green', 
     mood: 'Neon toxic green glow',
     icon: 'fas fa-skull-crossbones'
   },
   { 
-    id: 'solar', 
+    id: 'solar-flare', 
     name: 'Solar Flare', 
     mood: 'Orange and gold solar energy',
     icon: 'fas fa-fire'
@@ -83,29 +83,21 @@ const themes = [
     id: 'auto', 
     name: 'Auto (System)', 
     mood: 'Follows system preference',
-    icon: 'fas fa-adjust'
+    icon: 'fas fa-robot'
   }
 ];
 
 // Initialize theme system
 function initThemeSystem() {
   // Load saved theme or default
-  const savedTheme = localStorage.getItem('selectedTheme') || 'cyberpunk';
+  const savedTheme = localStorage.getItem('selectedTheme') || 'cyberpunk-neon';
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   
-  // If auto theme, determine based on system preference
-  let initialTheme = savedTheme;
-  if (savedTheme === 'auto') {
-    initialTheme = systemPrefersDark ? 'cyberpunk' : 'cyberpunk';
-  }
-  
   // Apply theme
-  setTheme(initialTheme);
+  setTheme(savedTheme);
   
-  // Initialize theme modal if it exists
-  if (document.getElementById('themeModal')) {
-    initThemeModal();
-  }
+  // Update theme button
+  updateThemeButton(savedTheme);
   
   // Listen for system theme changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
@@ -113,6 +105,8 @@ function initThemeSystem() {
       setTheme('auto');
     }
   });
+  
+  console.log('Theme system initialized with:', savedTheme);
 }
 
 // Set theme function
@@ -121,7 +115,7 @@ function setTheme(themeId) {
   const theme = themes.find(t => t.id === themeId);
   if (!theme) {
     console.warn(`Theme "${themeId}" not found, using default`);
-    themeId = 'cyberpunk';
+    themeId = 'cyberpunk-neon';
   }
   
   // Apply theme to document
@@ -130,8 +124,11 @@ function setTheme(themeId) {
   // Save to localStorage
   localStorage.setItem('selectedTheme', themeId);
   
-  // Update UI if needed
-  updateThemeUI(themeId);
+  // Update UI
+  updateThemeButton(themeId);
+  
+  // Show notification
+  showThemeNotification(theme);
   
   // Dispatch theme change event
   document.dispatchEvent(new CustomEvent('themechange', { 
@@ -141,26 +138,30 @@ function setTheme(themeId) {
   console.log(`Theme changed to: ${themeId}`);
 }
 
-// Update UI elements with current theme
-function updateThemeUI(themeId) {
-  // Update theme button text if exists
-  const themeBtn = document.querySelector('.theme-toggle-btn');
+// Update theme button text
+function updateThemeButton(themeId) {
+  const themeBtn = document.getElementById('themeToggleBtn');
   if (themeBtn) {
     const theme = themes.find(t => t.id === themeId);
     if (theme) {
       themeBtn.innerHTML = `<i class="fas fa-palette"></i> ${theme.name}`;
     }
   }
-  
-  // Update current theme display in modal if open
-  const currentThemeName = document.getElementById('currentThemeName');
-  const currentThemeMood = document.getElementById('currentThemeMood');
-  if (currentThemeName && currentThemeMood) {
-    const theme = themes.find(t => t.id === themeId);
-    if (theme) {
-      currentThemeName.textContent = theme.name;
-      currentThemeMood.textContent = theme.mood;
-    }
+}
+
+// Show theme notification
+function showThemeNotification(theme) {
+  const notification = document.getElementById('notification');
+  if (notification) {
+    notification.innerHTML = `
+      <i class="fas fa-palette"></i>
+      <span>Theme changed to "${theme.name}"</span>
+    `;
+    notification.style.display = 'flex';
+    
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 3000);
   }
 }
 
@@ -169,7 +170,7 @@ function initThemeModal() {
   const themeGrid = document.getElementById('themeGrid');
   if (!themeGrid) return;
   
-  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'cyberpunk-neon';
   
   // Clear and populate theme grid
   themeGrid.innerHTML = themes.map(theme => {
@@ -194,7 +195,7 @@ function initThemeModal() {
     `;
   }).join('');
   
-  // Add click handlers
+  // Add click handlers to theme cards
   document.querySelectorAll('.theme-card').forEach(card => {
     card.addEventListener('click', () => {
       const themeId = card.dataset.themeId;
@@ -211,20 +212,12 @@ function initThemeModal() {
       card.insertAdjacentHTML('beforeend', 
         '<div class="theme-card-badge active-badge">Active</div>');
       
-      // Show notification
+      // Update current theme display
       const theme = themes.find(t => t.id === themeId);
       if (theme) {
-        showNotification(`Theme changed to "${theme.name}"`);
+        document.getElementById('currentThemeName').textContent = theme.name;
+        document.getElementById('currentThemeMood').textContent = theme.mood;
       }
-      
-      // Close modal after selection (optional)
-      setTimeout(() => {
-        const modal = document.getElementById('themeModal');
-        if (modal) {
-          modal.style.display = 'none';
-          document.getElementById('themeModalBackdrop').style.display = 'none';
-        }
-      }, 500);
     });
   });
 }
@@ -232,15 +225,15 @@ function initThemeModal() {
 // Get theme preview HTML
 function getThemePreview(themeId) {
   switch(themeId) {
-    case 'cyberpunk':
+    case 'cyberpunk-neon':
       return '<div class="circuit-overlay"><div class="circuit-line-h"></div><div class="circuit-line-v"></div></div>';
-    case 'sunset':
+    case 'sunset-glow':
       return '<div class="sun-overlay"></div>';
-    case 'aurora':
+    case 'aurora-magic':
       return '<div class="aurora-overlay"></div>';
-    case 'serenity':
+    case 'serenity-bliss':
       return '<div class="leaf-overlay"></div>';
-    case 'ocean':
+    case 'ocean-deep':
       return '<div class="wave-overlay"></div>';
     case 'matrix':
       return '<div class="circuit-overlay" style="opacity:0.4;"><div class="circuit-line-h" style="background:#00FF41;"></div><div class="circuit-line-v" style="background:#00FF41;"></div></div>';
@@ -250,98 +243,112 @@ function getThemePreview(themeId) {
       return '<div class="circuit-overlay" style="opacity:0.6;"><div class="circuit-line-h" style="background:#FF00FF;"></div><div class="circuit-line-v" style="background:#00FFFF;"></div></div>';
     case 'vaporwave':
       return '<div class="aurora-overlay" style="background:linear-gradient(45deg, transparent 30%, rgba(255,113,206,0.4) 50%, transparent 70%);"></div>';
-    case 'toxic':
+    case 'toxic-green':
       return '<div class="circuit-overlay" style="opacity:0.6;"><div class="circuit-line-h" style="background:#39FF14;"></div><div class="circuit-line-v" style="background:#CCFF00;"></div></div>';
-    case 'solar':
+    case 'solar-flare':
       return '<div class="sun-overlay" style="background:radial-gradient(circle, #FFD700, transparent 70%);"></div>';
     case 'deep-space':
       return '<div class="aurora-overlay" style="background:linear-gradient(45deg, transparent 30%, rgba(65,105,225,0.4) 50%, transparent 70%);"></div>';
     case 'monochrome':
       return '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;color:white;opacity:0.8;">⚫⚪</div>';
     case 'auto':
-      return '<div class="auto-icon">⚙️</div>';
+      return '<div class="auto-icon"><i class="fas fa-desktop"></i></div>';
     default:
       return '<div class="circuit-overlay"><div class="circuit-line-h"></div><div class="circuit-line-v"></div></div>';
-  }
-}
-
-// Show notification
-function showNotification(message, type = 'success') {
-  const notification = document.getElementById('notification');
-  if (!notification) return;
-  
-  notification.innerHTML = `
-    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-    <span>${message}</span>
-  `;
-  notification.style.display = 'flex';
-  
-  setTimeout(() => {
-    notification.style.display = 'none';
-  }, 3000);
-}
-
-// Theme switcher button handler
-function setupThemeSwitcher() {
-  const themeBtn = document.querySelector('.theme-toggle-btn');
-  if (themeBtn) {
-    themeBtn.addEventListener('click', () => {
-      openThemeModal();
-    });
   }
 }
 
 // Open theme modal
 function openThemeModal() {
   const modal = document.getElementById('themeModal');
-  const backdrop = document.getElementById('themeModalBackdrop');
-  if (!modal || !backdrop) return;
+  if (!modal) return;
   
-  // Refresh theme grid in case themes changed
+  // Initialize theme grid
   initThemeModal();
   
-  modal.style.display = 'block';
-  backdrop.style.display = 'block';
-  
   // Update current theme display
-  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'cyberpunk-neon';
   const theme = themes.find(t => t.id === currentTheme);
   if (theme) {
     document.getElementById('currentThemeName').textContent = theme.name;
     document.getElementById('currentThemeMood').textContent = theme.mood;
   }
+  
+  // Show modal
+  modal.style.display = 'block';
+  
+  // Add close handler
+  const closeBtn = document.getElementById('closeThemeBtn');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+  }
+  
+  // Close on backdrop click
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  };
+  
+  // Close on escape key
+  document.addEventListener('keydown', function closeOnEscape(e) {
+    if (e.key === 'Escape') {
+      modal.style.display = 'none';
+      document.removeEventListener('keydown', closeOnEscape);
+    }
+  });
 }
 
 // Close theme modal
 function closeThemeModal() {
   const modal = document.getElementById('themeModal');
-  const backdrop = document.getElementById('themeModalBackdrop');
-  if (!modal || !backdrop) return;
-  
-  modal.style.display = 'none';
-  backdrop.style.display = 'none';
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Reset to default theme
+function resetToDefaultTheme() {
+  setTheme('cyberpunk-neon');
 }
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize theme system
   initThemeSystem();
-  setupThemeSwitcher();
   
-  // Close modal handlers
-  const closeBtns = document.querySelectorAll('.modal-close, .modal-backdrop');
-  closeBtns.forEach(btn => {
-    btn.addEventListener('click', closeThemeModal);
-  });
+  // Setup theme button click handler
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', openThemeModal);
+  }
   
-  // Escape key to close modal
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeThemeModal();
-    }
-  });
+  // Setup reset button in modal
+  const resetBtn = document.querySelector('.btn-primary[onclick*="setTheme"]');
+  if (resetBtn) {
+    resetBtn.onclick = resetToDefaultTheme;
+  }
+  
+  // Setup close button
+  const closeBtn = document.getElementById('closeThemeBtn');
+  if (closeBtn) {
+    closeBtn.onclick = closeThemeModal;
+  }
+  
+  // Close modal on backdrop click
+  const modal = document.getElementById('themeModal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeThemeModal();
+      }
+    });
+  }
 });
 
-// Export for module usage (if using ES6 modules)
+// Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     themes,
