@@ -1,610 +1,687 @@
-/* themes.css - Complete Theme System for PromptCraft */
+/* themes.css - Enhanced Cyberpunk Theme System */
 
-/* ===========================================
-   Theme Variables & Definitions
-   =========================================== */
+/* ==========================================
+   CSS VARIABLES - THEME SYSTEM
+   ========================================== */
 
-/* Cyberpunk Neon (Your Current Theme) */
-[data-app-theme="cyberpunk-neon"] {
-  --primary: #FF5E00;
-  --secondary: #00F3FF;
-  --bg-body: #0A0E17;
-  --text-primary: #F1F5F9;
+:root {
+  /* THEME NAMES for reference */
+  --theme-cyberpunk: 'Cyberpunk Core';
+  --theme-sunset: 'Sunset Orange';
+  --theme-aurora: 'Aurora Purple';
+  --theme-serenity: 'Serenity Green';
+  --theme-ocean: 'Ocean Blue';
+  --theme-matrix: 'The Matrix';
+  --theme-cybernoir: 'Cyber Noir';
+  --theme-neon-dream: 'Neon Dream';
+  --theme-vaporwave: 'Vaporwave';
+  --theme-toxic: 'Toxic Green';
+  --theme-solar: 'Solar Flare';
+  --theme-deep-space: 'Deep Space';
+  --theme-monochrome: 'Monochrome';
+}
+
+/* ==========================================
+   THEME 1: CYBERPUNK CORE (DEFAULT)
+   ========================================== */
+[data-theme="cyberpunk"] {
+  /* Brand Colors */
+  --primary: #FF5E00;       /* Bright Orange */
+  --secondary: #00F3FF;     /* Cyan Blue */
+  --accent: #FF00FF;        /* Magenta Pink */
+  --danger: #FF4444;        /* Bright Red */
+  --warning: #FFD700;       /* Gold */
+  --success: #00FF41;       /* Matrix Green */
+  
+  /* Background Colors */
+  --bg-body: #0A0E17;       /* Deep Navy */
+  --bg-secondary: #0F1629;
+  --panel-bg: rgba(17, 24, 39, 0.95);
+  --input-bg: rgba(10, 14, 23, 0.8);
+  
+  /* Text Colors */
+  --text-primary: #FFFFFF;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
   --text-on-primary: #000000;
-  --primary-light: #FF8C42;
+  
+  /* Border Colors */
+  --border-subtle: rgba(255, 94, 0, 0.3);
+  --panel-border: rgba(0, 243, 255, 0.3);
+  --input-border: rgba(255, 94, 0, 0.4);
+  --input-border-focus: rgba(0, 243, 255, 0.8);
+  
+  /* Shadows */
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+  
+  /* Gradients */
+  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+  --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+  
+  /* RGB values for animations */
   --primary-rgb: 255, 94, 0;
-  --success: #00FF41;
+  --secondary-rgb: 0, 243, 255;
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ==========================================
+   THEME 2: SUNSET ORANGE
+   ========================================== */
+[data-theme="sunset"] {
+  --primary: #FF6B35;       /* Sunset Orange */
+  --secondary: #FFA500;     /* Bright Orange */
+  --accent: #FFD700;        /* Gold */
   --danger: #FF4444;
-  --gradient-brand: linear-gradient(135deg, #FF5E00, #00F3FF);
-  --panel-bg: #111827;
-  --input-bg: #0A0E17;
-  --bg-soft: #1E293B;
-  --panel-border: #FF5E00;
-  --border-subtle: #2D3748;
-  --input-border: #2D3748;
-  --input-border-focus: #FF5E00;
-  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2);
-  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
-  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
-  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
-  --toast-bg: #1E293B;
-  --toast-text: #00F3FF;
-  --overlay-bg: rgba(0, 0, 0, 0.7);
-}
-
-/* Sunset Glow Theme */
-[data-app-theme="sunset-glow"] {
-  --primary: #FF6B35;
-  --secondary: #FFA500;
-  --bg-body: #FFF8F0;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-muted: #999999;
+  --warning: #FF8C00;
+  --success: #00C853;
+  
+  --bg-body: #1A0B0B;       /* Deep Red-Black */
+  --bg-secondary: #2A1515;
+  --panel-bg: rgba(42, 21, 21, 0.95);
+  --input-bg: rgba(26, 11, 11, 0.8);
+  
+  --text-primary: #FFF8F0;
+  --text-secondary: #FFD6BF;
+  --text-muted: #B38B6D;
   --text-on-primary: #000000;
-  --primary-light: #FF8C42;
+  
+  --border-subtle: rgba(255, 107, 53, 0.4);
+  --panel-border: rgba(255, 165, 0, 0.4);
+  --input-border: rgba(255, 107, 53, 0.5);
+  --input-border-focus: rgba(255, 165, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 165, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF6B35 0%, #FFA500 100%);
+  --gradient-primary: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFA500 0%, #FFD700 100%);
+  
   --primary-rgb: 255, 107, 53;
-  --success: #10B981;
-  --danger: #EF4444;
-  --gradient-brand: linear-gradient(135deg, #FF6B35, #FFA500);
-  --panel-bg: #FFFFFF;
-  --input-bg: #FFF8F0;
-  --bg-soft: #FFF0E6;
-  --panel-border: #FFA500;
-  --border-subtle: #E0E0E0;
-  --input-border: #D0D0D0;
-  --input-border-focus: #FF6B35;
-  --input-shadow-focus: 0 0 0 3px rgba(255, 107, 53, 0.2);
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --toast-bg: #FFFFFF;
-  --toast-text: #FF6B35;
-  --overlay-bg: rgba(255, 255, 255, 0.85);
+  --secondary-rgb: 255, 165, 0;
 }
 
-/* Aurora Magic Theme */
-[data-app-theme="aurora-magic"] {
-  --primary: #8A2BE2;
-  --secondary: #00CED1;
-  --bg-body: #0A0A1A;
+/* ==========================================
+   THEME 3: AURORA PURPLE
+   ========================================== */
+[data-theme="aurora"] {
+  --primary: #8A2BE2;       /* Blue Violet */
+  --secondary: #00CED1;     /* Dark Turquoise */
+  --accent: #9370DB;        /* Medium Purple */
+  --danger: #FF4444;
+  --warning: #FFD700;
+  --success: #00FF7F;
+  
+  --bg-body: #0A0A1A;       /* Deep Purple-Black */
+  --bg-secondary: #151530;
+  --panel-bg: rgba(21, 21, 48, 0.95);
+  --input-bg: rgba(10, 10, 26, 0.8);
+  
   --text-primary: #E6E6FA;
-  --text-secondary: #B0B0FF;
-  --text-muted: #8888CC;
+  --text-secondary: #C9C9FF;
+  --text-muted: #8A8ACB;
   --text-on-primary: #000000;
-  --primary-light: #A855F7;
+  
+  --border-subtle: rgba(138, 43, 226, 0.4);
+  --panel-border: rgba(0, 206, 209, 0.4);
+  --input-border: rgba(138, 43, 226, 0.5);
+  --input-border-focus: rgba(0, 206, 209, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 206, 209, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #8A2BE2 0%, #00CED1 100%);
+  --gradient-primary: linear-gradient(135deg, #8A2BE2 0%, #9B59B6 100%);
+  --gradient-secondary: linear-gradient(135deg, #00CED1 0%, #20B2AA 100%);
+  
   --primary-rgb: 138, 43, 226;
-  --success: #00FFAA;
-  --danger: #FF44AA;
-  --gradient-brand: linear-gradient(135deg, #8A2BE2, #00CED1);
-  --panel-bg: #1A1A2E;
-  --input-bg: #0A0A1A;
-  --bg-soft: #2A2A4A;
-  --panel-border: #8A2BE2;
-  --border-subtle: #3A3A6A;
-  --input-border: #4A4A8A;
-  --input-border-focus: #8A2BE2;
-  --input-shadow-focus: 0 0 0 3px rgba(138, 43, 226, 0.3);
-  --shadow-soft: 0 1px 3px rgba(138, 43, 226, 0.3);
-  --shadow-card: 0 4px 6px -1px rgba(138, 43, 226, 0.4);
-  --shadow-elevated: 0 10px 15px -3px rgba(138, 43, 226, 0.5);
-  --toast-bg: #1A1A2E;
-  --toast-text: #00CED1;
-  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --secondary-rgb: 0, 206, 209;
 }
 
-/* Serenity Bliss Theme */
-[data-app-theme="serenity-bliss"] {
-  --primary: #2E8B57;
-  --secondary: #87CEEB;
-  --bg-body: #F0F8FF;
-  --text-primary: #2F4F4F;
-  --text-secondary: #5F7A7A;
-  --text-muted: #8FA9A9;
-  --text-on-primary: #FFFFFF;
-  --primary-light: #3CB371;
+/* ==========================================
+   THEME 4: SERENITY GREEN
+   ========================================== */
+[data-theme="serenity"] {
+  --primary: #2E8B57;       /* Sea Green */
+  --secondary: #87CEEB;     /* Sky Blue */
+  --accent: #98FB98;        /* Pale Green */
+  --danger: #FF6B6B;
+  --warning: #FFD93D;
+  --success: #4CAF50;
+  
+  --bg-body: #0A140F;       /* Deep Green-Black */
+  --bg-secondary: #1A291F;
+  --panel-bg: rgba(26, 41, 31, 0.95);
+  --input-bg: rgba(10, 20, 15, 0.8);
+  
+  --text-primary: #F0F8FF;
+  --text-secondary: #C1E1C1;
+  --text-muted: #8FBC8F;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(46, 139, 87, 0.4);
+  --panel-border: rgba(135, 206, 235, 0.4);
+  --input-border: rgba(46, 139, 87, 0.5);
+  --input-border-focus: rgba(135, 206, 235, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --input-shadow-focus: 0 0 0 3px rgba(135, 206, 235, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #2E8B57 0%, #87CEEB 100%);
+  --gradient-primary: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  --gradient-secondary: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%);
+  
   --primary-rgb: 46, 139, 87;
-  --success: #2E8B57;
-  --danger: #DC143C;
-  --gradient-brand: linear-gradient(135deg, #2E8B57, #87CEEB);
-  --panel-bg: #FFFFFF;
-  --input-bg: #F0F8FF;
-  --bg-soft: #E0F0FF;
-  --panel-border: #2E8B57;
-  --border-subtle: #D0E0E0;
-  --input-border: #C0D0D0;
-  --input-border-focus: #2E8B57;
-  --input-shadow-focus: 0 0 0 3px rgba(46, 139, 87, 0.2);
-  --shadow-soft: 0 1px 3px rgba(0, 100, 0, 0.1);
-  --shadow-card: 0 4px 6px -1px rgba(0, 100, 0, 0.1);
-  --shadow-elevated: 0 10px 15px -3px rgba(0, 100, 0, 0.1);
-  --toast-bg: #FFFFFF;
-  --toast-text: #2E8B57;
-  --overlay-bg: rgba(255, 255, 255, 0.9);
+  --secondary-rgb: 135, 206, 235;
 }
 
-/* Ocean Deep Theme */
-[data-app-theme="ocean-deep"] {
-  --primary: #1E3A8A;
-  --secondary: #3B82F6;
-  --bg-body: #F0F9FF;
-  --text-primary: #1E3A8A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-  --text-on-primary: #FFFFFF;
-  --primary-light: #2563EB;
+/* ==========================================
+   THEME 5: OCEAN BLUE
+   ========================================== */
+[data-theme="ocean"] {
+  --primary: #1E3A8A;       /* Dark Blue */
+  --secondary: #3B82F6;     /* Bright Blue */
+  --accent: #06D6A0;        /* Mint Green */
+  --danger: #EF476F;
+  --warning: #FFD166;
+  --success: #06D6A0;
+  
+  --bg-body: #0A0E17;       /* Deep Navy */
+  --bg-secondary: #1A2B4A;
+  --panel-bg: rgba(26, 43, 74, 0.95);
+  --input-bg: rgba(10, 14, 23, 0.8);
+  
+  --text-primary: #F0F9FF;
+  --text-secondary: #B3E0FF;
+  --text-muted: #6B8CAF;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(30, 58, 138, 0.4);
+  --panel-border: rgba(59, 130, 246, 0.4);
+  --input-border: rgba(30, 58, 138, 0.5);
+  --input-border-focus: rgba(59, 130, 246, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  --gradient-primary: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+  --gradient-secondary: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  
   --primary-rgb: 30, 58, 138;
-  --success: #059669;
-  --danger: #DC2626;
-  --gradient-brand: linear-gradient(135deg, #1E3A8A, #3B82F6);
-  --panel-bg: #FFFFFF;
-  --input-bg: #F0F9FF;
-  --bg-soft: #E0F2FF;
-  --panel-border: #1E3A8A;
-  --border-subtle: #CBD5E1;
-  --input-border: #94A3B8;
-  --input-border-focus: #1E3A8A;
-  --input-shadow-focus: 0 0 0 3px rgba(30, 58, 138, 0.2);
-  --shadow-soft: 0 1px 3px rgba(30, 58, 138, 0.1);
-  --shadow-card: 0 4px 6px -1px rgba(30, 58, 138, 0.1);
-  --shadow-elevated: 0 10px 15px -3px rgba(30, 58, 138, 0.1);
-  --toast-bg: #FFFFFF;
-  --toast-text: #1E3A8A;
-  --overlay-bg: rgba(255, 255, 255, 0.9);
+  --secondary-rgb: 59, 130, 246;
 }
 
-/* ===========================================
-   Theme Modal UI Styles
-   =========================================== */
-
-/* Theme toggle button */
-.theme-toggle-btn {
-  background: linear-gradient(135deg, 
-    rgba(255, 94, 0, 0.2), 
-    rgba(0, 243, 255, 0.2));
-  color: var(--primary);
-  position: relative;
-  overflow: hidden;
-  animation: theme-btn-glow 3s infinite;
+/* ==========================================
+   THEME 6: THE MATRIX (NEW)
+   ========================================== */
+[data-theme="matrix"] {
+  --primary: #00FF41;       /* Matrix Green */
+  --secondary: #008F11;     /* Darker Green */
+  --accent: #003B00;        /* Deep Green */
+  --danger: #FF003C;
+  --warning: #FFFF00;
+  --success: #00FF41;
+  
+  --bg-body: #000000;       /* Pure Black */
+  --bg-secondary: #001100;
+  --panel-bg: rgba(0, 17, 0, 0.95);
+  --input-bg: rgba(0, 0, 0, 0.8);
+  
+  --text-primary: #00FF41;
+  --text-secondary: #008F11;
+  --text-muted: #003B00;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(0, 255, 65, 0.3);
+  --panel-border: rgba(0, 143, 17, 0.4);
+  --input-border: rgba(0, 255, 65, 0.4);
+  --input-border-focus: rgba(0, 255, 65, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 255, 65, 0.2);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 255, 65, 0.4);
+  
+  --gradient-brand: linear-gradient(135deg, #00FF41 0%, #008F11 100%);
+  --gradient-primary: linear-gradient(135deg, #00FF41 0%, #00CC33 100%);
+  --gradient-secondary: linear-gradient(135deg, #008F11 0%, #003B00 100%);
+  
+  --primary-rgb: 0, 255, 65;
+  --secondary-rgb: 0, 143, 17;
 }
 
-@keyframes theme-btn-glow {
-  0%, 100% { 
-    box-shadow: 0 0 10px rgba(255, 94, 0, 0.3),
-                0 0 20px rgba(0, 243, 255, 0.2);
-  }
-  50% { 
-    box-shadow: 0 0 15px rgba(255, 94, 0, 0.5),
-                0 0 30px rgba(0, 243, 255, 0.4);
-  }
+/* ==========================================
+   THEME 7: CYBER NOIR (NEW)
+   ========================================== */
+[data-theme="cybernoir"] {
+  --primary: #FF0000;       /* Bright Red */
+  --secondary: #FFFFFF;     /* White */
+  --accent: #808080;        /* Gray */
+  --danger: #FF0000;
+  --warning: #FFFF00;
+  --success: #00FF00;
+  
+  --bg-body: #000000;       /* Black */
+  --bg-secondary: #1A1A1A;
+  --panel-bg: rgba(26, 26, 26, 0.95);
+  --input-bg: rgba(0, 0, 0, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #666666;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 255, 255, 0.2);
+  --panel-border: rgba(255, 0, 0, 0.4);
+  --input-border: rgba(255, 255, 255, 0.3);
+  --input-border-focus: rgba(255, 0, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 0, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF0000 0%, #FFFFFF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 100%);
+  
+  --primary-rgb: 255, 0, 0;
+  --secondary-rgb: 255, 255, 255;
 }
 
-.theme-toggle-btn:hover {
-  background: linear-gradient(135deg, 
-    rgba(255, 94, 0, 0.3), 
-    rgba(0, 243, 255, 0.3));
-  transform: translateY(-2px);
+/* ==========================================
+   THEME 8: NEON DREAM (NEW)
+   ========================================== */
+[data-theme="neon-dream"] {
+  --primary: #FF00FF;       /* Magenta */
+  --secondary: #00FFFF;     /* Cyan */
+  --accent: #FFFF00;        /* Yellow */
+  --danger: #FF0000;
+  --warning: #FFA500;
+  --success: #00FF00;
+  
+  --bg-body: #0A0A1A;       /* Dark Blue */
+  --bg-secondary: #1A1A2A;
+  --panel-bg: rgba(26, 26, 42, 0.95);
+  --input-bg: rgba(10, 10, 26, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCFF;
+  --text-muted: #8888AA;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 0, 255, 0.3);
+  --panel-border: rgba(0, 255, 255, 0.3);
+  --input-border: rgba(255, 0, 255, 0.4);
+  --input-border-focus: rgba(0, 255, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 255, 255, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF00FF 0%, #FF66FF 100%);
+  --gradient-secondary: linear-gradient(135deg, #00FFFF 0%, #66FFFF 100%);
+  
+  --primary-rgb: 255, 0, 255;
+  --secondary-rgb: 0, 255, 255;
 }
 
-.hero-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+/* ==========================================
+   THEME 9: VAPORWAVE (NEW)
+   ========================================== */
+[data-theme="vaporwave"] {
+  --primary: #FF71CE;       /* Pink */
+  --secondary: #01CDFE;     /* Cyan */
+  --accent: #05FFA1;        /* Mint */
+  --danger: #FF6B6B;
+  --warning: #FFE66D;
+  --success: #4ECDC4;
+  
+  --bg-body: #1D1D2B;       /* Dark Purple */
+  --bg-secondary: #2A2A3C;
+  --panel-bg: rgba(42, 42, 60, 0.95);
+  --input-bg: rgba(29, 29, 43, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #B39DDB;
+  --text-muted: #9575CD;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 113, 206, 0.4);
+  --panel-border: rgba(1, 205, 254, 0.4);
+  --input-border: rgba(255, 113, 206, 0.5);
+  --input-border-focus: rgba(1, 205, 254, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(1, 205, 254, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF71CE 0%, #01CDFE 100%);
+  --gradient-primary: linear-gradient(135deg, #FF71CE 0%, #FF9EE0 100%);
+  --gradient-secondary: linear-gradient(135deg, #01CDFE 0%, #05FFA1 100%);
+  
+  --primary-rgb: 255, 113, 206;
+  --secondary-rgb: 1, 205, 254;
 }
 
-/* Theme Modal */
-.theme-modal-content {
-  padding: 8px;
+/* ==========================================
+   THEME 10: TOXIC GREEN (NEW)
+   ========================================== */
+[data-theme="toxic"] {
+  --primary: #39FF14;       /* Neon Green */
+  --secondary: #CCFF00;     /* Lime */
+  --accent: #7CFC00;        /* Lawn Green */
+  --danger: #FF073A;
+  --warning: #FFD700;
+  --success: #39FF14;
+  
+  --bg-body: #001100;       /* Deep Green */
+  --bg-secondary: #002200;
+  --panel-bg: rgba(0, 34, 0, 0.95);
+  --input-bg: rgba(0, 17, 0, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCFFCC;
+  --text-muted: #00AA00;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(57, 255, 20, 0.4);
+  --panel-border: rgba(204, 255, 0, 0.4);
+  --input-border: rgba(57, 255, 20, 0.5);
+  --input-border-focus: rgba(204, 255, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(204, 255, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #39FF14 0%, #CCFF00 100%);
+  --gradient-primary: linear-gradient(135deg, #39FF14 0%, #7CFC00 100%);
+  --gradient-secondary: linear-gradient(135deg, #CCFF00 0%, #FFFF00 100%);
+  
+  --primary-rgb: 57, 255, 20;
+  --secondary-rgb: 204, 255, 0;
 }
 
-.theme-current-display {
-  text-align: center;
-  margin-bottom: 24px;
-  padding: 16px;
-  border-radius: 8px;
-  background: rgba(var(--primary-rgb), 0.1);
-  border: 1px solid var(--primary);
+/* ==========================================
+   THEME 11: SOLAR FLARE (NEW)
+   ========================================== */
+[data-theme="solar"] {
+  --primary: #FF9500;       /* Orange */
+  --secondary: #FFD700;     /* Gold */
+  --accent: #FF4500;        /* Red-Orange */
+  --danger: #FF0000;
+  --warning: #FFD700;
+  --success: #32CD32;
+  
+  --bg-body: #1A0B0B;       /* Dark Red */
+  --bg-secondary: #2A1515;
+  --panel-bg: rgba(42, 21, 21, 0.95);
+  --input-bg: rgba(26, 11, 11, 0.8);
+  
+  --text-primary: #FFF8E7;
+  --text-secondary: #FFE4B5;
+  --text-muted: #CD853F;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 149, 0, 0.4);
+  --panel-border: rgba(255, 215, 0, 0.4);
+  --input-border: rgba(255, 149, 0, 0.5);
+  --input-border-focus: rgba(255, 215, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 215, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF9500 0%, #FFD700 100%);
+  --gradient-primary: linear-gradient(135deg, #FF9500 0%, #FFA500 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFD700 0%, #FFEC8B 100%);
+  
+  --primary-rgb: 255, 149, 0;
+  --secondary-rgb: 255, 215, 0;
 }
 
-.current-theme-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-  font-family: 'Courier New', monospace;
+/* ==========================================
+   THEME 12: DEEP SPACE (NEW)
+   ========================================== */
+[data-theme="deep-space"] {
+  --primary: #4169E1;       /* Royal Blue */
+  --secondary: #9370DB;     /* Medium Purple */
+  --accent: #00BFFF;        /* Deep Sky Blue */
+  --danger: #DC143C;
+  --warning: #FFD700;
+  --success: #00FA9A;
+  
+  --bg-body: #000033;       /* Deep Blue */
+  --bg-secondary: #0A0A2A;
+  --panel-bg: rgba(10, 10, 42, 0.95);
+  --input-bg: rgba(0, 0, 51, 0.8);
+  
+  --text-primary: #E6E6FF;
+  --text-secondary: #B3B3FF;
+  --text-muted: #6666CC;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(65, 105, 225, 0.4);
+  --panel-border: rgba(147, 112, 219, 0.4);
+  --input-border: rgba(65, 105, 225, 0.5);
+  --input-border-focus: rgba(147, 112, 219, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --input-shadow-focus: 0 0 0 3px rgba(147, 112, 219, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #4169E1 0%, #9370DB 100%);
+  --gradient-primary: linear-gradient(135deg, #4169E1 0%, #6495ED 100%);
+  --gradient-secondary: linear-gradient(135deg, #9370DB 0%, #BA55D3 100%);
+  
+  --primary-rgb: 65, 105, 225;
+  --secondary-rgb: 147, 112, 219;
 }
 
-.current-theme-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: 'Courier New', monospace;
+/* ==========================================
+   THEME 13: MONOCHROME (NEW)
+   ========================================== */
+[data-theme="monochrome"] {
+  --primary: #FFFFFF;       /* White */
+  --secondary: #CCCCCC;     /* Light Gray */
+  --accent: #999999;        /* Medium Gray */
+  --danger: #666666;
+  --warning: #999999;
+  --success: #CCCCCC;
+  
+  --bg-body: #000000;       /* Black */
+  --bg-secondary: #1A1A1A;
+  --panel-bg: rgba(26, 26, 26, 0.95);
+  --input-bg: rgba(0, 0, 0, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #666666;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 255, 255, 0.2);
+  --panel-border: rgba(255, 255, 255, 0.3);
+  --input-border: rgba(255, 255, 255, 0.3);
+  --input-border-focus: rgba(255, 255, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(255, 255, 255, 0.1);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 100%);
+  --gradient-primary: linear-gradient(135deg, #FFFFFF 0%, #EEEEEE 100%);
+  --gradient-secondary: linear-gradient(135deg, #CCCCCC 0%, #999999 100%);
+  
+  --primary-rgb: 255, 255, 255;
+  --secondary-rgb: 204, 204, 204;
 }
 
-.current-theme-mood {
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* Theme Grid */
-.theme-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.theme-card {
-  border: 2px solid var(--border-subtle);
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: var(--panel-bg);
-  position: relative;
-}
-
-.theme-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--primary);
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
-}
-
-.theme-card.active {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3),
-              0 8px 25px rgba(var(--primary-rgb), 0.3);
-  animation: active-pulse 2s infinite;
-}
-
-@keyframes active-pulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3),
-                0 8px 25px rgba(var(--primary-rgb), 0.3);
-  }
-  50% { 
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.5),
-                0 12px 35px rgba(var(--primary-rgb), 0.5);
-  }
-}
-
-/* Theme Preview Areas */
-.theme-card-preview {
-  height: 80px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Cyberpunk Preview */
-.cyberpunk-preview {
-  background: linear-gradient(135deg, #FF5E00, #00F3FF, #0A0E17);
-}
-
-.circuit-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0.3;
-}
-
-.circuit-line-h {
-  position: absolute;
-  top: 50%;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background: #00F3FF;
-  box-shadow: 0 0 10px #00F3FF;
-  animation: circuit-pulse 2s infinite;
-}
-
-.circuit-line-v {
-  position: absolute;
-  left: 50%;
-  top: 20%;
-  bottom: 20%;
-  width: 2px;
-  background: #FF5E00;
-  box-shadow: 0 0 10px #FF5E00;
-  animation: circuit-pulse 2s infinite reverse;
-}
-
-@keyframes circuit-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
-/* Sunset Preview */
-.sunset-preview {
-  background: linear-gradient(135deg, #FF6B35, #FFA500, #FFF8F0);
-}
-
-.sun-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  background: radial-gradient(circle, #FFA500, transparent 70%);
-  border-radius: 50%;
-  animation: sun-glow 3s infinite;
-}
-
-@keyframes sun-glow {
-  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-}
-
-/* Aurora Preview */
-.aurora-preview {
-  background: linear-gradient(135deg, #0A0A1A, #8A2BE2, #00CED1);
-}
-
-.aurora-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, 
-    transparent 30%, 
-    rgba(138, 43, 226, 0.4) 50%, 
-    transparent 70%);
-  animation: aurora-flow 4s infinite linear;
-}
-
-@keyframes aurora-flow {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-/* Serenity Preview */
-.serenity-preview {
-  background: linear-gradient(135deg, #2E8B57, #87CEEB, #F0F8FF);
-}
-
-.leaf-overlay {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 40px;
-  height: 40px;
-  background: 
-    radial-gradient(circle at 30% 30%, #2E8B57, transparent 50%),
-    radial-gradient(circle at 70% 70%, #87CEEB, transparent 50%);
-  opacity: 0.6;
-  animation: leaf-float 4s infinite ease-in-out;
-}
-
-@keyframes leaf-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(5deg); }
-}
-
-/* Ocean Preview */
-.ocean-preview {
-  background: linear-gradient(135deg, #1E3A8A, #3B82F6, #F0F9FF);
-}
-
-.wave-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-  background: 
-    repeating-linear-gradient(90deg, 
-      transparent, 
-      transparent 10px, 
-      rgba(59, 130, 246, 0.5) 10px, 
-      rgba(59, 130, 246, 0.5) 20px);
-  animation: wave-move 2s infinite linear;
-}
-
-@keyframes wave-move {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-20px); }
-}
-
-/* Auto Preview */
-.auto-preview {
-  background: linear-gradient(135deg, #666, #999, #CCC);
-  position: relative;
-}
-
-.auto-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 24px;
-  color: white;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  animation: auto-spin 4s infinite linear;
-}
-
-@keyframes auto-spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* Theme Card Info */
-.theme-card-info {
-  padding: 12px;
-  background: var(--panel-bg);
-}
-
-.theme-card-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: 'Courier New', monospace;
-}
-
-.theme-card-name i {
-  color: var(--primary);
-}
-
-.theme-card-mood {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.3;
-}
-
-/* Theme Badges */
-.theme-card-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: 'Courier New', monospace;
-}
-
-.active-badge {
-  background: linear-gradient(135deg, #00FF41, #00F3FF);
-  color: #000;
-  animation: badge-pulse 2s infinite;
-}
-
-@keyframes badge-pulse {
-  0%, 100% { opacity: 0.9; }
-  50% { opacity: 1; }
-}
-
-.system-badge {
-  background: rgba(100, 100, 100, 0.8);
-  color: white;
-}
-
-/* Theme Hint */
-.theme-hint {
-  text-align: center;
-  padding: 12px;
-  border-radius: 6px;
-  background: rgba(var(--primary-rgb), 0.1);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.theme-hint i {
-  color: var(--primary);
-}
-
-/* Particles */
-.particles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.particle {
-  position: absolute;
-  background: var(--primary);
-  border-radius: 50%;
-  opacity: 0.08;
-  animation: float 20s infinite linear;
-}
-
-@keyframes float {
-  0% { transform: translateY(0) rotate(0deg); }
-  100% { transform: translateY(-1000px) rotate(720deg); }
-}
-
-/* Theme Change Animation */
-@keyframes themeChange {
-  0% { opacity: 0.9; }
-  50% { opacity: 0.95; }
-  100% { opacity: 1; }
-}
-
-.theme-change {
-  animation: themeChange 0.4s ease;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .hero-actions {
-    gap: 8px;
+/* ==========================================
+   AUTO THEME (SYSTEM PREFERENCE)
+   ========================================== */
+[data-theme="auto"] {
+  /* Light mode variables */
+  @media (prefers-color-scheme: light) {
+    --primary: #FF5E00;
+    --secondary: #00F3FF;
+    --accent: #FF00FF;
+    --danger: #FF4444;
+    --warning: #FFD700;
+    --success: #00FF41;
+    
+    --bg-body: #F0F0F0;
+    --bg-secondary: #E0E0E0;
+    --panel-bg: rgba(255, 255, 255, 0.95);
+    --input-bg: rgba(255, 255, 255, 0.8);
+    
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --text-muted: #666666;
+    --text-on-primary: #FFFFFF;
+    
+    --border-subtle: rgba(255, 94, 0, 0.3);
+    --panel-border: rgba(0, 243, 255, 0.3);
+    --input-border: rgba(255, 94, 0, 0.4);
+    --input-border-focus: rgba(0, 243, 255, 0.8);
+    
+    --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+    
+    --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+    --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+    --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+    
+    --primary-rgb: 255, 94, 0;
+    --secondary-rgb: 0, 243, 255;
   }
   
-  .theme-toggle-btn,
-  .settings-btn {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .theme-toggle-btn i,
-  .settings-btn i {
-    font-size: 12px;
-  }
-  
-  .theme-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .theme-card-preview {
-    height: 60px;
-  }
-  
-  .theme-card-name {
-    font-size: 13px;
-  }
-  
-  .theme-card-mood {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-actions {
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-  
-  .theme-toggle-btn,
-  .settings-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .modal {
-    width: 95%;
-    margin: 10px;
+  /* Dark mode variables */
+  @media (prefers-color-scheme: dark) {
+    --primary: #FF5E00;
+    --secondary: #00F3FF;
+    --accent: #FF00FF;
+    --danger: #FF4444;
+    --warning: #FFD700;
+    --success: #00FF41;
+    
+    --bg-body: #0A0E17;
+    --bg-secondary: #0F1629;
+    --panel-bg: rgba(17, 24, 39, 0.95);
+    --input-bg: rgba(10, 14, 23, 0.8);
+    
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --text-on-primary: #000000;
+    
+    --border-subtle: rgba(255, 94, 0, 0.3);
+    --panel-border: rgba(0, 243, 255, 0.3);
+    --input-border: rgba(255, 94, 0, 0.4);
+    --input-border-focus: rgba(0, 243, 255, 0.8);
+    
+    --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+    
+    --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+    --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+    --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+    
+    --primary-rgb: 255, 94, 0;
+    --secondary-rgb: 0, 243, 255;
   }
 }
 
-/* Ensure particles don't interfere with modal */
-#themeModal .particles {
-  display: none;
+/* ==========================================
+   BODY BACKGROUND GRID FOR EACH THEME
+   ========================================== */
+[data-theme="cyberpunk"] body {
+  background-image: 
+    linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+}
+
+[data-theme="sunset"] body {
+  background-image: 
+    linear-gradient(rgba(139, 69, 19, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 69, 19, 0.2) 1px, transparent 1px);
+}
+
+[data-theme="aurora"] body {
+  background-image: 
+    linear-gradient(rgba(75, 0, 130, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(75, 0, 130, 0.2) 1px, transparent 1px);
+}
+
+[data-theme="serenity"] body {
+  background-image: 
+    linear-gradient(rgba(46, 139, 87, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 139, 87, 0.2) 1px, transparent 1px);
+}
+
+[data-theme="ocean"] body {
+  background-image: 
+    linear-gradient(rgba(30, 58, 138, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.2) 1px, transparent 1px);
+}
+
+[data-theme="matrix"] body {
+  background-image: 
+    linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
+}
+
+[data-theme="monochrome"] body {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* ==========================================
+   THEME TRANSITION ANIMATIONS
+   ========================================== */
+* {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================
+   DEFAULT THEME FALLBACK
+   ========================================== */
+:root {
+  /* Default fallback values */
+  --primary: #FF5E00;
+  --secondary: #00F3FF;
+  --accent: #FF00FF;
+  --danger: #FF4444;
+  --warning: #FFD700;
+  --success: #00FF41;
+  
+  --bg-body: #0A0E17;
+  --bg-secondary: #0F1629;
+  --panel-bg: rgba(17, 24, 39, 0.95);
+  --input-bg: rgba(10, 14, 23, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 94, 0, 0.3);
+  --panel-border: rgba(0, 243, 255, 0.3);
+  --input-border: rgba(255, 94, 0, 0.4);
+  --input-border-focus: rgba(0, 243, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+  
+  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+  --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+  
+  --primary-rgb: 255, 94, 0;
+  --secondary-rgb: 0, 243, 255;
+  
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
 }
