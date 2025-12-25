@@ -45,6 +45,30 @@ function intentObjectToChips(intent) {
 
   return chips;
 }
+// ======================
+// MODEL CONFIGURATION
+// ======================
+const MODEL_CONFIG = {
+  "gemini-1.5-flash": {
+    name: "Gemini 1.5 Flash",
+    provider: "Google",
+    free: true,
+    recommended: true,
+    description: "Fast, reliable, free default with daily quotas"
+  },
+  "gpt-4o-mini": {
+    name: "GPT-4o Mini",
+    provider: "OpenAI",
+    free: true,
+    description: "Excellent prompt quality with limited free usage"
+  },
+  "llama-3": {
+    name: "Llama 3 (70B)",
+    provider: "Groq",
+    free: true,
+    description: "Open-source, community-hosted model"
+  }
+};
 
 function updateSizeInfo(id, height) {
   const el = document.getElementById(id);
@@ -1362,9 +1386,37 @@ if (clearBtn) {
 
   document.getElementById("claudeBtn")
     ?.addEventListener("click", () => openAITool("Claude", "https://claude.ai/new"));
-
-  document.getElementById("geminiBtn")
-    ?.addEventListener("click", () => openAITool("Gemini", "https://gemini.google.com/app"));
+/* ===============================
+   GEMINI BUTTON - UPDATED FOR MODEL SELECTION
+=============================== */
+document.getElementById("geminiBtn")?.addEventListener("click", () => {
+  const outputEl = document.getElementById("output");
+  const prompt = outputEl.value.trim();
+  const selectedModel = localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash";
+  
+  if (!prompt) {
+    showNotification("No prompt to copy");
+    return;
+  }
+  
+  // Only open Gemini if it's the selected model
+  if (selectedModel === "gemini-1.5-flash") {
+    navigator.clipboard.writeText(prompt)
+      .then(() => {
+        showNotification("Prompt copied! Opening Gemini...");
+        setTimeout(() => {
+          window.open("https://gemini.google.com/app", "_blank");
+        }, 500);
+      })
+      .catch(err => {
+        console.error("Failed to copy:", err);
+        showNotification("Failed to copy prompt");
+      });
+  } else {
+    const modelName = MODEL_CONFIG[selectedModel]?.name || selectedModel;
+    showNotification(`Please select Gemini as your AI model (currently using: ${modelName})`);
+  }
+});
 
   document.getElementById("perplexityBtn")
     ?.addEventListener("click", () => openAITool("Perplexity", "https://www.perplexity.ai/"));
@@ -1945,7 +1997,21 @@ async function generatePrompt() {
   let generatedPrompt;
 
   try {
-    // Call Cloudflare Worker
+    // ✅ NEW: Get selected model from localStorage
+    const selectedModel = localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash";
+    
+    // Map of model names for display
+    const modelDisplayNames = {
+      "gpt-4o-mini": "GPT-4o Mini",
+      "gemini-1.5-flash": "Gemini 1.5 Flash",
+      "llama-3": "Llama 3 (Groq)"
+    };
+    
+    const modelName = modelDisplayNames[selectedModel] || selectedModel;
+    
+    console.log(`Generating with model: ${selectedModel} (${modelName})`);
+
+    // ✅ UPDATED: Call Cloudflare Worker WITH MODEL PARAMETER
     const WORKER_URL = "https://promptcraft-api.vijay-shagunkumar.workers.dev";
     
     const response = await fetch(WORKER_URL, {
@@ -1954,12 +2020,17 @@ async function generatePrompt() {
         "Content-Type": "application/json",
         "x-api-key": "promptcraft-app-secret-123"
       },
-      body: JSON.stringify({ prompt: raw })
+      body: JSON.stringify({ 
+        prompt: raw,
+        model: selectedModel  // ✅ CRITICAL: Send selected model
+      })
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Generation failed");
+      const errorMsg = errorData.error || `API error: ${response.status}`;
+      console.error("Worker error:", errorMsg);
+      throw new Error(errorMsg);
     }
     
     const data = await response.json();
@@ -1977,7 +2048,8 @@ async function generatePrompt() {
     document.getElementById("convertedBadge").style.display = "inline-flex";
     setLaunchButtonsEnabled(true);
 
-    showNotification("Prompt generated successfully");
+    // ✅ NEW: Show model used in notification
+    showNotification(`✓ Prompt generated with ${modelName}`);
 
     if (autoConvertEnabled && raw) {
       autoConvertCountdown = autoConvertDelay;
@@ -1985,12 +2057,25 @@ async function generatePrompt() {
     }
   } catch (error) {
     console.error("Generation error:", error);
-    // Fallback to local formatter if Cloudflare Worker fails
+    
+    // Fallback to local formatter
     generatedPrompt = localFormatter(raw);
     outputEl.value = generatedPrompt;
     updateStats(generatedPrompt);
     updateOutputStats();
-    showNotification("Using offline generation");
+    
+    // Show specific error notifications
+    if (error.message.includes('timeout')) {
+      showNotification("Request timeout. Using offline generation");
+    } else if (error.message.includes('API key') || error.message.includes('configuration')) {
+      showNotification("Model configuration issue. Using offline generation");
+    } else if (error.message.includes('rate limited')) {
+      showNotification("Rate limited. Using offline generation");
+    } else if (error.message.includes('not supported')) {
+      showNotification("Selected model not supported. Using offline generation");
+    } else {
+      showNotification("Using offline generation");
+    }
   } finally {
     convertBtn.disabled = false;
     convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
