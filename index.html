@@ -1029,7 +1029,7 @@
         
         if (modelSelect) {
             // Default model
-            const DEFAULT_MODEL = 'gemini-1.5-flash';
+            const DEFAULT_MODEL = 'gemini-1.5-flash-latest';
             const STORAGE_KEY = 'promptcrafter_model';
             
             // Load saved model or use default
@@ -1062,7 +1062,7 @@
                 // Update gemini button state based on selection
                 const geminiBtn = document.getElementById('geminiBtn');
                 if (geminiBtn) {
-                    if (selectedModel === 'gemini-1.5-flash') {
+                    if (selectedModel === 'gemini-1.5-flash-latest') {
                         geminiBtn.style.opacity = '1';
                         geminiBtn.style.cursor = 'pointer';
                     } else {
@@ -1075,7 +1075,7 @@
             // Initialize gemini button state
             const geminiBtn = document.getElementById('geminiBtn');
             if (geminiBtn) {
-                if (modelSelect.value === 'gemini-1.5-flash') {
+                if (modelSelect.value === 'gemini-1.5-flash-latest') {
                     geminiBtn.style.opacity = '1';
                     geminiBtn.style.cursor = 'pointer';
                 } else {
