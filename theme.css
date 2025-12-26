@@ -1,0 +1,157 @@
+/* theme.css – CSS Variables for Light/Dark Themes */
+
+:root {
+  /* Blue/White Theme (Default) */
+  --primary: #3b82f6;
+  --primary-rgb: 59, 130, 246;
+  --primary-light: #60a5fa;
+  --primary-dark: #1d4ed8;
+  --secondary: #8b5cf6;
+  --secondary-rgb: 139, 92, 246;
+  --accent: #10b981;
+  --accent-rgb: 16, 185, 129;
+  
+  /* Background Colors */
+  --bg-body: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0f9ff 100%);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --panel-bg: #ffffff;
+  
+  /* Text Colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-on-primary: #ffffff;
+  
+  /* Border Colors */
+  --border-subtle: #e5e7eb;
+  --input-border: #d1d5db;
+  --input-border-focus: #3b82f6;
+  --panel-border: #e5e7eb;
+  
+  /* Shadow Colors */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --input-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  
+  /* Status Colors */
+  --success: #10b981;
+  --success-rgb: 16, 185, 129;
+  --warning: #f59e0b;
+  --warning-rgb: 245, 158, 11;
+  --danger: #ef4444;
+  --danger-rgb: 239, 68, 68;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  --gradient-brand: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  
+  /* Input Background */
+  --input-bg: #ffffff;
+  
+  /* Transitions */
+  --transition-fast: all 0.2s ease;
+  --transition-base: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --primary: #60a5fa;
+  --primary-rgb: 96, 165, 250;
+  --primary-light: #93c5fd;
+  --primary-dark: #2563eb;
+  --secondary: #a78bfa;
+  --secondary-rgb: 167, 139, 250;
+  --accent: #34d399;
+  --accent-rgb: 52, 211, 153;
+  
+  /* Background Colors */
+  --bg-body: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  --bg-primary: #1e293b;
+  --bg-secondary: #334155;
+  --bg-tertiary: #475569;
+  --panel-bg: #1e293b;
+  
+  /* Text Colors */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-on-primary: #ffffff;
+  
+  /* Border Colors */
+  --border-subtle: #475569;
+  --input-border: #64748b;
+  --input-border-focus: #60a5fa;
+  --panel-border: #475569;
+  
+  /* Shadow Colors */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --input-shadow-focus: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  
+  /* Status Colors */
+  --success: #34d399;
+  --success-rgb: 52, 211, 153;
+  --warning: #fbbf24;
+  --warning-rgb: 251, 191, 36;
+  --danger: #f87171;
+  --danger-rgb: 248, 113, 113;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #60a5fa, #2563eb);
+  --gradient-brand: linear-gradient(135deg, #60a5fa, #a78bfa);
+  
+  /* Input Background */
+  --input-bg: #334155;
+}
+
+/* System prefers dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --primary: #60a5fa;
+    --primary-rgb: 96, 165, 250;
+    --primary-light: #93c5fd;
+    --primary-dark: #2563eb;
+    --secondary: #a78bfa;
+    --secondary-rgb: 167, 139, 250;
+    --accent: #34d399;
+    --accent-rgb: 52, 211, 153;
+    
+    --bg-body: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    --bg-primary: #1e293b;
+    --bg-secondary: #334155;
+    --bg-tertiary: #475569;
+    --panel-bg: #1e293b;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-on-primary: #ffffff;
+    
+    --border-subtle: #475569;
+    --input-border: #64748b;
+    --input-border-focus: #60a5fa;
+    --panel-border: #475569;
+    
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --input-shadow-focus: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    
+    --success: #34d399;
+    --success-rgb: 52, 211, 153;
+    --warning: #fbbf24;
+    --warning-rgb: 251, 191, 36;
+    --danger: #f87171;
+    --danger-rgb: 248, 113, 113;
+    
+    --gradient-primary: linear-gradient(135deg, #60a5fa, #2563eb);
+    --gradient-brand: linear-gradient(135deg, #60a5fa, #a78bfa);
+    
+    --input-bg: #334155;
+  }
+}
