@@ -2161,77 +2161,46 @@ function openAITool(name, url) {
 function showNotification(message) {
   console.log("showNotification called:", message);
   
-  // Try multiple ways to find the notification
+  // Get or create notification
   let notification = document.getElementById("notification");
-  let textEl = document.getElementById("notificationText");
-  
-  // If not found by ID, try by class
   if (!notification) {
-    notification = document.querySelector(".notification");
-  }
-  
-  // If still not found, create it
-  if (!notification) {
-    console.log("Creating notification element...");
     notification = document.createElement("div");
     notification.id = "notification";
-    notification.className = "notification";
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #8B5CF6;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 10000;
-      display: none;
-      align-items: center;
-      gap: 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-    `;
-    
-    const icon = document.createElement("i");
-    icon.className = "fas fa-info-circle";
-    
-    textEl = document.createElement("span");
-    textEl.id = "notificationText";
-    textEl.textContent = message;
-    
-    notification.appendChild(icon);
-    notification.appendChild(textEl);
     document.body.appendChild(notification);
   }
   
-  // Find or create text element
-  if (!textEl) {
-    textEl = notification.querySelector("#notificationText");
-    if (!textEl) {
-      textEl = notification.querySelector("span");
-      if (!textEl) {
-        textEl = document.createElement("span");
-        textEl.id = "notificationText";
-        notification.appendChild(textEl);
-      }
-    }
-  }
+  // Get theme color or use default
+  const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#8B5CF6';
   
-  // Update text
-  textEl.textContent = message;
+  // Simple styling
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${themeColor};
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    max-width: 400px;
+    word-break: break-word;
+  `;
   
-  // Show with animation
-  notification.style.display = "flex";
+  // Set content
+  notification.innerHTML = `<i class="fas fa-info-circle"></i><span>${message}</span>`;
   
-  // Reset any existing animation
-  notification.style.opacity = "0";
-  notification.style.transform = "translateY(-20px)";
-  
-  // Animate in
+  // Show
   setTimeout(() => {
-    notification.style.transition = "opacity 0.3s ease, transform 0.3s ease";
     notification.style.opacity = "1";
     notification.style.transform = "translateY(0)";
   }, 10);
@@ -2246,7 +2215,6 @@ function showNotification(message) {
     }, 300);
   }, 3000);
 }
-
 // ======================================================
 // FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
 // ======================================================
