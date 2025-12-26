@@ -836,7 +836,7 @@ function loadSettings() {
 }
 
 function saveSettings() {
-  const apiKey = (document.getElementById("apiKeyInput").value || "").trim();
+  
   const delay = document.getElementById("autoConvertDelay").value || "60";
   const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
 
