@@ -1,0 +1,797 @@
+/* themes.css - Enhanced Cyberpunk Theme System */
+
+/* ==========================================
+   CSS VARIABLES - THEME SYSTEM
+   ========================================== */
+
+:root {
+  /* THEME NAMES for reference */
+  --theme-simple: 'Simple'; /* ADD THIS LINE */
+  --theme-cyberpunk-neon: 'Cyberpunk Neon';
+  --theme-sunset-glow: 'Sunset Glow';
+  --theme-aurora-magic: 'Aurora Magic';
+  --theme-serenity-bliss: 'Serenity Bliss';
+  --theme-ocean-deep: 'Ocean Deep';
+  --theme-matrix: 'The Matrix';
+  --theme-cybernoir: 'Cyber Noir';
+  --theme-neon-dream: 'Neon Dream';
+  --theme-vaporwave: 'Vaporwave';
+  --theme-toxic-green: 'Toxic Green';
+  --theme-solar-flare: 'Solar Flare';
+  --theme-deep-space: 'Deep Space';
+  --theme-monochrome: 'Monochrome';
+  
+  /* Default theme (will be overridden) - CHANGE TO SIMPLE */
+  --primary: #4F46E5;       /* Indigo */
+  --secondary: #6B7280;     /* Gray */
+  --accent: #8B5CF6;        /* Purple */
+  --danger: #DC2626;        /* Red */
+  --warning: #D97706;       /* Amber */
+  --success: #059669;       /* Emerald */
+  
+  --bg-body: #FFFFFF;       /* White */
+  --bg-secondary: #F9FAFB;  /* Gray 50 */
+  --panel-bg: #FFFFFF;
+  --input-bg: #FFFFFF;
+  
+  --text-primary: #111827;  /* Gray 900 */
+  --text-secondary: #6B7280; /* Gray 500 */
+  --text-muted: #9CA3AF;    /* Gray 400 */
+  --text-on-primary: #FFFFFF;
+  
+  --border-subtle: #E5E7EB; /* Gray 200 */
+  --panel-border: #D1D5DB;  /* Gray 300 */
+  --input-border: #D1D5DB;
+  --input-border-focus: #4F46E5;
+  
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --input-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  
+  --gradient-brand: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%);
+  --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  --gradient-secondary: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
+  
+  --primary-rgb: 79, 70, 229;
+  --secondary-rgb: 107, 114, 128;
+  
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+/* ==========================================
+   THEME 0: SIMPLE (Default - Clean & Minimal)
+   ========================================== */
+[data-theme="simple"] {
+  --primary: #4F46E5;       /* Indigo */
+  --secondary: #6B7280;     /* Gray */
+  --accent: #8B5CF6;        /* Purple */
+  --danger: #DC2626;        /* Red */
+  --warning: #D97706;       /* Amber */
+  --success: #059669;       /* Emerald */
+  
+  --bg-body: #FFFFFF;       /* White */
+  --bg-secondary: #F9FAFB;  /* Gray 50 */
+  --panel-bg: #FFFFFF;
+  --input-bg: #FFFFFF;
+  
+  --text-primary: #111827;  /* Gray 900 */
+  --text-secondary: #6B7280; /* Gray 500 */
+  --text-muted: #9CA3AF;    /* Gray 400 */
+  --text-on-primary: #FFFFFF;
+  
+  --border-subtle: #E5E7EB; /* Gray 200 */
+  --panel-border: #D1D5DB;  /* Gray 300 */
+  --input-border: #D1D5DB;
+  --input-border-focus: #4F46E5;
+  
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --input-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  
+  --gradient-brand: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%);
+  --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  --gradient-secondary: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
+  
+  --primary-rgb: 79, 70, 229;
+  --secondary-rgb: 107, 114, 128;
+}
+
+/* Simple theme background grid */
+body[data-theme="simple"] {
+  background-image: none;
+  background-color: var(--bg-body);
+}
+
+/* Hide scan line for simple theme */
+body[data-theme="simple"] .scan-line {
+  display: none;
+}
+
+/* Simple theme preview */
+.simple-preview {
+  background: linear-gradient(135deg, #F9FAFB, #FFFFFF, #F3F4F6);
+}
+
+.simple-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.2;
+}
+
+.simple-line-h {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: #6B7280;
+}
+
+.simple-line-v {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: #6B7280;
+}
+
+/* ==========================================
+   THEME 1: CYBERPUNK NEON
+   ========================================== */
+[data-theme="cyberpunk-neon"] {
+  --primary: #FF5E00;
+  --secondary: #00F3FF;
+  --accent: #FF00FF;
+  --danger: #FF4444;
+  --warning: #FFD700;
+  --success: #00FF41;
+  
+  --bg-body: #0A0E17;
+  --bg-secondary: #0F1629;
+  --panel-bg: rgba(17, 24, 39, 0.95);
+  --input-bg: rgba(10, 14, 23, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 94, 0, 0.3);
+  --panel-border: rgba(0, 243, 255, 0.3);
+  --input-border: rgba(255, 94, 0, 0.4);
+  --input-border-focus: rgba(0, 243, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+  
+  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+  --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+  
+  --primary-rgb: 255, 94, 0;
+  --secondary-rgb: 0, 243, 255;
+}
+
+/* ==========================================
+   THEME 2: SUNSET GLOW
+   ========================================== */
+[data-theme="sunset-glow"] {
+  --primary: #FF6B35;
+  --secondary: #FFA500;
+  --accent: #FFD700;
+  --danger: #FF4444;
+  --warning: #FF8C00;
+  --success: #00C853;
+  
+  --bg-body: #1A0B0B;
+  --bg-secondary: #2A1515;
+  --panel-bg: rgba(42, 21, 21, 0.95);
+  --input-bg: rgba(26, 11, 11, 0.8);
+  
+  --text-primary: #FFF8F0;
+  --text-secondary: #FFD6BF;
+  --text-muted: #B38B6D;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 107, 53, 0.4);
+  --panel-border: rgba(255, 165, 0, 0.4);
+  --input-border: rgba(255, 107, 53, 0.5);
+  --input-border-focus: rgba(255, 165, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 165, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF6B35 0%, #FFA500 100%);
+  --gradient-primary: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFA500 0%, #FFD700 100%);
+  
+  --primary-rgb: 255, 107, 53;
+  --secondary-rgb: 255, 165, 0;
+}
+
+/* ==========================================
+   THEME 3: AURORA MAGIC
+   ========================================== */
+[data-theme="aurora-magic"] {
+  --primary: #8A2BE2;
+  --secondary: #00CED1;
+  --accent: #9370DB;
+  --danger: #FF4444;
+  --warning: #FFD700;
+  --success: #00FF7F;
+  
+  --bg-body: #0A0A1A;
+  --bg-secondary: #151530;
+  --panel-bg: rgba(21, 21, 48, 0.95);
+  --input-bg: rgba(10, 10, 26, 0.8);
+  
+  --text-primary: #E6E6FA;
+  --text-secondary: #C9C9FF;
+  --text-muted: #8A8ACB;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(138, 43, 226, 0.4);
+  --panel-border: rgba(0, 206, 209, 0.4);
+  --input-border: rgba(138, 43, 226, 0.5);
+  --input-border-focus: rgba(0, 206, 209, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 206, 209, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #8A2BE2 0%, #00CED1 100%);
+  --gradient-primary: linear-gradient(135deg, #8A2BE2 0%, #9B59B6 100%);
+  --gradient-secondary: linear-gradient(135deg, #00CED1 0%, #20B2AA 100%);
+  
+  --primary-rgb: 138, 43, 226;
+  --secondary-rgb: 0, 206, 209;
+}
+
+/* ==========================================
+   THEME 4: SERENITY BLISS
+   ========================================== */
+[data-theme="serenity-bliss"] {
+  --primary: #2E8B57;
+  --secondary: #87CEEB;
+  --accent: #98FB98;
+  --danger: #FF6B6B;
+  --warning: #FFD93D;
+  --success: #4CAF50;
+  
+  --bg-body: #0A140F;
+  --bg-secondary: #1A291F;
+  --panel-bg: rgba(26, 41, 31, 0.95);
+  --input-bg: rgba(10, 20, 15, 0.8);
+  
+  --text-primary: #F0F8FF;
+  --text-secondary: #C1E1C1;
+  --text-muted: #8FBC8F;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(46, 139, 87, 0.4);
+  --panel-border: rgba(135, 206, 235, 0.4);
+  --input-border: rgba(46, 139, 87, 0.5);
+  --input-border-focus: rgba(135, 206, 235, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --input-shadow-focus: 0 0 0 3px rgba(135, 206, 235, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #2E8B57 0%, #87CEEB 100%);
+  --gradient-primary: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  --gradient-secondary: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%);
+  
+  --primary-rgb: 46, 139, 87;
+  --secondary-rgb: 135, 206, 235;
+}
+
+/* ==========================================
+   THEME 5: OCEAN DEEP
+   ========================================== */
+[data-theme="ocean-deep"] {
+  --primary: #1E3A8A;
+  --secondary: #3B82F6;
+  --accent: #06D6A0;
+  --danger: #EF476F;
+  --warning: #FFD166;
+  --success: #06D6A0;
+  
+  --bg-body: #0A0E17;
+  --bg-secondary: #1A2B4A;
+  --panel-bg: rgba(26, 43, 74, 0.95);
+  --input-bg: rgba(10, 14, 23, 0.8);
+  
+  --text-primary: #F0F9FF;
+  --text-secondary: #B3E0FF;
+  --text-muted: #6B8CAF;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(30, 58, 138, 0.4);
+  --panel-border: rgba(59, 130, 246, 0.4);
+  --input-border: rgba(30, 58, 138, 0.5);
+  --input-border-focus: rgba(59, 130, 246, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  --gradient-primary: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+  --gradient-secondary: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  
+  --primary-rgb: 30, 58, 138;
+  --secondary-rgb: 59, 130, 246;
+}
+
+/* ==========================================
+   THEME 6: THE MATRIX
+   ========================================== */
+[data-theme="matrix"] {
+  --primary: #00FF41;
+  --secondary: #008F11;
+  --accent: #003B00;
+  --danger: #FF003C;
+  --warning: #FFFF00;
+  --success: #00FF41;
+  
+  --bg-body: #000000;
+  --bg-secondary: #001100;
+  --panel-bg: rgba(0, 17, 0, 0.95);
+  --input-bg: rgba(0, 0, 0, 0.8);
+  
+  --text-primary: #00FF41;
+  --text-secondary: #008F11;
+  --text-muted: #003B00;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(0, 255, 65, 0.3);
+  --panel-border: rgba(0, 143, 17, 0.4);
+  --input-border: rgba(0, 255, 65, 0.4);
+  --input-border-focus: rgba(0, 255, 65, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 255, 65, 0.2);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 255, 65, 0.4);
+  
+  --gradient-brand: linear-gradient(135deg, #00FF41 0%, #008F11 100%);
+  --gradient-primary: linear-gradient(135deg, #00FF41 0%, #00CC33 100%);
+  --gradient-secondary: linear-gradient(135deg, #008F11 0%, #003B00 100%);
+  
+  --primary-rgb: 0, 255, 65;
+  --secondary-rgb: 0, 143, 17;
+}
+
+/* ==========================================
+   THEME 7: CYBER NOIR
+   ========================================== */
+[data-theme="cybernoir"] {
+  --primary: #FF0000;
+  --secondary: #FFFFFF;
+  --accent: #808080;
+  --danger: #FF0000;
+  --warning: #FFFF00;
+  --success: #00FF00;
+  
+  --bg-body: #000000;
+  --bg-secondary: #1A1A1A;
+  --panel-bg: rgba(26, 26, 26, 0.95);
+  --input-bg: rgba(0, 0, 0, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #666666;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 255, 255, 0.2);
+  --panel-border: rgba(255, 0, 0, 0.4);
+  --input-border: rgba(255, 255, 255, 0.3);
+  --input-border-focus: rgba(255, 0, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 0, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF0000 0%, #FFFFFF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 100%);
+  
+  --primary-rgb: 255, 0, 0;
+  --secondary-rgb: 255, 255, 255;
+}
+
+/* ==========================================
+   THEME 8: NEON DREAM
+   ========================================== */
+[data-theme="neon-dream"] {
+  --primary: #FF00FF;
+  --secondary: #00FFFF;
+  --accent: #FFFF00;
+  --danger: #FF0000;
+  --warning: #FFA500;
+  --success: #00FF00;
+  
+  --bg-body: #0A0A1A;
+  --bg-secondary: #1A1A2A;
+  --panel-bg: rgba(26, 26, 42, 0.95);
+  --input-bg: rgba(10, 10, 26, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCFF;
+  --text-muted: #8888AA;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 0, 255, 0.3);
+  --panel-border: rgba(0, 255, 255, 0.3);
+  --input-border: rgba(255, 0, 255, 0.4);
+  --input-border-focus: rgba(0, 255, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(0, 255, 255, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
+  --gradient-primary: linear-gradient(135deg, #FF00FF 0%, #FF66FF 100%);
+  --gradient-secondary: linear-gradient(135deg, #00FFFF 0%, #66FFFF 100%);
+  
+  --primary-rgb: 255, 0, 255;
+  --secondary-rgb: 0, 255, 255;
+}
+
+/* ==========================================
+   THEME 9: VAPORWAVE
+   ========================================== */
+[data-theme="vaporwave"] {
+  --primary: #FF71CE;
+  --secondary: #01CDFE;
+  --accent: #05FFA1;
+  --danger: #FF6B6B;
+  --warning: #FFE66D;
+  --success: #4ECDC4;
+  
+  --bg-body: #1D1D2B;
+  --bg-secondary: #2A2A3C;
+  --panel-bg: rgba(42, 42, 60, 0.95);
+  --input-bg: rgba(29, 29, 43, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #B39DDB;
+  --text-muted: #9575CD;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 113, 206, 0.4);
+  --panel-border: rgba(1, 205, 254, 0.4);
+  --input-border: rgba(255, 113, 206, 0.5);
+  --input-border-focus: rgba(1, 205, 254, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(1, 205, 254, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF71CE 0%, #01CDFE 100%);
+  --gradient-primary: linear-gradient(135deg, #FF71CE 0%, #FF9EE0 100%);
+  --gradient-secondary: linear-gradient(135deg, #01CDFE 0%, #05FFA1 100%);
+  
+  --primary-rgb: 255, 113, 206;
+  --secondary-rgb: 1, 205, 254;
+}
+
+/* ==========================================
+   THEME 10: TOXIC GREEN
+   ========================================== */
+[data-theme="toxic-green"] {
+  --primary: #39FF14;
+  --secondary: #CCFF00;
+  --accent: #7CFC00;
+  --danger: #FF073A;
+  --warning: #FFD700;
+  --success: #39FF14;
+  
+  --bg-body: #001100;
+  --bg-secondary: #002200;
+  --panel-bg: rgba(0, 34, 0, 0.95);
+  --input-bg: rgba(0, 17, 0, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCFFCC;
+  --text-muted: #00AA00;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(57, 255, 20, 0.4);
+  --panel-border: rgba(204, 255, 0, 0.4);
+  --input-border: rgba(57, 255, 20, 0.5);
+  --input-border-focus: rgba(204, 255, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-shadow-focus: 0 0 0 3px rgba(204, 255, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #39FF14 0%, #CCFF00 100%);
+  --gradient-primary: linear-gradient(135deg, #39FF14 0%, #7CFC00 100%);
+  --gradient-secondary: linear-gradient(135deg, #CCFF00 0%, #FFFF00 100%);
+  
+  --primary-rgb: 57, 255, 20;
+  --secondary-rgb: 204, 255, 0;
+}
+
+/* ==========================================
+   THEME 11: SOLAR FLARE
+   ========================================== */
+[data-theme="solar-flare"] {
+  --primary: #FF9500;
+  --secondary: #FFD700;
+  --accent: #FF4500;
+  --danger: #FF0000;
+  --warning: #FFD700;
+  --success: #32CD32;
+  
+  --bg-body: #1A0B0B;
+  --bg-secondary: #2A1515;
+  --panel-bg: rgba(42, 21, 21, 0.95);
+  --input-bg: rgba(26, 11, 11, 0.8);
+  
+  --text-primary: #FFF8E7;
+  --text-secondary: #FFE4B5;
+  --text-muted: #CD853F;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 149, 0, 0.4);
+  --panel-border: rgba(255, 215, 0, 0.4);
+  --input-border: rgba(255, 149, 0, 0.5);
+  --input-border-focus: rgba(255, 215, 0, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 215, 0, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FF9500 0%, #FFD700 100%);
+  --gradient-primary: linear-gradient(135deg, #FF9500 0%, #FFA500 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFD700 0%, #FFEC8B 100%);
+  
+  --primary-rgb: 255, 149, 0;
+  --secondary-rgb: 255, 215, 0;
+}
+
+/* ==========================================
+   THEME 12: DEEP SPACE
+   ========================================== */
+[data-theme="deep-space"] {
+  --primary: #4169E1;
+  --secondary: #9370DB;
+  --accent: #00BFFF;
+  --danger: #DC143C;
+  --warning: #FFD700;
+  --success: #00FA9A;
+  
+  --bg-body: #000033;
+  --bg-secondary: #0A0A2A;
+  --panel-bg: rgba(10, 10, 42, 0.95);
+  --input-bg: rgba(0, 0, 51, 0.8);
+  
+  --text-primary: #E6E6FF;
+  --text-secondary: #B3B3FF;
+  --text-muted: #6666CC;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(65, 105, 225, 0.4);
+  --panel-border: rgba(147, 112, 219, 0.4);
+  --input-border: rgba(65, 105, 225, 0.5);
+  --input-border-focus: rgba(147, 112, 219, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --input-shadow-focus: 0 0 0 3px rgba(147, 112, 219, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #4169E1 0%, #9370DB 100%);
+  --gradient-primary: linear-gradient(135deg, #4169E1 0%, #6495ED 100%);
+  --gradient-secondary: linear-gradient(135deg, #9370DB 0%, #BA55D3 100%);
+  
+  --primary-rgb: 65, 105, 225;
+  --secondary-rgb: 147, 112, 219;
+}
+
+/* ==========================================
+   THEME 13: MONOCHROME
+   ========================================== */
+[data-theme="monochrome"] {
+  --primary: #FFFFFF;
+  --secondary: #CCCCCC;
+  --accent: #999999;
+  --danger: #666666;
+  --warning: #999999;
+  --success: #CCCCCC;
+  
+  --bg-body: #000000;
+  --bg-secondary: #1A1A1A;
+  --panel-bg: rgba(26, 26, 26, 0.95);
+  --input-bg: rgba(0, 0, 0, 0.8);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #666666;
+  --text-on-primary: #000000;
+  
+  --border-subtle: rgba(255, 255, 255, 0.2);
+  --panel-border: rgba(255, 255, 255, 0.3);
+  --input-border: rgba(255, 255, 255, 0.3);
+  --input-border-focus: rgba(255, 255, 255, 0.8);
+  
+  --shadow-soft: 0 4px 6px rgba(255, 255, 255, 0.1);
+  --input-shadow-focus: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  
+  --gradient-brand: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 100%);
+  --gradient-primary: linear-gradient(135deg, #FFFFFF 0%, #EEEEEE 100%);
+  --gradient-secondary: linear-gradient(135deg, #CCCCCC 0%, #999999 100%);
+  
+  --primary-rgb: 255, 255, 255;
+  --secondary-rgb: 204, 204, 204;
+}
+
+/* ==========================================
+   AUTO THEME (SYSTEM PREFERENCE)
+   ========================================== */
+[data-theme="auto"] {
+  /* Light mode variables */
+  @media (prefers-color-scheme: light) {
+    --primary: #4F46E5;
+    --secondary: #6B7280;
+    --accent: #8B5CF6;
+    --danger: #DC2626;
+    --warning: #D97706;
+    --success: #059669;
+    
+    --bg-body: #FFFFFF;
+    --bg-secondary: #F9FAFB;
+    --panel-bg: #FFFFFF;
+    --input-bg: #FFFFFF;
+    
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+    --text-on-primary: #FFFFFF;
+    
+    --border-subtle: #E5E7EB;
+    --panel-border: #D1D5DB;
+    --input-border: #D1D5DB;
+    --input-border-focus: #4F46E5;
+    
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --input-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    
+    --gradient-brand: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%);
+    --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+    --gradient-secondary: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
+    
+    --primary-rgb: 79, 70, 229;
+    --secondary-rgb: 107, 114, 128;
+  }
+  
+  /* Dark mode variables */
+  @media (prefers-color-scheme: dark) {
+    --primary: #FF5E00;
+    --secondary: #00F3FF;
+    --accent: #FF00FF;
+    --danger: #FF4444;
+    --warning: #FFD700;
+    --success: #00FF41;
+    
+    --bg-body: #0A0E17;
+    --bg-secondary: #0F1629;
+    --panel-bg: rgba(17, 24, 39, 0.95);
+    --input-bg: rgba(10, 14, 23, 0.8);
+    
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --text-on-primary: #000000;
+    
+    --border-subtle: rgba(255, 94, 0, 0.3);
+    --panel-border: rgba(0, 243, 255, 0.3);
+    --input-border: rgba(255, 94, 0, 0.4);
+    --input-border-focus: rgba(0, 243, 255, 0.8);
+    
+    --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --input-shadow-focus: 0 0 0 3px rgba(0, 243, 255, 0.2);
+    
+    --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
+    --gradient-primary: linear-gradient(135deg, #FF5E00 0%, #FF8C42 100%);
+    --gradient-secondary: linear-gradient(135deg, #00F3FF 0%, #008C9E 100%);
+    
+    --primary-rgb: 255, 94, 0;
+    --secondary-rgb: 0, 243, 255;
+  }
+}
+
+/* ==========================================
+   BODY BACKGROUND GRID FOR EACH THEME
+   ========================================== */
+body[data-theme="simple"] {
+  background-image: none;
+  background-color: var(--bg-body);
+}
+
+body[data-theme="cyberpunk-neon"] {
+  background-image: 
+    linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+}
+
+body[data-theme="sunset-glow"] {
+  background-image: 
+    linear-gradient(rgba(139, 69, 19, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 69, 19, 0.2) 1px, transparent 1px);
+}
+
+body[data-theme="aurora-magic"] {
+  background-image: 
+    linear-gradient(rgba(75, 0, 130, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(75, 0, 130, 0.2) 1px, transparent 1px);
+}
+
+body[data-theme="serenity-bliss"] {
+  background-image: 
+    linear-gradient(rgba(46, 139, 87, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 139, 87, 0.2) 1px, transparent 1px);
+}
+
+body[data-theme="ocean-deep"] {
+  background-image: 
+    linear-gradient(rgba(30, 58, 138, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.2) 1px, transparent 1px);
+}
+
+body[data-theme="matrix"] {
+  background-image: 
+    linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="cybernoir"] {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+body[data-theme="neon-dream"] {
+  background-image: 
+    linear-gradient(rgba(255, 0, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="vaporwave"] {
+  background-image: 
+    linear-gradient(rgba(255, 113, 206, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 113, 206, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="toxic-green"] {
+  background-image: 
+    linear-gradient(rgba(57, 255, 20, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 20, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="solar-flare"] {
+  background-image: 
+    linear-gradient(rgba(255, 149, 0, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 149, 0, 0.2) 1px, transparent 1px);
+}
+
+body[data-theme="deep-space"] {
+  background-image: 
+    linear-gradient(rgba(65, 105, 225, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(65, 105, 225, 0.1) 1px, transparent 1px);
+}
+
+body[data-theme="monochrome"] {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+body[data-theme="auto"] {
+  background-image: 
+    linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+}
+
+/* ==========================================
+   THEME TRANSITION ANIMATIONS
+   ========================================== */
+* {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
