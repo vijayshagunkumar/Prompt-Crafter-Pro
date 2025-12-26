@@ -2145,42 +2145,55 @@ function openAITool(name, url) {
 function showNotification(message) {
   console.log("showNotification called:", message);
   
-  // DEBUG: Show in alert first to confirm it works
-  // alert("NOTIFICATION: " + message); // Uncomment to test
-  
   // Get or create notification
   let notification = document.getElementById("notification");
   if (!notification) {
     notification = document.createElement("div");
     notification.id = "notification";
     document.body.appendChild(notification);
-    console.log("Created new notification element");
   }
   
-  // SIMPLE, ALWAYS VISIBLE STYLING
-  notification.style.position = "fixed";
-  notification.style.top = "20px";
-  notification.style.right = "20px";
-  notification.style.color = "#000000"; // Black text
-  notification.style.backgroundColor = "#FFFFFF"; // White background
-  notification.style.border = "2px solid #FF0000"; // Red border for visibility
-  notification.style.padding = "10px";
-  notification.style.zIndex = "10000";
-  notification.style.fontFamily = "'Inter', sans-serif";
-  notification.style.fontSize = "14px";
-  notification.style.fontWeight = "bold"; // Bold for visibility
-  notification.style.opacity = "1";
+  // SUPER MINIMAL - JUST SMALL TEXT
+  notification.style.cssText = `
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    text-align: right;
+    line-height: 1.3;
+  `;
+  
+  // Just the message text
+  notification.textContent = message;
   notification.style.display = "block";
   
-  // Set text
-  notification.textContent = "NOTIFICATION: " + message;
-  
-  console.log("Notification should be visible at top-right with red border");
-  
-  // Auto-hide after 3 seconds
+  // Quick fade in
   setTimeout(() => {
-    notification.style.display = "none";
-  }, 3000);
+    notification.style.opacity = "0.9";
+    notification.style.transform = "translateY(0)";
+  }, 10);
+  
+  // Quick fade out after 2 seconds
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(-5px)";
+    
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 150);
+  }, 2000);
 }
 // ======================================================
 // FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
