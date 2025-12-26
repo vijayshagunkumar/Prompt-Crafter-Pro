@@ -839,16 +839,13 @@ function loadSettings() {
 }
 
 function saveSettings() {
+  console.log("saveSettings() called"); // Add this line
+  
   const delay = document.getElementById("autoConvertDelay").value || "60";
   const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
-  const modelSelect = document.getElementById("modelSelect"); // ✅ Add this line
 
   localStorage.setItem("autoConvertDelay", delay);
   localStorage.setItem("voiceLanguage", voiceLang);
-  
-  if (modelSelect && modelSelect.value) { // ✅ Add this block
-    localStorage.setItem("promptcrafter_model", modelSelect.value);
-  }
 
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
@@ -857,7 +854,9 @@ function saveSettings() {
     window.voiceFeatures.updateVoiceLanguage(voiceLang);
   }
 
+  console.log("Calling showNotification('Settings saved')"); // Add this line
   showNotification("Settings saved");
+  
   const modal = document.getElementById("settingsModal");
   if (modal) modal.style.display = "none";
 }
@@ -2138,24 +2137,44 @@ function openAITool(name, url) {
 
 // Show notification toast
 function showNotification(message) {
+  console.log("showNotification called with message:", message); // Add this
+  
   const notification = document.getElementById("notification");
-  if (!notification) return;
-  
   const textEl = document.getElementById("notificationText");
-  if (textEl) textEl.textContent = message;
   
+  if (!notification) {
+    console.error("Notification element not found!");
+    return;
+  }
+  
+  if (!textEl) {
+    console.error("NotificationText element not found!");
+    return;
+  }
+  
+  textEl.textContent = message;
+  
+  // Hide any previous notification
   notification.style.display = "flex";
+  notification.classList.remove("show");
   
+  // Force reflow
+  void notification.offsetWidth;
+  
+  // Add show class
   setTimeout(() => {
     notification.classList.add("show");
   }, 10);
 
+  // Hide after 3 seconds
   setTimeout(() => {
     notification.classList.remove("show");
     setTimeout(() => {
       notification.style.display = "none";
     }, 300);
   }, 3000);
+  
+  console.log("Notification should be visible now");
 }
 
 // ======================================================
