@@ -2699,3 +2699,7 @@ window.useTemplate = function (id) {
 window.editTemplate = editTemplate;
 window.deleteTemplate = deleteTemplate;
 window.resetEverything = resetEverything;
+// Test the notification
+setTimeout(() => {
+  showNotification("Test notification - this should work!");
+}, 2000);
