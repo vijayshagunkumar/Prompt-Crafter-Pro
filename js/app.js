@@ -2137,44 +2137,43 @@ function openAITool(name, url) {
 
 // Show notification toast
 function showNotification(message) {
-  console.log("showNotification called with message:", message); // Add this
+  // Try multiple times to find the element (in case DOM isn't ready)
+  let attempts = 0;
+  const maxAttempts = 10;
   
-  const notification = document.getElementById("notification");
-  const textEl = document.getElementById("notificationText");
-  
-  if (!notification) {
-    console.error("Notification element not found!");
-    return;
-  }
-  
-  if (!textEl) {
-    console.error("NotificationText element not found!");
-    return;
-  }
-  
-  textEl.textContent = message;
-  
-  // Hide any previous notification
-  notification.style.display = "flex";
-  notification.classList.remove("show");
-  
-  // Force reflow
-  void notification.offsetWidth;
-  
-  // Add show class
-  setTimeout(() => {
-    notification.classList.add("show");
-  }, 10);
+  function tryShow() {
+    const notification = document.getElementById("notification");
+    const textEl = document.getElementById("notificationText");
+    
+    if (notification && textEl) {
+      // Found elements, show notification
+      textEl.textContent = message;
+      notification.style.display = "flex";
+      notification.classList.remove("show");
+      
+      void notification.offsetWidth; // Force reflow
+      
+      setTimeout(() => {
+        notification.classList.add("show");
+      }, 10);
 
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notification.classList.remove("show");
-    setTimeout(() => {
-      notification.style.display = "none";
-    }, 300);
-  }, 3000);
+      setTimeout(() => {
+        notification.classList.remove("show");
+        setTimeout(() => {
+          notification.style.display = "none";
+        }, 300);
+      }, 3000);
+    } else if (attempts < maxAttempts) {
+      // Try again after a short delay
+      attempts++;
+      setTimeout(tryShow, 100);
+    } else {
+      // Fallback: Use alert or console
+      console.log("Notification:", message);
+    }
+  }
   
-  console.log("Notification should be visible now");
+  tryShow();
 }
 
 // ======================================================
