@@ -2197,7 +2197,7 @@ function showNotification(message) {
     
     setTimeout(() => {
       notification.style.display = "none";
-    }, 300);
+    }, 100);
   }, 1000);
 }
 // ======================================================
