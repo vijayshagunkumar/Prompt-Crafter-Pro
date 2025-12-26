@@ -2145,57 +2145,41 @@ function openAITool(name, url) {
 function showNotification(message) {
   console.log("showNotification called:", message);
   
+  // DEBUG: Show in alert first to confirm it works
+  // alert("NOTIFICATION: " + message); // Uncomment to test
+  
   // Get or create notification
   let notification = document.getElementById("notification");
   if (!notification) {
     notification = document.createElement("div");
     notification.id = "notification";
     document.body.appendChild(notification);
+    console.log("Created new notification element");
   }
   
-  // FORCE VISIBLE STYLING
-  notification.style.cssText = `
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    color: #FFFFFF !important; /* WHITE TEXT */
-    background: rgba(0, 0, 0, 0.8) !important; /* DARK SEMI-TRANSPARENT BACKGROUND */
-    padding: 8px 16px !important;
-    border-radius: 4px !important;
-    z-index: 10000 !important;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    opacity: 0 !important;
-    transform: translateY(-20px) !important;
-    transition: opacity 0.3s ease, transform 0.3s ease !important;
-    pointer-events: none !important;
-    text-align: right !important;
-    margin: 0 !important;
-    border: none !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-    max-width: 300px !important;
-    word-wrap: break-word !important;
-  `;
+  // SIMPLE, ALWAYS VISIBLE STYLING
+  notification.style.position = "fixed";
+  notification.style.top = "20px";
+  notification.style.right = "20px";
+  notification.style.color = "#000000"; // Black text
+  notification.style.backgroundColor = "#FFFFFF"; // White background
+  notification.style.border = "2px solid #FF0000"; // Red border for visibility
+  notification.style.padding = "10px";
+  notification.style.zIndex = "10000";
+  notification.style.fontFamily = "'Inter', sans-serif";
+  notification.style.fontSize = "14px";
+  notification.style.fontWeight = "bold"; // Bold for visibility
+  notification.style.opacity = "1";
+  notification.style.display = "block";
   
-  // Just the message text
-  notification.textContent = message;
-  notification.style.display = "block"; // Force display
+  // Set text
+  notification.textContent = "NOTIFICATION: " + message;
   
-  // Show
+  console.log("Notification should be visible at top-right with red border");
+  
+  // Auto-hide after 3 seconds
   setTimeout(() => {
-    notification.style.opacity = "1";
-    notification.style.transform = "translateY(0)";
-  }, 10);
-  
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notification.style.opacity = "0";
-    notification.style.transform = "translateY(-20px)";
-    
-    setTimeout(() => {
-      notification.style.display = "none";
-    }, 300);
+    notification.style.display = "none";
   }, 3000);
 }
 // ======================================================
