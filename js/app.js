@@ -2198,7 +2198,7 @@ function showNotification(message) {
     setTimeout(() => {
       notification.style.display = "none";
     }, 300);
-  }, 1500);
+  }, 1000);
 }
 // ======================================================
 // FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
