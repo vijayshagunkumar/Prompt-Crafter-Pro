@@ -1014,30 +1014,44 @@
     });
     </script>
 
-    <!-- ✅ AI MODEL SELECTOR SCRIPT - UPDATED -->
+    <!-- ✅ AI MODEL SELECTOR SCRIPT - UPDATED WITH FOOTER DISPLAY -->
     <script>
-    // AI Model Selection - Settings Integration
+    // AI Model Selection - Settings Integration with Footer Display
     document.addEventListener('DOMContentLoaded', function() {
         const modelSelect = document.getElementById('modelSelect');
+        const selectedModelName = document.getElementById('selectedModelName');
         
-        if (modelSelect) {
+        if (modelSelect && selectedModelName) {
+            // Model display names (friendly names for footer)
+            const MODEL_DISPLAY_NAMES = {
+                'gemini-1.5-flash-latest': 'Gemini 1.5 Flash',
+                'gemini-1.5-flash': 'Gemini 1.5 Flash',
+                'gpt-4o-mini': 'GPT-4o Mini',
+                'llama-3.1-8b-instant': 'LLaMA 3.1 8B'
+            };
+            
             // Default model
             const DEFAULT_MODEL = 'gemini-1.5-flash-latest';
             const STORAGE_KEY = 'promptcrafter_model';
             
             // Load saved model or use default
             const savedModel = localStorage.getItem(STORAGE_KEY);
-            if (savedModel) {
-                modelSelect.value = savedModel;
-            } else {
-                modelSelect.value = DEFAULT_MODEL;
-                localStorage.setItem(STORAGE_KEY, DEFAULT_MODEL);
-            }
+            let currentModel = savedModel || DEFAULT_MODEL;
+            
+            // Apply to select
+            modelSelect.value = currentModel;
+            
+            // ✅ UPDATE FOOTER DISPLAY
+            updateFooterModelDisplay(currentModel);
             
             // Save on change
             modelSelect.addEventListener('change', function() {
                 const selectedModel = this.value;
                 localStorage.setItem(STORAGE_KEY, selectedModel);
+                currentModel = selectedModel;
+                
+                // ✅ UPDATE FOOTER DISPLAY
+                updateFooterModelDisplay(selectedModel);
                 
                 // Show notification using global function
                 const optionText = this.options[this.selectedIndex].text;
@@ -1061,12 +1075,32 @@
             // Initialize gemini button state
             const geminiBtn = document.getElementById('geminiBtn');
             if (geminiBtn) {
-                if (modelSelect.value === 'gemini-1.5-flash-latest') {
+                if (currentModel === 'gemini-1.5-flash-latest') {
                     geminiBtn.style.opacity = '1';
                     geminiBtn.style.cursor = 'pointer';
                 } else {
                     geminiBtn.style.opacity = '0.6';
                     geminiBtn.style.cursor = 'not-allowed';
+                }
+            }
+            
+            // Function to update footer display
+            function updateFooterModelDisplay(modelValue) {
+                if (!selectedModelName) return;
+                
+                // Get display name
+                const displayName = MODEL_DISPLAY_NAMES[modelValue] || modelValue;
+                selectedModelName.textContent = displayName;
+                
+                // Add model-specific class for color coding
+                selectedModelName.className = ''; // Clear previous classes
+                
+                if (modelValue.includes('gemini')) {
+                    selectedModelName.classList.add('model-gemini');
+                } else if (modelValue.includes('gpt')) {
+                    selectedModelName.classList.add('model-gpt');
+                } else if (modelValue.includes('llama')) {
+                    selectedModelName.classList.add('model-llama');
                 }
             }
         }
