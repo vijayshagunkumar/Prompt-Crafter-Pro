@@ -1,82 +1,81 @@
-/* styles/variables.css – Cyberpunk/Neon Theme for PromptCraft */
+/* styles/variables.css - Blue/White Theme for PromptCraft */
 
 :root {
-  /* CYBERPUNK NEON COLOR PALETTE */
-  --primary: #FF5E00;                 /* Neon Orange - Primary accent */
-  --primary-dark: #FF4500;            /* Darker orange */
-  --primary-light: #FF8C42;           /* Lighter orange */
-  --secondary: #00F3FF;               /* Cyber Blue - Secondary accent */
-  --accent: #FF00FF;                  /* Neon Pink/Magenta */
-  --matrix-green: #00FF41;            /* Matrix green for special highlights */
+  /* BLUE/WHITE COLOR PALETTE */
+  --primary: #3b82f6;                 /* Blue - Primary accent */
+  --primary-dark: #1d4ed8;            /* Darker blue */
+  --primary-light: #60a5fa;           /* Lighter blue */
+  --secondary: #10b981;               /* Green - Secondary accent */
+  --accent: #8b5cf6;                  /* Purple */
+  --danger: #ef4444;                  /* Red */
+  --warning: #f59e0b;                 /* Amber */
+  --success: #10b981;                 /* Green */
   
-  /* DARK BACKGROUNDS */
-  --bg-body: #0A0E17;                 /* Deep navy blue - main background */
-  --bg-primary: #111827;              /* Dark panel background */
-  --bg-secondary: #1E293B;            /* Slightly lighter dark */
-  --bg-tertiary: #2D3748;             /* Even lighter for contrast */
+  /* LIGHT BACKGROUNDS */
+  --bg-body: #f8fafc;                 /* Light blue-gray - main background */
+  --bg-primary: #ffffff;              /* White panel background */
+  --bg-secondary: #f1f5f9;            /* Slightly darker */
+  --bg-tertiary: #e2e8f0;             /* Even darker for contrast */
   
   /* PANELS / CARDS */
-  --panel-bg: #111827;                /* Card backgrounds */
-  --panel-border: #FF5E00;            /* Neon orange borders */
+  --panel-bg: #ffffff;                /* Card backgrounds */
+  --panel-border: #cbd5e1;            /* Subtle gray borders */
   
   /* INPUTS */
-  --input-bg: #0A0E17;                /* Dark input backgrounds */
-  --input-border: #2D3748;            /* Subtle borders */
-  --input-border-focus: #FF5E00;      /* Neon orange on focus */
-  --input-shadow-focus: 0 0 0 3px rgba(255, 94, 0, 0.2); /* Orange glow */
+  --input-bg: #ffffff;                /* White input backgrounds */
+  --input-border: #cbd5e1;            /* Subtle gray borders */
+  --input-border-focus: #3b82f6;      /* Blue on focus */
+  --input-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.1); /* Blue glow */
   
   /* TEXT */
-  --text-primary: #F1F5F9;            /* Bright white for readability */
-  --text-secondary: #94A3B8;          /* Light gray for secondary text */
-  --text-muted: #64748B;              /* Gray for muted text */
-  --text-light: #CBD5E1;              /* Light gray */
-  --text-on-primary: #000000;         /* Black text on orange buttons */
+  --text-primary: #1e293b;            /* Dark blue-gray for readability */
+  --text-secondary: #64748b;          /* Medium gray for secondary text */
+  --text-muted: #94a3b8;              /* Light gray for muted text */
+  --text-light: #cbd5e1;              /* Very light gray */
+  --text-on-primary: #ffffff;         /* White text on colored buttons */
   
   /* BORDERS */
-  --border-subtle: #2D3748;           /* Subtle borders */
+  --border-subtle: #e2e8f0;           /* Subtle borders */
   
-  /* SHADOWS WITH GLOW EFFECTS */
-  --shadow-soft: 0 1px 3px rgba(255, 94, 0, 0.2);
-  --shadow-card: 0 4px 6px -1px rgba(255, 94, 0, 0.3);
-  --shadow-elevated: 0 10px 15px -3px rgba(255, 94, 0, 0.4);
+  /* SHADOWS */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   
-  /* SHARP CORNERS (Cyberpunk aesthetic) */
-  --radius-sm: 2px;                   /* Very sharp */
-  --radius-md: 4px;                   /* Moderately sharp */
-  --radius-lg: 8px;                   /* Slightly rounded */
+  /* CORNERS */
+  --radius-sm: 4px;                   /* Small radius */
+  --radius-md: 8px;                   /* Medium radius */
+  --radius-lg: 12px;                  /* Large radius */
   --radius-full: 999px;               /* For pills and circles */
   
   /* TRANSITIONS */
   --transition-fast: all 0.2s ease-out;
+  --transition-medium: all 0.3s ease-out;
+  --transition-slow: all 0.5s ease-out;
   
   /* GRADIENTS */
-  --gradient-brand: linear-gradient(135deg, #FF5E00 0%, #00F3FF 100%);
-  --gradient-subtle: linear-gradient(135deg, #111827 0%, #0A0E17 100%);
-  --gradient-neon: linear-gradient(90deg, #FF5E00, #FF00FF, #00F3FF);
+  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  --gradient-secondary: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   
   /* TOAST/NOTIFICATION */
-  --toast-bg: #1E293B;
-  --toast-text: #00F3FF;
+  --toast-bg: #ffffff;
+  --toast-border: #cbd5e1;
+  --toast-text: #1e293b;
   
-  /* AI TOOL COLORS (Cyberpunk versions) */
-  --chatgpt: #74AA9C;
-  --chatgpt-purple: #AB68FF;
-  --claude: #DE7356;
-  --gemini: #4796E3;
-  --perplexity: #20808D;
-  --deepseek: #00F3FF;                /* Matches cyber blue */
-  --copilot: #199FD7;
-  --grok: #FF5E00;                    /* Matches neon orange */
+  /* AI TOOL COLORS (Blue/White theme versions) */
+  --chatgpt: #74aa9c;
+  --claude: #de7356;
+  --gemini: #4796e3;
+  --perplexity: #20808d;
+  --deepseek: #3b82f6;                /* Matches primary blue */
+  --copilot: #199fd7;
+  --grok: #8b5cf6;                    /* Matches accent purple */
   
   /* THEME VARIABLES */
-  --primary-color: #FF5E00;
-  --secondary-color: #00F3FF;
-  --accent-color: #FF00FF;
-  --gradient-primary: linear-gradient(135deg, #FF5E00, #00F3FF);
-  --primary-rgb: 255, 94, 0;
-  
-  /* GLOW INTENSITIES */
-  --glow-soft: 0 0 10px;
-  --glow-medium: 0 0 20px;
-  --glow-strong: 0 0 30px;
+  --primary-color: #3b82f6;
+  --secondary-color: #10b981;
+  --accent-color: #8b5cf6;
+  --primary-rgb: 59, 130, 246;
+  --secondary-rgb: 16, 185, 129;
 }
