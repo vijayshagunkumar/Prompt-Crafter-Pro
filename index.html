@@ -354,24 +354,29 @@
         </main>
 
         <!-- FOOTER -->
-        <footer class="footer">
-            <div class="footer-left">
-                <span>
-                    <i class="fas fa-shield-alt"></i> Local processing • UAT- @Raghav
-                </span>
-                <span class="dot">•</span>
-                <span>
-                    <i class="fas fa-code-branch"></i> v3.1
-                </span>
-            </div>
-            <div class="footer-right">
-                <div id="usageCount">
-                    <i class="fas fa-bolt"></i> 0 prompts generated
-                </div>
-            </div>
-        </footer>
+       
+<footer class="footer">
+    <div class="footer-left">
+        <span>
+            <i class="fas fa-shield-alt"></i> Cloudflare Worker • Multi-Model AI
+        </span>
+        <span class="dot">•</span>
+        <!-- ✅ ADD THIS: Current Model Display -->
+        <span id="currentModelDisplay">
+            <i class="fas fa-brain"></i> Model: <span id="selectedModelName">Loading...</span>
+        </span>
+        <span class="dot">•</span>
+        <span>
+            <i class="fas fa-code-branch"></i> v4.2.0
+        </span>
     </div>
-
+    <div class="footer-right">
+        <div id="usageCount">
+            <i class="fas fa-bolt"></i> <span id="promptCount">0</span> prompts generated
+        </div>
+    </div>
+</footer>
+   </div>
     <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="modal-backdrop" style="display: none;">
         <div class="modal">
