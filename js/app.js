@@ -839,12 +839,16 @@ function loadSettings() {
 }
 
 function saveSettings() {
-  
   const delay = document.getElementById("autoConvertDelay").value || "60";
   const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
+  const modelSelect = document.getElementById("modelSelect"); // ✅ Add this line
 
   localStorage.setItem("autoConvertDelay", delay);
   localStorage.setItem("voiceLanguage", voiceLang);
+  
+  if (modelSelect && modelSelect.value) { // ✅ Add this block
+    localStorage.setItem("promptcrafter_model", modelSelect.value);
+  }
 
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
