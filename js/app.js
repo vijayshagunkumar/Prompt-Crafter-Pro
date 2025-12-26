@@ -402,7 +402,7 @@ function initializeApp() {
   
   const presetInfoEl = document.getElementById("presetInfo");
   if (presetInfoEl) {
-    presetInfoEl.style.display = "none"; // Keep hidden permanently (Issue #3)
+    presetInfoEl.style.display = "none";
   }
 
   const req = document.getElementById("requirement");
@@ -410,6 +410,28 @@ function initializeApp() {
 
   setLaunchButtonsEnabled(false);
   initializeTextareaSizing();
+  
+  // ✅ DEBUG: Check what elements exist
+  console.log("Checking for notification elements...");
+  const notification = document.getElementById("notification");
+  const notificationText = document.getElementById("notificationText");
+  console.log("notification element:", notification);
+  console.log("notificationText element:", notificationText);
+  
+  if (!notification) {
+    console.log("Creating missing notification element...");
+    // Create it manually
+    const newNotification = document.createElement("div");
+    newNotification.id = "notification";
+    newNotification.className = "notification";
+    newNotification.innerHTML = '<i class="fas fa-info-circle"></i><span id="notificationText">Test</span>';
+    document.body.appendChild(newNotification);
+  }
+  
+  // Test
+  setTimeout(() => {
+    showNotification("Test - Can you see this?");
+  }, 1000);
 }
 
 // ===========================================
@@ -2137,43 +2159,92 @@ function openAITool(name, url) {
 
 // Show notification toast
 function showNotification(message) {
-  // Try multiple times to find the element (in case DOM isn't ready)
-  let attempts = 0;
-  const maxAttempts = 10;
+  console.log("showNotification called:", message);
   
-  function tryShow() {
-    const notification = document.getElementById("notification");
-    const textEl = document.getElementById("notificationText");
+  // Try multiple ways to find the notification
+  let notification = document.getElementById("notification");
+  let textEl = document.getElementById("notificationText");
+  
+  // If not found by ID, try by class
+  if (!notification) {
+    notification = document.querySelector(".notification");
+  }
+  
+  // If still not found, create it
+  if (!notification) {
+    console.log("Creating notification element...");
+    notification = document.createElement("div");
+    notification.id = "notification";
+    notification.className = "notification";
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #8B5CF6;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+    `;
     
-    if (notification && textEl) {
-      // Found elements, show notification
-      textEl.textContent = message;
-      notification.style.display = "flex";
-      notification.classList.remove("show");
-      
-      void notification.offsetWidth; // Force reflow
-      
-      setTimeout(() => {
-        notification.classList.add("show");
-      }, 10);
-
-      setTimeout(() => {
-        notification.classList.remove("show");
-        setTimeout(() => {
-          notification.style.display = "none";
-        }, 300);
-      }, 3000);
-    } else if (attempts < maxAttempts) {
-      // Try again after a short delay
-      attempts++;
-      setTimeout(tryShow, 100);
-    } else {
-      // Fallback: Use alert or console
-      console.log("Notification:", message);
+    const icon = document.createElement("i");
+    icon.className = "fas fa-info-circle";
+    
+    textEl = document.createElement("span");
+    textEl.id = "notificationText";
+    textEl.textContent = message;
+    
+    notification.appendChild(icon);
+    notification.appendChild(textEl);
+    document.body.appendChild(notification);
+  }
+  
+  // Find or create text element
+  if (!textEl) {
+    textEl = notification.querySelector("#notificationText");
+    if (!textEl) {
+      textEl = notification.querySelector("span");
+      if (!textEl) {
+        textEl = document.createElement("span");
+        textEl.id = "notificationText";
+        notification.appendChild(textEl);
+      }
     }
   }
   
-  tryShow();
+  // Update text
+  textEl.textContent = message;
+  
+  // Show with animation
+  notification.style.display = "flex";
+  
+  // Reset any existing animation
+  notification.style.opacity = "0";
+  notification.style.transform = "translateY(-20px)";
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+    notification.style.opacity = "1";
+    notification.style.transform = "translateY(0)";
+  }, 10);
+  
+  // Hide after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(-20px)";
+    
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 300);
+  }, 3000);
 }
 
 // ======================================================
