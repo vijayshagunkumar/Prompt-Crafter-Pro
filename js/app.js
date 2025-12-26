@@ -2153,30 +2153,34 @@ function showNotification(message) {
     document.body.appendChild(notification);
   }
   
-  // ULTRA SIMPLE - JUST TEXT
+  // FORCE VISIBLE STYLING
   notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    color: var(--text-primary);
-    z-index: 10000;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
-    text-align: right;
-    padding: 0;
-    margin: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    color: #FFFFFF !important; /* WHITE TEXT */
+    background: rgba(0, 0, 0, 0.8) !important; /* DARK SEMI-TRANSPARENT BACKGROUND */
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    z-index: 10000 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    opacity: 0 !important;
+    transform: translateY(-20px) !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+    pointer-events: none !important;
+    text-align: right !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    max-width: 300px !important;
+    word-wrap: break-word !important;
   `;
   
   // Just the message text
   notification.textContent = message;
+  notification.style.display = "block"; // Force display
   
   // Show
   setTimeout(() => {
