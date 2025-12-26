@@ -2143,6 +2143,8 @@ function openAITool(name, url) {
 
 // Show notification toast
 function showNotification(message) {
+  console.log("showNotification called:", message);
+  
   // Get or create notification
   let notification = document.getElementById("notification");
   if (!notification) {
@@ -2151,35 +2153,30 @@ function showNotification(message) {
     document.body.appendChild(notification);
   }
   
-  // Get theme color or use default
-  const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#8B5CF6';
-  
-  // Simple styling
+  // ULTRA SIMPLE - JUST TEXT
   notification.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
-    background: ${themeColor};
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    color: var(--text-primary);
     z-index: 10000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 500;
     opacity: 0;
     transform: translateY(-20px);
     transition: opacity 0.3s ease, transform 0.3s ease;
-    max-width: 400px;
-    word-break: break-word;
+    pointer-events: none;
+    text-align: right;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
   `;
   
-  // Set content
-  notification.innerHTML = `<i class="fas fa-info-circle"></i><span>${message}</span>`;
+  // Just the message text
+  notification.textContent = message;
   
   // Show
   setTimeout(() => {
