@@ -2159,8 +2159,7 @@ function openAITool(name, url) {
 
 // Show notification toast
 function showNotification(message) {
-  console.log("showNotification called:", message);
-  
+   
   // Get or create notification
   let notification = document.getElementById("notification");
   if (!notification) {
