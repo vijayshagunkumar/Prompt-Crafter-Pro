@@ -2190,7 +2190,7 @@ function showNotification(message) {
     notification.style.transform = "translateX(-50%) translateY(0)";
   }, 10);
   
-  // Hide after 2.5 seconds
+  // Hide after 1.5 seconds
   setTimeout(() => {
     notification.style.opacity = "0";
     notification.style.transform = "translateX(-50%) translateY(-20px)";
@@ -2198,7 +2198,7 @@ function showNotification(message) {
     setTimeout(() => {
       notification.style.display = "none";
     }, 300);
-  }, 2500);
+  }, 1500);
 }
 // ======================================================
 // FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
