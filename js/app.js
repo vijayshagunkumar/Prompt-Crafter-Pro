@@ -402,7 +402,7 @@ function initializeApp() {
   
   const presetInfoEl = document.getElementById("presetInfo");
   if (presetInfoEl) {
-    presetInfoEl.style.display = "none";
+    presetInfoEl.style.display = "none"; // Keep hidden permanently (Issue #3)
   }
 
   const req = document.getElementById("requirement");
@@ -411,6 +411,10 @@ function initializeApp() {
   setLaunchButtonsEnabled(false);
   initializeTextareaSizing();
   
+  // REMOVE THIS TEST CODE IF IT EXISTS:
+  // setTimeout(() => {
+  //   showNotification("Test - Can you see this?");
+  // }, 1000);
 }
 
 // ===========================================
@@ -840,13 +844,16 @@ function loadSettings() {
 }
 
 function saveSettings() {
-  console.log("saveSettings() called"); // Add this line
-  
   const delay = document.getElementById("autoConvertDelay").value || "60";
   const voiceLang = document.getElementById("voiceLanguage").value || "en-US";
+  const modelSelect = document.getElementById("modelSelect");
 
   localStorage.setItem("autoConvertDelay", delay);
   localStorage.setItem("voiceLanguage", voiceLang);
+  
+  if (modelSelect && modelSelect.value) {
+    localStorage.setItem("promptcrafter_model", modelSelect.value);
+  }
 
   autoConvertDelay = parseInt(delay, 10);
   autoConvertCountdown = autoConvertDelay;
@@ -855,9 +862,7 @@ function saveSettings() {
     window.voiceFeatures.updateVoiceLanguage(voiceLang);
   }
 
-  console.log("Calling showNotification('Settings saved')"); // Add this line
   showNotification("Settings saved");
-  
   const modal = document.getElementById("settingsModal");
   if (modal) modal.style.display = "none";
 }
