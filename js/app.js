@@ -822,13 +822,16 @@ function loadSettings() {
   
   const delay = localStorage.getItem("autoConvertDelay") || "60";
   const voiceLang = localStorage.getItem("voiceLanguage") || "en-US";
+  const savedModel = localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash-latest";
 
   const autoDelayInput = document.getElementById("autoConvertDelay");
   const voiceLanguageSelect = document.getElementById("voiceLanguage");
+  const modelSelect = document.getElementById("modelSelect");
   const delayValue = document.getElementById("delayValue");
 
   if (autoDelayInput) autoDelayInput.value = delay;
   if (voiceLanguageSelect) voiceLanguageSelect.value = voiceLang;
+  if (modelSelect) modelSelect.value = savedModel;
   if (delayValue) delayValue.textContent = `Current: ${delay} seconds`;
 
   autoConvertDelay = parseInt(delay, 10);
