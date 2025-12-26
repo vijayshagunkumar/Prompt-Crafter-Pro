@@ -411,27 +411,6 @@ function initializeApp() {
   setLaunchButtonsEnabled(false);
   initializeTextareaSizing();
   
-  // ✅ DEBUG: Check what elements exist
-  console.log("Checking for notification elements...");
-  const notification = document.getElementById("notification");
-  const notificationText = document.getElementById("notificationText");
-  console.log("notification element:", notification);
-  console.log("notificationText element:", notificationText);
-  
-  if (!notification) {
-    console.log("Creating missing notification element...");
-    // Create it manually
-    const newNotification = document.createElement("div");
-    newNotification.id = "notification";
-    newNotification.className = "notification";
-    newNotification.innerHTML = '<i class="fas fa-info-circle"></i><span id="notificationText">Test</span>';
-    document.body.appendChild(newNotification);
-  }
-  
-  // Test
-  setTimeout(() => {
-    showNotification("Test - Can you see this?");
-  }, 1000);
 }
 
 // ===========================================
