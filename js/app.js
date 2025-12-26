@@ -2153,47 +2153,52 @@ function showNotification(message) {
     document.body.appendChild(notification);
   }
   
-  // SUPER MINIMAL - JUST SMALL TEXT
+  // CENTERED AT TOP - EASY TO SEE
   notification.style.cssText = `
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    color: var(--text-secondary);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    opacity: 0;
-    transform: translateY(-5px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-    pointer-events: none;
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
-    text-align: right;
-    line-height: 1.3;
+    position: fixed !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(-20px) !important;
+    color: var(--text-primary) !important;
+    background: var(--card-bg) !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    z-index: 10000 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    max-width: 80% !important;
+    word-wrap: break-word !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
   `;
   
   // Just the message text
   notification.textContent = message;
   notification.style.display = "block";
   
-  // Quick fade in
+  // Show - slide down from top
   setTimeout(() => {
-    notification.style.opacity = "0.9";
-    notification.style.transform = "translateY(0)";
+    notification.style.opacity = "1";
+    notification.style.transform = "translateX(-50%) translateY(0)";
   }, 10);
   
-  // Quick fade out after 2 seconds
+  // Hide after 2.5 seconds
   setTimeout(() => {
     notification.style.opacity = "0";
-    notification.style.transform = "translateY(-5px)";
+    notification.style.transform = "translateX(-50%) translateY(-20px)";
     
     setTimeout(() => {
       notification.style.display = "none";
-    }, 150);
-  }, 2000);
+    }, 300);
+  }, 2500);
 }
 // ======================================================
 // FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
