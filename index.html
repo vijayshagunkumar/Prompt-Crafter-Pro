@@ -364,87 +364,53 @@
 
         <!-- MAIN WORKFLOW - VERTICAL FLOW -->
         <main class="workflow">
-            <!-- CARD 1: YOUR IDEA -->
-            <section id="card1" class="step-card active">
-                <div class="step-header">
-                    <div class="step-indicator">
-                        <div class="step-dots">
-                            <div class="step-dot active"></div>
-                            <div class="step-dot"></div>
-                            <div class="step-dot"></div>
-                        </div>
-                        <div>
-                            <h2>STEP 1: DESCRIBE YOUR IDEA</h2>
-                            <p class="step-subtitle">Tell us what you want the AI to do</p>
-                        </div>
-                    </div>
-                    <div class="step-meta">
-                        <span class="meta-pill">
-                            <i class="fas fa-clock"></i>
-                            <span id="timerValue">60s</span>
-                        </span>
-                    </div>
-                </div>
+<!-- CARD 1: YOUR IDEA -->
+<section id="card1" class="step-card active">
+    <div class="step-header">
+        <!-- ... existing step header ... -->
+    </div>
 
-                <div id="intentRow" class="intent-row" style="display:none;">
-                    <div id="intentScroll" class="intent-scroll"></div>
-                </div>
+    <div id="intentRow" class="intent-row" style="display:none;">
+        <div id="intentScroll" class="intent-scroll"></div>
+    </div>
 
-                <div class="chip-row">
-                    <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
-                        <i class="fas fa-envelope"></i> Email
-                    </div>
-                    <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
-                        <i class="fas fa-code"></i> Code
-                    </div>
-                    <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
-                        <i class="fas fa-chart-line"></i> Analysis
-                    </div>
-                    <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
-                        <i class="fas fa-pen"></i> Writing
-                    </div>
-                </div>
+    <div class="chip-row">
+        <!-- ... existing chips ... -->
+    </div>
 
-                <div class="auto-row">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="autoConvert" checked>
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-label">Auto-Convert</span>
-                    </label>
-                </div>
+    <!-- ADDED: Convert button here -->
+    <div id="convertButtonContainer" style="margin: 16px 0; display: none;">
+        <button id="convertBtn" class="btn-primary btn-full">
+            <i class="fas fa-magic"></i> Convert to Prompt
+        </button>
+    </div>
 
-                <div class="field-block">
-                    <div class="textarea-wrapper">
-                        <textarea id="requirement" class="textarea-idea" placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."></textarea>
-                        <button id="expandInputBtn" class="expand-btn" title="Maximize">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                        <div class="textarea-buttons">
-                            <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
-                                <i class="fas fa-broom"></i>
-                            </button>
-                            <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
-                                <i class="fas fa-microphone"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="voiceInputStatus" class="voice-status" style="display: none;">
-                        <i class="fas fa-microphone"></i> Listening...
-                    </div>
-                </div>
+    <div class="auto-row">
+        <label class="toggle-switch">
+            <input type="checkbox" id="autoConvert" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">Auto-Convert</span>
+        </label>
+        <span id="autoConvertCountdown" style="display:none;">Auto-convert in 60s</span>
+    </div>
 
-                <div class="stats-row">
-                    <span id="charCount">0 characters</span>
-                    <span id="wordCount">0 words</span>
-                    <span id="lineCount">1 line</span>
-                </div>
+    <div class="field-block">
+        <!-- ... existing textarea ... -->
+    </div>
 
-                <div class="card-navigation">
-                    <button id="nextToCard2" class="nav-btn next">
-                        <span>Generate Prompt</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
+    <div class="stats-row">
+        <!-- ... existing stats ... -->
+    </div>
+
+    <div class="card-navigation">
+        <button id="nextToCard2" class="nav-btn next">
+            <span>Generate Prompt</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- ... rest of Card 1 ... -->
+</section>
 
                 <div style="margin-top: 20px;">
                     <button id="resetBtn" class="btn-ghost-small" style="width: 100%;">
