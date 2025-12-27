@@ -1986,6 +1986,12 @@ async function generatePrompt() {
     return "";
   }
 
+  // FIX: Safe check for convertBtn
+  if (convertBtn) {
+    convertBtn.disabled = true;
+    convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+  }
+
   const { role, preset: autoPreset, label } = getRoleAndPreset(raw);
   lastRole = role;
   lastTaskLabel = label;
@@ -2002,9 +2008,6 @@ async function generatePrompt() {
   if (usageElement) {
     usageElement.innerHTML = `<i class="fas fa-bolt"></i>${usageCount} prompts generated`;
   }
-
-  convertBtn.disabled = true;
-  convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
 
   let generatedPrompt;
 
@@ -2089,8 +2092,11 @@ async function generatePrompt() {
       showNotification("Using offline generation");
     }
   } finally {
-    convertBtn.disabled = false;
-    convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert';
+    // FIX: Safe check for convertBtn
+    if (convertBtn) {
+      convertBtn.disabled = false;
+      convertBtn.innerHTML = '<i class="fas fa-magic"></i> Convert to Prompt';
+    }
   }
 
   return generatedPrompt;
