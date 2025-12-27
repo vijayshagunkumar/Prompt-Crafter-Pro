@@ -87,6 +87,20 @@ const themes = [
   }
 ];
 
+// Fix settings modal positioning
+function fixModalPositioning() {
+    const modal = document.getElementById('themeModal');
+    if (modal) {
+        modal.style.zIndex = '10001';
+    }
+    
+    // Also fix settings modal if it exists
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal) {
+        settingsModal.style.zIndex = '10002';
+    }
+}
+
 // Initialize theme system
 function initThemeSystem() {
   // Load saved theme or default
@@ -275,7 +289,7 @@ function openThemeModal() {
   }
   
   // Show modal
-  modal.style.display = 'block';
+  modal.style.display = 'flex'; // Changed from 'block' to 'flex'
   
   // Add close handler
   const closeBtn = document.getElementById('closeThemeBtn');
@@ -294,7 +308,7 @@ function openThemeModal() {
   
   // Close on escape key
   document.addEventListener('keydown', function closeOnEscape(e) {
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && modal.style.display === 'flex') {
       modal.style.display = 'none';
       document.removeEventListener('keydown', closeOnEscape);
     }
@@ -318,6 +332,9 @@ function resetToDefaultTheme() {
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize theme system
   initThemeSystem();
+  
+  // Fix modal positioning
+  fixModalPositioning();
   
   // Setup theme button click handler
   const themeBtn = document.getElementById('themeToggleBtn');
