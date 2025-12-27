@@ -2732,3 +2732,40 @@ window.resetEverything = resetEverything;
 setTimeout(() => {
   showNotification("Test notification - this should work!");
 }, 2000);
+// ... all your existing code ...
+
+// Test the notification
+setTimeout(() => {
+  showNotification("Test notification - this should work!");
+}, 2000);
+
+// ==========================================
+// ADD THE CARD TRANSITIONS CODE HERE
+// ==========================================
+
+// Fix for Card Transitions
+function initializeCardTransitions() {
+    const cards = document.querySelectorAll('.step-card');
+    
+    cards.forEach((card, index) => {
+        // Set initial states
+        if (index === 0) {
+            card.classList.add('active');
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+            card.style.position = 'relative';
+        } else {
+            card.classList.remove('active');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.position = 'absolute';
+        }
+    });
+}
+
+// Update the existing initializeApp function (DON'T ADD A NEW ONE)
+// Find the existing initializeApp function and add the line there
+
+// ==========================================
+// END OF ADDED CODE
+// ==========================================
