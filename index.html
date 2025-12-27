@@ -367,7 +367,23 @@
 <!-- CARD 1: YOUR IDEA -->
 <section id="card1" class="step-card active">
     <div class="step-header">
-        <!-- ... existing step header ... -->
+        <div class="step-indicator">
+            <div class="step-dots">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+            <div>
+                <h2>STEP 1: DESCRIBE YOUR IDEA</h2>
+                <p class="step-subtitle">Tell us what you want the AI to do</p>
+            </div>
+        </div>
+        <div class="step-meta">
+            <span class="meta-pill">
+                <i class="fas fa-clock"></i>
+                <span id="timerValue">60s</span>
+            </span>
+        </div>
     </div>
 
     <div id="intentRow" class="intent-row" style="display:none;">
@@ -375,7 +391,18 @@
     </div>
 
     <div class="chip-row">
-        <!-- ... existing chips ... -->
+        <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
+            <i class="fas fa-envelope"></i> Email
+        </div>
+        <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
+            <i class="fas fa-code"></i> Code
+        </div>
+        <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
+            <i class="fas fa-chart-line"></i> Analysis
+        </div>
+        <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
+            <i class="fas fa-pen"></i> Writing
+        </div>
     </div>
 
     <!-- ADDED: Convert button here -->
@@ -395,11 +422,29 @@
     </div>
 
     <div class="field-block">
-        <!-- ... existing textarea ... -->
+        <div class="textarea-wrapper">
+            <textarea id="requirement" class="textarea-idea" placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."></textarea>
+            <button id="expandInputBtn" class="expand-btn" title="Maximize">
+                <i class="fas fa-expand-alt"></i>
+            </button>
+            <div class="textarea-buttons">
+                <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
+                    <i class="fas fa-broom"></i>
+                </button>
+                <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+        </div>
+        <div id="voiceInputStatus" class="voice-status" style="display: none;">
+            <i class="fas fa-microphone"></i> Listening...
+        </div>
     </div>
 
     <div class="stats-row">
-        <!-- ... existing stats ... -->
+        <span id="charCount">0 characters</span>
+        <span id="wordCount">0 words</span>
+        <span id="lineCount">1 line</span>
     </div>
 
     <div class="card-navigation">
@@ -409,50 +454,47 @@
         </button>
     </div>
 
-    <!-- ... rest of Card 1 ... -->
-</section>
+    <div style="margin-top: 20px;">
+        <button id="resetBtn" class="btn-ghost-small" style="width: 100%;">
+            <i class="fas fa-redo"></i> Reset Everything
+        </button>
+    </div>
 
-                <div style="margin-top: 20px;">
-                    <button id="resetBtn" class="btn-ghost-small" style="width: 100%;">
-                        <i class="fas fa-redo"></i> Reset Everything
+    <div class="template-section" style="margin-top: 20px;">
+        <div class="template-toggle" id="toggleTemplatesBtn">
+            <div class="template-toggle-left">
+                <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
+                <span>Template Library</span>
+            </div>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        
+        <div id="templatesPanel" class="templates-panel" style="display: none;">
+            <div class="templates-header">
+                <div class="templates-header-left">
+                    <div class="templates-title">Templates</div>
+                    <div class="templates-sub">Save and reuse prompt patterns</div>
+                </div>
+                <div class="templates-actions-inline">
+                    <button id="addTemplateBtn" class="btn-ghost-small">
+                        <i class="fas fa-plus"></i> New Template
                     </button>
                 </div>
-
-                <div class="template-section" style="margin-top: 20px;">
-                    <div class="template-toggle" id="toggleTemplatesBtn">
-                        <div class="template-toggle-left">
-                            <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
-                            <span>Template Library</span>
-                        </div>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    
-                    <div id="templatesPanel" class="templates-panel" style="display: none;">
-                        <div class="templates-header">
-                            <div class="templates-header-left">
-                                <div class="templates-title">Templates</div>
-                                <div class="templates-sub">Save and reuse prompt patterns</div>
-                            </div>
-                            <div class="templates-actions-inline">
-                                <button id="addTemplateBtn" class="btn-ghost-small">
-                                    <i class="fas fa-plus"></i> New Template
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
-                        
-                        <div id="templateCategories" class="template-categories"></div>
-                        
-                        <div id="templatesGrid" class="templates-grid"></div>
-                        
-                        <div id="emptyTemplates" class="empty-state" style="display: none;">
-                            <i class="fas fa-inbox"></i>
-                            <div>No templates yet. Create your first one!</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
+            
+            <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
+            
+            <div id="templateCategories" class="template-categories"></div>
+            
+            <div id="templatesGrid" class="templates-grid"></div>
+            
+            <div id="emptyTemplates" class="empty-state" style="display: none;">
+                <i class="fas fa-inbox"></i>
+                <div>No templates yet. Create your first one!</div>
+            </div>
+        </div>
+    </div>
+</section> <!-- THIS CLOSING TAG IS IMPORTANT -->
 
             <!-- CARD 2: STRUCTURED PROMPT -->
             <section id="card2" class="step-card">
@@ -1481,6 +1523,45 @@
             }
         }
     });
+   // =============================================
+    // ADD YOUR NEW CODE RIGHT HERE (after line above)
+    // =============================================
+    
+    // Convert Button Visibility Management
+    function updateConvertButtonVisibility() {
+        const requirement = document.getElementById('requirement').value.trim();
+        const convertBtnContainer = document.getElementById('convertButtonContainer');
+        const convertBtn = document.getElementById('convertBtn');
+        
+        if (requirement) {
+            if (convertBtnContainer) convertBtnContainer.style.display = 'block';
+            if (convertBtn) convertBtn.disabled = false;
+        } else {
+            if (convertBtnContainer) convertBtnContainer.style.display = 'none';
+            if (convertBtn) convertBtn.disabled = true;
+        }
+    }
+    
+    // Add input event listener for requirement
+    const requirementInput = document.getElementById('requirement');
+    if (requirementInput) {
+        requirementInput.addEventListener('input', function() {
+            updateConvertButtonVisibility();
+            // Also call the existing navigation update if it exists
+            if (typeof updateNavigationButtons === 'function') {
+                updateNavigationButtons();
+            }
+        });
+    }
+    
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateConvertButtonVisibility();
+    });
+
+    // =============================================
+    // END OF NEW CODE
+    // =============================================
     </script>
 
 </body>
