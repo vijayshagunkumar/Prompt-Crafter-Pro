@@ -1,287 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Ultimate PromptCraft Favicon - BRAIN + SPARKLES -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%238B5CF6'>🧠✨</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%238B5CF6'>🧠✨</text></svg>">
-    
-    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#8B5CF6">
-    <meta name="apple-mobile-web-app-title" content="PromptCraft">
+    <meta name="description" content="Turn rough ideas into ready-to-run AI prompts. We prepare the perfect prompt and open it in the best AI tool.">
+    <meta name="theme-color" content="#3b82f6">
+    <title>PromptCraft - Your AI Task Assistant</title>
     
-    <title>PromptCraft | Prompt Crafter Pro</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    
-    <link rel="stylesheet" href="styles/variables.css">
-    <link rel="stylesheet" href="styles/themes.css">
-    <link rel="stylesheet" href="styles/main.css">
-    
-    <!-- New vertical flow styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Vertical Flow Specific Styles - IMPROVED */
-        .vertical-flow {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px;
-            position: relative;
-        }
-        
-        /* Progress indicator - IMPROVED */
-        .progress-indicator {
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-            margin: 20px 0 30px;
-            background: rgba(var(--primary-rgb), 0.1);
-            border-radius: 50px;
-            padding: 6px;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-subtle);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .progress-line {
-            height: 6px;
-            background: var(--gradient-brand);
-            border-radius: 3px;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 0%;
-        }
-        
-        /* Step cards - IMPROVED with smooth transitions */
-        .step-card {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            margin-bottom: 30px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            pointer-events: none;
-            min-height: auto;
-        }
-        
-        .step-card.active {
-            opacity: 1;
-            transform: translateY(0);
-            position: relative;
-            pointer-events: auto;
-        }
-        
-        /* Step indicator in cards - IMPROVED */
-        .step-header .step-indicator {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .step-dots {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .step-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--border-subtle);
-            transition: all 0.3s ease;
-        }
-        
-        .step-dot.active {
-            background: var(--primary);
-            transform: scale(1.3);
-            box-shadow: 0 0 10px var(--primary);
-        }
-        
-        .step-dot.completed {
-            background: var(--success);
-        }
-        
-        /* Navigation buttons - IMPROVED */
-        .card-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-subtle);
-            gap: 10px;
-        }
-        
-        .nav-btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: none;
-            font-family: var(--font-sans);
-            font-size: 14px;
-        }
-        
-        .nav-btn.next {
-            background: var(--gradient-brand);
-            color: var(--text-on-primary);
-            margin-left: auto;
-            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
-        }
-        
-        .nav-btn.prev {
-            background: rgba(var(--primary-rgb), 0.1);
-            color: var(--primary);
-            border: 1px solid var(--border-subtle);
-        }
-        
-        .nav-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .nav-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-        
-        /* Status badges - IMPROVED */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-family: var(--font-heading);
-        }
-        
-        .status-badge.ready {
-            background: rgba(var(--success-rgb, 0, 255, 65), 0.15);
-            color: var(--success);
-            border: 2px solid var(--success);
-            box-shadow: 0 0 10px rgba(var(--success-rgb), 0.3);
-        }
-        
-        .status-badge.processing {
-            background: rgba(var(--warning-rgb, 255, 215, 0), 0.15);
-            color: var(--warning);
-            border: 2px solid var(--warning);
-            box-shadow: 0 0 10px rgba(var(--warning-rgb), 0.3);
-        }
-        
-        /* Confidence badge */
-        .confidence-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--success), var(--secondary));
-            color: var(--text-on-primary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Expand buttons for textareas - IMPROVED */
-        .expand-btn {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            z-index: 10;
-            background: rgba(var(--primary-rgb), 0.1);
-            border: 1px solid var(--border-subtle);
-            color: var(--primary);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .expand-btn:hover {
-            background: rgba(var(--primary-rgb), 0.2);
-            border-color: var(--primary);
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
-        }
-        
-        /* Maximized textarea/output - IMPROVED */
-        .maximized {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            z-index: 10000 !important;
-            background: var(--bg-panel) !important;
-            border: none !important;
-            border-radius: 0 !important;
-            padding: 80px 40px 40px !important;
-            font-size: 1.1rem !important;
-            resize: none !important;
-            margin: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-        }
-        
-        /* Close maximize button - IMPROVED */
-        .close-maximize-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10001;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(var(--danger-rgb, 255, 68, 68), 0.9);
-            color: white;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        .close-maximize-btn.active {
-            display: flex;
-        }
-        
-        .close-maximize-btn:hover {
-            background: var(--danger);
-            transform: scale(1.1);
-        }
-        
-        /* Animations - IMPROVED */
+        /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         @keyframes slideUp {
             from { 
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to { 
                 opacity: 1;
@@ -291,1344 +31,1289 @@
         
         @keyframes highlightPulse {
             0%, 100% { 
-                box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                transform: scale(1);
             }
             50% { 
-                box-shadow: 0 0 25px 15px rgba(var(--primary-rgb), 0.3);
+                box-shadow: 0 0 20px 10px rgba(59, 130, 246, 0.3);
+                transform: scale(1.02);
             }
         }
         
-        .card-highlight {
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-slideUp {
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        .animate-highlight {
             animation: highlightPulse 1.5s ease-in-out;
         }
         
-        /* Close button for maximized view */
-        .textarea-wrapper {
+        /* Components */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card.highlight {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card.hidden {
+            display: none;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 1rem;
             position: relative;
         }
         
-        /* Responsive adjustments - IMPROVED */
-        @media (max-width: 768px) {
-            .vertical-flow {
-                padding: 0 15px;
-            }
-            
-            .step-card {
-                margin-bottom: 20px;
-            }
-            
-            .maximized {
-                padding: 60px 20px 20px !important;
-            }
-            
-            .close-maximize-btn {
-                top: 10px;
-                right: 10px;
-                width: 35px;
-                height: 35px;
-            }
-            
-            .card-navigation {
-                flex-direction: column;
-            }
-            
-            .nav-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .nav-btn.next {
-                margin-left: 0;
-            }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
         
-        /* Footer fix */
-        .footer {
+        .btn-primary:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #f9fafb;
+            border-color: #9ca3af;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-secondary:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        /* Chips */
+        .chip {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            color: #3730a3;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .chip:hover:not(:disabled) {
+            background: linear-gradient(135deg, #c7d2fe, #a5b4fc);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(55, 48, 163, 0.15);
+        }
+        
+        .chip:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        .chip.active {
+            background: linear-gradient(135deg, #3730a3, #312e81);
+            color: white;
+        }
+        
+        /* Output Area */
+        .output-area {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            min-height: 120px;
             position: relative;
-            z-index: 10;
-            margin-top: 40px;
+            overflow-y: auto;
         }
         
-        /* AI Ranking Explanation */
-        .ai-ranking-explanation {
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            padding: 12px 16px !important;
-            background: rgba(var(--primary-rgb), 0.1) !important;
-            border: 1px solid var(--border-subtle) !important;
-            border-radius: var(--radius-md) !important;
-            margin-bottom: 20px !important;
-            font-size: 14px !important;
-            color: var(--text-secondary) !important;
+        .output-area.maximized {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            border-radius: 0;
+            padding: 80px 40px 40px;
+            font-size: 1.1rem;
+            background: white;
+            border: none;
+            box-shadow: none;
+            animation: fadeIn 0.2s ease-out;
         }
         
-        .ai-ranking-explanation i {
-            color: var(--primary) !important;
-            font-size: 16px !important;
+        /* Confidence Badge */
+        .confidence-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #14532d;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-left: 8px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        
+        /* Loading Animation */
+        .loading-dots {
+            display: inline-block;
+            position: relative;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .loading-dots div {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        
+        .loading-dots div:nth-child(1) {
+            left: 4px;
+            animation: loading-dots1 0.6s infinite;
+        }
+        
+        .loading-dots div:nth-child(2) {
+            left: 4px;
+            animation: loading-dots2 0.6s infinite;
+        }
+        
+        .loading-dots div:nth-child(3) {
+            left: 16px;
+            animation: loading-dots2 0.6s infinite;
+        }
+        
+        .loading-dots div:nth-child(4) {
+            left: 28px;
+            animation: loading-dots3 0.6s infinite;
+        }
+        
+        @keyframes loading-dots1 {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes loading-dots3 {
+            0% { transform: scale(1); }
+            100% { transform: scale(0); }
+        }
+        
+        @keyframes loading-dots2 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(12px, 0); }
+        }
+        
+        /* Error Banner */
+        .error-banner {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .error-banner.warning {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border-color: #fde68a;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.ready {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #14532d;
+        }
+        
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .step-dot.active {
+            background: #3b82f6;
+            transform: scale(1.3);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .step-dot.completed {
+            background: #10b981;
+            transform: scale(1);
+        }
+        
+        /* Accordion */
+        .accordion-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .accordion-content.expanded {
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        /* Textarea */
+        .maximizable-textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 150px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .maximizable-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .maximizable-textarea.maximized {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            border-radius: 0;
+            padding: 80px 40px 40px;
+            font-size: 1.1rem;
+            background: white;
+            border: none;
+            resize: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        /* Settings Modal */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .settings-modal.active {
+            display: flex;
+        }
+        
+        .settings-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        /* Settings Toggle Button */
+        .settings-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .settings-toggle:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            transform: scale(1.1);
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-help {
+            margin-top: 4px;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .toggle-switch.active {
+            background: #3b82f6;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+        
+        /* Model Tag */
+        .model-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .model-tag.free {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .model-tag.paid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Progress Line */
+        .progress-line {
+            height: 3px;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+        
+        /* Focus Styles */
+        *:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
         }
     </style>
 </head>
-
-<body>
-    <div class="scan-line"></div>
-    <div id="particles" class="particles"></div>
-    
-    <!-- Close maximize button -->
-    <button id="closeMaximizeBtn" class="close-maximize-btn" aria-label="Close maximized view" title="Close (Esc)">
-        ✕
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen p-4 md:p-8">
+    <!-- Settings Toggle Button -->
+    <button id="settingsToggle" class="settings-toggle" aria-label="Settings" title="Settings">
+        ⚙️
     </button>
     
-    <!-- Expand overlay -->
-    <div id="expandOverlay" class="expand-overlay" style="display: none;"></div>
-    
-    <div id="notification" class="notification">
-        <i class="fas fa-info-circle"></i>
-        <span id="notificationText">Notification message</span>
-    </div>
-
-    <div class="page vertical-flow">
-        <!-- HERO SECTION -->
-        <header class="hero">
-            <div class="hero-top">
-                <div class="hero-brand">
-                    <div class="hero-logo">
-                        <div class="logo-circuit">
-                            <div class="circuit-line circuit-horizontal"></div>
-                            <div class="circuit-line circuit-vertical"></div>
-                            <div class="circuit-node circuit-node-1"></div>
-                            <div class="circuit-node circuit-node-2"></div>
-                            <div class="circuit-node circuit-node-3"></div>
-                            <div class="circuit-node circuit-node-4"></div>
-                        </div>
-                    </div>
-                    <div class="hero-title-block">
-                        <h1 class="hero-title">Master the Art of <span>Prompt Engineering</span></h1>
-                        <p class="hero-subtitle">Turn rough ideas into optimized, ready-to-run prompts for AI tools.</p>
-                    </div>
-                </div>
-
-                <div class="hero-actions">
-                    <button class="theme-toggle-btn settings-btn" id="themeToggleBtn">
-                        <i class="fas fa-palette"></i> Theme
-                    </button>
-                    
-                    <button class="settings-btn" id="settingsBtn">
-                        <i class="fas fa-cog"></i> Settings
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- PROGRESS INDICATOR -->
-        <div class="progress-indicator">
-            <div id="progressLine" class="progress-line"></div>
+    <div class="max-w-2xl mx-auto">
+        <!-- Progress indicator -->
+        <div class="sticky top-2 z-10 mb-6 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm">
+            <div id="progressLine" class="progress-line w-0"></div>
         </div>
-
-        <!-- MAIN WORKFLOW - VERTICAL FLOW -->
-        <main class="workflow">
-            <!-- CARD 1: YOUR IDEA -->
-            <section id="card1" class="step-card active">
-                <div class="step-header">
-                    <div class="step-indicator">
-                        <div class="step-dots">
-                            <div class="step-dot active"></div>
-                            <div class="step-dot"></div>
-                            <div class="step-dot"></div>
-                        </div>
-                        <div>
-                            <h2>STEP 1: DESCRIBE YOUR IDEA</h2>
-                            <p class="step-subtitle">Tell us what you want the AI to do</p>
-                        </div>
-                    </div>
-                    <div class="step-meta">
-                        <span class="meta-pill">
-                            <i class="fas fa-clock"></i>
-                            <span id="timerValue">60s</span>
-                        </span>
-                    </div>
-                </div>
-
-                <div id="intentRow" class="intent-row" style="display:none;">
-                    <div id="intentScroll" class="intent-scroll"></div>
-                </div>
-
-                <div class="chip-row">
-                    <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
-                        <i class="fas fa-envelope"></i> Email
-                    </div>
-                    <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
-                        <i class="fas fa-code"></i> Code
-                    </div>
-                    <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
-                        <i class="fas fa-chart-line"></i> Analysis
-                    </div>
-                    <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
-                        <i class="fas fa-pen"></i> Writing
-                    </div>
-                </div>
-
-                <!-- ADDED: Convert button here -->
-                <div id="convertButtonContainer" style="margin: 16px 0; display: none;">
-                    <button id="convertBtn" class="btn-primary btn-full">
-                        <i class="fas fa-magic"></i> Convert to Prompt
+        
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="settings-modal">
+            <div class="settings-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">⚙️ Settings</h2>
+                    <button id="closeSettings" class="text-gray-500 hover:text-gray-700 text-2xl" aria-label="Close settings">
+                        &times;
                     </button>
                 </div>
-
-                <div class="auto-row">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="autoConvert" checked>
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-label">Auto-Convert</span>
-                    </label>
-                    <span id="autoConvertCountdown" style="display:none;">Auto-convert in 60s</span>
-                </div>
-
-                <div class="field-block">
-                    <div class="textarea-wrapper">
-                        <textarea id="requirement" class="textarea-idea" placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."></textarea>
-                        <button id="expandInputBtn" class="expand-btn" title="Maximize">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                        <div class="textarea-buttons">
-                            <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
-                                <i class="fas fa-broom"></i>
-                            </button>
-                            <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
-                                <i class="fas fa-microphone"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="voiceInputStatus" class="voice-status" style="display: none;">
-                        <i class="fas fa-microphone"></i> Listening...
-                    </div>
-                </div>
-
-                <div class="stats-row">
-                    <span id="charCount">0 characters</span>
-                    <span id="wordCount">0 words</span>
-                    <span id="lineCount">1 line</span>
-                </div>
-
-                <div class="card-navigation">
-                    <button id="nextToCard2" class="nav-btn next">
-                        <span>Generate Prompt</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <button id="resetBtn" class="btn-ghost-small" style="width: 100%;">
-                        <i class="fas fa-redo"></i> Reset Everything
-                    </button>
-                </div>
-
-                <div class="template-section" style="margin-top: 20px;">
-                    <div class="template-toggle" id="toggleTemplatesBtn">
-                        <div class="template-toggle-left">
-                            <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
-                            <span>Template Library</span>
-                        </div>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    
-                    <div id="templatesPanel" class="templates-panel" style="display: none;">
-                        <div class="templates-header">
-                            <div class="templates-header-left">
-                                <div class="templates-title">Templates</div>
-                                <div class="templates-sub">Save and reuse prompt patterns</div>
-                            </div>
-                            <div class="templates-actions-inline">
-                                <button id="addTemplateBtn" class="btn-ghost-small">
-                                    <i class="fas fa-plus"></i> New Template
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
-                        
-                        <div id="templateCategories" class="template-categories"></div>
-                        
-                        <div id="templatesGrid" class="templates-grid"></div>
-                        
-                        <div id="emptyTemplates" class="empty-state" style="display: none;">
-                            <i class="fas fa-inbox"></i>
-                            <div>No templates yet. Create your first one!</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- CARD 2: STRUCTURED PROMPT -->
-            <section id="card2" class="step-card">
-                <div class="step-header">
-                    <div class="step-indicator">
-                        <div class="step-dots">
-                            <div class="step-dot completed"></div>
-                            <div class="step-dot active"></div>
-                            <div class="step-dot"></div>
-                        </div>
-                        <div>
-                            <h2>STEP 2: STRUCTURED PROMPT</h2>
-                            <p class="step-subtitle">Optimized, ready-to-run prompt</p>
-                        </div>
-                    </div>
-                    <div class="step-meta">
-                        <span class="status-badge ready" id="promptReadyBadge" style="display: none;">
-                            <i class="fas fa-check"></i> Ready
-                        </span>
-                        <span class="meta-pill" id="convertedBadge" style="display: none;">
-                            <i class="fas fa-check"></i> Converted
-                        </span>
-                    </div>
-                </div>
-
-                <div class="preset-selector">
-                    <div class="preset-option active" data-preset="default">
-                        <i class="fas fa-star"></i> Standard
-                    </div>
-                    <div class="preset-option" data-preset="claude">
-                        <i class="fas fa-brain"></i> Claude
-                    </div>
-                    <div class="preset-option" data-preset="chatgpt">
-                        <i class="fas fa-robot"></i> ChatGPT
-                    </div>
-                    <div class="preset-option" data-preset="detailed">
-                        <i class="fas fa-list-check"></i> Detailed
-                    </div>
-                </div>
-
-                <div class="field-block-output">
-                    <div class="textarea-wrapper">
-                        <textarea id="output" class="output-textarea" placeholder="Your structured prompt will appear here..." readonly></textarea>
-                        <button id="expandOutputBtn" class="expand-btn" title="Maximize">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                        <div class="textarea-buttons">
-                            <button id="copyOutputBtn" class="btn-ghost-small" style="margin-right: 8px;">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                            <button id="voiceOutputBtn" class="voice-output-btn" title="Read Aloud" style="display: none;">
-                                <i class="fas fa-volume-up"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="voiceOutputStatus" class="voice-status" style="display: none;">
-                        <i class="fas fa-volume-up"></i> Reading...
-                    </div>
-                </div>
-
-                <div class="stats-row output-stats">
-                    <span id="outputCharCount">0 characters</span>
-                    <span id="outputWordCount">0 words</span>
-                    <span id="outputLineCount">1 line</span>
-                </div>
-
-                <div class="card-navigation">
-                    <button id="prevToCard1" class="nav-btn prev">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Back to Idea</span>
-                    </button>
-                    <button id="nextToCard3" class="nav-btn next">
-                        <span>View AI Tools</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-
-                <div class="output-footer">
-                    <div class="output-actions">
-                        <button id="exportBtn" class="btn-ghost-small">
-                            <i class="fas fa-download"></i> Export
-                        </button>
-                    </div>
-                    <button id="toggleHistoryBtn" class="btn-ghost-small">
-                        <i class="fas fa-history"></i> History
-                    </button>
-                </div>
-
-                <div id="historyPanel" class="history-panel" style="display: none;">
-                    <div class="history-header">
-                        <span>Recent Prompts</span>
-                        <button id="clearHistoryBtn" class="btn-ghost-small danger">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
-                    </div>
-                    <div id="historyList"></div>
-                </div>
-            </section>
-
-            <!-- CARD 3: LAUNCH -->
-            <section id="card3" class="step-card">
-                <div class="step-header">
-                    <div class="step-indicator">
-                        <div class="step-dots">
-                            <div class="step-dot completed"></div>
-                            <div class="step-dot completed"></div>
-                            <div class="step-dot active"></div>
-                        </div>
-                        <div>
-                            <h2>STEP 3: LAUNCH IN AI TOOL</h2>
-                            <p class="step-subtitle">Choose your preferred AI tool</p>
-                        </div>
-                    </div>
-                    <div class="step-meta">
-                        <span class="status-badge ready">
-                            <i class="fas fa-rocket"></i> Ready to Launch
-                        </span>
+                
+                <!-- AI Model Selection -->
+                <div class="form-group">
+                    <label for="aiModel" class="form-label">🤖 Default AI Model</label>
+                    <select id="aiModel" class="form-select">
+                        <option value="gemini">Gemini Pro <span class="model-tag free">Free</span></option>
+                        <option value="chatgpt">ChatGPT <span class="model-tag paid">Pro</span></option>
+                        <option value="claude">Claude 3.5 <span class="model-tag paid">Pro</span></option>
+                        <option value="llama">LLaMA 3.1 <span class="model-tag free">Free</span></option>
+                        <option value="grok">Grok <span class="model-tag paid">Pro</span></option>
+                    </select>
+                    <div class="form-help">
+                        This model will be used when generating prompts
                     </div>
                 </div>
                 
-                <!-- AI Ranking Explanation -->
-                <div id="aiRankingExplanation" class="ai-ranking-explanation" style="display: none;">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>Tools are ranked based on your task type and requirements</span>
+                <!-- Prompt Style -->
+                <div class="form-group">
+                    <label for="promptStyle" class="form-label">🎨 Default Prompt Style</label>
+                    <select id="promptStyle" class="form-select">
+                        <option value="detailed">Detailed & Structured</option>
+                        <option value="concise">Concise & Direct</option>
+                        <option value="creative">Creative & Engaging</option>
+                        <option value="analytical">Analytical & Data-Driven</option>
+                    </select>
+                    <div class="form-help">
+                        Controls how prompts are formatted by default
+                    </div>
                 </div>
-
-                <div class="launch-list">
-                    <button class="launch-btn launch-chatgpt" id="chatgptBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">ChatGPT</div>
-                            <div class="launch-sub">chat.openai.com</div>
-                        </div>
-                    </button>
-
-                    <button class="launch-btn launch-claude" id="claudeBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">Claude</div>
-                            <div class="launch-sub">claude.ai</div>
-                        </div>
-                    </button>
-
-                    <button class="launch-btn launch-gemini" id="geminiBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-gem"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">Gemini</div>
-                            <div class="launch-sub">gemini.google.com</div>
-                        </div>
-                    </button>
-
-                    <button class="launch-btn launch-perplexity" id="perplexityBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-search"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">Perplexity</div>
-                            <div class="launch-sub">perplexity.ai</div>
-                        </div>
-                    </button>
-
-                    <button class="launch-btn launch-deepseek" id="deepseekBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">DeepSeek</div>
-                            <div class="launch-sub">chat.deepseek.com</div>
-                        </div>
-                    </button>
-
-                    <button class="launch-btn launch-copilot" id="copilotBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-plane"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">Copilot</div>
-                            <div class="launch-sub">copilot.microsoft.com</div>
-                        </div>
-                    </button>
-
-                    <button class="launch-btn launch-grok" id="grokBtn" disabled>
-                        <div class="launch-icon">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div class="launch-text">
-                            <div class="launch-name">Grok</div>
-                            <div class="launch-sub">x.ai</div>
-                        </div>
+                
+                <!-- Auto-Convert -->
+                <div class="toggle-container">
+                    <div>
+                        <div class="font-medium text-gray-800">⚡ Auto-Convert</div>
+                        <div class="text-sm text-gray-600">Automatically generate prompts after typing</div>
+                    </div>
+                    <div id="autoConvertToggle" class="toggle-switch"></div>
+                </div>
+                
+                <!-- Voice Input -->
+                <div class="toggle-container">
+                    <div>
+                        <div class="font-medium text-gray-800">🎤 Voice Input</div>
+                        <div class="text-sm text-gray-600">Allow voice input for tasks</div>
+                    </div>
+                    <div id="voiceInputToggle" class="toggle-switch"></div>
+                </div>
+                
+                <!-- Reset Button -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <button id="resetSettings" class="btn-secondary w-full">
+                        🔄 Reset to Defaults
                     </button>
                 </div>
-
-                <div class="card-navigation">
-                    <button id="prevToCard2" class="nav-btn prev">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Back to Prompt</span>
-                    </button>
-                    <button id="restartFlow" class="nav-btn next">
-                        <i class="fas fa-redo"></i>
-                        <span>Start Over</span>
+                
+                <!-- Save Button -->
+                <div class="mt-4">
+                    <button id="saveSettings" class="btn-primary w-full">
+                        💾 Save Settings
                     </button>
                 </div>
-            </section>
-        </main>
+            </div>
+        </div>
+        
+        <!-- Header -->
+        <div id="headerSection" class="text-center mb-6 relative">
+            <div class="inline-block bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2 mb-3 shadow-sm">
+                <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">AI Prompt Orchestration</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Ready-to-Run AI Prompts
+            </h1>
+            <p class="text-gray-700 text-base max-w-2xl mx-auto bg-white/80 backdrop-blur-sm rounded-xl py-2 px-4 inline-block shadow-sm">
+                Describe your task. We prepare the perfect prompt and open it in the best AI tool.
+            </p>
+        </div>
 
-        <!-- FOOTER -->
-        <footer class="footer">
-            <div class="footer-left">
-                <span>
-                    <i class="fas fa-shield-alt"></i> Cloudflare Worker • Multi-Model AI
-                </span>
-                <span class="dot">•</span>
-                <span id="currentModelDisplay">
-                    <i class="fas fa-brain"></i> Model: <span id="selectedModelName">Loading...</span>
-                </span>
-                <span class="dot">•</span>
-                <span>
-                    <i class="fas fa-code-branch"></i> v4.2.0
+        <!-- Card 1: Input -->
+        <div id="step1Card" class="card">
+            <div class="step-indicator">
+                <div class="step-dot active" role="presentation"></div>
+                <div class="text-sm font-medium text-gray-700">Step 1: Describe your task</div>
+            </div>
+            
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 mt-2">
+                What do you want to do?
+            </h2>
+            
+            <!-- Textarea -->
+            <textarea 
+                id="userInput"
+                class="maximizable-textarea"
+                placeholder="e.g., 'Write a professional email to decline a meeting politely'"
+                rows="4"
+                aria-label="Describe your task"
+            ></textarea>
+            
+            <!-- Character count -->
+            <div class="text-xs text-gray-500 mt-2 text-right">
+                <span id="charCountValue">0</span> characters
+            </div>
+            
+            <!-- Example chips -->
+            <div class="flex flex-wrap gap-2 sm:gap-3 mt-4" role="group" aria-label="Example prompts">
+                <button class="chip" data-type="email">
+                    ✉️ Email
+                </button>
+                <button class="chip" data-type="code">
+                    💻 Code
+                </button>
+                <button class="chip" data-type="analysis">
+                    📊 Analysis
+                </button>
+                <button class="chip" data-type="creative">
+                    🎨 Creative
+                </button>
+            </div>
+            
+            <!-- Primary CTA -->
+            <button 
+                id="prepareBtn"
+                class="btn-primary mt-6"
+            >
+                <span id="btnText">Prepare Prompt</span>
+                <div id="btnLoading" class="loading-dots hidden absolute right-6 top-1/2 transform -translate-y-1/2">
+                    <div></div><div></div><div></div><div></div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Card 2: Output -->
+        <div id="outputCard" class="card hidden">
+            <div class="step-indicator">
+                <div class="step-dot completed" role="presentation"></div>
+                <div class="step-dot active" role="presentation"></div>
+                <div class="text-sm font-medium text-gray-700">Step 2: Ready prompt</div>
+            </div>
+            
+            <div class="flex justify-between items-center mb-4 mt-2">
+                <h2 class="text-lg font-semibold text-gray-800">
+                    READY-TO-USE PROMPT
+                </h2>
+                <span class="status-badge ready">
+                    <span class="text-xs">✓</span>
+                    <span>Ready</span>
                 </span>
             </div>
-            <div class="footer-right">
-                <div id="usageCount">
-                    <i class="fas fa-bolt"></i> <span id="promptCount">0</span> prompts generated
-                </div>
+            
+            <p class="text-sm text-gray-600 mb-4">
+                You can copy this or open directly in AI tools
+            </p>
+            
+            <!-- Output area -->
+            <div id="outputArea" class="output-area" role="region" aria-label="Generated prompt">
+                Your optimized prompt will appear here...
             </div>
-        </footer>
-    </div>
-
-    <!-- MODALS -->
-    <div id="settingsModal" class="modal-backdrop" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-cog"></i> Settings</h3>
-                <button id="closeSettingsBtn" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label" for="modelSelect">
-                        <i class="fas fa-brain"></i> AI Model
-                    </label>
-                    <select id="modelSelect" class="input-text">
-                        <option value="gemini-3-flash-preview">🆓 Gemini 3 Flash Preview (Latest)</option>
-                        <option value="gpt-4o-mini">🆓 GPT-4o Mini</option>
-                        <option value="llama-3.1-8b-instant">🆓 LLaMA 3.1 8B Instant</option>
-                    </select>
-                    <div class="form-hint">
-                        <i class="fas fa-info-circle"></i>
-                        Used when generating prompts. Free models only.
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="autoConvertDelay">
-                        <i class="fas fa-clock"></i> Auto-Convert Delay
-                    </label>
-                    <input type="range" id="autoConvertDelay" min="5" max="120" value="60" class="input-text">
-                    <div class="form-hint">
-                        <i class="fas fa-sliders-h"></i>
-                        <span id="delayValue">Current: 60 seconds</span>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="voiceLanguage">
-                        <i class="fas fa-language"></i> Voice Language
-                    </label>
-                    <select id="voiceLanguage" class="input-text">
-                        <option value="en-US">English (US)</option>
-                        <option value="en-GB">English (UK)</option>
-                        <option value="hi-IN">Hindi (India)</option>
-                        <option value="es-ES">Spanish</option>
-                        <option value="fr-FR">French</option>
-                        <option value="de-DE">German</option>
-                        <option value="ja-JP">Japanese</option>
-                    </select>
-                    <div class="form-hint">
-                        <i class="fas fa-microphone"></i>
-                        For voice input and output
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-expand-alt"></i> Textarea Sizing
-                    </label>
-                    <button id="resetSizesBtn" class="btn-ghost-small">
-                        <i class="fas fa-undo"></i> Reset to Default (250px)
-                    </button>
-                    <div class="form-hint">
-                        <i class="fas fa-arrows-alt-v"></i>
-                        Drag textarea edges to resize. Click expand button for full-screen.
-                    </div>
-                </div>
-                
-                <div class="modal-actions">
-                    <button id="clearDataBtn" class="btn-ghost-small danger">
-                        <i class="fas fa-trash"></i> Clear All Data
-                    </button>
-                    <button id="saveSettingsBtn" class="btn-primary">
-                        <i class="fas fa-save"></i> Save Settings
-                    </button>
-                </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                <button id="useInAI" class="btn-primary flex-1">
+                    🚀 Use this in AI
+                </button>
+                <button id="copyBtn" class="btn-secondary">
+                    📋 Copy Prompt
+                </button>
             </div>
         </div>
-    </div>
 
-    <div id="templateModal" class="modal-backdrop" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-save"></i> Save Template</h3>
-                <button id="closeTemplateBtn" class="modal-close">&times;</button>
+        <!-- Card 3: AI Tools -->
+        <div id="aiCard" class="card hidden">
+            <div class="step-indicator">
+                <div class="step-dot completed" role="presentation"></div>
+                <div class="step-dot completed" role="presentation"></div>
+                <div class="step-dot active" role="presentation"></div>
+                <div class="text-sm font-medium text-gray-700">Step 3: Choose AI tool</div>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label" for="templateName">
-                        <i class="fas fa-heading"></i> Template Name
-                    </label>
-                    <input type="text" id="templateName" class="input-text" placeholder="Professional Email Template">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="templateDescription">
-                        <i class="fas fa-align-left"></i> Description
-                    </label>
-                    <input type="text" id="templateDescription" class="input-text" placeholder="Write professional business emails">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="templateCategory">
-                        <i class="fas fa-folder"></i> Category
-                    </label>
-                    <select id="templateCategory" class="input-text">
-                        <option value="communication">Communication</option>
-                        <option value="coding">Coding</option>
-                        <option value="writing">Writing</option>
-                        <option value="analysis">Analysis</option>
-                        <option value="business">Business</option>
-                        <option value="creative">Creative</option>
-                        <option value="education">Education</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="templateContent">
-                        <i class="fas fa-code"></i> Template Content
-                    </label>
-                    <textarea id="templateContent" class="input-text" rows="6" placeholder="Template content..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="templateExample">
-                        <i class="fas fa-lightbulb"></i> Example Requirement
-                    </label>
-                    <textarea id="templateExample" class="input-text" rows="3" placeholder="Example requirement that triggers this template..."></textarea>
-                </div>
-                
-                <div class="modal-actions">
-                    <button id="cancelTemplateBtn" class="btn-ghost-small">
-                        Cancel
-                    </button>
-                    <button id="saveTemplateBtn" class="btn-primary">
-                        <i class="fas fa-save"></i> Save Template
-                    </button>
-                </div>
+            
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 mt-2">
+                OPEN IN AI TOOL
+            </h2>
+            <p class="text-sm text-gray-600 mb-2 text-center">
+                We choose the AI based on your task type and complexity
+            </p>
+            
+            <!-- Primary Recommended Button -->
+            <div class="mb-6">
+                <button id="bestAIButton" class="btn-primary w-full py-4 text-lg">
+                    <!-- Dynamic content will appear here -->
+                </button>
+                <!-- "Why" explanation line -->
+                <p id="aiExplanation" class="text-xs text-gray-500 mt-3 text-center">
+                    Chosen based on task type and complexity
+                </p>
             </div>
-        </div>
-    </div>
-
-    <div id="themeModal" class="modal-backdrop" style="display: none;">
-        <div class="modal" style="max-width: 550px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-palette"></i> Select Theme</h3>
-                <button class="modal-close" id="closeThemeBtn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="theme-modal-content">
-                    <div class="theme-current-display">
-                        <div class="current-theme-label">Current Theme:</div>
-                        <div id="currentThemeName" class="current-theme-name">Simple</div>
-                        <div id="currentThemeMood" class="current-theme-mood">Clean & Minimal</div>
-                    </div>
-                    
-                    <div class="theme-grid" id="themeGrid">
-                        <!-- Theme cards will be populated by JavaScript -->
-                    </div>
-                    
-                    <div class="theme-hint">
-                        <i class="fas fa-info-circle"></i>
-                        Click any theme to apply. Changes take effect immediately.
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button id="closeThemeModalBtn" class="btn-ghost">
-                            <i class="fas fa-times"></i> Close
+            
+            <!-- Secondary Options -->
+            <div class="text-center">
+                <button 
+                    id="otherToolsToggle"
+                    class="text-sm text-gray-500 hover:text-gray-700 mb-3 transition-colors"
+                >
+                    <span id="toolsIcon">▾</span>
+                    <span>Other AI tools</span>
+                </button>
+                
+                <!-- Other AI Tools -->
+                <div id="otherTools" class="accordion-content">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button class="btn-secondary ai-tool-btn" data-model="chatgpt">
+                            ChatGPT
                         </button>
-                        <button id="resetThemeBtn" class="btn-primary">
-                            <i class="fas fa-redo"></i> Reset to Simple
+                        <button class="btn-secondary ai-tool-btn" data-model="gemini">
+                            Gemini Pro
+                        </button>
+                        <button class="btn-secondary ai-tool-btn" data-model="claude">
+                            Claude 3.5
+                        </button>
+                        <button class="btn-secondary ai-tool-btn" data-model="llama">
+                            LLaMA 3.1
+                        </button>
+                        <button class="btn-secondary ai-tool-btn" data-model="grok">
+                            Grok (xAI)
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-500 text-sm">
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-2">
+                <span>PromptCraft — your AI task assistant</span>
+                <span class="hidden sm:inline">•</span>
+                <span>Ready for production</span>
+            </div>
+        </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="js/theme-manager.js"></script>
-    <script src="js/voice.js"></script>
-    <script src="js/intent.js"></script>
-    <script src="js/ai-tool-ranker.js"></script>
-    <script src="js/app.js"></script> 
-    
-    
-    <!-- New Vertical Flow JavaScript -->
     <script>
-    // Vertical Flow Navigation System - IMPROVED
-    document.addEventListener('DOMContentLoaded', function() {
-        // State management
-        let currentCard = 1;
-        const totalCards = 3;
-        let isAnimating = false;
-        
-        // Initialize cards
-        initializeCards();
-        
-        // Setup navigation
-        setupNavigation();
-        
-        // Setup maximize/minimize
-        setupMaximizeFeatures();
-        
-        // Update progress on load
-        updateProgress();
-        
-        // Setup keyboard shortcuts
-        setupKeyboardShortcuts();
-        
-        // Initialize AI ranking explanation
-        initializeAIRankingExplanation();
-        
-        // Initialize on load
-        setTimeout(() => {
-            updateNavigationButtons();
-            updateConvertButtonVisibility();
-        }, 100);
-        
-        function initializeCards() {
-            // Hide all cards except first
-            document.querySelectorAll('.step-card').forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.pointerEvents = 'none';
-                card.style.position = 'absolute';
-                
-                if (index === 0) {
-                    setTimeout(() => {
-                        card.classList.add('active');
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                        card.style.position = 'relative';
-                        card.style.pointerEvents = 'auto';
-                    }, 100);
-                } else {
-                    card.classList.remove('active');
+        // PromptCraft Application - With Settings
+        const PromptCraft = (() => {
+            // Configuration
+            const CONFIG = {
+                AUTO_CONVERT_DELAY: 3000,
+                PROMPT_GENERATION_DELAY: 1200,
+                STORAGE_KEYS: {
+                    SETTINGS: 'promptcraft_settings',
+                    INPUT: 'promptcraft_input',
+                    VISITED: 'promptcraft_visited'
+                },
+                MODEL_CONFIG: {
+                    chatgpt: {
+                        name: 'ChatGPT',
+                        url: 'https://chat.openai.com/',
+                        strengths: ['creative writing', 'conversation', 'general tasks', 'email'],
+                        explanation: 'Best for creative and conversational tasks',
+                        isFree: false
+                    },
+                    gemini: {
+                        name: 'Gemini Pro',
+                        url: 'https://gemini.google.com/',
+                        strengths: ['analysis', 'research', 'data', 'reasoning'],
+                        explanation: 'Best for analysis and data-driven tasks',
+                        isFree: true
+                    },
+                    claude: {
+                        name: 'Claude 3.5',
+                        url: 'https://claude.ai/',
+                        strengths: ['code', 'long reasoning', 'document analysis', 'structured'],
+                        explanation: 'Best for coding and complex reasoning',
+                        isFree: false
+                    },
+                    llama: {
+                        name: 'LLaMA 3.1',
+                        url: 'https://llama.meta.com/',
+                        strengths: ['fast response', 'general', 'summarization'],
+                        explanation: 'Fast and reliable for general tasks',
+                        isFree: true
+                    },
+                    grok: {
+                        name: 'Grok',
+                        url: 'https://x.ai/',
+                        strengths: ['humor', 'real-time', 'sarcasm', 'news'],
+                        explanation: 'Best for humor and real-time information',
+                        isFree: false
+                    }
+                },
+                INTENT_TEMPLATES: {
+                    detailed: `You are a professional assistant with expertise in this domain. Your task:\n\n{input}\n\nPlease provide:\n1. Clear, structured response\n2. Practical implementation\n3. Best practices\n4. Common pitfalls to avoid\n\nFormat your response for maximum clarity and usefulness.`,
+                    concise: `Please provide a concise and direct response to the following task:\n\n{input}\n\nFocus on the most essential information only.`,
+                    creative: `You are a creative expert. Please approach this task with imagination and flair:\n\n{input}\n\nFocus on:\n• Original ideas\n• Engaging storytelling\n• Emotional resonance\n• Unique perspectives`,
+                    analytical: `As an analytical expert, please provide a data-driven response to:\n\n{input}\n\nInclude:\n1. Logical framework\n2. Evidence-based reasoning\n3. Statistical insights\n4. Risk assessment\n5. Optimization suggestions`
                 }
-            });
-            
-            // Update step dots
-            updateStepDots();
-        }
-        
-        function updateStepDots() {
-            document.querySelectorAll('.step-dot').forEach((dot, index) => {
-                dot.classList.remove('active', 'completed');
+            };
+
+            // Default Settings
+            const DEFAULT_SETTINGS = {
+                aiModel: 'gemini',
+                promptStyle: 'detailed',
+                autoConvert: true,
+                voiceInput: false
+            };
+
+            // State Management
+            let state = {
+                settings: {...DEFAULT_SETTINGS},
+                showAdvanced: false,
+                showOtherTools: false,
+                currentBestModel: 'gemini',
+                autoConvertTimer: null,
+                lastInput: ''
+            };
+
+            // DOM Elements Cache
+            let elements = {};
+
+            // Initialize DOM elements
+            const initElements = () => {
+                const elementIds = [
+                    'userInput', 'outputCard', 'aiCard', 'outputArea', 'charCountValue',
+                    'otherTools', 'otherToolsToggle', 'toolsIcon', 'bestAIButton', 'aiExplanation',
+                    'copyBtn', 'useInAI', 'prepareBtn', 'btnText', 'btnLoading',
+                    'progressLine', 'step1Card',
+                    // Settings elements
+                    'settingsModal', 'settingsToggle', 'closeSettings',
+                    'aiModel', 'promptStyle', 'autoConvertToggle', 'voiceInputToggle',
+                    'resetSettings', 'saveSettings'
+                ];
                 
-                if (index + 1 === currentCard) {
-                    dot.classList.add('active');
-                } else if (index + 1 < currentCard) {
-                    dot.classList.add('completed');
-                }
-            });
-        }
-        
-        function updateProgress() {
-            const progressLine = document.getElementById('progressLine');
-            if (progressLine) {
-                const progressPercent = ((currentCard - 1) / (totalCards - 1)) * 100;
-                progressLine.style.width = `${progressPercent}%`;
-            }
-        }
-        
-        function navigateToCard(cardNumber) {
-            if (cardNumber < 1 || cardNumber > totalCards) return;
-            if (isAnimating) return;
-            
-            isAnimating = true;
-            
-            // Animate out current card
-            const current = document.querySelector('.step-card.active');
-            if (current) {
-                current.style.opacity = '0';
-                current.style.transform = 'translateY(30px)';
-                current.style.pointerEvents = 'none';
+                elementIds.forEach(id => {
+                    elements[id] = document.getElementById(id);
+                });
+            };
+
+            // Initialize Application
+            const init = () => {
+                initElements();
+                loadSettings();
+                setupEventListeners();
+                updateProgress(1);
                 
+                // Load example on first visit
                 setTimeout(() => {
-                    current.classList.remove('active');
-                    current.style.position = 'absolute';
+                    if (!elements.userInput.value.trim() && !localStorage.getItem(CONFIG.STORAGE_KEYS.VISITED)) {
+                        insertExample('email');
+                        localStorage.setItem(CONFIG.STORAGE_KEYS.VISITED, 'true');
+                    }
+                }, 100);
+            };
+
+            // Load settings from localStorage
+            const loadSettings = () => {
+                try {
+                    const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS);
+                    if (saved) {
+                        state.settings = {...DEFAULT_SETTINGS, ...JSON.parse(saved)};
+                    }
                     
-                    // Show new card
-                    const nextCard = document.getElementById(`card${cardNumber}`);
-                    if (nextCard) {
-                        nextCard.style.position = 'relative';
-                        nextCard.classList.add('active');
+                    // Update UI with loaded settings
+                    updateSettingsUI();
+                    
+                    // Load saved input
+                    const savedInput = localStorage.getItem(CONFIG.STORAGE_KEYS.INPUT);
+                    if (savedInput) {
+                        elements.userInput.value = savedInput;
+                        elements.charCountValue.textContent = savedInput.length;
+                    }
+                } catch (error) {
+                    console.error('Failed to load settings:', error);
+                    state.settings = {...DEFAULT_SETTINGS};
+                }
+            };
+
+            // Update settings UI elements
+            const updateSettingsUI = () => {
+                if (!elements.aiModel) return;
+                
+                // Update form fields
+                elements.aiModel.value = state.settings.aiModel;
+                elements.promptStyle.value = state.settings.promptStyle;
+                
+                // Update toggle switches
+                elements.autoConvertToggle.classList.toggle('active', state.settings.autoConvert);
+                elements.voiceInputToggle.classList.toggle('active', state.settings.voiceInput);
+            };
+
+            // Save settings to localStorage
+            const saveSettings = () => {
+                try {
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
+                    showNotification('Settings saved successfully!');
+                } catch (error) {
+                    console.error('Failed to save settings:', error);
+                    showNotification('Failed to save settings', true);
+                }
+            };
+
+            // Setup event listeners
+            const setupEventListeners = () => {
+                // Input handling
+                elements.userInput.addEventListener('input', handleInput);
+                
+                // Event delegation for chips and buttons
+                document.addEventListener('click', (e) => {
+                    // Example chips
+                    if (e.target.matches('.chip[data-type]')) {
+                        handleExampleChipClick(e.target.dataset.type);
+                    }
+                    
+                    // AI tool buttons
+                    if (e.target.matches('.ai-tool-btn')) {
+                        handleAIToolClick(e.target.dataset.model);
+                    }
+                });
+                
+                // Main action buttons
+                elements.prepareBtn.addEventListener('click', preparePrompt);
+                elements.copyBtn.addEventListener('click', copyPrompt);
+                elements.useInAI.addEventListener('click', () => elements.bestAIButton.click());
+                elements.bestAIButton.addEventListener('click', handleBestAIClick);
+                elements.otherToolsToggle.addEventListener('click', toggleOtherTools);
+                
+                // Settings modal
+                elements.settingsToggle.addEventListener('click', openSettings);
+                elements.closeSettings.addEventListener('click', closeSettings);
+                elements.resetSettings.addEventListener('click', resetSettings);
+                elements.saveSettings.addEventListener('click', saveSettingsFromUI);
+                
+                // Toggle switches
+                elements.autoConvertToggle.addEventListener('click', () => toggleSetting('autoConvert'));
+                elements.voiceInputToggle.addEventListener('click', () => toggleSetting('voiceInput'));
+                
+                // Close modal on backdrop click
+                elements.settingsModal.addEventListener('click', (e) => {
+                    if (e.target === elements.settingsModal) {
+                        closeSettings();
+                    }
+                });
+                
+                // Escape key to close settings
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && elements.settingsModal.classList.contains('active')) {
+                        closeSettings();
+                    }
+                });
+            };
+
+            // Handle input changes
+            const handleInput = () => {
+                const count = elements.userInput.value.length;
+                elements.charCountValue.textContent = count;
+                
+                try {
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.INPUT, elements.userInput.value);
+                } catch (error) {
+                    console.error('Failed to save input:', error);
+                }
+                
+                // Auto-convert logic if enabled
+                if (state.settings.autoConvert && elements.userInput.value.length > 10) {
+                    if (state.autoConvertTimer) clearTimeout(state.autoConvertTimer);
+                    state.autoConvertTimer = setTimeout(() => {
+                        if (elements.userInput.value === state.lastInput) {
+                            preparePrompt();
+                        }
+                    }, CONFIG.AUTO_CONVERT_DELAY);
+                    state.lastInput = elements.userInput.value;
+                }
+            };
+
+            // Toggle settings
+            const toggleSetting = (settingName) => {
+                state.settings[settingName] = !state.settings[settingName];
+                updateSettingsUI();
+            };
+
+            // Open settings modal
+            const openSettings = () => {
+                elements.settingsModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            };
+
+            // Close settings modal
+            const closeSettings = () => {
+                elements.settingsModal.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            // Reset settings to defaults
+            const resetSettings = () => {
+                if (confirm('Reset all settings to defaults?')) {
+                    state.settings = {...DEFAULT_SETTINGS};
+                    updateSettingsUI();
+                    showNotification('Settings reset to defaults');
+                }
+            };
+
+            // Save settings from UI
+            const saveSettingsFromUI = () => {
+                // Get values from form
+                state.settings.aiModel = elements.aiModel.value;
+                state.settings.promptStyle = elements.promptStyle.value;
+                
+                // Save to localStorage
+                saveSettings();
+                closeSettings();
+            };
+
+            // Handle example chip clicks
+            const handleExampleChipClick = (type) => {
+                insertExample(type);
+            };
+
+            // Handle AI tool clicks
+            const handleAIToolClick = (modelKey) => {
+                const model = CONFIG.MODEL_CONFIG[modelKey];
+                if (model) {
+                    window.open(model.url, '_blank');
+                    showNotification(`Opening ${model.name}...`);
+                }
+            };
+
+            // Handle best AI click
+            const handleBestAIClick = () => {
+                const model = CONFIG.MODEL_CONFIG[state.currentBestModel];
+                if (model) {
+                    window.open(model.url, '_blank');
+                    showNotification(`Opening ${model.name}...`);
+                }
+            };
+
+            // Insert example
+            const insertExample = (type) => {
+                const examples = {
+                    email: "Write a professional email to decline a meeting invitation while maintaining good relationships. The tone should be polite but firm.",
+                    code: "Create a Python function to calculate Fibonacci sequence with memoization and proper error handling.",
+                    analysis: "Analyze quarterly sales data and identify top performing products and regions with recommendations.",
+                    creative: "Write a short story about a robot discovering human emotions for the first time."
+                };
+                
+                elements.userInput.value = examples[type] || examples.email;
+                elements.charCountValue.textContent = elements.userInput.value.length;
+                
+                try {
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.INPUT, elements.userInput.value);
+                } catch (error) {
+                    console.error('Failed to save example:', error);
+                }
+            };
+
+            // Toggle other tools
+            const toggleOtherTools = () => {
+                state.showOtherTools = !state.showOtherTools;
+                elements.toolsIcon.textContent = state.showOtherTools ? '▲' : '▼';
+                
+                if (state.showOtherTools) {
+                    elements.otherTools.classList.add('expanded');
+                } else {
+                    elements.otherTools.classList.remove('expanded');
+                }
+            };
+
+            // Determine best AI model based on input
+            const determineBestModel = (input) => {
+                const lower = input.toLowerCase();
+                
+                // Check if user has a preferred model in settings
+                if (state.settings.aiModel && CONFIG.MODEL_CONFIG[state.settings.aiModel]) {
+                    return state.settings.aiModel;
+                }
+                
+                // Otherwise, determine based on content
+                if (lower.includes('code') || lower.includes('python') || lower.includes('function')) {
+                    return 'claude';
+                } else if (lower.includes('analyze') || lower.includes('data') || lower.includes('research')) {
+                    return 'gemini';
+                } else if (lower.includes('creative') || lower.includes('story') || lower.includes('email')) {
+                    return 'chatgpt';
+                } else if (lower.includes('humor') || lower.includes('funny')) {
+                    return 'grok';
+                }
+                
+                return 'gemini'; // Default
+            };
+
+            // Get routing explanation
+            const getRoutingExplanation = (input, modelKey) => {
+                const model = CONFIG.MODEL_CONFIG[modelKey];
+                const lower = input.toLowerCase();
+                
+                if (modelKey === 'claude' && lower.includes('code')) {
+                    return 'Best for coding and technical tasks';
+                } else if (modelKey === 'gemini' && lower.includes('analyze')) {
+                    return 'Best for analysis and data-driven tasks';
+                } else if (modelKey === 'chatgpt' && lower.includes('creative')) {
+                    return 'Best for creative writing and communication';
+                } else if (modelKey === 'grok' && lower.includes('humor')) {
+                    return 'Best for humor and real-time information';
+                }
+                
+                return model?.explanation || 'Chosen based on task type';
+            };
+
+            // Prepare prompt
+            const preparePrompt = () => {
+                const input = elements.userInput.value.trim();
+                
+                if (state.autoConvertTimer) {
+                    clearTimeout(state.autoConvertTimer);
+                    state.autoConvertTimer = null;
+                }
+                
+                if (!input) {
+                    showNotification('Please describe your task to continue', true);
+                    elements.userInput.focus();
+                    return;
+                }
+
+                state.currentBestModel = determineBestModel(input);
+                const bestModel = CONFIG.MODEL_CONFIG[state.currentBestModel];
+                const explanation = getRoutingExplanation(input, state.currentBestModel);
+
+                setLoadingState(true);
+
+                setTimeout(() => {
+                    try {
+                        // Use selected prompt style from settings
+                        const promptStyle = state.settings.promptStyle || 'detailed';
+                        const prompt = CONFIG.INTENT_TEMPLATES[promptStyle].replace('{input}', input);
+                        elements.outputArea.textContent = prompt;
+                        
+                        // Update AI button with model info
+                        const freeTag = bestModel.isFree ? '<span class="model-tag free">Free</span>' : '<span class="model-tag paid">Pro</span>';
+                        elements.bestAIButton.innerHTML = `🚀 Open in ${bestModel.name} ${freeTag}`;
+                        elements.aiExplanation.textContent = explanation;
+                        
+                        showResultCards();
                         
                         setTimeout(() => {
-                            nextCard.style.opacity = '1';
-                            nextCard.style.transform = 'translateY(0)';
-                            nextCard.style.pointerEvents = 'auto';
-                            
-                            // Scroll to top of card
-                            window.scrollTo({
-                                top: nextCard.offsetTop - 100,
-                                behavior: 'smooth'
-                            });
-                            
-                            // Highlight card
-                            nextCard.classList.add('card-highlight');
-                            setTimeout(() => {
-                                nextCard.classList.remove('card-highlight');
-                            }, 1500);
-                            
-                            currentCard = cardNumber;
-                            updateStepDots();
-                            updateProgress();
-                            
-                            // Enable/disable navigation buttons
-                            updateNavigationButtons();
-                            
-                            isAnimating = false;
-                            
-                        }, 50);
+                            scrollToCard(elements.outputCard);
+                            updateProgress(2);
+                        }, 100);
+                        
+                        setTimeout(() => {
+                            updateProgress(3);
+                        }, 500);
+                        
+                    } catch (error) {
+                        showNotification('Failed to generate prompt. Please try again.', true);
+                        console.error('Prompt generation error:', error);
+                    } finally {
+                        setLoadingState(false);
                     }
-                    
-                }, 300);
-            }
-        }
-        
-        function setupNavigation() {
-            // Next to Card 2 (Generate Prompt)
-            document.getElementById('nextToCard2').addEventListener('click', function() {
-                const requirement = document.getElementById('requirement').value.trim();
-                if (!requirement) {
-                    showNotification('Please describe your idea first');
-                    return;
-                }
-                
-                // Generate prompt if not already generated
-                if (typeof generatePrompt === 'function') {
-                    generatePrompt();
-                }
-                
-                // Show prompt ready badge
-                document.getElementById('promptReadyBadge').style.display = 'inline-flex';
-                
-                navigateToCard(2);
-            });
-            
-            // Next to Card 3 (View AI Tools)
-            document.getElementById('nextToCard3').addEventListener('click', function() {
-                const output = document.getElementById('output').value.trim();
-                if (!output) {
-                    showNotification('Please generate a prompt first');
-                    return;
-                }
-                
-                navigateToCard(3);
-            });
-            
-            // Previous navigation
-            document.getElementById('prevToCard1').addEventListener('click', function() {
-                navigateToCard(1);
-            });
-            
-            document.getElementById('prevToCard2').addEventListener('click', function() {
-                navigateToCard(2);
-            });
-            
-            // Restart flow
-            document.getElementById('restartFlow').addEventListener('click', function() {
-                if (typeof resetEverything === 'function') {
-                    resetEverything();
-                }
-                navigateToCard(1);
-            });
-            
-            // Update button states initially
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            // Card 1 next button
-            const requirement = document.getElementById('requirement').value.trim();
-            const nextToCard2 = document.getElementById('nextToCard2');
-            if (nextToCard2) {
-                nextToCard2.disabled = !requirement;
-            }
-            
-            // Card 2 next button
-            const output = document.getElementById('output').value.trim();
-            const nextToCard3 = document.getElementById('nextToCard3');
-            if (nextToCard3) {
-                nextToCard3.disabled = !output;
-            }
-        }
-        
-        // Listen for input changes to update button states
-        document.getElementById('requirement').addEventListener('input', function() {
-            updateNavigationButtons();
-            updateConvertButtonVisibility();
-        });
-        
-        document.getElementById('output').addEventListener('input', updateNavigationButtons);
-        
-        function setupMaximizeFeatures() {
-            const expandInputBtn = document.getElementById('expandInputBtn');
-            const expandOutputBtn = document.getElementById('expandOutputBtn');
-            const closeMaximizeBtn = document.getElementById('closeMaximizeBtn');
-            const expandOverlay = document.getElementById('expandOverlay');
-            
-            let isMaximized = false;
-            let currentMaximizedElement = null;
-            
-            // Input textarea maximize
-            expandInputBtn.addEventListener('click', function() {
-                const textarea = document.getElementById('requirement');
-                if (!isMaximized) {
-                    textarea.classList.add('maximized');
-                    closeMaximizeBtn.classList.add('active');
-                    expandOverlay.style.display = 'block';
-                    isMaximized = true;
-                    currentMaximizedElement = textarea;
-                    textarea.focus();
-                }
-            });
-            
-            // Output textarea maximize
-            expandOutputBtn.addEventListener('click', function() {
-                const textarea = document.getElementById('output');
-                if (!isMaximized) {
-                    textarea.classList.add('maximized');
-                    closeMaximizeBtn.classList.add('active');
-                    expandOverlay.style.display = 'block';
-                    isMaximized = true;
-                    currentMaximizedElement = textarea;
-                }
-            });
-            
-            // Close maximize
-            closeMaximizeBtn.addEventListener('click', closeMaximized);
-            expandOverlay.addEventListener('click', closeMaximized);
-            
-            function closeMaximized() {
-                if (isMaximized && currentMaximizedElement) {
-                    currentMaximizedElement.classList.remove('maximized');
-                    closeMaximizeBtn.classList.remove('active');
-                    expandOverlay.style.display = 'none';
-                    isMaximized = false;
-                    currentMaximizedElement = null;
-                }
-            }
-            
-            // Escape key to close maximize
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && isMaximized) {
-                    closeMaximized();
-                }
-            });
-        }
-        
-        function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', function(e) {
-                // Ctrl/Cmd + Enter to go to next card
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    
-                    if (currentCard === 1) {
-                        document.getElementById('nextToCard2').click();
-                    } else if (currentCard === 2) {
-                        document.getElementById('nextToCard3').click();
-                    }
-                }
-                
-                // Arrow keys for navigation
-                if (e.key === 'ArrowRight' && currentCard < totalCards) {
-                    e.preventDefault();
-                    navigateToCard(currentCard + 1);
-                }
-                
-                if (e.key === 'ArrowLeft' && currentCard > 1) {
-                    e.preventDefault();
-                    navigateToCard(currentCard - 1);
-                }
-            });
-        }
-        
-        function initializeAIRankingExplanation() {
-            const aiRankingExplanation = document.getElementById('aiRankingExplanation');
-            if (aiRankingExplanation) {
-                // Show explanation when card 3 becomes active
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                            if (mutation.target.classList.contains('active') && mutation.target.id === 'card3') {
-                                setTimeout(() => {
-                                    aiRankingExplanation.style.display = 'flex';
-                                }, 300);
-                            } else if (mutation.target.id === 'card3') {
-                                aiRankingExplanation.style.display = 'none';
-                            }
-                        }
-                    });
-                });
-                
-                observer.observe(document.getElementById('card3'), {
-                    attributes: true
-                });
-            }
-        }
-        
-        // Convert Button Visibility Management
-        function updateConvertButtonVisibility() {
-            const requirement = document.getElementById('requirement').value.trim();
-            const convertBtnContainer = document.getElementById('convertButtonContainer');
-            const convertBtn = document.getElementById('convertBtn');
-            
-            if (requirement) {
-                if (convertBtnContainer) convertBtnContainer.style.display = 'block';
-                if (convertBtn) convertBtn.disabled = false;
-            } else {
-                if (convertBtnContainer) convertBtnContainer.style.display = 'none';
-                if (convertBtn) convertBtn.disabled = true;
-            }
-        }
-        
-        // Add input event listener for requirement
-        const requirementInput = document.getElementById('requirement');
-        if (requirementInput) {
-            requirementInput.addEventListener('input', function() {
-                updateConvertButtonVisibility();
-                updateNavigationButtons();
-            });
-        }
-        
-        // Initialize on load
-        updateConvertButtonVisibility();
-    });
-    
-    // Theme Manager Script
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize theme
-        const savedTheme = localStorage.getItem('selectedTheme') || 'cyberpunk-neon';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        
-        // Hide scan line for simple theme
-        if (savedTheme === 'simple') {
-            document.querySelector('.scan-line').style.display = 'none';
-        }
-        
-        // Update theme button
-        const themeBtn = document.getElementById('themeToggleBtn');
-        if (themeBtn) {
-            const themeNames = {
-                'simple': 'Simple',
-                'cyberpunk-neon': 'Cyberpunk Neon',
-                'sunset-glow': 'Sunset Glow',
-                'aurora-magic': 'Aurora Magic',
-                'serenity-bliss': 'Serenity Bliss',
-                'ocean-deep': 'Ocean Deep',
-                'matrix': 'The Matrix',
-                'cybernoir': 'Cyber Noir',
-                'neon-dream': 'Neon Dream',
-                'vaporwave': 'Vaporwave',
-                'toxic-green': 'Toxic Green',
-                'solar-flare': 'Solar Flare',
-                'deep-space': 'Deep Space',
-                'monochrome': 'Monochrome',
-                'auto': 'Auto (System)'
+                }, CONFIG.PROMPT_GENERATION_DELAY);
             };
-            themeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeNames[savedTheme] || 'Theme'}`;
-        }
-        
-        // Theme modal functionality
-        const themeModal = document.getElementById('themeModal');
-        const themeToggleBtn = document.getElementById('themeToggleBtn');
-        const closeThemeBtn = document.getElementById('closeThemeBtn');
-        const closeThemeModalBtn = document.getElementById('closeThemeModalBtn');
-        const resetThemeBtn = document.getElementById('resetThemeBtn');
-        
-        // Open theme modal
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', function() {
-                if (themeModal) {
-                    themeModal.style.display = 'flex';
-                    updateCurrentThemeDisplay();
-                    updateActiveThemeCard();
-                }
-            });
-        }
-        
-        // Close theme modal
-        if (closeThemeBtn) {
-            closeThemeBtn.addEventListener('click', closeThemeModal);
-        }
-        
-        if (closeThemeModalBtn) {
-            closeThemeModalBtn.addEventListener('click', closeThemeModal);
-        }
-        
-        // Close on backdrop click
-        if (themeModal) {
-            themeModal.addEventListener('click', function(e) {
-                if (e.target === themeModal) {
-                    closeThemeModal();
-                }
-            });
-        }
-        
-        // Escape key to close
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && themeModal && themeModal.style.display === 'flex') {
-                closeThemeModal();
-            }
-        });
-        
-        // Theme card click handlers
-        const themeCards = document.querySelectorAll('.theme-card');
-        themeCards.forEach(card => {
-            card.addEventListener('click', function() {
-                const themeId = this.getAttribute('data-theme');
-                if (themeId) {
-                    setTheme(themeId);
-                }
-            });
-        });
-        
-        // Reset theme to Simple
-        if (resetThemeBtn) {
-            resetThemeBtn.addEventListener('click', function() {
-                setTheme('simple');
-            });
-        }
-        
-        // Functions
-        function closeThemeModal() {
-            if (themeModal) {
-                themeModal.style.display = 'none';
-            }
-        }
-        
-        function setTheme(themeId) {
-            // Set theme attribute
-            document.documentElement.setAttribute('data-theme', themeId);
-            
-            // Save to localStorage
-            localStorage.setItem('selectedTheme', themeId);
-            
-            // Show/hide scan line
-            const scanLine = document.querySelector('.scan-line');
-            if (themeId === 'simple') {
-                scanLine.style.display = 'none';
-            } else {
-                scanLine.style.display = 'block';
-            }
-            
-            // Update theme button
-            const themeNames = {
-                'simple': 'Simple',
-                'cyberpunk-neon': 'Cyberpunk Neon',
-                'sunset-glow': 'Sunset Glow',
-                'aurora-magic': 'Aurora Magic',
-                'serenity-bliss': 'Serenity Bliss',
-                'ocean-deep': 'Ocean Deep',
-                'matrix': 'The Matrix',
-                'cybernoir': 'Cyber Noir',
-                'neon-dream': 'Neon Dream',
-                'vaporwave': 'Vaporwave',
-                'toxic-green': 'Toxic Green',
-                'solar-flare': 'Solar Flare',
-                'deep-space': 'Deep Space',
-                'monochrome': 'Monochrome',
-                'auto': 'Auto (System)'
-            };
-            
-            if (themeBtn) {
-                themeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeNames[themeId] || 'Theme'}`;
-            }
-            
-            // Update current theme display
-            updateCurrentThemeDisplay();
-            
-            // Update active theme card
-            updateActiveThemeCard();
-            
-            // Show notification using the global function
-            if (typeof showNotification === 'function') {
-                showNotification(`Theme changed to "${themeNames[themeId] || themeId}"`);
-            }
-            
-            // Close modal after selection
-            setTimeout(() => {
-                closeThemeModal();
-            }, 500);
-        }
-        
-        function updateCurrentThemeDisplay() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const themeNames = {
-                'simple': 'Simple',
-                'cyberpunk-neon': 'Cyberpunk Neon',
-                'sunset-glow': 'Sunset Glow',
-                'aurora-magic': 'Aurora Magic',
-                'serenity-bliss': 'Serenity Bliss',
-                'ocean-deep': 'Ocean Deep',
-                'matrix': 'The Matrix',
-                'cybernoir': 'Cyber Noir',
-                'neon-dream': 'Neon Dream',
-                'vaporwave': 'Vaporwave',
-                'toxic-green': 'Toxic Green',
-                'solar-flare': 'Solar Flare',
-                'deep-space': 'Deep Space',
-                'monochrome': 'Monochrome',
-                'auto': 'Auto (System)'
-            };
-            
-            const themeMoods = {
-                'simple': 'Clean & Minimal',
-                'cyberpunk-neon': 'Energetic & Futuristic',
-                'sunset-glow': 'Warm & Inviting',
-                'aurora-magic': 'Magical & Dreamy',
-                'serenity-bliss': 'Calm & Peaceful',
-                'ocean-deep': 'Professional & Deep',
-                'matrix': 'Green Digital Rain',
-                'cybernoir': 'Black/White/Red Noir',
-                'neon-dream': 'Magenta & Cyan Neon',
-                'vaporwave': 'Pink/Cyan Aesthetic',
-                'toxic-green': 'Neon Toxic Green',
-                'solar-flare': 'Orange & Gold Solar',
-                'deep-space': 'Cosmic Purple & Blue',
-                'monochrome': 'Black & White Minimal',
-                'auto': 'Follows System Preference'
-            };
-            
-            const currentThemeName = document.getElementById('currentThemeName');
-            const currentThemeMood = document.getElementById('currentThemeMood');
-            
-            if (currentThemeName) {
-                currentThemeName.textContent = themeNames[currentTheme] || currentTheme;
-            }
-            if (currentThemeMood) {
-                currentThemeMood.textContent = themeMoods[currentTheme] || '';
-            }
-        }
-        
-        function updateActiveThemeCard() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const themeCards = document.querySelectorAll('.theme-card');
-            
-            themeCards.forEach(card => {
-                card.classList.remove('active');
-                
-                // Remove existing active badges
-                const badges = card.querySelectorAll('.theme-card-badge.active-badge');
-                badges.forEach(badge => badge.remove());
-                
-                // Add active class and badge to current theme
-                if (card.getAttribute('data-theme') === currentTheme) {
-                    card.classList.add('active');
-                    card.insertAdjacentHTML('beforeend', 
-                        '<div class="theme-card-badge active-badge"><i class="fas fa-check"></i> Active</div>'
-                    );
-                }
-            });
-        }
-        
-        // Initialize display
-        updateCurrentThemeDisplay();
-        updateActiveThemeCard();
-    });
-    
-    // AI Model Selector Script
-    document.addEventListener('DOMContentLoaded', function() {
-        const modelSelect = document.getElementById('modelSelect');
-        const selectedModelName = document.getElementById('selectedModelName');
-        
-        if (modelSelect && selectedModelName) {
-            const MODEL_DISPLAY_NAMES = {
-                'gemini-1.5-flash-latest': 'Gemini 1.5 Flash',
-                'gemini-1.5-flash': 'Gemini 1.5 Flash',
-                'gpt-4o-mini': 'GPT-4o Mini',
-                'llama-3.1-8b-instant': 'LLaMA 3.1 8B'
-            };
-            
-            const DEFAULT_MODEL = 'gemini-1.5-flash-latest';
-            const STORAGE_KEY = 'promptcrafter_model';
-            
-            const savedModel = localStorage.getItem(STORAGE_KEY);
-            let currentModel = savedModel || DEFAULT_MODEL;
-            
-            modelSelect.value = currentModel;
-            updateFooterModelDisplay(currentModel);
-            
-            modelSelect.addEventListener('change', function() {
-                const selectedModel = this.value;
-                localStorage.setItem(STORAGE_KEY, selectedModel);
-                currentModel = selectedModel;
-                
-                updateFooterModelDisplay(selectedModel);
-                
-                const optionText = this.options[this.selectedIndex].text;
-                if (typeof showNotification === 'function') {
-                    showNotification(`AI Model set to: ${optionText}`);
-                }
-                
-                const geminiBtn = document.getElementById('geminiBtn');
-                if (geminiBtn) {
-                    if (selectedModel === 'gemini-1.5-flash-latest') {
-                        geminiBtn.style.opacity = '1';
-                        geminiBtn.style.cursor = 'pointer';
-                    } else {
-                        geminiBtn.style.opacity = '0.6';
-                        geminiBtn.style.cursor = 'not-allowed';
-                    }
-                }
-            });
-            
-            const geminiBtn = document.getElementById('geminiBtn');
-            if (geminiBtn) {
-                if (currentModel === 'gemini-1.5-flash-latest') {
-                    geminiBtn.style.opacity = '1';
-                    geminiBtn.style.cursor = 'pointer';
-                } else {
-                    geminiBtn.style.opacity = '0.6';
-                    geminiBtn.style.cursor = 'not-allowed';
-                }
-            }
-            
-            function updateFooterModelDisplay(modelValue) {
-                if (!selectedModelName) return;
-                
-                const displayName = MODEL_DISPLAY_NAMES[modelValue] || modelValue;
-                selectedModelName.textContent = displayName;
-                
-                selectedModelName.className = '';
-                
-                if (modelValue.includes('gemini')) {
-                    selectedModelName.classList.add('model-gemini');
-                } else if (modelValue.includes('gpt')) {
-                    selectedModelName.classList.add('model-gpt');
-                } else if (modelValue.includes('llama')) {
-                    selectedModelName.classList.add('model-llama');
-                }
-            }
-        }
-    });
-    </script>
 
+            // Show notification
+            const showNotification = (message, isError = false) => {
+                // Simple alert for now - can be enhanced with toast notifications
+                if (isError) {
+                    alert(`⚠️ ${message}`);
+                } else {
+                    console.log(`✅ ${message}`);
+                }
+            };
+
+            // Set loading state
+            const setLoadingState = (isLoading) => {
+                elements.prepareBtn.disabled = isLoading;
+                elements.btnText.textContent = isLoading ? 'Preparing...' : 'Prepare Prompt';
+                elements.btnLoading.classList.toggle('hidden', !isLoading);
+            };
+
+            // Show result cards
+            const showResultCards = () => {
+                elements.outputCard.classList.remove('hidden');
+                elements.outputCard.classList.add('animate-slideUp');
+                
+                setTimeout(() => {
+                    elements.aiCard.classList.remove('hidden');
+                    elements.aiCard.classList.add('animate-slideUp');
+                }, 300);
+            };
+
+            // Copy prompt to clipboard
+            const copyPrompt = async () => {
+                const text = elements.outputArea.textContent;
+                if (!text || text.includes('Your optimized prompt will appear here')) {
+                    showNotification('No prompt to copy', true);
+                    return;
+                }
+                
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showNotification('Prompt copied to clipboard!');
+                    
+                    // Visual feedback
+                    const originalText = elements.copyBtn.textContent;
+                    elements.copyBtn.textContent = '✓ Copied!';
+                    elements.copyBtn.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+                    
+                    setTimeout(() => {
+                        elements.copyBtn.textContent = originalText;
+                        elements.copyBtn.classList.remove('bg-green-50', 'text-green-700', 'border-green-200');
+                    }, 2000);
+                } catch (error) {
+                    console.error('Failed to copy text:', error);
+                    showNotification('Failed to copy. Please select and copy manually.', true);
+                }
+            };
+
+            // Scroll to and highlight a card
+            const scrollToCard = (cardElement) => {
+                if (!cardElement) return;
+                
+                const headerHeight = 80;
+                const cardRect = cardElement.getBoundingClientRect();
+                const absoluteCardTop = window.pageYOffset + cardRect.top;
+                const scrollPosition = absoluteCardTop - (window.innerHeight / 2) + (cardRect.height / 2) + headerHeight;
+                
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth'
+                });
+                
+                cardElement.classList.add('highlight', 'animate-highlight');
+                
+                setTimeout(() => {
+                    cardElement.classList.remove('animate-highlight');
+                }, 1500);
+            };
+
+            // Update progress indicator
+            const updateProgress = (step) => {
+                const progressWidth = {
+                    1: '0%',
+                    2: '33%',
+                    3: '66%',
+                    4: '100%'
+                }[step] || '0%';
+                
+                if (elements.progressLine) {
+                    elements.progressLine.style.width = progressWidth;
+                }
+            };
+
+            // Public API
+            return {
+                init,
+                preparePrompt,
+                copyPrompt,
+                openSettings,
+                closeSettings
+            };
+        })();
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            PromptCraft.init();
+        });
+    </script>
 </body>
 </html>
