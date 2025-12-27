@@ -400,6 +400,9 @@ function initializeApp() {
   initializeUI();
   setCurrentPreset(currentPreset);
   
+  // Initialize card transitions
+  initializeCardTransitions();
+  
   const presetInfoEl = document.getElementById("presetInfo");
   if (presetInfoEl) {
     presetInfoEl.style.display = "none"; // Keep hidden permanently (Issue #3)
@@ -410,11 +413,6 @@ function initializeApp() {
 
   setLaunchButtonsEnabled(false);
   initializeTextareaSizing();
-  
-  // REMOVE THIS TEST CODE IF IT EXISTS:
-  // setTimeout(() => {
-  //   showNotification("Test - Can you see this?");
-  // }, 1000);
 }
 
 // ===========================================
@@ -1277,47 +1275,44 @@ function setupEventListeners() {
   /* ===============================
      EXAMPLE BUTTONS
   =============================== */
-/* ===============================
-   EXAMPLE BUTTONS - FIXED (Triggers AI ranking)
-=============================== */
-document.querySelectorAll(".example-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    if (!requirementEl) return;
+  document.querySelectorAll(".example-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!requirementEl) return;
 
-    requirementEl.value = btn.dataset.example;
-    requirementEl.focus();
+      requirementEl.value = btn.dataset.example;
+      requirementEl.focus();
 
-    isConverted = false;
-    const outputEl = document.getElementById("output");
-    if (outputEl) outputEl.value = "";
+      isConverted = false;
+      const outputEl = document.getElementById("output");
+      if (outputEl) outputEl.value = "";
 
-    const badge = document.getElementById("convertedBadge");
-    if (badge) badge.style.display = "none";
+      const badge = document.getElementById("convertedBadge");
+      if (badge) badge.style.display = "none";
 
-    setLaunchButtonsEnabled(false);
-    updateStats(requirementEl.value);
-    
-    // ✅ FIX: Trigger AI tool ranking for examples
-    const requirement = requirementEl.value.trim();
-    if (requirement) {
-      const intent = detectIntentFromText(requirement);
+      setLaunchButtonsEnabled(false);
+      updateStats(requirementEl.value);
       
-      // Update AI tool ranking
-      if (window.AIToolRanker && intent) {
-        window.AIToolRanker.rankAndReorder(intent);
+      // Trigger AI tool ranking for examples
+      const requirement = requirementEl.value.trim();
+      if (requirement) {
+        const intent = detectIntentFromText(requirement);
+        
+        // Update AI tool ranking
+        if (window.AIToolRanker && intent) {
+          window.AIToolRanker.rankAndReorder(intent);
+        }
+        
+        // Also trigger auto-convert if enabled
+        if (autoConvertEnabled && autoConvertDelay > 0) {
+          resetAutoConvertTimer();
+        }
       }
-      
-      // Also trigger auto-convert if enabled
-      if (autoConvertEnabled && autoConvertDelay > 0) {
-        resetAutoConvertTimer();
-      }
-    }
 
-    if (requirementEl.value.trim()) {
-      generatePrompt();
-    }
+      if (requirementEl.value.trim()) {
+        generatePrompt();
+      }
+    });
   });
-});
 
   /* ===============================
      CONVERT BUTTON
@@ -1327,61 +1322,58 @@ document.querySelectorAll(".example-btn").forEach((btn) => {
     ?.addEventListener("click", generatePrompt);
 
   /* ===============================
-     CLEAR INPUT BUTTON - FIXED (Issue #6)
+     CLEAR INPUT BUTTON - FIXED (Issues #2, #3, #6)
   =============================== */
-  /* ===============================
-   CLEAR INPUT BUTTON - FIXED (Issues #2, #3, #6)
-   Now properly toggles clear/undo AND resets cards
-=============================== */
-const clearBtn = document.getElementById("clearInputBtn");
-if (clearBtn) {
-  clearBtn.addEventListener("click", function() {
-    const requirementEl = document.getElementById("requirement");
-    const outputEl = document.getElementById("output");
-    if (!requirementEl) return;
-    
-    if (isUndoState) {
-      // ✅ FIX 3: UNDO - Restore text AND trigger ranking
-      requirementEl.value = lastClearedText;
-      lastClearedText = "";
-      isUndoState = false;
+  const clearBtn = document.getElementById("clearInputBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function() {
+      const requirementEl = document.getElementById("requirement");
+      const outputEl = document.getElementById("output");
+      if (!requirementEl) return;
       
-      // Update button to CLEAR state
-      this.classList.remove("undo-state");
-      this.querySelector('i').className = "fas fa-broom";
-      this.title = "Clear text";
-      
-      // ✅ FIX 2: Trigger ranking if there's content
-      if (requirementEl.value.trim()) {
+      if (isUndoState) {
+        // UNDO - Restore text AND trigger ranking
+        requirementEl.value = lastClearedText;
+        lastClearedText = "";
+        isUndoState = false;
+        
+        // Update button to CLEAR state
+        this.classList.remove("undo-state");
+        this.querySelector('i').className = "fas fa-broom";
+        this.title = "Clear text";
+        
+        // Trigger ranking if there's content
+        if (requirementEl.value.trim()) {
+          handleRequirementInput();
+        }
+        
+        showNotification("Text restored");
+      } else {
+        // CLEAR - Save and clear everything
+        const currentText = requirementEl.value;
+        if (!currentText.trim()) {
+          showNotification("Nothing to clear");
+          return;
+        }
+        
+        lastClearedText = currentText;
+        requirementEl.value = "";
+        requirementEl.focus();
+        isUndoState = true;
+        
+        // Update button to UNDO state IMMEDIATELY
+        this.classList.add("undo-state");
+        this.querySelector('i').className = "fas fa-undo";
+        this.title = "Undo clear";
+        
+        // Trigger reset of Card2 & Card3
         handleRequirementInput();
+        
+        showNotification("Text cleared. Click again to restore.");
       }
-      
-      showNotification("Text restored");
-    } else {
-      // ✅ FIX 3: CLEAR - Save and clear everything
-      const currentText = requirementEl.value;
-      if (!currentText.trim()) {
-        showNotification("Nothing to clear");
-        return;
-      }
-      
-      lastClearedText = currentText;
-      requirementEl.value = "";
-      requirementEl.focus();
-      isUndoState = true;
-      
-      // Update button to UNDO state IMMEDIATELY
-      this.classList.add("undo-state");
-      this.querySelector('i').className = "fas fa-undo";
-      this.title = "Undo clear";
-      
-      // ✅ FIX 2: Trigger reset of Card2 & Card3
-      handleRequirementInput();
-      
-      showNotification("Text cleared. Click again to restore.");
-    }
-  });
-}
+    });
+  }
+
   /* ===============================
      COPY OUTPUT BUTTON
   =============================== */
@@ -1398,37 +1390,35 @@ if (clearBtn) {
 
   document.getElementById("claudeBtn")
     ?.addEventListener("click", () => openAITool("Claude", "https://claude.ai/new"));
-/* ===============================
-   GEMINI BUTTON - UPDATED FOR MODEL SELECTION
-=============================== */
-document.getElementById("geminiBtn")?.addEventListener("click", () => {
-  const outputEl = document.getElementById("output");
-  const prompt = outputEl.value.trim();
-  const selectedModel = localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash";
-  
-  if (!prompt) {
-    showNotification("No prompt to copy");
-    return;
-  }
-  
-  // Only open Gemini if it's the selected model
-  if (selectedModel === "gemini-1.5-flash") {
-    navigator.clipboard.writeText(prompt)
-      .then(() => {
-        showNotification("Prompt copied! Opening Gemini...");
-        setTimeout(() => {
-          window.open("https://gemini.google.com/app", "_blank");
-        }, 500);
-      })
-      .catch(err => {
-        console.error("Failed to copy:", err);
-        showNotification("Failed to copy prompt");
-      });
-  } else {
-    const modelName = MODEL_CONFIG[selectedModel]?.name || selectedModel;
-    showNotification(`Please select Gemini as your AI model (currently using: ${modelName})`);
-  }
-});
+
+  document.getElementById("geminiBtn")?.addEventListener("click", () => {
+    const outputEl = document.getElementById("output");
+    const prompt = outputEl.value.trim();
+    const selectedModel = localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash";
+    
+    if (!prompt) {
+      showNotification("No prompt to copy");
+      return;
+    }
+    
+    // Only open Gemini if it's the selected model
+    if (selectedModel === "gemini-1.5-flash") {
+      navigator.clipboard.writeText(prompt)
+        .then(() => {
+          showNotification("Prompt copied! Opening Gemini...");
+          setTimeout(() => {
+            window.open("https://gemini.google.com/app", "_blank");
+          }, 500);
+        })
+        .catch(err => {
+          console.error("Failed to copy:", err);
+          showNotification("Failed to copy prompt");
+        });
+    } else {
+      const modelName = MODEL_CONFIG[selectedModel]?.name || selectedModel;
+      showNotification(`Please select Gemini as your AI model (currently using: ${modelName})`);
+    }
+  });
 
   document.getElementById("perplexityBtn")
     ?.addEventListener("click", () => openAITool("Perplexity", "https://www.perplexity.ai/"));
@@ -1636,7 +1626,7 @@ function handleRequirementInput() {
   if (!requirement) {
     convertBtn.disabled = true;
     
-    // ✅ FIX 2: Reset Card2 & Card3 when prompt is empty
+    // Reset Card2 & Card3 when prompt is empty
     const outputEl = document.getElementById("output");
     if (outputEl) outputEl.value = "";
     
@@ -1645,7 +1635,7 @@ function handleRequirementInput() {
       window.AIToolRanker.resetToDefault();
     }
     
-    // ✅ FIX 4: Hide the converted badge
+    // Hide the converted badge
     document.getElementById("convertedBadge").style.display = "none";
     
     // Disable launch buttons
@@ -1664,7 +1654,6 @@ function handleRequirementInput() {
     return;
   }
   
-  // Rest of the existing code remains the same...
   convertBtn.disabled = false;
   
   const intent = detectIntentFromText(requirement);
@@ -1677,7 +1666,7 @@ function handleRequirementInput() {
   
   updateStats(requirement);
   
-  // 🔥 FIXED AI TOOL RANKING (Issue #1)
+  // AI TOOL RANKING
   if (window.AIToolRanker && intent) {
     window.AIToolRanker.rankAndReorder(intent);
   }
@@ -1768,9 +1757,6 @@ function clearAutoConvertTimer() {
 
 /* ===============================
    STATS FUNCTIONS
-=============================== */
-/* ===============================
-   STATS FUNCTIONS - FIXED WITH LABELS
 =============================== */
 function updateStats(text) {
   const chars = text.length;
@@ -1974,7 +1960,6 @@ function localFormatter(raw) {
 }
 
 // API-based prompt generation
-// API-based prompt generation
 async function generatePrompt() {
   const requirementEl = document.getElementById("requirement");
   const outputEl = document.getElementById("output");
@@ -2012,7 +1997,7 @@ async function generatePrompt() {
   let generatedPrompt;
 
   try {
-    // ✅ NEW: Get selected model from localStorage
+    // Get selected model from localStorage
     const selectedModel = localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash";
     
     // Map of model names for display
@@ -2026,7 +2011,7 @@ async function generatePrompt() {
     
     console.log(`Generating with model: ${selectedModel} (${modelName})`);
 
-    // ✅ UPDATED: Call Cloudflare Worker WITH MODEL PARAMETER
+    // Call Cloudflare Worker WITH MODEL PARAMETER
     const WORKER_URL = "https://promptcraft-api.vijay-shagunkumar.workers.dev";
     
     const response = await fetch(WORKER_URL, {
@@ -2037,7 +2022,7 @@ async function generatePrompt() {
       },
       body: JSON.stringify({ 
         prompt: raw,
-        model: selectedModel  // ✅ CRITICAL: Send selected model
+        model: selectedModel  // Send selected model
       })
     });
 
@@ -2063,7 +2048,7 @@ async function generatePrompt() {
     document.getElementById("convertedBadge").style.display = "inline-flex";
     setLaunchButtonsEnabled(true);
 
-    // ✅ NEW: Show model used in notification
+    // Show model used in notification
     showNotification(`✓ Prompt generated with ${modelName}`);
 
     if (autoConvertEnabled && raw) {
@@ -2206,6 +2191,31 @@ function showNotification(message) {
     }, 100);
   }, 1000);
 }
+
+// ==========================================
+// CARD TRANSITIONS CODE
+// ==========================================
+
+// Fix for Card Transitions
+function initializeCardTransitions() {
+  const cards = document.querySelectorAll('.step-card');
+  
+  cards.forEach((card, index) => {
+    // Set initial states
+    if (index === 0) {
+      card.classList.add('active');
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+      card.style.position = 'relative';
+    } else {
+      card.classList.remove('active');
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.position = 'absolute';
+    }
+  });
+}
+
 // ======================================================
 // FIXED & ENHANCED AI TOOL RANKING ENGINE (CARD 3) - FIXED (Issue #1)
 // ======================================================
@@ -2547,57 +2557,57 @@ function showNotification(message) {
      Update Best Match Display
   ------------------------------------------ */
 
-function updateBestMatchDisplay(intent, orderedTools) {
-  if (!intent || !orderedTools || orderedTools.length === 0) return;
-  
-  // Clear existing best-match tags from ALL buttons first
-  document.querySelectorAll('.launch-btn').forEach(btn => {
-    btn.classList.remove("best-match");
-    const existingTag = btn.querySelector(".best-match-tag");
-    if (existingTag) existingTag.remove();
-    const existingScore = btn.querySelector(".match-score");
-    if (existingScore) existingScore.remove();
-  });
-  
-  // Only add "Best Match" to the FIRST tool (index 0) if it meets threshold
-  const topToolKey = orderedTools[0];
-  const topTool = AI_TOOL_PROFILES[topToolKey];
-  
-  if (!topTool || topTool.score < 10) return;
-  
-  const topToolBtn = document.getElementById(`${topToolKey}Btn`);
-  if (!topToolBtn) return;
-  
-  // Add best match styling to only the top tool
-  topToolBtn.classList.add("best-match");
-  
-  // Create ONLY ONE tag with 100% score
-  const bestMatchTag = document.createElement("span");
-  bestMatchTag.className = "best-match-tag";
-  bestMatchTag.textContent = "✨ Best Match: 100%";
-  bestMatchTag.style.background = "linear-gradient(135deg, #00FF41, #00F3FF)";
-  bestMatchTag.style.color = "#000";
-  bestMatchTag.style.fontSize = "10px";
-  bestMatchTag.style.fontWeight = "700";
-  bestMatchTag.style.padding = "3px 10px";
-  bestMatchTag.style.borderRadius = "12px";
-  bestMatchTag.style.position = "absolute";
-  bestMatchTag.style.top = "-10px";
-  bestMatchTag.style.left = "50%";
-  bestMatchTag.style.transform = "translateX(-50%)";
-  bestMatchTag.style.zIndex = "10";
-  bestMatchTag.style.boxShadow = "0 0 10px rgba(0, 255, 65, 0.8)";
-  bestMatchTag.style.border = "2px solid #000";
-  bestMatchTag.style.pointerEvents = "none";
-  bestMatchTag.style.textTransform = "uppercase";
-  bestMatchTag.style.letterSpacing = "1px";
-  bestMatchTag.style.fontFamily = "'Courier New', monospace";
-  bestMatchTag.style.textAlign = "center";
-  bestMatchTag.style.minWidth = "120px";
-  bestMatchTag.style.whiteSpace = "nowrap";
-  
-  topToolBtn.appendChild(bestMatchTag);
-}
+  function updateBestMatchDisplay(intent, orderedTools) {
+    if (!intent || !orderedTools || orderedTools.length === 0) return;
+    
+    // Clear existing best-match tags from ALL buttons first
+    document.querySelectorAll('.launch-btn').forEach(btn => {
+      btn.classList.remove("best-match");
+      const existingTag = btn.querySelector(".best-match-tag");
+      if (existingTag) existingTag.remove();
+      const existingScore = btn.querySelector(".match-score");
+      if (existingScore) existingScore.remove();
+    });
+    
+    // Only add "Best Match" to the FIRST tool (index 0) if it meets threshold
+    const topToolKey = orderedTools[0];
+    const topTool = AI_TOOL_PROFILES[topToolKey];
+    
+    if (!topTool || topTool.score < 10) return;
+    
+    const topToolBtn = document.getElementById(`${topToolKey}Btn`);
+    if (!topToolBtn) return;
+    
+    // Add best match styling to only the top tool
+    topToolBtn.classList.add("best-match");
+    
+    // Create ONLY ONE tag with 100% score
+    const bestMatchTag = document.createElement("span");
+    bestMatchTag.className = "best-match-tag";
+    bestMatchTag.textContent = "✨ Best Match: 100%";
+    bestMatchTag.style.background = "linear-gradient(135deg, #00FF41, #00F3FF)";
+    bestMatchTag.style.color = "#000";
+    bestMatchTag.style.fontSize = "10px";
+    bestMatchTag.style.fontWeight = "700";
+    bestMatchTag.style.padding = "3px 10px";
+    bestMatchTag.style.borderRadius = "12px";
+    bestMatchTag.style.position = "absolute";
+    bestMatchTag.style.top = "-10px";
+    bestMatchTag.style.left = "50%";
+    bestMatchTag.style.transform = "translateX(-50%)";
+    bestMatchTag.style.zIndex = "10";
+    bestMatchTag.style.boxShadow = "0 0 10px rgba(0, 255, 65, 0.8)";
+    bestMatchTag.style.border = "2px solid #000";
+    bestMatchTag.style.pointerEvents = "none";
+    bestMatchTag.style.textTransform = "uppercase";
+    bestMatchTag.style.letterSpacing = "1px";
+    bestMatchTag.style.fontFamily = "'Courier New', monospace";
+    bestMatchTag.style.textAlign = "center";
+    bestMatchTag.style.minWidth = "120px";
+    bestMatchTag.style.whiteSpace = "nowrap";
+    
+    topToolBtn.appendChild(bestMatchTag);
+  }
 
   /* ------------------------------------------
      Add Hover Tooltips (Issue #5)
@@ -2676,17 +2686,17 @@ function updateBestMatchDisplay(intent, orderedTools) {
       const ordered = rankAITools(intent);
       reorderLaunchButtons(ordered);
       // Clear ALL best-match tags before adding new ones
-document.querySelectorAll('.launch-btn').forEach(btn => {
-  btn.classList.remove("best-match");
-  const existingTag = btn.querySelector(".best-match-tag");
-  if (existingTag) existingTag.remove();
-  const existingScore = btn.querySelector(".match-score");
-  if (existingScore) existingScore.remove();
-});
+      document.querySelectorAll('.launch-btn').forEach(btn => {
+        btn.classList.remove("best-match");
+        const existingTag = btn.querySelector(".best-match-tag");
+        if (existingTag) existingTag.remove();
+        const existingScore = btn.querySelector(".match-score");
+        if (existingScore) existingScore.remove();
+      });
       
       // Update best match display
       if (ordered.length > 0) {
-updateBestMatchDisplay(intent, ordered);
+        updateBestMatchDisplay(intent, ordered);
       }
       
       // Setup tooltips
@@ -2728,44 +2738,8 @@ window.useTemplate = function (id) {
 window.editTemplate = editTemplate;
 window.deleteTemplate = deleteTemplate;
 window.resetEverything = resetEverything;
-// Test the notification
-setTimeout(() => {
-  showNotification("Test notification - this should work!");
-}, 2000);
-// ... all your existing code ...
 
 // Test the notification
 setTimeout(() => {
-  showNotification("Test notification - this should work!");
+  showNotification("PromptCraft is ready! Start by typing your requirement.");
 }, 2000);
-
-// ==========================================
-// ADD THE CARD TRANSITIONS CODE HERE
-// ==========================================
-
-// Fix for Card Transitions
-function initializeCardTransitions() {
-    const cards = document.querySelectorAll('.step-card');
-    
-    cards.forEach((card, index) => {
-        // Set initial states
-        if (index === 0) {
-            card.classList.add('active');
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-            card.style.position = 'relative';
-        } else {
-            card.classList.remove('active');
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.position = 'absolute';
-        }
-    });
-}
-
-// Update the existing initializeApp function (DON'T ADD A NEW ONE)
-// Find the existing initializeApp function and add the line there
-
-// ==========================================
-// END OF ADDED CODE
-// ==========================================
