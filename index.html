@@ -22,333 +22,352 @@
     <link rel="stylesheet" href="styles/main.css">
     
     <!-- New vertical flow styles -->
-<style>
-    /* Vertical Flow Specific Styles - IMPROVED */
-    .vertical-flow {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 0 20px;
-        position: relative;
-    }
-    
-    /* Progress indicator - IMPROVED */
-    .progress-indicator {
-        position: sticky;
-        top: 10px;
-        z-index: 100;
-        margin: 20px 0 30px;
-        background: rgba(var(--primary-rgb), 0.1);
-        border-radius: 50px;
-        padding: 6px;
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--border-subtle);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .progress-line {
-        height: 6px;
-        background: var(--gradient-brand);
-        border-radius: 3px;
-        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 0%;
-    }
-    
-    /* Step cards - IMPROVED with smooth transitions */
-    .step-card {
-        opacity: 0;
-        transform: translateY(30px);
-        transition: opacity 0.5s ease, transform 0.5s ease;
-        margin-bottom: 30px;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        pointer-events: none;
-        min-height: auto;
-    }
-    
-    .step-card.active {
-        opacity: 1;
-        transform: translateY(0);
-        position: relative;
-        pointer-events: auto;
-    }
-    
-    /* Step indicator in cards - IMPROVED */
-    .step-header .step-indicator {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 10px;
-    }
-    
-    .step-dots {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .step-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--border-subtle);
-        transition: all 0.3s ease;
-    }
-    
-    .step-dot.active {
-        background: var(--primary);
-        transform: scale(1.3);
-        box-shadow: 0 0 10px var(--primary);
-    }
-    
-    .step-dot.completed {
-        background: var(--success);
-    }
-    
-    /* Navigation buttons - IMPROVED */
-    .card-navigation {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid var(--border-subtle);
-        gap: 10px;
-    }
-    
-    .nav-btn {
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border: none;
-        font-family: var(--font-sans);
-        font-size: 14px;
-    }
-    
-    .nav-btn.next {
-        background: var(--gradient-brand);
-        color: var(--text-on-primary);
-        margin-left: auto;
-        box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
-    }
-    
-    .nav-btn.prev {
-        background: rgba(var(--primary-rgb), 0.1);
-        color: var(--primary);
-        border: 1px solid var(--border-subtle);
-    }
-    
-    .nav-btn:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    }
-    
-    .nav-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none !important;
-        box-shadow: none !important;
-    }
-    
-    /* Status badges - IMPROVED */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-family: var(--font-heading);
-    }
-    
-    .status-badge.ready {
-        background: rgba(var(--success-rgb, 0, 255, 65), 0.15);
-        color: var(--success);
-        border: 2px solid var(--success);
-        box-shadow: 0 0 10px rgba(var(--success-rgb), 0.3);
-    }
-    
-    .status-badge.processing {
-        background: rgba(var(--warning-rgb, 255, 215, 0), 0.15);
-        color: var(--warning);
-        border: 2px solid var(--warning);
-        box-shadow: 0 0 10px rgba(var(--warning-rgb), 0.3);
-    }
-    
-    /* Confidence badge */
-    .confidence-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 6px 12px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 700;
-        background: linear-gradient(135deg, var(--success), var(--secondary));
-        color: var(--text-on-primary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Expand buttons for textareas - IMPROVED */
-    .expand-btn {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        z-index: 10;
-        background: rgba(var(--primary-rgb), 0.1);
-        border: 1px solid var(--border-subtle);
-        color: var(--primary);
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .expand-btn:hover {
-        background: rgba(var(--primary-rgb), 0.2);
-        border-color: var(--primary);
-        transform: scale(1.1);
-        box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
-    }
-    
-    /* Maximized textarea/output - IMPROVED */
-    .maximized {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        z-index: 10000 !important;
-        background: var(--bg-panel) !important;
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 80px 40px 40px !important;
-        font-size: 1.1rem !important;
-        resize: none !important;
-        margin: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-    }
-    
-    /* Close maximize button - IMPROVED */
-    .close-maximize-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10001;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(var(--danger-rgb, 255, 68, 68), 0.9);
-        color: white;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    
-    .close-maximize-btn.active {
-        display: flex;
-    }
-    
-    .close-maximize-btn:hover {
-        background: var(--danger);
-        transform: scale(1.1);
-    }
-    
-    /* Animations - IMPROVED */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes slideUp {
-        from { 
+    <style>
+        /* Vertical Flow Specific Styles - IMPROVED */
+        .vertical-flow {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+        }
+        
+        /* Progress indicator - IMPROVED */
+        .progress-indicator {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            margin: 20px 0 30px;
+            background: rgba(var(--primary-rgb), 0.1);
+            border-radius: 50px;
+            padding: 6px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-line {
+            height: 6px;
+            background: var(--gradient-brand);
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+        
+        /* Step cards - IMPROVED with smooth transitions */
+        .step-card {
             opacity: 0;
             transform: translateY(30px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            margin-bottom: 30px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            min-height: auto;
         }
-        to { 
+        
+        .step-card.active {
             opacity: 1;
             transform: translateY(0);
-        }
-    }
-    
-    @keyframes highlightPulse {
-        0%, 100% { 
-            box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
-        }
-        50% { 
-            box-shadow: 0 0 25px 15px rgba(var(--primary-rgb), 0.3);
-        }
-    }
-    
-    .card-highlight {
-        animation: highlightPulse 1.5s ease-in-out;
-    }
-    
-    /* Close button for maximized view */
-    .textarea-wrapper {
-        position: relative;
-    }
-    
-    /* Responsive adjustments - IMPROVED */
-    @media (max-width: 768px) {
-        .vertical-flow {
-            padding: 0 15px;
+            position: relative;
+            pointer-events: auto;
         }
         
-        .step-card {
-            margin-bottom: 20px;
+        /* Step indicator in cards - IMPROVED */
+        .step-header .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
         }
         
-        .maximized {
-            padding: 60px 20px 20px !important;
+        .step-dots {
+            display: flex;
+            gap: 8px;
         }
         
-        .close-maximize-btn {
-            top: 10px;
-            right: 10px;
-            width: 35px;
-            height: 35px;
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-subtle);
+            transition: all 0.3s ease;
         }
         
+        .step-dot.active {
+            background: var(--primary);
+            transform: scale(1.3);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .step-dot.completed {
+            background: var(--success);
+        }
+        
+        /* Navigation buttons - IMPROVED */
         .card-navigation {
-            flex-direction: column;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+            gap: 10px;
         }
         
         .nav-btn {
-            width: 100%;
-            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            font-family: var(--font-sans);
+            font-size: 14px;
         }
         
         .nav-btn.next {
-            margin-left: 0;
+            background: var(--gradient-brand);
+            color: var(--text-on-primary);
+            margin-left: auto;
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
         }
-    }
-    
-    /* Footer fix */
-    .footer {
-        position: relative;
-        z-index: 10;
-        margin-top: 40px;
-    }
-</style>
+        
+        .nav-btn.prev {
+            background: rgba(var(--primary-rgb), 0.1);
+            color: var(--primary);
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Status badges - IMPROVED */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: var(--font-heading);
+        }
+        
+        .status-badge.ready {
+            background: rgba(var(--success-rgb, 0, 255, 65), 0.15);
+            color: var(--success);
+            border: 2px solid var(--success);
+            box-shadow: 0 0 10px rgba(var(--success-rgb), 0.3);
+        }
+        
+        .status-badge.processing {
+            background: rgba(var(--warning-rgb, 255, 215, 0), 0.15);
+            color: var(--warning);
+            border: 2px solid var(--warning);
+            box-shadow: 0 0 10px rgba(var(--warning-rgb), 0.3);
+        }
+        
+        /* Confidence badge */
+        .confidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--success), var(--secondary));
+            color: var(--text-on-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Expand buttons for textareas - IMPROVED */
+        .expand-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            background: rgba(var(--primary-rgb), 0.1);
+            border: 1px solid var(--border-subtle);
+            color: var(--primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .expand-btn:hover {
+            background: rgba(var(--primary-rgb), 0.2);
+            border-color: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
+        }
+        
+        /* Maximized textarea/output - IMPROVED */
+        .maximized {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 10000 !important;
+            background: var(--bg-panel) !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 80px 40px 40px !important;
+            font-size: 1.1rem !important;
+            resize: none !important;
+            margin: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        
+        /* Close maximize button - IMPROVED */
+        .close-maximize-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(var(--danger-rgb, 255, 68, 68), 0.9);
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close-maximize-btn.active {
+            display: flex;
+        }
+        
+        .close-maximize-btn:hover {
+            background: var(--danger);
+            transform: scale(1.1);
+        }
+        
+        /* Animations - IMPROVED */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes highlightPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+            }
+            50% { 
+                box-shadow: 0 0 25px 15px rgba(var(--primary-rgb), 0.3);
+            }
+        }
+        
+        .card-highlight {
+            animation: highlightPulse 1.5s ease-in-out;
+        }
+        
+        /* Close button for maximized view */
+        .textarea-wrapper {
+            position: relative;
+        }
+        
+        /* Responsive adjustments - IMPROVED */
+        @media (max-width: 768px) {
+            .vertical-flow {
+                padding: 0 15px;
+            }
+            
+            .step-card {
+                margin-bottom: 20px;
+            }
+            
+            .maximized {
+                padding: 60px 20px 20px !important;
+            }
+            
+            .close-maximize-btn {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            
+            .card-navigation {
+                flex-direction: column;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .nav-btn.next {
+                margin-left: 0;
+            }
+        }
+        
+        /* Footer fix */
+        .footer {
+            position: relative;
+            z-index: 10;
+            margin-top: 40px;
+        }
+        
+        /* AI Ranking Explanation */
+        .ai-ranking-explanation {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            padding: 12px 16px !important;
+            background: rgba(var(--primary-rgb), 0.1) !important;
+            border: 1px solid var(--border-subtle) !important;
+            border-radius: var(--radius-md) !important;
+            margin-bottom: 20px !important;
+            font-size: 14px !important;
+            color: var(--text-secondary) !important;
+        }
+        
+        .ai-ranking-explanation i {
+            color: var(--primary) !important;
+            font-size: 16px !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -408,137 +427,137 @@
 
         <!-- MAIN WORKFLOW - VERTICAL FLOW -->
         <main class="workflow">
-<!-- CARD 1: YOUR IDEA -->
-<section id="card1" class="step-card active">
-    <div class="step-header">
-        <div class="step-indicator">
-            <div class="step-dots">
-                <div class="step-dot active"></div>
-                <div class="step-dot"></div>
-                <div class="step-dot"></div>
-            </div>
-            <div>
-                <h2>STEP 1: DESCRIBE YOUR IDEA</h2>
-                <p class="step-subtitle">Tell us what you want the AI to do</p>
-            </div>
-        </div>
-        <div class="step-meta">
-            <span class="meta-pill">
-                <i class="fas fa-clock"></i>
-                <span id="timerValue">60s</span>
-            </span>
-        </div>
-    </div>
-
-    <div id="intentRow" class="intent-row" style="display:none;">
-        <div id="intentScroll" class="intent-scroll"></div>
-    </div>
-
-    <div class="chip-row">
-        <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
-            <i class="fas fa-envelope"></i> Email
-        </div>
-        <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
-            <i class="fas fa-code"></i> Code
-        </div>
-        <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
-            <i class="fas fa-chart-line"></i> Analysis
-        </div>
-        <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
-            <i class="fas fa-pen"></i> Writing
-        </div>
-    </div>
-
-    <!-- ADDED: Convert button here -->
-    <div id="convertButtonContainer" style="margin: 16px 0; display: none;">
-        <button id="convertBtn" class="btn-primary btn-full">
-            <i class="fas fa-magic"></i> Convert to Prompt
-        </button>
-    </div>
-
-    <div class="auto-row">
-        <label class="toggle-switch">
-            <input type="checkbox" id="autoConvert" checked>
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">Auto-Convert</span>
-        </label>
-        <span id="autoConvertCountdown" style="display:none;">Auto-convert in 60s</span>
-    </div>
-
-    <div class="field-block">
-        <div class="textarea-wrapper">
-            <textarea id="requirement" class="textarea-idea" placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."></textarea>
-            <button id="expandInputBtn" class="expand-btn" title="Maximize">
-                <i class="fas fa-expand-alt"></i>
-            </button>
-            <div class="textarea-buttons">
-                <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
-                    <i class="fas fa-broom"></i>
-                </button>
-                <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
-                    <i class="fas fa-microphone"></i>
-                </button>
-            </div>
-        </div>
-        <div id="voiceInputStatus" class="voice-status" style="display: none;">
-            <i class="fas fa-microphone"></i> Listening...
-        </div>
-    </div>
-
-    <div class="stats-row">
-        <span id="charCount">0 characters</span>
-        <span id="wordCount">0 words</span>
-        <span id="lineCount">1 line</span>
-    </div>
-
-    <div class="card-navigation">
-        <button id="nextToCard2" class="nav-btn next">
-            <span>Generate Prompt</span>
-            <i class="fas fa-arrow-right"></i>
-        </button>
-    </div>
-
-    <div style="margin-top: 20px;">
-        <button id="resetBtn" class="btn-ghost-small" style="width: 100%;">
-            <i class="fas fa-redo"></i> Reset Everything
-        </button>
-    </div>
-
-    <div class="template-section" style="margin-top: 20px;">
-        <div class="template-toggle" id="toggleTemplatesBtn">
-            <div class="template-toggle-left">
-                <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
-                <span>Template Library</span>
-            </div>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-        
-        <div id="templatesPanel" class="templates-panel" style="display: none;">
-            <div class="templates-header">
-                <div class="templates-header-left">
-                    <div class="templates-title">Templates</div>
-                    <div class="templates-sub">Save and reuse prompt patterns</div>
+            <!-- CARD 1: YOUR IDEA -->
+            <section id="card1" class="step-card active">
+                <div class="step-header">
+                    <div class="step-indicator">
+                        <div class="step-dots">
+                            <div class="step-dot active"></div>
+                            <div class="step-dot"></div>
+                            <div class="step-dot"></div>
+                        </div>
+                        <div>
+                            <h2>STEP 1: DESCRIBE YOUR IDEA</h2>
+                            <p class="step-subtitle">Tell us what you want the AI to do</p>
+                        </div>
+                    </div>
+                    <div class="step-meta">
+                        <span class="meta-pill">
+                            <i class="fas fa-clock"></i>
+                            <span id="timerValue">60s</span>
+                        </span>
+                    </div>
                 </div>
-                <div class="templates-actions-inline">
-                    <button id="addTemplateBtn" class="btn-ghost-small">
-                        <i class="fas fa-plus"></i> New Template
+
+                <div id="intentRow" class="intent-row" style="display:none;">
+                    <div id="intentScroll" class="intent-scroll"></div>
+                </div>
+
+                <div class="chip-row">
+                    <div class="chip example-btn" data-example="Write a professional email to my manager requesting leave for 3 days.">
+                        <i class="fas fa-envelope"></i> Email
+                    </div>
+                    <div class="chip example-btn" data-example="Create a Python function to validate email addresses with regex.">
+                        <i class="fas fa-code"></i> Code
+                    </div>
+                    <div class="chip example-btn" data-example="Analyze market trends for electric vehicles in 2024.">
+                        <i class="fas fa-chart-line"></i> Analysis
+                    </div>
+                    <div class="chip example-btn" data-example="Write a LinkedIn post about AI productivity tools.">
+                        <i class="fas fa-pen"></i> Writing
+                    </div>
+                </div>
+
+                <!-- ADDED: Convert button here -->
+                <div id="convertButtonContainer" style="margin: 16px 0; display: none;">
+                    <button id="convertBtn" class="btn-primary btn-full">
+                        <i class="fas fa-magic"></i> Convert to Prompt
                     </button>
                 </div>
-            </div>
-            
-            <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
-            
-            <div id="templateCategories" class="template-categories"></div>
-            
-            <div id="templatesGrid" class="templates-grid"></div>
-            
-            <div id="emptyTemplates" class="empty-state" style="display: none;">
-                <i class="fas fa-inbox"></i>
-                <div>No templates yet. Create your first one!</div>
-            </div>
-        </div>
-    </div>
-</section> <!-- THIS CLOSING TAG IS IMPORTANT -->
+
+                <div class="auto-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoConvert" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Auto-Convert</span>
+                    </label>
+                    <span id="autoConvertCountdown" style="display:none;">Auto-convert in 60s</span>
+                </div>
+
+                <div class="field-block">
+                    <div class="textarea-wrapper">
+                        <textarea id="requirement" class="textarea-idea" placeholder="Example: Write a professional email to my manager requesting leave for 3 days..."></textarea>
+                        <button id="expandInputBtn" class="expand-btn" title="Maximize">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <div class="textarea-buttons">
+                            <button id="clearInputBtn" class="clear-input-btn" title="Clear text">
+                                <i class="fas fa-broom"></i>
+                            </button>
+                            <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="voiceInputStatus" class="voice-status" style="display: none;">
+                        <i class="fas fa-microphone"></i> Listening...
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <span id="charCount">0 characters</span>
+                    <span id="wordCount">0 words</span>
+                    <span id="lineCount">1 line</span>
+                </div>
+
+                <div class="card-navigation">
+                    <button id="nextToCard2" class="nav-btn next">
+                        <span>Generate Prompt</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button id="resetBtn" class="btn-ghost-small" style="width: 100%;">
+                        <i class="fas fa-redo"></i> Reset Everything
+                    </button>
+                </div>
+
+                <div class="template-section" style="margin-top: 20px;">
+                    <div class="template-toggle" id="toggleTemplatesBtn">
+                        <div class="template-toggle-left">
+                            <span class="template-toggle-eye"><i class="fas fa-eye"></i></span>
+                            <span>Template Library</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div id="templatesPanel" class="templates-panel" style="display: none;">
+                        <div class="templates-header">
+                            <div class="templates-header-left">
+                                <div class="templates-title">Templates</div>
+                                <div class="templates-sub">Save and reuse prompt patterns</div>
+                            </div>
+                            <div class="templates-actions-inline">
+                                <button id="addTemplateBtn" class="btn-ghost-small">
+                                    <i class="fas fa-plus"></i> New Template
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <input type="text" id="templateSearch" class="input-search" placeholder="Search templates...">
+                        
+                        <div id="templateCategories" class="template-categories"></div>
+                        
+                        <div id="templatesGrid" class="templates-grid"></div>
+                        
+                        <div id="emptyTemplates" class="empty-state" style="display: none;">
+                            <i class="fas fa-inbox"></i>
+                            <div>No templates yet. Create your first one!</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- CARD 2: STRUCTURED PROMPT -->
             <section id="card2" class="step-card">
@@ -773,7 +792,7 @@
         </footer>
     </div>
 
-    <!-- MODALS (same as before) -->
+    <!-- MODALS -->
     <div id="settingsModal" class="modal-backdrop" style="display: none;">
         <div class="modal">
             <div class="modal-header">
@@ -781,7 +800,6 @@
                 <button id="closeSettingsBtn" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Settings content same as before -->
                 <div class="form-group">
                     <label class="form-label" for="modelSelect">
                         <i class="fas fa-brain"></i> AI Model
@@ -859,7 +877,6 @@
                 <button id="closeTemplateBtn" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Template modal content same as before -->
                 <div class="form-group">
                     <label class="form-label" for="templateName">
                         <i class="fas fa-heading"></i> Template Name
@@ -917,7 +934,6 @@
     </div>
 
     <div id="themeModal" class="modal-backdrop" style="display: none;">
-        <!-- Theme modal same as before -->
         <div class="modal" style="max-width: 550px;">
             <div class="modal-header">
                 <h3><i class="fas fa-palette"></i> Select Theme</h3>
@@ -932,8 +948,7 @@
                     </div>
                     
                     <div class="theme-grid" id="themeGrid">
-                        <!-- Theme cards same as before -->
-                        <!-- ... -->
+                        <!-- Theme cards will be populated by JavaScript -->
                     </div>
                     
                     <div class="theme-hint">
@@ -963,11 +978,12 @@
     
     <!-- New Vertical Flow JavaScript -->
     <script>
-    // Vertical Flow Navigation System
+    // Vertical Flow Navigation System - IMPROVED
     document.addEventListener('DOMContentLoaded', function() {
         // State management
         let currentCard = 1;
         const totalCards = 3;
+        let isAnimating = false;
         
         // Initialize cards
         initializeCards();
@@ -984,11 +1000,31 @@
         // Setup keyboard shortcuts
         setupKeyboardShortcuts();
         
+        // Initialize AI ranking explanation
+        initializeAIRankingExplanation();
+        
+        // Initialize on load
+        setTimeout(() => {
+            updateNavigationButtons();
+            updateConvertButtonVisibility();
+        }, 100);
+        
         function initializeCards() {
             // Hide all cards except first
             document.querySelectorAll('.step-card').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.pointerEvents = 'none';
+                card.style.position = 'absolute';
+                
                 if (index === 0) {
-                    card.classList.add('active');
+                    setTimeout(() => {
+                        card.classList.add('active');
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                        card.style.position = 'relative';
+                        card.style.pointerEvents = 'auto';
+                    }, 100);
                 } else {
                     card.classList.remove('active');
                 }
@@ -1020,46 +1056,55 @@
         
         function navigateToCard(cardNumber) {
             if (cardNumber < 1 || cardNumber > totalCards) return;
+            if (isAnimating) return;
+            
+            isAnimating = true;
             
             // Animate out current card
             const current = document.querySelector('.step-card.active');
             if (current) {
                 current.style.opacity = '0';
-                current.style.transform = 'translateY(20px)';
+                current.style.transform = 'translateY(30px)';
+                current.style.pointerEvents = 'none';
                 
                 setTimeout(() => {
                     current.classList.remove('active');
-                    current.style.opacity = '';
-                    current.style.transform = '';
+                    current.style.position = 'absolute';
                     
                     // Show new card
                     const nextCard = document.getElementById(`card${cardNumber}`);
                     if (nextCard) {
+                        nextCard.style.position = 'relative';
                         nextCard.classList.add('active');
-                        nextCard.style.opacity = '0';
-                        nextCard.style.transform = 'translateY(20px)';
                         
                         setTimeout(() => {
                             nextCard.style.opacity = '1';
                             nextCard.style.transform = 'translateY(0)';
+                            nextCard.style.pointerEvents = 'auto';
                             
-                            // Scroll to card
-                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Scroll to top of card
+                            window.scrollTo({
+                                top: nextCard.offsetTop - 100,
+                                behavior: 'smooth'
+                            });
                             
                             // Highlight card
                             nextCard.classList.add('card-highlight');
                             setTimeout(() => {
                                 nextCard.classList.remove('card-highlight');
                             }, 1500);
+                            
+                            currentCard = cardNumber;
+                            updateStepDots();
+                            updateProgress();
+                            
+                            // Enable/disable navigation buttons
+                            updateNavigationButtons();
+                            
+                            isAnimating = false;
+                            
                         }, 50);
                     }
-                    
-                    currentCard = cardNumber;
-                    updateStepDots();
-                    updateProgress();
-                    
-                    // Enable/disable navigation buttons
-                    updateNavigationButtons();
                     
                 }, 300);
             }
@@ -1087,6 +1132,12 @@
             
             // Next to Card 3 (View AI Tools)
             document.getElementById('nextToCard3').addEventListener('click', function() {
+                const output = document.getElementById('output').value.trim();
+                if (!output) {
+                    showNotification('Please generate a prompt first');
+                    return;
+                }
+                
                 navigateToCard(3);
             });
             
@@ -1107,21 +1158,6 @@
                 navigateToCard(1);
             });
             
-            // Auto navigation when prompt is generated
-            const originalGeneratePrompt = window.generatePrompt;
-            if (originalGeneratePrompt) {
-                window.generatePrompt = function(...args) {
-                    const result = originalGeneratePrompt.apply(this, args);
-                    
-                    // Navigate to card 2 after generating prompt
-                    setTimeout(() => {
-                        navigateToCard(2);
-                    }, 500);
-                    
-                    return result;
-                };
-            }
-            
             // Update button states initially
             updateNavigationButtons();
         }
@@ -1129,15 +1165,25 @@
         function updateNavigationButtons() {
             // Card 1 next button
             const requirement = document.getElementById('requirement').value.trim();
-            document.getElementById('nextToCard2').disabled = !requirement;
+            const nextToCard2 = document.getElementById('nextToCard2');
+            if (nextToCard2) {
+                nextToCard2.disabled = !requirement;
+            }
             
             // Card 2 next button
             const output = document.getElementById('output').value.trim();
-            document.getElementById('nextToCard3').disabled = !output;
+            const nextToCard3 = document.getElementById('nextToCard3');
+            if (nextToCard3) {
+                nextToCard3.disabled = !output;
+            }
         }
         
         // Listen for input changes to update button states
-        document.getElementById('requirement').addEventListener('input', updateNavigationButtons);
+        document.getElementById('requirement').addEventListener('input', function() {
+            updateNavigationButtons();
+            updateConvertButtonVisibility();
+        });
+        
         document.getElementById('output').addEventListener('input', updateNavigationButtons);
         
         function setupMaximizeFeatures() {
@@ -1222,48 +1268,62 @@
             });
         }
         
-        // Initialize AI ranking explanation
-        const aiRankingExplanation = document.getElementById('aiRankingExplanation');
-        if (aiRankingExplanation) {
-            // Show explanation when card 3 is active
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        const isActive = mutation.target.classList.contains('active');
-                        if (isActive && currentCard === 3) {
-                            aiRankingExplanation.style.display = 'flex';
+        function initializeAIRankingExplanation() {
+            const aiRankingExplanation = document.getElementById('aiRankingExplanation');
+            if (aiRankingExplanation) {
+                // Show explanation when card 3 becomes active
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            if (mutation.target.classList.contains('active') && mutation.target.id === 'card3') {
+                                setTimeout(() => {
+                                    aiRankingExplanation.style.display = 'flex';
+                                }, 300);
+                            } else if (mutation.target.id === 'card3') {
+                                aiRankingExplanation.style.display = 'none';
+                            }
                         }
-                    }
+                    });
                 });
-            });
+                
+                observer.observe(document.getElementById('card3'), {
+                    attributes: true
+                });
+            }
+        }
+        
+        // Convert Button Visibility Management
+        function updateConvertButtonVisibility() {
+            const requirement = document.getElementById('requirement').value.trim();
+            const convertBtnContainer = document.getElementById('convertButtonContainer');
+            const convertBtn = document.getElementById('convertBtn');
             
-            observer.observe(document.getElementById('card3'), {
-                attributes: true
+            if (requirement) {
+                if (convertBtnContainer) convertBtnContainer.style.display = 'block';
+                if (convertBtn) convertBtn.disabled = false;
+            } else {
+                if (convertBtnContainer) convertBtnContainer.style.display = 'none';
+                if (convertBtn) convertBtn.disabled = true;
+            }
+        }
+        
+        // Add input event listener for requirement
+        const requirementInput = document.getElementById('requirement');
+        if (requirementInput) {
+            requirementInput.addEventListener('input', function() {
+                updateConvertButtonVisibility();
+                updateNavigationButtons();
             });
         }
         
-        // Update your existing app.js integration
-        // Override the original convert button functionality
-        const originalConvertBtn = document.querySelector('#convertBtn');
-        if (originalConvertBtn) {
-            originalConvertBtn.style.display = 'none';
-        }
-        
-        // Override reset to include navigation reset
-        const originalResetEverything = window.resetEverything;
-        if (originalResetEverything) {
-            window.resetEverything = function() {
-                originalResetEverything();
-                navigateToCard(1);
-                updateNavigationButtons();
-            };
-        }
+        // Initialize on load
+        updateConvertButtonVisibility();
     });
     
     // Theme Manager Script
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize theme
-        const savedTheme = localStorage.getItem('selectedTheme') || 'simple';
+        const savedTheme = localStorage.getItem('selectedTheme') || 'cyberpunk-neon';
         document.documentElement.setAttribute('data-theme', savedTheme);
         
         // Hide scan line for simple theme
@@ -1305,7 +1365,7 @@
         if (themeToggleBtn) {
             themeToggleBtn.addEventListener('click', function() {
                 if (themeModal) {
-                    themeModal.style.display = 'block';
+                    themeModal.style.display = 'flex';
                     updateCurrentThemeDisplay();
                     updateActiveThemeCard();
                 }
@@ -1332,7 +1392,7 @@
         
         // Escape key to close
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && themeModal && themeModal.style.display === 'block') {
+            if (e.key === 'Escape' && themeModal && themeModal.style.display === 'flex') {
                 closeThemeModal();
             }
         });
@@ -1567,43 +1627,6 @@
             }
         }
     });
-   // =============================================
-    // ADD YOUR NEW CODE RIGHT HERE (after line above)
-    // =============================================
-    
-    // Convert Button Visibility Management
-    function updateConvertButtonVisibility() {
-        const requirement = document.getElementById('requirement').value.trim();
-        const convertBtnContainer = document.getElementById('convertButtonContainer');
-        const convertBtn = document.getElementById('convertBtn');
-        
-        if (requirement) {
-            if (convertBtnContainer) convertBtnContainer.style.display = 'block';
-            if (convertBtn) convertBtn.disabled = false;
-        } else {
-            if (convertBtnContainer) convertBtnContainer.style.display = 'none';
-            if (convertBtn) convertBtn.disabled = true;
-        }
-    }
-    
-    // Add input event listener for requirement
-    const requirementInput = document.getElementById('requirement');
-    if (requirementInput) {
-        requirementInput.addEventListener('input', function() {
-            updateConvertButtonVisibility();
-            // Also call the existing navigation update if it exists
-            if (typeof updateNavigationButtons === 'function') {
-                updateNavigationButtons();
-            }
-        });
-    }
-    
-  // Initialize on load
-updateConvertButtonVisibility();
-
-    // =============================================
-    // END OF NEW CODE
-    // =============================================
     </script>
 
 </body>
