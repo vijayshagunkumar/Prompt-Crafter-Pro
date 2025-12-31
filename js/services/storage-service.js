@@ -1,57 +1,27 @@
-// LocalStorage wrapper with TTL support
+/**
+ * Storage Service
+ * Handles localStorage with prefixing and error handling
+ */
 class StorageService {
     constructor() {
         this.prefix = 'promptcraft_';
-        this.memoryCache = new Map();
-        this.cacheTTL = 5 * 60 * 1000; // 5 minutes
     }
 
-    // Basic CRUD operations
-    set(key, value, ttl = null) {
-        const storageKey = this.prefix + key;
-        const item = {
-            data: value,
-            timestamp: Date.now(),
-            ttl: ttl
-        };
-        
+    // Core methods
+    set(key, value) {
         try {
-            localStorage.setItem(storageKey, JSON.stringify(item));
-            this.memoryCache.set(storageKey, item);
+            localStorage.setItem(this.prefix + key, JSON.stringify(value));
             return true;
         } catch (error) {
             console.error('Storage set error:', error);
-            // Fallback to memory cache if localStorage fails
-            this.memoryCache.set(storageKey, item);
             return false;
         }
     }
 
     get(key, defaultValue = null) {
-        const storageKey = this.prefix + key;
-        
-        // Check memory cache first
-        const cached = this.memoryCache.get(storageKey);
-        if (cached && this.isValid(cached)) {
-            return cached.data;
-        }
-        
         try {
-            const itemStr = localStorage.getItem(storageKey);
-            if (!itemStr) return defaultValue;
-            
-            const item = JSON.parse(itemStr);
-            
-            // Check if item is expired
-            if (!this.isValid(item)) {
-                this.remove(key);
-                return defaultValue;
-            }
-            
-            // Update memory cache
-            this.memoryCache.set(storageKey, item);
-            
-            return item.data;
+            const item = localStorage.getItem(this.prefix + key);
+            return item ? JSON.parse(item) : defaultValue;
         } catch (error) {
             console.error('Storage get error:', error);
             return defaultValue;
@@ -59,210 +29,145 @@ class StorageService {
     }
 
     remove(key) {
-        const storageKey = this.prefix + key;
-        
         try {
-            localStorage.removeItem(storageKey);
+            localStorage.removeItem(this.prefix + key);
+            return true;
         } catch (error) {
             console.error('Storage remove error:', error);
+            return false;
         }
-        
-        this.memoryCache.delete(storageKey);
     }
 
     clear(prefix = null) {
-        const targetPrefix = prefix ? this.prefix + prefix : this.prefix;
-        
         try {
-            // Get all keys
-            const keys = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith(targetPrefix)) {
-                    keys.push(key);
+            if (prefix) {
+                const keys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith(this.prefix + prefix)) {
+                        keys.push(key);
+                    }
                 }
+                keys.forEach(key => localStorage.removeItem(key));
+            } else {
+                const keys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith(this.prefix)) {
+                        keys.push(key);
+                    }
+                }
+                keys.forEach(key => localStorage.removeItem(key));
             }
-            
-            // Remove matching keys
-            keys.forEach(key => localStorage.removeItem(key));
-            
+            return true;
         } catch (error) {
             console.error('Storage clear error:', error);
-        }
-        
-        // Clear memory cache
-        if (prefix) {
-            for (const key of this.memoryCache.keys()) {
-                if (key.startsWith(targetPrefix)) {
-                    this.memoryCache.delete(key);
-                }
-            }
-        } else {
-            this.memoryCache.clear();
-        }
-    }
-
-    keys(prefix = null) {
-        const targetPrefix = prefix ? this.prefix + prefix : this.prefix;
-        const keys = [];
-        
-        try {
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith(targetPrefix)) {
-                    keys.push(key.replace(targetPrefix, ''));
-                }
-            }
-        } catch (error) {
-            console.error('Storage keys error:', error);
-        }
-        
-        return keys;
-    }
-
-    // Check if storage item is valid (not expired)
-    isValid(item) {
-        if (!item || !item.timestamp) return false;
-        
-        const now = Date.now();
-        const age = now - item.timestamp;
-        
-        // Check TTL if set
-        if (item.ttl && age > item.ttl) {
             return false;
         }
-        
-        return true;
     }
 
-    // Specific app data methods
+    // App-specific methods
     saveSettings(settings) {
         return this.set('settings', settings);
     }
 
-    loadSettings(defaultSettings = {}) {
-        return this.get('settings', defaultSettings);
-    }
-
-    saveTemplates(templates) {
-        return this.set('templates', templates);
-    }
-
-    loadTemplates(defaultTemplates = []) {
-        return this.get('templates', defaultTemplates);
-    }
-
-    saveHistory(history) {
-        return this.set('history', history);
-    }
-
-    loadHistory(defaultHistory = []) {
-        return this.get('history', defaultHistory);
+    loadSettings() {
+        return this.get('settings', {});
     }
 
     saveTheme(theme) {
         return this.set('theme', theme);
     }
 
-    loadTheme(defaultTheme = 'dark') {
-        return this.get('theme', defaultTheme);
+    loadTheme(defaultValue = 'dark') {
+        return this.get('theme', defaultValue);
     }
 
     saveModel(model) {
         return this.set('model', model);
     }
 
-    loadModel(defaultModel = 'gemini-1.5-flash') {
-        return this.get('model', defaultModel);
+    loadModel(defaultValue = 'gemini-1.5-flash') {
+        return this.get('model', defaultValue);
     }
 
-    // Usage statistics
-    incrementUsageCount() {
-        const count = this.get('usage_count', 0);
-        this.set('usage_count', count + 1);
-        return count + 1;
+    saveVoiceLanguage(language) {
+        return this.set('voice_language', language);
     }
 
-    getUsageCount() {
-        return this.get('usage_count', 0);
+    loadVoiceLanguage(defaultValue = 'en-US') {
+        return this.get('voice_language', defaultValue);
     }
 
-    // Export/import all data
-    exportData() {
-        const data = {};
-        const keys = this.keys();
-        
-        keys.forEach(key => {
-            data[key] = this.get(key);
-        });
-        
+    saveHistory(history) {
+        return this.set('prompt_history', history);
+    }
+
+    loadHistory(defaultValue = []) {
+        return this.get('prompt_history', defaultValue);
+    }
+
+    saveTemplates(templates) {
+        return this.set('templates', templates);
+    }
+
+    loadTemplates(defaultValue = []) {
+        return this.get('templates', defaultValue);
+    }
+
+    saveAutoDelay(delay) {
+        return this.set('auto_delay', delay);
+    }
+
+    loadAutoDelay(defaultValue = 0) {
+        return this.get('auto_delay', defaultValue);
+    }
+
+    // Voice settings
+    getVoiceSettings() {
         return {
-            version: '1.0',
-            timestamp: new Date().toISOString(),
-            data: data
+            inputLanguage: this.get('voice_input_lang', 'en-US'),
+            outputLanguage: this.get('voice_output_lang', 'en-US'),
+            enabled: this.get('voice_enabled', true)
         };
     }
 
-    importData(exportData, overwrite = false) {
-        if (!exportData || !exportData.data) {
-            throw new Error('Invalid export data');
-        }
-        
-        const importedKeys = Object.keys(exportData.data);
-        let importedCount = 0;
-        
-        importedKeys.forEach(key => {
-            if (overwrite || !this.get(key)) {
-                this.set(key, exportData.data[key]);
-                importedCount++;
-            }
-        });
-        
-        return importedCount;
+    saveVoiceSettings(settings) {
+        this.set('voice_input_lang', settings.inputLanguage);
+        this.set('voice_output_lang', settings.outputLanguage);
+        this.set('voice_enabled', settings.enabled);
+        return true;
     }
 
-    // Storage quota management
-    getQuotaInfo() {
-        try {
-            let used = 0;
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith(this.prefix)) {
-                    used += localStorage.getItem(key).length;
-                }
-            }
-            
-            // Convert to KB
-            used = Math.round((used / 1024) * 100) / 100;
-            
-            // Note: localStorage quota varies by browser (usually 5-10MB)
-            return {
-                usedKB: used,
-                percentage: Math.min(100, (used / 5120) * 100) // Assuming 5MB quota
-            };
-        } catch (error) {
-            return { usedKB: 0, percentage: 0 };
-        }
+    // App state
+    saveAppState(state) {
+        return this.set('app_state', state);
     }
 
-    // Cleanup expired items
-    cleanupExpired() {
-        const keys = this.keys();
-        let cleaned = 0;
-        
-        keys.forEach(key => {
-            const item = this.get(key, null, false); // Don't auto-remove
-            if (item === null) {
-                this.remove(key);
-                cleaned++;
-            }
-        });
-        
-        return cleaned;
+    loadAppState(defaultValue = {}) {
+        return this.get('app_state', defaultValue);
+    }
+
+    // Recent items
+    saveRecentItems(items) {
+        return this.set('recent_items', items);
+    }
+
+    loadRecentItems(defaultValue = []) {
+        return this.get('recent_items', defaultValue);
+    }
+
+    // User preferences
+    savePreferences(prefs) {
+        return this.set('preferences', prefs);
+    }
+
+    loadPreferences(defaultValue = {}) {
+        return this.get('preferences', defaultValue);
     }
 }
 
-// Export for module usage
+// Export for global use
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = StorageService;
 } else {
