@@ -1,7 +1,4 @@
-/**
- * History Manager
- * Manages prompt history storage and rendering
- */
+// History Manager - Complete Fixed Version
 class HistoryManager {
     constructor() {
         this.storage = new StorageService();
@@ -23,14 +20,15 @@ class HistoryManager {
         return this.storage.set('prompt_history', history);
     }
 
-    add(item) {
+    add(input, prompt, model = 'local') {
         const historyItem = {
             id: Date.now().toString(),
-            input: item.input || '',
-            prompt: item.prompt || '',
-            model: item.model || 'local',
+            input: input,
+            prompt: prompt,
+            model: model,
             timestamp: new Date().toISOString(),
-            tags: item.tags || []
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString()
         };
         
         // Add to beginning
@@ -45,34 +43,8 @@ class HistoryManager {
         return historyItem;
     }
 
-    getById(id) {
-        return this.history.find(item => item.id === id);
-    }
-
     getAll() {
         return this.history;
-    }
-
-    getRecent(limit = 10) {
-        return this.history.slice(0, limit);
-    }
-
-    update(id, updates) {
-        const index = this.history.findIndex(item => item.id === id);
-        if (index === -1) return null;
-        
-        this.history[index] = { ...this.history[index], ...updates };
-        this.saveHistory(this.history);
-        return this.history[index];
-    }
-
-    delete(id) {
-        const index = this.history.findIndex(item => item.id === id);
-        if (index === -1) return false;
-        
-        this.history.splice(index, 1);
-        this.saveHistory(this.history);
-        return true;
     }
 
     clear() {
@@ -81,49 +53,16 @@ class HistoryManager {
         return true;
     }
 
-    search(query) {
-        const searchTerm = query.toLowerCase();
-        return this.history.filter(item => 
-            (item.input && item.input.toLowerCase().includes(searchTerm)) ||
-            (item.prompt && item.prompt.toLowerCase().includes(searchTerm))
-        );
-    }
-
     getStats() {
         return {
             total: this.history.length,
-            today: this.getTodayCount(),
-            thisWeek: this.getThisWeekCount(),
-            byModel: this.getCountByModel()
+            today: this.history.filter(item => 
+                new Date(item.timestamp).toDateString() === new Date().toDateString()
+            ).length
         };
     }
 
-    getTodayCount() {
-        const today = new Date().toDateString();
-        return this.history.filter(item => 
-            new Date(item.timestamp).toDateString() === today
-        ).length;
-    }
-
-    getThisWeekCount() {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
-        return this.history.filter(item => 
-            new Date(item.timestamp) >= oneWeekAgo
-        ).length;
-    }
-
-    getCountByModel() {
-        const counts = {};
-        this.history.forEach(item => {
-            const model = item.model || 'unknown';
-            counts[model] = (counts[model] || 0) + 1;
-        });
-        return counts;
-    }
-
-    renderHistoryList(container, onSelect) {
+    renderHistoryList(container) {
         if (!container) return;
         
         if (this.history.length === 0) {
@@ -133,7 +72,7 @@ class HistoryManager {
                         <i class="fas fa-history"></i>
                     </div>
                     <h3>No History Yet</h3>
-                    <p>Your prompt history will appear here after you generate prompts.</p>
+                    <p>Your generated prompts will appear here</p>
                 </div>
             `;
             return;
@@ -146,78 +85,93 @@ class HistoryManager {
             historyEl.className = 'history-item';
             historyEl.dataset.id = item.id;
             
-            const date = new Date(item.timestamp);
-            const timeAgo = this.getTimeAgo(date);
-            
             historyEl.innerHTML = `
                 <div class="history-content">
-                    <div class="history-text">${this.truncateText(item.input || '', 100)}</div>
+                    <div class="history-text">${this.truncateText(item.input, 80)}</div>
                     <div class="history-details">
                         <span class="history-time">
                             <i class="fas fa-clock"></i>
-                            ${timeAgo}
+                            ${item.time} • ${item.date}
                         </span>
                         <span class="history-model">
                             <i class="fas fa-robot"></i>
-                            ${item.model || 'Local'}
+                            ${item.model}
                         </span>
                     </div>
                 </div>
                 <div class="history-actions">
-                    <button class="history-action-btn" title="Load this prompt">
+                    <button class="history-action-btn" title="Load this prompt" data-action="load">
                         <i class="fas fa-upload"></i>
                     </button>
-                    <button class="history-action-btn" title="Copy this prompt">
+                    <button class="history-action-btn" title="Copy this prompt" data-action="copy">
                         <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="history-action-btn" title="Delete" data-action="delete">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             `;
             
-            const loadBtn = historyEl.querySelector('.history-action-btn:nth-child(1)');
-            const copyBtn = historyEl.querySelector('.history-action-btn:nth-child(2)');
-            
-            loadBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.app && typeof window.app.loadFromHistory === 'function') {
-                    window.app.loadFromHistory(item.id);
-                }
+            // Add event listeners to buttons
+            const buttons = historyEl.querySelectorAll('.history-action-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const action = btn.dataset.action;
+                    
+                    switch(action) {
+                        case 'load':
+                            this.loadItem(item.id);
+                            break;
+                        case 'copy':
+                            this.copyItem(item.id);
+                            break;
+                        case 'delete':
+                            this.deleteItem(item.id);
+                            break;
+                    }
+                });
             });
             
-            copyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (item.prompt) {
-                    navigator.clipboard.writeText(item.prompt)
-                        .then(() => {
-                            if (window.app && window.app.services && window.app.services.notification) {
-                                window.app.services.notification.success('Copied from history');
-                            }
-                        });
-                }
-            });
-            
+            // Click on item loads it
             historyEl.addEventListener('click', () => {
-                if (onSelect) {
-                    onSelect(item);
-                }
+                this.loadItem(item.id);
             });
             
             container.appendChild(historyEl);
         });
     }
 
-    getTimeAgo(date) {
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-        
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-        
-        return date.toLocaleDateString();
+    loadItem(id) {
+        const item = this.history.find(h => h.id === id);
+        if (item && window.app) {
+            window.app.loadFromHistory(item);
+        }
+    }
+
+    copyItem(id) {
+        const item = this.history.find(h => h.id === id);
+        if (item && item.prompt) {
+            navigator.clipboard.writeText(item.prompt)
+                .then(() => {
+                    if (window.app && window.app.showNotification) {
+                        window.app.showNotification('Copied to clipboard!', 'success');
+                    }
+                });
+        }
+    }
+
+    deleteItem(id) {
+        const index = this.history.findIndex(item => item.id === id);
+        if (index !== -1) {
+            this.history.splice(index, 1);
+            this.saveHistory(this.history);
+            this.renderHistoryList(document.getElementById('historyList'));
+            
+            if (window.app && window.app.showNotification) {
+                window.app.showNotification('History item deleted', 'info');
+            }
+        }
     }
 
     truncateText(text, maxLength) {
@@ -233,9 +187,4 @@ class HistoryManager {
     }
 }
 
-// Export for global use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = HistoryManager;
-} else {
-    window.HistoryManager = HistoryManager;
-}
+window.HistoryManager = HistoryManager;
