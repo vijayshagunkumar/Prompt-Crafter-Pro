@@ -1,15 +1,11 @@
-// Complete Voice Manager
+// Voice Manager - Complete Fixed Version
 class VoiceManager {
     constructor() {
-        this.storage = new StorageService();
-        this.settings = this.loadSettings();
         this.isListening = false;
         this.isSpeaking = false;
         this.recognition = null;
         this.speech = null;
         this.finalTranscript = '';
-        this.audioContext = null;
-        
         this.init();
     }
 
@@ -18,33 +14,24 @@ class VoiceManager {
         this.setupSpeechSynthesis();
     }
 
-    loadSettings() {
-        return this.storage.getVoiceSettings();
-    }
-
-    saveSettings(settings) {
-        this.settings = { ...this.settings, ...settings };
-        return this.storage.saveVoiceSettings(this.settings);
-    }
-
     setupSpeechRecognition() {
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        if ('webkitSpeechRecognition' in window) {
+            this.recognition = new webkitSpeechRecognition();
+        } else if ('SpeechRecognition' in window) {
+            this.recognition = new SpeechRecognition();
+        } else {
             console.warn('Speech recognition not supported');
             return;
         }
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        this.recognition = new SpeechRecognition();
-        
         this.recognition.continuous = false;
         this.recognition.interimResults = true;
-        this.recognition.lang = this.settings.inputLanguage;
-        this.recognition.maxAlternatives = 1;
+        this.recognition.lang = 'en-US';
 
         this.recognition.onstart = () => {
             this.isListening = true;
             this.finalTranscript = '';
-            this.emitVoiceEvent('listeningStart');
+            this.dispatchEvent('listeningStart');
         };
 
         this.recognition.onresult = (event) => {
@@ -58,7 +45,7 @@ class VoiceManager {
                 }
             }
             
-            this.emitVoiceEvent('result', {
+            this.dispatchEvent('result', {
                 final: this.finalTranscript,
                 interim: interimTranscript
             });
@@ -67,42 +54,26 @@ class VoiceManager {
         this.recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             this.isListening = false;
-            this.emitVoiceEvent('error', event.error);
+            this.dispatchEvent('error', event.error);
         };
 
         this.recognition.onend = () => {
             this.isListening = false;
-            this.emitVoiceEvent('listeningEnd', this.finalTranscript);
+            this.dispatchEvent('listeningEnd', this.finalTranscript);
         };
     }
 
     setupSpeechSynthesis() {
-        if (!('speechSynthesis' in window)) {
+        if ('speechSynthesis' in window) {
+            this.speech = window.speechSynthesis;
+        } else {
             console.warn('Speech synthesis not supported');
-            return;
         }
-
-        this.speech = window.speechSynthesis;
-        this.updateVoice();
-    }
-
-    updateVoice() {
-        if (!this.speech) return;
-        
-        const voices = this.speech.getVoices();
-        const targetLang = this.settings.outputLanguage;
-        
-        const matchingVoice = voices.find(voice => 
-            voice.lang === targetLang ||
-            voice.lang.startsWith(targetLang.split('-')[0])
-        );
-        
-        this.selectedVoice = matchingVoice || voices[0];
     }
 
     startListening() {
         if (!this.recognition) {
-            window.notification?.error('Voice input not supported in your browser');
+            this.showError('Voice input not supported in your browser');
             return false;
         }
 
@@ -112,12 +83,11 @@ class VoiceManager {
         }
 
         try {
-            this.recognition.lang = this.settings.inputLanguage;
             this.recognition.start();
             return true;
         } catch (error) {
             console.error('Failed to start listening:', error);
-            window.notification?.error('Failed to start voice input');
+            this.showError('Please allow microphone access');
             return false;
         }
     }
@@ -129,9 +99,9 @@ class VoiceManager {
         }
     }
 
-    speak(text, options = {}) {
-        if (!this.speech || !this.selectedVoice) {
-            window.notification?.error('Text-to-speech not supported');
+    speak(text) {
+        if (!this.speech) {
+            this.showError('Text-to-speech not supported');
             return false;
         }
 
@@ -142,27 +112,24 @@ class VoiceManager {
 
         try {
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            utterance.voice = this.selectedVoice;
-            utterance.lang = this.settings.outputLanguage;
-            utterance.rate = options.rate || 1.0;
-            utterance.pitch = options.pitch || 1.0;
-            utterance.volume = options.volume || 1.0;
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
 
             utterance.onstart = () => {
                 this.isSpeaking = true;
-                this.emitVoiceEvent('speakingStart');
+                this.dispatchEvent('speakingStart');
             };
 
             utterance.onend = () => {
                 this.isSpeaking = false;
-                this.emitVoiceEvent('speakingEnd');
+                this.dispatchEvent('speakingEnd');
             };
 
             utterance.onerror = (event) => {
-                console.error('Speech synthesis error:', event.error);
+                console.error('Speech synthesis error:', event);
                 this.isSpeaking = false;
-                this.emitVoiceEvent('error', event.error);
+                this.dispatchEvent('error', event.error);
             };
 
             this.speech.speak(utterance);
@@ -196,108 +163,23 @@ class VoiceManager {
         }
     }
 
-    setInputLanguage(language) {
-        this.settings.inputLanguage = language;
-        this.saveSettings(this.settings);
-        
-        if (this.recognition) {
-            this.recognition.lang = language;
-        }
-    }
-
-    setOutputLanguage(language) {
-        this.settings.outputLanguage = language;
-        this.saveSettings(this.settings);
-        this.updateVoice();
-    }
-
-    getAvailableInputLanguages() {
-        // Common languages supported by most browsers
-        return [
-            { code: 'en-US', name: 'English (US)' },
-            { code: 'en-GB', name: 'English (UK)' },
-            { code: 'hi-IN', name: 'Hindi (India)' },
-            { code: 'te-IN', name: 'Telugu (India)' },
-            { code: 'kn-IN', name: 'Kannada (India)' },
-            { code: 'ru-RU', name: 'Russian' },
-            { code: 'es-ES', name: 'Spanish' },
-            { code: 'fr-FR', name: 'French' },
-            { code: 'de-DE', name: 'German' },
-            { code: 'ja-JP', name: 'Japanese' },
-            { code: 'ko-KR', name: 'Korean' },
-            { code: 'zh-CN', name: 'Chinese' }
-        ];
-    }
-
-    getAvailableOutputLanguages() {
-        return this.getAvailableInputLanguages();
-    }
-
-    renderLanguageSelectors(inputSelect, outputSelect) {
-        if (inputSelect) {
-            inputSelect.innerHTML = '';
-            this.getAvailableInputLanguages().forEach(lang => {
-                const option = document.createElement('option');
-                option.value = lang.code;
-                option.textContent = lang.name;
-                if (lang.code === this.settings.inputLanguage) {
-                    option.selected = true;
-                }
-                inputSelect.appendChild(option);
-            });
-            
-            inputSelect.addEventListener('change', (e) => {
-                this.setInputLanguage(e.target.value);
-            });
-        }
-
-        if (outputSelect) {
-            outputSelect.innerHTML = '';
-            this.getAvailableOutputLanguages().forEach(lang => {
-                const option = document.createElement('option');
-                option.value = lang.code;
-                option.textContent = lang.name;
-                if (lang.code === this.settings.outputLanguage) {
-                    option.selected = true;
-                }
-                outputSelect.appendChild(option);
-            });
-            
-            outputSelect.addEventListener('change', (e) => {
-                this.setOutputLanguage(e.target.value);
-            });
-        }
-    }
-
-    emitVoiceEvent(type, data = null) {
+    dispatchEvent(type, data = null) {
         const event = new CustomEvent('voice', {
             detail: { type, data }
         });
         document.dispatchEvent(event);
     }
 
-    // Audio visualization (optional)
-    startAudioVisualization(canvas) {
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        
-        // Implementation would depend on specific visualization needs
-        return false;
+    showError(message) {
+        const event = new CustomEvent('notification', {
+            detail: { type: 'error', message }
+        });
+        document.dispatchEvent(event);
     }
 
-    stopAudioVisualization() {
-        if (this.audioContext) {
-            this.audioContext.close();
-            this.audioContext = null;
-        }
-    }
-
-    // Cleanup
     destroy() {
         this.stopListening();
         this.stopSpeaking();
-        this.stopAudioVisualization();
     }
 }
 
