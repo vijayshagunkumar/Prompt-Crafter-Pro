@@ -2034,22 +2034,6 @@ select:focus, .language-select:focus {
     }
 }
 
-/* Inspiration Panel */
-.inspiration-panel {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--card-bg);
-    border: 2px solid var(--primary);
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    z-index: 1000;
-    margin-top: 10px;
-    max-height: 400px;
-    overflow-y: auto;
-}
 
 .inspiration-header {
     display: flex;
