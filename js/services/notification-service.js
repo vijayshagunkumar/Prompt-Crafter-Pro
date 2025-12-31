@@ -1,3 +1,4 @@
+// Toast notification system
 class NotificationService {
     constructor() {
         this.container = null;
@@ -145,21 +146,6 @@ class NotificationService {
         return true;
     }
 
-    setDuration(duration) {
-        this.defaultDuration = duration;
-        localStorage.setItem('notificationDuration', duration.toString());
-    }
-
-    getDuration() {
-        return this.defaultDuration;
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     // Success shortcut
     success(message, duration = null) {
         return this.show(message, 'success', duration);
@@ -195,11 +181,6 @@ class NotificationService {
         return id;
     }
 
-    // Update loading notification
-    updateLoading(id, message) {
-        return this.update(id, message, 'info');
-    }
-
     // Complete loading with success/error
     completeLoading(id, success = true, message = null) {
         const finalMessage = message || (success ? 'Completed!' : 'Failed!');
@@ -213,37 +194,16 @@ class NotificationService {
         }, 2000);
     }
 
-    // Position notifications (top-right by default)
-    setPosition(position = 'top-right') {
-        const positions = {
-            'top-right': 'top: var(--spacing-xl); right: var(--spacing-xl);',
-            'top-left': 'top: var(--spacing-xl); left: var(--spacing-xl);',
-            'bottom-right': 'bottom: var(--spacing-xl); right: var(--spacing-xl);',
-            'bottom-left': 'bottom: var(--spacing-xl); left: var(--spacing-xl);',
-            'top-center': 'top: var(--spacing-xl); left: 50%; transform: translateX(-50%);',
-            'bottom-center': 'bottom: var(--spacing-xl); left: 50%; transform: translateX(-50%);'
-        };
-        
-        if (positions[position]) {
-            this.container.style.cssText = positions[position];
-        }
-    }
-
-    // Get notification count
-    getCount() {
-        return this.notifications.size;
-    }
-
-    // Clear all notifications immediately
-    clearAll() {
-        while (this.container.firstChild) {
-            this.container.removeChild(this.container.firstChild);
-        }
-        this.notifications.clear();
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = NotificationService;
+} else {
+    window.NotificationService = NotificationService;
 }
