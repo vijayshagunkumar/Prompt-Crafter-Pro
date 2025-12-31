@@ -9,14 +9,420 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CSS Files - Correct Order -->
+    <!-- CSS Files -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/ui-components.css">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="assets/icons/logo.svg">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    
+    <!-- Additional CSS for missing components -->
+    <style>
+        /* Template Items */
+        .template-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: flex-start;
+        }
+
+        .template-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .template-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+        }
+
+        .template-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .template-title {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .template-category {
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-full);
+            background: rgba(0,0,0,0.1);
+        }
+
+        .dark-theme .template-category {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .template-description {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.4;
+        }
+
+        .template-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .template-usage {
+            font-size: var(--font-size-xs);
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .template-use-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .template-use-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* History Items */
+        .history-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-50);
+        }
+
+        .dark-theme .history-item:hover {
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .history-content {
+            flex: 1;
+            min-width: 0;
+            margin-right: var(--spacing-md);
+        }
+
+        .history-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-details {
+            display: flex;
+            gap: var(--spacing-md);
+            font-size: var(--font-size-xs);
+            color: var(--text-tertiary);
+        }
+
+        .history-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .history-action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: var(--gray-100);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark-theme .history-action-btn {
+            background: var(--gray-800);
+        }
+
+        .history-action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Category Buttons */
+        .template-category-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-secondary);
+        }
+
+        .template-category-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .template-category-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Ensure visibility classes work */
+        .removed {
+            display: none !important;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .visible {
+            display: block !important;
+        }
+        
+        /* Editor textarea */
+        .editor-textarea {
+            width: 100%;
+            height: calc(100vh - 120px);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: var(--font-size-base);
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+        
+        .editor-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-50);
+        }
+        
+        /* Intent chips */
+        .intent-chips-container {
+            display: none;
+            margin-top: var(--spacing-md);
+        }
+        
+        .intent-chips-scroll {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        
+        .intent-chip {
+            background: var(--primary-50);
+            color: var(--primary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+        }
+        
+        .dark-theme .intent-chip {
+            background: rgba(79, 70, 229, 0.2);
+            color: var(--primary-light);
+        }
+        
+        .intent-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-tertiary);
+            font-size: var(--font-size-sm);
+        }
+        
+        /* Preset selector */
+        .preset-selector {
+            display: none;
+            margin-top: var(--spacing-md);
+        }
+        
+        .preset-title {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .preset-options {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        /* Full screen editor */
+        .full-screen-editor {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-color);
+            z-index: 1000;
+        }
+        
+        .full-screen-editor.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .editor-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+        }
+        
+        .editor-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .editor-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .editor-prepare-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .editor-prepare-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .editor-content {
+            flex: 1;
+            padding: var(--spacing-lg);
+            position: relative;
+        }
+        
+        .editor-controls {
+            position: absolute;
+            bottom: var(--spacing-lg);
+            left: var(--spacing-lg);
+            right: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        
+        .editor-controls button {
+            pointer-events: auto;
+        }
+        
+        .editor-left-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .editor-right-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+    </style>
 </head>
 <body class="dark-theme">
     <!-- Header -->
@@ -151,27 +557,31 @@
                             </div>
                             <div class="inspiration-grid" id="inspirationGrid">
                                 <!-- Templates loaded dynamically -->
+                                <div class="inspiration-item">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="inspiration-text">Professional Email</div>
+                                </div>
+                                <div class="inspiration-item">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-code"></i>
+                                    </div>
+                                    <div class="inspiration-text">Code Review</div>
+                                </div>
+                                <div class="inspiration-item">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="inspiration-text">Business Report</div>
+                                </div>
+                                <div class="inspiration-item">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-pen"></i>
+                                    </div>
+                                    <div class="inspiration-text">Content Writing</div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Template Library -->
-                    <div class="template-library" id="templateLibrary">
-                        <div class="inspiration-header">
-                            <div class="inspiration-title">
-                                <i class="fas fa-layer-group"></i>
-                                Template Library
-                            </div>
-                            <button class="close-inspiration-btn" id="closeTemplateBtn" title="Close">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="template-categories" id="templateCategories">
-                            <button class="template-category-btn active" data-category="all">All</button>
-                            <!-- Categories loaded dynamically -->
-                        </div>
-                        <div class="templates-grid" id="templatesGrid">
-                            <!-- Templates loaded dynamically -->
                         </div>
                     </div>
                 </div>
@@ -534,7 +944,7 @@
                     <button id="cancelSettingsBtn" class="settings-cancel-btn">
                         Cancel
                     </button>
-                    <button id="saveSettingsBtn" class="settings-save-btn" disabled>
+                    <button id="saveSettingsBtn" class="settings-save-btn">
                         <i class="fas fa-save"></i>
                         Save Changes
                     </button>
@@ -551,7 +961,7 @@
                 <span id="editorTitle">Edit Prompt</span>
             </div>
             <div class="editor-actions">
-                <button id="editorPrepareBtn" class="editor-prepare-btn" disabled>
+                <button id="editorPrepareBtn" class="editor-prepare-btn">
                     <i class="fas fa-magic"></i>
                     Prepare Prompt
                 </button>
@@ -601,117 +1011,735 @@
     <script src="js/modules/prompt-generator.js"></script>
     <script src="js/modules/ai-ranker.js"></script>
     <script src="js/modules/voice-manager.js"></script>
+    <!-- Add these new module files -->
     <script src="js/modules/template-manager.js"></script>
     <script src="js/modules/history-manager.js"></script>
     <script src="js/modules/theme-manager.js"></script>
     
     <!-- Core -->
     <script src="js/core/state.js"></script>
-    <script src="js/core/app.js"></script>
     
-    <!-- Initialize App -->
+    <!-- Main App - UPDATED COMPLETE VERSION -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize application
-            if (typeof PromptCraftApp !== 'undefined') {
-                window.app = new PromptCraftApp();
-            } else {
-                console.warn('PromptCraftApp not loaded. Loading fallback...');
-                
-                // Fallback initialization
-                const app = {
-                    init() {
-                        console.log('Fallback app initialized');
-                        this.bindEvents();
-                        this.setupDefaults();
-                    },
-                    
-                    bindEvents() {
-                        // Sticky Prepare button
-                        const prepareBtn = document.getElementById('stickyPrepareBtn');
-                        if (prepareBtn) {
-                            prepareBtn.addEventListener('click', () => {
-                                const input = document.getElementById('userInput');
-                                const output = document.getElementById('outputArea');
-                                if (input && input.value.trim()) {
-                                    output.textContent = `Generated prompt for: ${input.value}\n\nYou are an expert AI assistant. Please provide a detailed, comprehensive response to the following task:\n\n${input.value}\n\nRequirements:\n1. Be thorough and detailed\n2. Use professional language\n3. Provide actionable insights\n4. Structure the response clearly`;
-                                    document.getElementById('outputSection').classList.add('visible');
-                                    this.showNotification('Prompt generated!', 'success');
-                                }
-                            });
-                        }
-                        
-                        // Copy button
-                        const copyBtn = document.getElementById('copyBtn');
-                        if (copyBtn) {
-                            copyBtn.addEventListener('click', () => {
-                                const output = document.getElementById('outputArea');
-                                if (output && output.textContent.trim()) {
-                                    navigator.clipboard.writeText(output.textContent)
-                                        .then(() => this.showNotification('Copied to clipboard!', 'success'))
-                                        .catch(() => this.showNotification('Failed to copy', 'error'));
-                                }
-                            });
-                        }
-                        
-                        // Settings button
-                        const settingsBtn = document.getElementById('settingsBtn');
-                        const settingsModal = document.getElementById('settingsModal');
-                        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-                        
-                        if (settingsBtn && settingsModal && closeSettingsBtn) {
-                            settingsBtn.addEventListener('click', () => {
-                                settingsModal.classList.add('active');
-                            });
-                            
-                            closeSettingsBtn.addEventListener('click', () => {
-                                settingsModal.classList.remove('active');
-                            });
-                            
-                            settingsModal.addEventListener('click', (e) => {
-                                if (e.target === settingsModal) {
-                                    settingsModal.classList.remove('active');
-                                }
-                            });
-                        }
-                    },
-                    
-                    setupDefaults() {
-                        // Set default text in empty output area
-                        const outputArea = document.getElementById('outputArea');
-                        if (outputArea && !outputArea.textContent.trim()) {
-                            outputArea.textContent = outputArea.dataset.placeholder;
-                        }
-                    },
-                    
-                    showNotification(message, type = 'info') {
-                        const container = document.getElementById('notificationContainer');
-                        if (!container) return;
-                        
-                        const notification = document.createElement('div');
-                        notification.className = `notification ${type}`;
-                        notification.innerHTML = `
-                            <i class="notification-icon fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                            <div class="notification-message">${message}</div>
-                        `;
-                        
-                        container.appendChild(notification);
-                        
-                        // Auto-remove
-                        setTimeout(() => {
-                            notification.style.animation = 'slideOutRight 0.2s ease forwards';
-                            setTimeout(() => {
-                                if (notification.parentNode) {
-                                    notification.parentNode.removeChild(notification);
-                                }
-                            }, 200);
-                        }, 3000);
+        // Simple Notification Service if not loaded
+        if (typeof NotificationService === 'undefined') {
+            class NotificationService {
+                constructor() {
+                    this.container = document.getElementById('notificationContainer');
+                    if (!this.container) {
+                        this.container = document.createElement('div');
+                        this.container.className = 'notification-container';
+                        document.body.appendChild(this.container);
                     }
+                }
+                
+                show(message, type = 'info', duration = 3000) {
+                    const notification = document.createElement('div');
+                    notification.className = `notification ${type}`;
+                    
+                    const icons = {
+                        success: 'fas fa-check-circle',
+                        error: 'fas fa-exclamation-circle',
+                        warning: 'fas fa-exclamation-triangle',
+                        info: 'fas fa-info-circle'
+                    };
+                    
+                    notification.innerHTML = `
+                        <i class="notification-icon ${icons[type] || icons.info}"></i>
+                        <div class="notification-message">${message}</div>
+                    `;
+                    
+                    this.container.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.style.animation = 'slideOutRight 0.2s ease forwards';
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                notification.parentNode.removeChild(notification);
+                            }
+                        }, 200);
+                    }, duration);
+                    
+                    return notification;
+                }
+                
+                success(message, duration = 3000) {
+                    return this.show(message, 'success', duration);
+                }
+                
+                error(message, duration = 3000) {
+                    return this.show(message, 'error', duration);
+                }
+                
+                warning(message, duration = 3000) {
+                    return this.show(message, 'warning', duration);
+                }
+                
+                info(message, duration = 3000) {
+                    return this.show(message, 'info', duration);
+                }
+            }
+            window.NotificationService = NotificationService;
+        }
+        
+        // Main App Class - COMPLETE
+        class PromptCraftApp {
+            constructor() {
+                this.state = {
+                    currentStep: 1,
+                    hasGeneratedPrompt: false,
+                    promptModified: false,
+                    isListening: false,
+                    isSpeaking: false,
+                    isEditorOpen: false,
+                    currentEditor: null,
+                    inspirationPanelOpen: false,
+                    selectedPlatform: null,
+                    originalPrompt: null,
+                    undoStack: [],
+                    redoStack: []
                 };
                 
-                app.init();
-                window.app = app;
+                this.services = {};
+                this.modules = {};
+                this.init();
             }
+            
+            async init() {
+                try {
+                    this.initializeServices();
+                    this.initializeModules();
+                    this.setupDOM();
+                    this.bindEvents();
+                    this.updateUI();
+                    
+                    console.log('PromptCraft Pro initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize app:', error);
+                    this.showNotification('Failed to initialize application', 'error');
+                }
+            }
+            
+            initializeServices() {
+                this.services.storage = new StorageService();
+                this.services.api = new APIService();
+                this.services.notification = new NotificationService();
+            }
+            
+            initializeModules() {
+                this.modules.intent = new IntentDetector();
+                this.modules.prompt = new PromptGenerator();
+                this.modules.ranker = new AIRanker();
+                this.modules.voice = new VoiceManager();
+                
+                // Initialize new modules if they exist
+                if (typeof TemplateManager !== 'undefined') {
+                    this.modules.templates = new TemplateManager();
+                }
+                if (typeof HistoryManager !== 'undefined') {
+                    this.modules.history = new HistoryManager();
+                }
+                if (typeof ThemeManager !== 'undefined') {
+                    this.modules.theme = new ThemeManager();
+                }
+            }
+            
+            setupDOM() {
+                this.elements = {
+                    userInput: document.getElementById('userInput'),
+                    charCounter: document.getElementById('charCounter'),
+                    undoBtn: document.getElementById('undoBtn'),
+                    micBtn: document.getElementById('micBtn'),
+                    maximizeInputBtn: document.getElementById('maximizeInputBtn'),
+                    intentChips: document.getElementById('intentChips'),
+                    intentChipsScroll: document.getElementById('intentChipsScroll'),
+                    intentProgress: document.getElementById('intentProgress'),
+                    needInspirationBtn: document.getElementById('needInspirationBtn'),
+                    inspirationPanel: document.getElementById('inspirationPanel'),
+                    closeInspirationBtn: document.getElementById('closeInspirationBtn'),
+                    outputSection: document.getElementById('outputSection'),
+                    outputArea: document.getElementById('outputArea'),
+                    copyBtn: document.getElementById('copyBtn'),
+                    speakBtn: document.getElementById('speakBtn'),
+                    exportBtn: document.getElementById('exportBtn'),
+                    maximizeOutputBtn: document.getElementById('maximizeOutputBtn'),
+                    savePromptBtn: document.getElementById('savePromptBtn'),
+                    platformsGrid: document.getElementById('platformsGrid'),
+                    platformsEmptyState: document.getElementById('platformsEmptyState'),
+                    stickyPrepareBtn: document.getElementById('stickyPrepareBtn'),
+                    stickyResetBtn: document.getElementById('stickyResetBtn'),
+                    historyBtn: document.getElementById('historyBtn'),
+                    historySection: document.getElementById('historySection'),
+                    historyList: document.getElementById('historyList'),
+                    closeHistoryBtn: document.getElementById('closeHistoryBtn'),
+                    progressFill: document.getElementById('progressFill'),
+                    settingsBtn: document.getElementById('settingsBtn'),
+                    settingsModal: document.getElementById('settingsModal'),
+                    closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+                    saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+                    fullScreenEditor: document.getElementById('fullScreenEditor'),
+                    closeEditorBtn: document.getElementById('closeEditorBtn'),
+                    editorTextarea: document.getElementById('editorTextarea'),
+                    editorPrepareBtn: document.getElementById('editorPrepareBtn'),
+                    editorTitle: document.getElementById('editorTitle')
+                };
+                
+                // Setup preset buttons
+                setTimeout(() => {
+                    this.elements.presetButtons = document.querySelectorAll('.preset-btn');
+                    this.setupPresetButtons();
+                }, 100);
+            }
+            
+            bindEvents() {
+                // Input handling
+                this.elements.userInput.addEventListener('input', () => this.handleInputChange());
+                
+                // Main buttons
+                this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
+                this.elements.stickyResetBtn.addEventListener('click', () => this.resetApp());
+                this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
+                this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
+                this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
+                this.elements.speakBtn.addEventListener('click', () => this.toggleSpeech());
+                this.elements.undoBtn.addEventListener('click', () => this.undo());
+                
+                // Maximize buttons
+                this.elements.maximizeInputBtn.addEventListener('click', () => this.maximizeInput());
+                this.elements.maximizeOutputBtn.addEventListener('click', () => this.maximizeOutput());
+                
+                // Voice button
+                this.elements.micBtn.addEventListener('click', () => this.toggleVoiceInput());
+                
+                // Inspiration
+                this.elements.needInspirationBtn.addEventListener('click', () => this.toggleInspirationPanel());
+                this.elements.closeInspirationBtn.addEventListener('click', () => this.closeInspirationPanel());
+                
+                // History
+                this.elements.historyBtn.addEventListener('click', () => this.toggleHistory());
+                this.elements.closeHistoryBtn.addEventListener('click', () => this.closeHistory());
+                
+                // Settings
+                this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
+                this.elements.closeSettingsBtn.addEventListener('click', () => this.closeSettings());
+                this.elements.saveSettingsBtn.addEventListener('click', () => this.saveSettings());
+                
+                // Full screen editor
+                this.elements.closeEditorBtn.addEventListener('click', () => this.closeFullScreenEditor());
+                this.elements.editorPrepareBtn.addEventListener('click', () => this.editorPreparePrompt());
+                
+                // Output editing
+                this.elements.outputArea.addEventListener('input', () => this.handlePromptEdit());
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
+                
+                // Close modals on backdrop click
+                this.elements.settingsModal.addEventListener('click', (e) => {
+                    if (e.target === this.elements.settingsModal) {
+                        this.closeSettings();
+                    }
+                });
+                
+                // Add event for inspiration items
+                const inspirationItems = document.querySelectorAll('.inspiration-item');
+                inspirationItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const text = e.currentTarget.querySelector('.inspiration-text').textContent;
+                        this.elements.userInput.value = `Create a ${text.toLowerCase()} template...`;
+                        this.handleInputChange();
+                        this.closeInspirationPanel();
+                    });
+                });
+            }
+            
+            setupPresetButtons() {
+                if (!this.elements.presetButtons) return;
+                
+                this.elements.presetButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const preset = e.currentTarget.dataset.preset;
+                        this.setPreset(preset);
+                        
+                        this.elements.presetButtons.forEach(b => b.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                    });
+                });
+            }
+            
+            handleInputChange() {
+                const text = this.elements.userInput.value;
+                const charCount = text.length;
+                
+                // Update character counter
+                this.elements.charCounter.textContent = `${charCount}/5000`;
+                
+                // Update button states
+                this.updateButtonStates();
+                
+                // Clear generated prompt if input is cleared
+                if (text.trim().length === 0 && this.state.hasGeneratedPrompt) {
+                    this.clearGeneratedPrompt();
+                }
+                
+                // Save to undo stack
+                this.state.undoStack.push({
+                    input: text,
+                    output: this.elements.outputArea.textContent
+                });
+            }
+            
+            async preparePrompt() {
+                const inputText = this.elements.userInput.value.trim();
+                
+                if (!inputText) {
+                    this.showNotification('Please describe your task first', 'error');
+                    return;
+                }
+                
+                if (inputText.length < 10) {
+                    this.showNotification('Please provide more details for better results', 'warning');
+                    return;
+                }
+                
+                // Show loading state
+                this.elements.stickyPrepareBtn.disabled = true;
+                this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+                
+                try {
+                    // Use API service
+                    const result = await this.services.api.generatePrompt(inputText);
+                    
+                    if (result.success) {
+                        // Update output
+                        this.elements.outputArea.textContent = result.prompt;
+                        this.state.originalPrompt = result.prompt;
+                        this.state.promptModified = false;
+                        this.state.hasGeneratedPrompt = true;
+                        
+                        // Show output section
+                        this.elements.outputSection.classList.add('visible');
+                        
+                        // Update progress
+                        this.updateProgress();
+                        
+                        // Save to history
+                        this.saveToHistory(inputText, result.prompt);
+                        
+                        this.showNotification(`Prompt generated successfully!`, 'success');
+                        
+                        // Scroll to output
+                        setTimeout(() => {
+                            this.elements.outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 100);
+                        
+                    } else {
+                        throw new Error(result.error || 'Failed to generate prompt');
+                    }
+                    
+                } catch (error) {
+                    console.error('Prompt generation error:', error);
+                    this.showNotification('Failed to generate prompt. Using fallback...', 'error');
+                    
+                    // Fallback
+                    const fallbackPrompt = `You are an expert AI assistant. Please help with the following task:
+
+${inputText}
+
+Please provide a detailed, comprehensive response.`;
+                    
+                    this.elements.outputArea.textContent = fallbackPrompt;
+                    this.state.originalPrompt = fallbackPrompt;
+                    this.state.hasGeneratedPrompt = true;
+                    this.elements.outputSection.classList.add('visible');
+                    
+                } finally {
+                    // Reset button state
+                    this.elements.stickyPrepareBtn.disabled = false;
+                    this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-magic"></i> Prepare Prompt';
+                    this.updateButtonStates();
+                }
+            }
+            
+            updateProgress() {
+                let progress = 33;
+                
+                if (this.state.hasGeneratedPrompt) {
+                    progress = 66;
+                }
+                
+                if (this.state.selectedPlatform) {
+                    progress = 100;
+                }
+                
+                if (this.elements.progressFill) {
+                    this.elements.progressFill.style.width = `${progress}%`;
+                }
+            }
+            
+            updateButtonStates() {
+                const hasInput = this.elements.userInput.value.trim().length > 0;
+                const hasOutput = this.state.hasGeneratedPrompt;
+                
+                // Prepare button
+                this.elements.stickyPrepareBtn.disabled = !hasInput;
+                
+                // Show/hide prepare button
+                if (hasOutput) {
+                    this.elements.stickyPrepareBtn.classList.add('removed');
+                    this.elements.stickyResetBtn.classList.remove('hidden');
+                } else {
+                    this.elements.stickyPrepareBtn.classList.remove('removed');
+                    this.elements.stickyResetBtn.classList.add('hidden');
+                }
+                
+                // Output buttons
+                this.elements.copyBtn.disabled = !hasOutput;
+                this.elements.speakBtn.disabled = !hasOutput;
+                this.elements.exportBtn.disabled = !hasOutput;
+                
+                // Save button
+                this.elements.savePromptBtn.classList.toggle('visible', this.state.promptModified);
+                
+                // Undo button
+                const canUndo = this.state.undoStack.length > 0;
+                this.elements.undoBtn.disabled = !canUndo;
+            }
+            
+            copyPrompt() {
+                const text = this.elements.outputArea.textContent.trim();
+                
+                if (!text) {
+                    this.showNotification('No prompt to copy', 'error');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        this.showNotification('Prompt copied to clipboard!', 'success');
+                        
+                        // Visual feedback
+                        this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            this.elements.copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        this.showNotification('Failed to copy. Please try again.', 'error');
+                    });
+            }
+            
+            savePrompt() {
+                const promptText = this.elements.outputArea.textContent.trim();
+                if (!promptText) {
+                    this.showNotification('No prompt to save', 'error');
+                    return;
+                }
+                
+                this.state.originalPrompt = promptText;
+                this.state.promptModified = false;
+                this.updateButtonStates();
+                
+                const inputText = this.elements.userInput.value.trim();
+                this.saveToHistory(inputText, promptText);
+                
+                this.showNotification('Prompt saved to history', 'success');
+            }
+            
+            exportPrompt() {
+                const promptText = this.elements.outputArea.textContent.trim();
+                if (!promptText) {
+                    this.showNotification('No prompt to export', 'error');
+                    return;
+                }
+                
+                const blob = new Blob([promptText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `prompt-${Date.now()}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('Prompt exported successfully', 'success');
+            }
+            
+            toggleSpeech() {
+                const promptText = this.elements.outputArea.textContent.trim();
+                if (!promptText) {
+                    this.showNotification('No prompt to read', 'error');
+                    return;
+                }
+                
+                if (this.modules.voice) {
+                    this.modules.voice.toggleSpeaking(promptText);
+                }
+            }
+            
+            toggleVoiceInput() {
+                if (this.modules.voice) {
+                    this.modules.voice.toggleListening();
+                }
+            }
+            
+            resetApp() {
+                // Clear input
+                this.elements.userInput.value = '';
+                
+                // Clear output
+                this.elements.outputArea.textContent = '';
+                this.state.originalPrompt = null;
+                this.state.hasGeneratedPrompt = false;
+                this.state.promptModified = false;
+                
+                // Hide output section
+                this.elements.outputSection.classList.remove('visible');
+                
+                // Reset progress
+                this.updateProgress();
+                
+                // Update buttons
+                this.updateButtonStates();
+                
+                // Clear platforms
+                const emptyState = this.elements.platformsEmptyState;
+                if (this.elements.platformsGrid && emptyState) {
+                    this.elements.platformsGrid.innerHTML = '';
+                    this.elements.platformsGrid.appendChild(emptyState);
+                }
+                
+                this.showNotification('Application reset successfully', 'info');
+            }
+            
+            maximizeInput() {
+                this.state.currentEditor = 'input';
+                this.state.isEditorOpen = true;
+                
+                // Copy current input to editor
+                if (this.elements.editorTextarea) {
+                    this.elements.editorTextarea.value = this.elements.userInput.value;
+                }
+                
+                // Show fullscreen editor
+                if (this.elements.fullScreenEditor) {
+                    this.elements.fullScreenEditor.classList.add('active');
+                    this.elements.editorTitle.textContent = 'Edit Your Task';
+                }
+            }
+            
+            maximizeOutput() {
+                this.state.currentEditor = 'output';
+                this.state.isEditorOpen = true;
+                
+                // Copy current output to editor
+                if (this.elements.editorTextarea) {
+                    this.elements.editorTextarea.value = this.elements.outputArea.textContent;
+                }
+                
+                // Show fullscreen editor
+                if (this.elements.fullScreenEditor) {
+                    this.elements.fullScreenEditor.classList.add('active');
+                    this.elements.editorTitle.textContent = 'Edit Generated Prompt';
+                }
+            }
+            
+            closeFullScreenEditor() {
+                if (this.elements.fullScreenEditor) {
+                    this.elements.fullScreenEditor.classList.remove('active');
+                    this.state.isEditorOpen = false;
+                    
+                    // Copy editor content back to original field
+                    if (this.elements.editorTextarea && this.state.currentEditor) {
+                        if (this.state.currentEditor === 'input') {
+                            this.elements.userInput.value = this.elements.editorTextarea.value;
+                            this.handleInputChange();
+                        } else if (this.state.currentEditor === 'output') {
+                            this.elements.outputArea.textContent = this.elements.editorTextarea.value;
+                            this.state.promptModified = true;
+                            this.updateButtonStates();
+                        }
+                    }
+                    
+                    this.state.currentEditor = null;
+                }
+            }
+            
+            editorPreparePrompt() {
+                if (this.elements.editorTextarea) {
+                    const inputText = this.elements.editorTextarea.value.trim();
+                    if (inputText) {
+                        this.elements.userInput.value = inputText;
+                        this.preparePrompt();
+                        this.closeFullScreenEditor();
+                    }
+                }
+            }
+            
+            undo() {
+                if (this.state.undoStack.length === 0) return;
+                
+                const state = this.state.undoStack.pop();
+                this.state.redoStack.push({
+                    input: this.elements.userInput.value,
+                    output: this.elements.outputArea.textContent
+                });
+                
+                this.elements.userInput.value = state.input;
+                this.elements.outputArea.textContent = state.output;
+                
+                this.handleInputChange();
+                this.updateButtonStates();
+            }
+            
+            toggleInspirationPanel() {
+                this.state.inspirationPanelOpen = !this.state.inspirationPanelOpen;
+                if (this.elements.inspirationPanel) {
+                    this.elements.inspirationPanel.classList.toggle('expanded', this.state.inspirationPanelOpen);
+                }
+            }
+            
+            closeInspirationPanel() {
+                this.state.inspirationPanelOpen = false;
+                if (this.elements.inspirationPanel) {
+                    this.elements.inspirationPanel.classList.remove('expanded');
+                }
+            }
+            
+            toggleHistory() {
+                this.state.historyOpen = !this.state.historyOpen;
+                if (this.elements.historySection) {
+                    this.elements.historySection.classList.toggle('visible', this.state.historyOpen);
+                }
+                
+                // Load history if opening
+                if (this.state.historyOpen && this.modules.history) {
+                    this.modules.history.renderHistoryList(
+                        this.elements.historyList,
+                        (item) => {
+                            this.elements.userInput.value = item.input;
+                            this.elements.outputArea.textContent = item.prompt;
+                            this.handleInputChange();
+                            this.elements.outputSection.classList.add('visible');
+                            this.state.hasGeneratedPrompt = true;
+                            this.updateButtonStates();
+                            this.closeHistory();
+                        }
+                    );
+                }
+            }
+            
+            closeHistory() {
+                this.state.historyOpen = false;
+                if (this.elements.historySection) {
+                    this.elements.historySection.classList.remove('visible');
+                }
+            }
+            
+            setPreset(presetId) {
+                if (this.modules.prompt && this.modules.prompt.setPreset) {
+                    const success = this.modules.prompt.setPreset(presetId);
+                    if (success) {
+                        this.showNotification(`Preset changed to: ${presetId}`, 'info');
+                    }
+                }
+            }
+            
+            saveToHistory(inputText, generatedPrompt) {
+                try {
+                    if (this.modules.history) {
+                        this.modules.history.add({
+                            input: inputText,
+                            prompt: generatedPrompt,
+                            model: this.services.storage.loadModel('gemini-1.5-flash'),
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Error saving to history:', error);
+                    return false;
+                }
+            }
+            
+            openSettings() {
+                if (this.elements.settingsModal) {
+                    this.elements.settingsModal.classList.add('active');
+                }
+            }
+            
+            closeSettings() {
+                if (this.elements.settingsModal) {
+                    this.elements.settingsModal.classList.remove('active');
+                }
+            }
+            
+            saveSettings() {
+                this.showNotification('Settings saved', 'success');
+                this.closeSettings();
+            }
+            
+            handleKeyboardShortcuts(e) {
+                // Ctrl/Cmd + Enter to prepare prompt
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    this.preparePrompt();
+                }
+                
+                // Ctrl/Cmd + Z for undo
+                if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.undo();
+                }
+                
+                // Escape to close modals
+                if (e.key === 'Escape') {
+                    if (this.state.inspirationPanelOpen) {
+                        this.closeInspirationPanel();
+                    }
+                    if (this.state.historyOpen) {
+                        this.closeHistory();
+                    }
+                    if (this.elements.settingsModal && this.elements.settingsModal.classList.contains('active')) {
+                        this.closeSettings();
+                    }
+                    if (this.state.isEditorOpen) {
+                        this.closeFullScreenEditor();
+                    }
+                }
+            }
+            
+            showNotification(message, type = 'info') {
+                if (this.services.notification) {
+                    this.services.notification[type](message);
+                }
+            }
+            
+            updateUI() {
+                this.updateButtonStates();
+                this.updateProgress();
+            }
+            
+            handlePromptEdit() {
+                this.state.promptModified = true;
+                this.updateButtonStates();
+            }
+            
+            clearGeneratedPrompt() {
+                this.elements.outputArea.textContent = '';
+                this.state.originalPrompt = null;
+                this.state.hasGeneratedPrompt = false;
+                this.state.promptModified = false;
+                this.elements.outputSection.classList.remove('visible');
+                this.updateButtonStates();
+            }
+        }
+        
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new PromptCraftApp();
         });
     </script>
 </body>
