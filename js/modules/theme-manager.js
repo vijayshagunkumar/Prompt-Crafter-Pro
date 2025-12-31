@@ -1,4 +1,7 @@
-// Theme Manager - Complete
+/**
+ * Theme Manager
+ * Handles theme switching and management
+ */
 class ThemeManager {
     constructor() {
         this.storage = new StorageService();
@@ -15,13 +18,17 @@ class ThemeManager {
     }
 
     loadTheme() {
-        return this.storage.loadTheme() || 'auto';
+        try {
+            return this.storage.get('theme', 'dark');
+        } catch (error) {
+            console.error('Error loading theme:', error);
+            return 'dark';
+        }
     }
 
     saveTheme(theme) {
         this.currentTheme = theme;
-        this.storage.saveTheme(theme);
-        return theme;
+        return this.storage.set('theme', theme);
     }
 
     applyTheme(theme) {
@@ -29,7 +36,12 @@ class ThemeManager {
             (this.systemPrefersDark ? 'dark' : 'light') : 
             theme;
         
-        document.body.className = actualTheme === 'dark' ? 'dark-theme' : '';
+        if (actualTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+        
         this.emitThemeChange(actualTheme);
         return actualTheme;
     }
@@ -146,21 +158,12 @@ class ThemeManager {
     getThemeColors() {
         const isDark = this.isDark();
         return {
-            primary: isDark ? '#4F46E5' : '#4F46E5',
+            primary: '#4F46E5',
             background: isDark ? '#0F172A' : '#F8FAFC',
             card: isDark ? '#1E293B' : '#FFFFFF',
             text: isDark ? '#F1F5F9' : '#0F172A',
             border: isDark ? '#334155' : '#E2E8F0'
         };
-    }
-
-    setCSSVariables() {
-        const colors = this.getThemeColors();
-        const root = document.documentElement;
-        
-        Object.entries(colors).forEach(([key, value]) => {
-            root.style.setProperty(`--theme-${key}`, value);
-        });
     }
 
     destroy() {
@@ -170,4 +173,9 @@ class ThemeManager {
     }
 }
 
-window.ThemeManager = ThemeManager;
+// Export for global use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ThemeManager;
+} else {
+    window.ThemeManager = ThemeManager;
+}
