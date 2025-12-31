@@ -1,4 +1,7 @@
-// Template Manager - Complete
+/**
+ * Template Manager
+ * Handles template loading, rendering, and management
+ */
 class TemplateManager {
     constructor() {
         this.storage = new StorageService();
@@ -8,20 +11,25 @@ class TemplateManager {
     }
 
     loadTemplates() {
-        const saved = this.storage.loadTemplates();
-        const defaults = window.DEFAULT_TEMPLATES || [];
-        
-        if (!saved || saved.length === 0) {
-            this.saveTemplates(defaults);
-            return defaults;
+        try {
+            const saved = this.storage.get('templates');
+            const defaults = window.DEFAULT_TEMPLATES || [];
+            
+            if (!saved || saved.length === 0) {
+                this.saveTemplates(defaults);
+                return defaults;
+            }
+            
+            return saved;
+        } catch (error) {
+            console.error('Error loading templates:', error);
+            return window.DEFAULT_TEMPLATES || [];
         }
-        
-        return saved;
     }
 
     saveTemplates(templates) {
         this.templates = templates;
-        return this.storage.saveTemplates(templates);
+        return this.storage.set('templates', templates);
     }
 
     getTemplates(category = null) {
@@ -145,7 +153,6 @@ class TemplateManager {
                         <i class="fas fa-file-alt"></i>
                     </div>
                     <p>No templates found</p>
-                    <p class="empty-state-sub">Try creating a template first!</p>
                 </div>
             `;
             return;
@@ -177,7 +184,7 @@ class TemplateManager {
                             <i class="fas fa-chart-line"></i>
                             Used ${template.usageCount || 0} times
                         </span>
-                        <button class="template-use-btn" title="Use this template">
+                        <button class="template-use-btn">
                             <i class="fas fa-plus"></i>
                             Use
                         </button>
@@ -208,4 +215,9 @@ class TemplateManager {
     }
 }
 
-window.TemplateManager = TemplateManager;
+// Export for global use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = TemplateManager;
+} else {
+    window.TemplateManager = TemplateManager;
+}
