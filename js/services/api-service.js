@@ -1,6 +1,7 @@
+// Cloudflare Worker API service
 class APIService {
     constructor() {
-        this.config = window.API_CONFIG || {
+        this.config = {
             WORKER_URL: "https://promptcraft-api.vijay-shagunkumar.workers.dev",
             API_KEY_HEADER: "x-api-key",
             DEFAULT_API_KEY: "promptcraft-app-secret-123",
@@ -75,30 +76,6 @@ class APIService {
         }
     }
 
-    async testConnection() {
-        try {
-            const response = await fetch(`${this.config.WORKER_URL}/health`, {
-                method: 'GET',
-                signal: AbortSignal.timeout(5000)
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                return {
-                    connected: true,
-                    status: data.status || 'unknown',
-                    version: data.version || 'unknown',
-                    models: data.models || []
-                };
-            }
-            
-            return { connected: false, error: `HTTP ${response.status}` };
-            
-        } catch (error) {
-            return { connected: false, error: error.message };
-        }
-    }
-
     // Cache management
     getFromCache(key) {
         const item = this.cache.get(key);
@@ -135,6 +112,39 @@ class APIService {
         this.cache.clear();
     }
 
+    // Test connection
+    async testConnection() {
+        try {
+            const response = await fetch(this.config.WORKER_URL, {
+                method: 'POST',
+                headers: { 
+                    "Content-Type": "application/json",
+                    [this.config.API_KEY_HEADER]: this.config.DEFAULT_API_KEY
+                },
+                body: JSON.stringify({ 
+                    prompt: "Test connection",
+                    model: "gemini-1.5-flash"
+                }),
+                signal: AbortSignal.timeout(5000)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                return {
+                    connected: true,
+                    status: 'online',
+                    responseTime: Date.now(),
+                    data: data
+                };
+            }
+            
+            return { connected: false, error: `HTTP ${response.status}` };
+            
+        } catch (error) {
+            return { connected: false, error: error.message };
+        }
+    }
+
     // Batch processing
     async batchGenerate(prompts, model = null) {
         const results = [];
@@ -159,31 +169,11 @@ class APIService {
         
         return results;
     }
-
-    // Get available models
-    getAvailableModels() {
-        return Object.entries(window.MODEL_CONFIG || {}).map(([id, config]) => ({
-            id,
-            name: config.name,
-            provider: config.provider,
-            free: config.free || false,
-            recommended: config.recommended || false,
-            description: config.description || ""
-        }));
-    }
-
-    // Update API configuration
-    updateConfig(newConfig) {
-        this.config = { ...this.config, ...newConfig };
-    }
-
-    // Get current configuration
-    getConfig() {
-        return { ...this.config };
-    }
 }
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = APIService;
+} else {
+    window.APIService = APIService;
 }
