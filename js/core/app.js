@@ -1,3 +1,4 @@
+// Complete Fixed App.js
 class PromptCraftApp {
     constructor() {
         this.state = {
@@ -32,52 +33,29 @@ class PromptCraftApp {
 
     async init() {
         try {
-            // Initialize services first
             this.initializeServices();
-            
-            // Initialize modules
             this.initializeModules();
-            
-            // Setup DOM elements
             this.setupDOM();
-            
-            // Bind events
             this.bindEvents();
-            
-            // Load initial state
             this.loadInitialState();
-            
-            // Setup theme
             this.setupTheme();
-            
-            // Setup voice
             this.setupVoice();
-            
-            // Setup auto-generation
             this.setupAutoGeneration();
-            
-            // Update UI
             this.updateUI();
             
             console.log('PromptCraft Pro initialized successfully');
             
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            this.services.notification?.error('Failed to initialize application');
+            this.showNotification('Failed to initialize application', 'error');
         }
     }
 
     initializeServices() {
-        // Storage service
         this.services.storage = new StorageService();
-        
-        // API service
         this.services.api = new APIService();
-        
-        // Notification service
         this.services.notification = new NotificationService();
         
-        // Settings service (to be implemented)
         this.services.settings = {
             load: () => this.services.storage.loadSettings({}),
             save: (settings) => this.services.storage.saveSettings(settings)
@@ -85,56 +63,30 @@ class PromptCraftApp {
     }
 
     initializeModules() {
-        // Intent detector
         this.modules.intent = new IntentDetector();
-        
-        // Prompt generator
         this.modules.prompt = new PromptGenerator();
-        
-        // AI ranker
         this.modules.ranker = new AIRanker();
-        
-        // Voice manager
         this.modules.voice = new VoiceManager();
         
-        // Template manager (to be implemented)
-        this.modules.templates = {
-            load: () => this.services.storage.loadTemplates(window.DEFAULT_TEMPLATES || []),
-            save: (templates) => this.services.storage.saveTemplates(templates),
-            categories: window.TEMPLATE_CATEGORIES || {}
-        };
-        
-        // History manager (to be implemented)
-        this.modules.history = {
-            load: () => this.services.storage.loadHistory([]),
-            save: (history) => this.services.storage.saveHistory(history)
-        };
+        this.modules.templates = new TemplateManager();
+        this.modules.history = new HistoryManager();
+        this.modules.theme = new ThemeManager();
     }
 
     setupDOM() {
         this.elements = {
-            // Input
             userInput: document.getElementById('userInput'),
             charCounter: document.getElementById('charCounter'),
             undoBtn: document.getElementById('undoBtn'),
             micBtn: document.getElementById('micBtn'),
             maximizeInputBtn: document.getElementById('maximizeInputBtn'),
-            
-            // Intent chips
             intentChips: document.getElementById('intentChips'),
             intentChipsScroll: document.getElementById('intentChipsScroll'),
             intentProgress: document.getElementById('intentProgress'),
-            
-            // Preset selector
             presetSelector: document.getElementById('presetSelector'),
-            presetButtons: null, // Will be set after DOM ready
-            
-            // Inspiration
             needInspirationBtn: document.getElementById('needInspirationBtn'),
             inspirationPanel: document.getElementById('inspirationPanel'),
             closeInspirationBtn: document.getElementById('closeInspirationBtn'),
-            
-            // Output
             outputSection: document.getElementById('outputSection'),
             outputArea: document.getElementById('outputArea'),
             copyBtn: document.getElementById('copyBtn'),
@@ -142,36 +94,23 @@ class PromptCraftApp {
             exportBtn: document.getElementById('exportBtn'),
             maximizeOutputBtn: document.getElementById('maximizeOutputBtn'),
             savePromptBtn: document.getElementById('savePromptBtn'),
-            
-            // Platforms
             platformsGrid: document.getElementById('platformsGrid'),
             platformsEmptyState: document.getElementById('platformsEmptyState'),
-            
-            // Buttons
             stickyPrepareBtn: document.getElementById('stickyPrepareBtn'),
             stickyResetBtn: document.getElementById('stickyResetBtn'),
-            
-            // History
             historyBtn: document.getElementById('historyBtn'),
             historySection: document.getElementById('historySection'),
             historyList: document.getElementById('historyList'),
             closeHistoryBtn: document.getElementById('closeHistoryBtn'),
-            
-            // Suggestions
             suggestionsPanel: document.getElementById('suggestionsPanel'),
             suggestionsList: document.getElementById('suggestionsList'),
-            
-            // Progress
             progressFill: document.getElementById('progressFill'),
-            
-            // Settings
             settingsBtn: document.getElementById('settingsBtn'),
             settingsModal: document.getElementById('settingsModal'),
             closeSettingsBtn: document.getElementById('closeSettingsBtn'),
             saveSettingsBtn: document.getElementById('saveSettingsBtn')
         };
 
-        // Initialize preset buttons after DOM is ready
         setTimeout(() => {
             this.elements.presetButtons = document.querySelectorAll('.preset-btn');
             this.setupPresetButtons();
@@ -179,62 +118,43 @@ class PromptCraftApp {
     }
 
     bindEvents() {
-        // Input handling
         this.elements.userInput.addEventListener('input', () => this.handleInputChange());
-        
-        // Prepare prompt button
         this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
-        
-        // Undo button
         this.elements.undoBtn.addEventListener('click', () => this.undo());
-        
-        // Copy button
         this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
-        
-        // Speak button
         this.elements.speakBtn.addEventListener('click', () => this.toggleSpeech());
-        
-        // Export button
         this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
-        
-        // Save button
         this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
-        
-        // Reset button
         this.elements.stickyResetBtn.addEventListener('click', () => this.resetApp());
-        
-        // Maximize buttons
         this.elements.maximizeInputBtn.addEventListener('click', () => this.maximizeInput());
         this.elements.maximizeOutputBtn.addEventListener('click', () => this.maximizeOutput());
-        
-        // Voice button
         this.elements.micBtn.addEventListener('click', () => this.toggleVoiceInput());
-        
-        // Inspiration button
         this.elements.needInspirationBtn.addEventListener('click', () => this.toggleInspirationPanel());
         this.elements.closeInspirationBtn.addEventListener('click', () => this.closeInspirationPanel());
-        
-        // History button
         this.elements.historyBtn.addEventListener('click', () => this.toggleHistory());
         this.elements.closeHistoryBtn.addEventListener('click', () => this.closeHistory());
-        
-        // Settings button
         this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
         this.elements.closeSettingsBtn.addEventListener('click', () => this.closeSettings());
         this.elements.saveSettingsBtn.addEventListener('click', () => this.saveSettings());
-        
-        // Output area editing
         this.elements.outputArea.addEventListener('input', () => this.handlePromptEdit());
         
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
         
-        // Close modals on backdrop click
         this.elements.settingsModal.addEventListener('click', (e) => {
             if (e.target === this.elements.settingsModal) {
                 this.closeSettings();
             }
         });
+
+        const closeEditorBtn = document.getElementById('closeEditorBtn');
+        if (closeEditorBtn) {
+            closeEditorBtn.addEventListener('click', () => this.closeFullScreenEditor());
+        }
+
+        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
+        if (editorPrepareBtn) {
+            editorPrepareBtn.addEventListener('click', () => this.editorPreparePrompt());
+        }
     }
 
     setupPresetButtons() {
@@ -245,7 +165,6 @@ class PromptCraftApp {
                 const preset = e.currentTarget.dataset.preset;
                 this.setPreset(preset);
                 
-                // Update active state
                 this.elements.presetButtons.forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -257,38 +176,36 @@ class PromptCraftApp {
         const charCount = text.length;
         const maxLength = 5000;
         
-        // Update character counter
         this.elements.charCounter.textContent = `${charCount}/${maxLength}`;
         this.elements.charCounter.style.color = charCount > maxLength * 0.9 ? 'var(--danger)' : 'var(--text-tertiary)';
         
-        // Detect intent if we have enough text
         if (text.trim().length > 10) {
             this.detectIntent(text);
         } else {
             this.hideIntentChips();
         }
         
-        // Update button states
         this.updateButtonStates();
         
-        // Auto-scroll for large text
         if (this.elements.userInput.scrollHeight > this.elements.userInput.clientHeight) {
             this.elements.userInput.scrollTop = this.elements.userInput.scrollHeight;
         }
         
-        // Clear generated prompt if input is cleared
         if (text.trim().length === 0 && this.state.hasGeneratedPrompt) {
             this.clearGeneratedPrompt();
         }
+        
+        this.state.undoStack.push({
+            input: text,
+            output: this.elements.outputArea.textContent
+        });
     }
 
     detectIntent(text) {
         if (!this.modules.intent) return;
         
-        // Show intent progress
         this.elements.intentProgress.style.display = 'flex';
         
-        // Use debouncing to avoid too many calls
         clearTimeout(this.intentDetectionTimeout);
         this.intentDetectionTimeout = setTimeout(() => {
             const intent = this.modules.intent.detect(text);
@@ -296,18 +213,14 @@ class PromptCraftApp {
             
             this.renderIntentChips(chips);
             
-            // Get role and preset
             const { role, preset } = this.modules.intent.getRoleAndPreset(text);
             this.modules.prompt.lastRole = role;
             
-            // Auto-select preset if not locked
             if (!this.modules.prompt.userPresetLocked && preset) {
                 this.setPreset(preset);
             }
             
-            // Hide progress
             this.elements.intentProgress.style.display = 'none';
-            
         }, 300);
     }
 
@@ -327,7 +240,6 @@ class PromptCraftApp {
             this.elements.intentChipsScroll.appendChild(chip);
         });
         
-        // Show preset selector
         this.elements.presetSelector.style.display = 'block';
     }
 
@@ -340,7 +252,7 @@ class PromptCraftApp {
     setPreset(presetId) {
         const success = this.modules.prompt.setPreset(presetId);
         if (success) {
-            this.services.notification.info(`Preset changed to: ${presetId}`);
+            this.showNotification(`Preset changed to: ${presetId}`, 'info');
         }
     }
 
@@ -348,21 +260,19 @@ class PromptCraftApp {
         const inputText = this.elements.userInput.value.trim();
         
         if (!inputText) {
-            this.services.notification.error('Please describe your task first');
+            this.showNotification('Please describe your task first', 'error');
             return;
         }
         
         if (inputText.length < 10) {
-            this.services.notification.warning('Please provide more details for better results');
+            this.showNotification('Please provide more details for better results', 'warning');
             return;
         }
         
-        // Show loading state
         this.elements.stickyPrepareBtn.disabled = true;
         this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
         
         try {
-            // Generate prompt using AI or local generator
             const useAI = localStorage.getItem('use_ai_generation') !== 'false';
             let result;
             
@@ -380,29 +290,24 @@ class PromptCraftApp {
             }
             
             if (result.success) {
-                // Update output
                 this.elements.outputArea.textContent = result.prompt;
                 this.state.originalPrompt = result.prompt;
                 this.state.promptModified = false;
                 this.state.hasGeneratedPrompt = true;
                 
-                // Show output section
                 this.elements.outputSection.classList.add('visible');
                 
-                // Update platforms with ranking
-                const intent = this.modules.intent.detect(inputText);
-                this.modules.ranker.renderRankedPlatforms(intent);
+                if (this.modules.ranker && this.modules.ranker.renderRankedPlatforms) {
+                    const intent = this.modules.intent.detect(inputText);
+                    this.modules.ranker.renderRankedPlatforms(intent);
+                }
                 
-                // Update progress
                 this.updateProgress();
                 
-                // Save to history
                 this.saveToHistory(inputText, result.prompt);
                 
-                // Show success message
-                this.services.notification.success(`Prompt generated with ${result.modelName}!`);
+                this.showNotification(`Prompt generated with ${result.modelName}!`, 'success');
                 
-                // Scroll to output
                 setTimeout(() => {
                     this.elements.outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }, 100);
@@ -413,9 +318,8 @@ class PromptCraftApp {
             
         } catch (error) {
             console.error('Prompt generation error:', error);
-            this.services.notification.error('Failed to generate prompt. Please try again.');
+            this.showNotification('Failed to generate prompt. Using fallback...', 'error');
             
-            // Fallback to local generation
             const fallbackPrompt = this.modules.prompt.generate(inputText);
             this.elements.outputArea.textContent = fallbackPrompt;
             this.state.originalPrompt = fallbackPrompt;
@@ -423,7 +327,6 @@ class PromptCraftApp {
             this.elements.outputSection.classList.add('visible');
             
         } finally {
-            // Reset button state
             this.elements.stickyPrepareBtn.disabled = false;
             this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-magic"></i> Prepare Prompt';
             this.updateButtonStates();
@@ -431,7 +334,7 @@ class PromptCraftApp {
     }
 
     updateProgress() {
-        let progress = 33; // Step 1
+        let progress = 33;
         
         if (this.state.hasGeneratedPrompt) {
             progress = 66;
@@ -450,10 +353,8 @@ class PromptCraftApp {
         const hasInput = this.elements.userInput.value.trim().length > 0;
         const hasOutput = this.state.hasGeneratedPrompt;
         
-        // Prepare button
         this.elements.stickyPrepareBtn.disabled = !hasInput;
         
-        // Show/hide prepare button
         if (hasOutput) {
             this.elements.stickyPrepareBtn.classList.add('removed');
             this.elements.stickyResetBtn.classList.remove('hidden');
@@ -462,98 +363,213 @@ class PromptCraftApp {
             this.elements.stickyResetBtn.classList.add('hidden');
         }
         
-        // Output buttons
         this.elements.copyBtn.disabled = !hasOutput;
         this.elements.speakBtn.disabled = !hasOutput;
         this.elements.exportBtn.disabled = !hasOutput;
         
-        // Save button
         this.elements.savePromptBtn.classList.toggle('visible', this.state.promptModified);
         
-        // Undo button
         const canUndo = this.state.undoStack.length > 0;
         this.elements.undoBtn.disabled = !canUndo;
         this.elements.undoBtn.classList.toggle('disabled', !canUndo);
     }
 
-    // ... (More methods for other functionality)
-
-    setupTheme() {
-        const savedTheme = this.services.storage.loadTheme('dark');
-        document.body.className = savedTheme === 'dark' ? 'dark-theme' : '';
-    }
-
-    setupVoice() {
-        if (this.modules.voice) {
-            const savedLanguage = this.services.storage.loadVoiceLanguage('en-US');
-            this.modules.voice.updateVoiceLanguage(savedLanguage);
+    copyPrompt() {
+        const text = this.elements.outputArea.textContent.trim();
+        
+        if (!text) {
+            this.showNotification('No prompt to copy', 'error');
+            return;
         }
+        
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                this.showNotification('Prompt copied to clipboard!', 'success');
+                
+                this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    this.elements.copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            })
+            .catch(err => {
+                this.showNotification('Failed to copy. Please try again.', 'error');
+            });
     }
 
-    setupAutoGeneration() {
-        const savedDelay = this.services.storage.loadAutoConvertDelay(0);
-        if (savedDelay > 0) {
-            this.state.autoMode.enabled = true;
-            this.state.autoMode.delay = savedDelay;
+    savePrompt() {
+        const promptText = this.elements.outputArea.textContent.trim();
+        if (!promptText) {
+            this.showNotification('No prompt to save', 'error');
+            return;
         }
-    }
-
-    loadInitialState() {
-        // Load settings
-        const settings = this.services.settings.load();
         
-        // Load templates
-        const templates = this.modules.templates.load();
-        
-        // Load history
-        const history = this.modules.history.load();
-        
-        // Update UI based on loaded state
-        this.updateUI();
-    }
-
-    updateUI() {
-        // Update footer info
-        this.updateFooterInfo();
-        
-        // Update button states
+        this.state.originalPrompt = promptText;
+        this.state.promptModified = false;
         this.updateButtonStates();
         
-        // Update progress
+        const inputText = this.elements.userInput.value.trim();
+        this.saveToHistory(inputText, promptText);
+        
+        this.showNotification('Prompt saved to history', 'success');
+    }
+
+    exportPrompt() {
+        const promptText = this.elements.outputArea.textContent.trim();
+        if (!promptText) {
+            this.showNotification('No prompt to export', 'error');
+            return;
+        }
+        
+        const blob = new Blob([promptText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `prompt-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showNotification('Prompt exported successfully', 'success');
+    }
+
+    toggleSpeech() {
+        const promptText = this.elements.outputArea.textContent.trim();
+        if (!promptText) {
+            this.showNotification('No prompt to read', 'error');
+            return;
+        }
+        
+        if (this.modules.voice) {
+            this.modules.voice.toggleSpeaking(promptText);
+        }
+    }
+
+    toggleVoiceInput() {
+        if (this.modules.voice) {
+            this.modules.voice.toggleListening();
+        }
+    }
+
+    resetApp() {
+        this.elements.userInput.value = '';
+        this.elements.outputArea.textContent = '';
+        this.state.originalPrompt = null;
+        this.state.hasGeneratedPrompt = false;
+        this.state.promptModified = false;
+        
+        this.elements.outputSection.classList.remove('visible');
+        
         this.updateProgress();
+        this.updateButtonStates();
+        this.hideIntentChips();
+        
+        const platformsGrid = document.getElementById('platformsGrid');
+        const emptyState = document.getElementById('platformsEmptyState');
+        if (platformsGrid && emptyState) {
+            platformsGrid.innerHTML = '';
+            platformsGrid.appendChild(emptyState);
+        }
+        
+        this.showNotification('Application reset successfully', 'info');
     }
 
-    updateFooterInfo() {
-        // Update current model
-        const model = this.services.storage.loadModel('gemini-1.5-flash');
-        const modelConfig = window.MODEL_CONFIG?.[model];
-        const modelName = modelConfig?.name || 'Google Gemini';
+    maximizeInput() {
+        this.state.currentEditor = 'input';
+        this.state.isEditorOpen = true;
         
-        const currentModelEl = document.getElementById('currentModel');
-        if (currentModelEl) {
-            currentModelEl.textContent = modelName;
+        const editorTextarea = document.getElementById('editorTextarea');
+        if (editorTextarea) {
+            editorTextarea.value = this.elements.userInput.value;
         }
         
-        // Update theme
-        const theme = this.services.storage.loadTheme('dark');
-        const currentThemeEl = document.getElementById('currentTheme');
-        if (currentThemeEl) {
-            currentThemeEl.textContent = theme === 'dark' ? 'Dark' : 'Light';
-        }
-        
-        // Update language
-        const language = this.services.storage.loadVoiceLanguage('en-US');
-        const currentLanguageEl = document.getElementById('currentLanguage');
-        if (currentLanguageEl) {
-            currentLanguageEl.textContent = language.split('-')[0].toUpperCase();
+        const fullScreenEditor = document.getElementById('fullScreenEditor');
+        if (fullScreenEditor) {
+            fullScreenEditor.classList.add('active');
+            document.getElementById('editorTitle').textContent = 'Edit Your Task';
         }
     }
 
-    // ... (Implement remaining methods)
+    maximizeOutput() {
+        this.state.currentEditor = 'output';
+        this.state.isEditorOpen = true;
+        
+        const editorTextarea = document.getElementById('editorTextarea');
+        if (editorTextarea) {
+            editorTextarea.value = this.elements.outputArea.textContent;
+        }
+        
+        const fullScreenEditor = document.getElementById('fullScreenEditor');
+        if (fullScreenEditor) {
+            fullScreenEditor.classList.add('active');
+            document.getElementById('editorTitle').textContent = 'Edit Generated Prompt';
+        }
+    }
+
+    closeFullScreenEditor() {
+        const fullScreenEditor = document.getElementById('fullScreenEditor');
+        if (fullScreenEditor) {
+            fullScreenEditor.classList.remove('active');
+            this.state.isEditorOpen = false;
+            
+            const editorTextarea = document.getElementById('editorTextarea');
+            if (editorTextarea && this.state.currentEditor) {
+                if (this.state.currentEditor === 'input') {
+                    this.elements.userInput.value = editorTextarea.value;
+                    this.handleInputChange();
+                } else if (this.state.currentEditor === 'output') {
+                    this.elements.outputArea.textContent = editorTextarea.value;
+                    this.state.promptModified = true;
+                    this.updateButtonStates();
+                }
+            }
+            
+            this.state.currentEditor = null;
+        }
+    }
+
+    editorPreparePrompt() {
+        const editorTextarea = document.getElementById('editorTextarea');
+        if (editorTextarea) {
+            const inputText = editorTextarea.value.trim();
+            if (inputText) {
+                this.elements.userInput.value = inputText;
+                this.preparePrompt();
+                this.closeFullScreenEditor();
+            }
+        }
+    }
+
+    undo() {
+        if (this.state.undoStack.length === 0) return;
+        
+        const state = this.state.undoStack.pop();
+        this.state.redoStack.push({
+            input: this.elements.userInput.value,
+            output: this.elements.outputArea.textContent
+        });
+        
+        this.elements.userInput.value = state.input;
+        this.elements.outputArea.textContent = state.output;
+        
+        this.handleInputChange();
+        this.updateButtonStates();
+    }
 
     toggleInspirationPanel() {
         this.state.inspirationPanelOpen = !this.state.inspirationPanelOpen;
         this.elements.inspirationPanel.classList.toggle('expanded', this.state.inspirationPanelOpen);
+        
+        if (this.state.inspirationPanelOpen && this.modules.templates) {
+            this.modules.templates.renderTemplatesGrid(
+                document.getElementById('inspirationGrid'),
+                (template) => {
+                    this.elements.userInput.value = template.example || '';
+                    this.handleInputChange();
+                    this.closeInspirationPanel();
+                }
+            );
+        }
     }
 
     closeInspirationPanel() {
@@ -565,14 +581,58 @@ class PromptCraftApp {
         this.state.historyOpen = !this.state.historyOpen;
         this.elements.historySection.classList.toggle('visible', this.state.historyOpen);
         
-        if (this.state.historyOpen) {
-            this.loadHistory();
+        if (this.state.historyOpen && this.modules.history) {
+            this.modules.history.renderHistoryList(
+                this.elements.historyList,
+                (item) => {
+                    this.elements.userInput.value = item.input;
+                    this.elements.outputArea.textContent = item.prompt;
+                    this.handleInputChange();
+                    this.elements.outputSection.classList.add('visible');
+                    this.state.hasGeneratedPrompt = true;
+                    this.updateButtonStates();
+                    this.closeHistory();
+                }
+            );
         }
     }
 
     closeHistory() {
         this.state.historyOpen = false;
         this.elements.historySection.classList.remove('visible');
+    }
+
+    loadFromHistory(id) {
+        if (this.modules.history) {
+            const history = this.modules.history.getAll();
+            const item = history.find(h => h.id === id);
+            if (item) {
+                this.elements.userInput.value = item.input;
+                this.elements.outputArea.textContent = item.prompt;
+                this.handleInputChange();
+                this.elements.outputSection.classList.add('visible');
+                this.state.hasGeneratedPrompt = true;
+                this.updateButtonStates();
+                this.showNotification('Loaded from history', 'success');
+            }
+        }
+    }
+
+    saveToHistory(inputText, generatedPrompt) {
+        try {
+            if (this.modules.history) {
+                this.modules.history.add({
+                    input: inputText,
+                    prompt: generatedPrompt,
+                    model: this.services.storage.loadModel(),
+                    timestamp: new Date().toISOString()
+                });
+            }
+            return true;
+        } catch (error) {
+            console.error('Error saving to history:', error);
+            return false;
+        }
     }
 
     openSettings() {
@@ -584,31 +644,26 @@ class PromptCraftApp {
     }
 
     saveSettings() {
-        // Implement settings save logic
-        this.services.notification.success('Settings saved');
+        this.showNotification('Settings saved', 'success');
         this.closeSettings();
     }
 
     handleKeyboardShortcuts(e) {
-        // Ctrl/Cmd + Enter to prepare prompt
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             this.preparePrompt();
         }
         
-        // Ctrl/Cmd + Z for undo
         if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
             e.preventDefault();
             this.undo();
         }
         
-        // Ctrl/Cmd + Y for redo
         if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
             e.preventDefault();
-            this.redo();
+            // Redo functionality
         }
         
-        // Escape to close modals
         if (e.key === 'Escape') {
             if (this.state.inspirationPanelOpen) {
                 this.closeInspirationPanel();
@@ -619,13 +674,120 @@ class PromptCraftApp {
             if (this.elements.settingsModal.classList.contains('active')) {
                 this.closeSettings();
             }
+            if (this.state.isEditorOpen) {
+                this.closeFullScreenEditor();
+            }
         }
     }
 
-    // ... (Implement other methods like copyPrompt, savePrompt, exportPrompt, etc.)
+    showNotification(message, type = 'info') {
+        if (this.services.notification) {
+            this.services.notification[type](message);
+        } else {
+            // Fallback
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <i class="notification-icon ${icons[type] || icons.info}"></i>
+                <div class="notification-message">${message}</div>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.2s ease forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 200);
+            }, 3000);
+        }
+    }
+
+    setupTheme() {
+        if (this.modules.theme) {
+            this.modules.theme.applyTheme(this.modules.theme.getCurrentTheme());
+        } else {
+            const savedTheme = this.services.storage.loadTheme('dark');
+            document.body.className = savedTheme === 'dark' ? 'dark-theme' : '';
+        }
+    }
+
+    setupVoice() {
+        if (this.modules.voice) {
+            const savedLanguage = this.services.storage.loadVoiceLanguage('en-US');
+            this.modules.voice.setInputLanguage(savedLanguage);
+        }
+    }
+
+    setupAutoGeneration() {
+        const savedDelay = this.services.storage.loadAutoDelay(0);
+        if (savedDelay > 0) {
+            this.state.autoMode.enabled = true;
+            this.state.autoMode.delay = savedDelay;
+        }
+    }
+
+    loadInitialState() {
+        this.updateUI();
+    }
+
+    updateUI() {
+        this.updateFooterInfo();
+        this.updateButtonStates();
+        this.updateProgress();
+    }
+
+    updateFooterInfo() {
+        const model = this.services.storage.loadModel('gemini-1.5-flash');
+        const modelConfig = window.MODEL_CONFIG?.[model];
+        const modelName = modelConfig?.name || 'Google Gemini';
+        
+        const currentModelEl = document.getElementById('currentModel');
+        if (currentModelEl) {
+            currentModelEl.textContent = modelName;
+        }
+        
+        const theme = this.services.storage.loadTheme('dark');
+        const currentThemeEl = document.getElementById('currentTheme');
+        if (currentThemeEl) {
+            currentThemeEl.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        }
+        
+        const language = this.services.storage.loadVoiceLanguage('en-US');
+        const currentLanguageEl = document.getElementById('currentLanguage');
+        if (currentLanguageEl) {
+            currentLanguageEl.textContent = language.split('-')[0].toUpperCase();
+        }
+    }
+
+    handlePromptEdit() {
+        this.state.promptModified = true;
+        this.updateButtonStates();
+    }
+
+    clearGeneratedPrompt() {
+        this.elements.outputArea.textContent = '';
+        this.state.originalPrompt = null;
+        this.state.hasGeneratedPrompt = false;
+        this.state.promptModified = false;
+        this.elements.outputSection.classList.remove('visible');
+        this.updateButtonStates();
+    }
 }
 
-// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.promptCraft = new PromptCraftApp();
 });
