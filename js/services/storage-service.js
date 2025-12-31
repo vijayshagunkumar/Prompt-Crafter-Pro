@@ -1,3 +1,4 @@
+// LocalStorage wrapper with TTL support
 class StorageService {
     constructor() {
         this.prefix = 'promptcraft_';
@@ -20,7 +21,6 @@ class StorageService {
             return true;
         } catch (error) {
             console.error('Storage set error:', error);
-            
             // Fallback to memory cache if localStorage fails
             this.memoryCache.set(storageKey, item);
             return false;
@@ -176,22 +176,6 @@ class StorageService {
         return this.get('model', defaultModel);
     }
 
-    saveVoiceLanguage(language) {
-        return this.set('voice_language', language);
-    }
-
-    loadVoiceLanguage(defaultLanguage = 'en-US') {
-        return this.get('voice_language', defaultLanguage);
-    }
-
-    saveAutoConvertDelay(delay) {
-        return this.set('auto_convert_delay', delay);
-    }
-
-    loadAutoConvertDelay(defaultDelay = 0) {
-        return this.get('auto_convert_delay', defaultDelay);
-    }
-
     // Usage statistics
     incrementUsageCount() {
         const count = this.get('usage_count', 0);
@@ -276,40 +260,11 @@ class StorageService {
         
         return cleaned;
     }
-
-    // Backup to memory
-    backupToMemory() {
-        const backup = {};
-        const keys = this.keys();
-        
-        keys.forEach(key => {
-            backup[key] = this.get(key);
-        });
-        
-        sessionStorage.setItem(this.prefix + 'backup', JSON.stringify(backup));
-        return keys.length;
-    }
-
-    // Restore from memory
-    restoreFromMemory() {
-        try {
-            const backupStr = sessionStorage.getItem(this.prefix + 'backup');
-            if (!backupStr) return 0;
-            
-            const backup = JSON.parse(backupStr);
-            Object.keys(backup).forEach(key => {
-                this.set(key, backup[key]);
-            });
-            
-            return Object.keys(backup).length;
-        } catch (error) {
-            console.error('Restore from memory error:', error);
-            return 0;
-        }
-    }
 }
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = StorageService;
+} else {
+    window.StorageService = StorageService;
 }
