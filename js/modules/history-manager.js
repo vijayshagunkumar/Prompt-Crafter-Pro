@@ -1,4 +1,7 @@
-// History Manager - Complete
+/**
+ * History Manager
+ * Manages prompt history storage and rendering
+ */
 class HistoryManager {
     constructor() {
         this.storage = new StorageService();
@@ -7,23 +10,33 @@ class HistoryManager {
     }
 
     loadHistory() {
-        return this.storage.loadHistory() || [];
+        try {
+            return this.storage.get('prompt_history', []);
+        } catch (error) {
+            console.error('Error loading history:', error);
+            return [];
+        }
     }
 
     saveHistory(history) {
         this.history = history;
-        return this.storage.saveHistory(history);
+        return this.storage.set('prompt_history', history);
     }
 
     add(item) {
         const historyItem = {
             id: Date.now().toString(),
-            ...item,
-            timestamp: new Date().toISOString()
+            input: item.input || '',
+            prompt: item.prompt || '',
+            model: item.model || 'local',
+            timestamp: new Date().toISOString(),
+            tags: item.tags || []
         };
         
+        // Add to beginning
         this.history.unshift(historyItem);
         
+        // Limit items
         if (this.history.length > this.maxItems) {
             this.history = this.history.slice(0, this.maxItems);
         }
@@ -72,8 +85,7 @@ class HistoryManager {
         const searchTerm = query.toLowerCase();
         return this.history.filter(item => 
             (item.input && item.input.toLowerCase().includes(searchTerm)) ||
-            (item.prompt && item.prompt.toLowerCase().includes(searchTerm)) ||
-            (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+            (item.prompt && item.prompt.toLowerCase().includes(searchTerm))
         );
     }
 
@@ -166,7 +178,7 @@ class HistoryManager {
             
             loadBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (window.app && window.app.loadFromHistory) {
+                if (window.app && typeof window.app.loadFromHistory === 'function') {
                     window.app.loadFromHistory(item.id);
                 }
             });
@@ -221,4 +233,9 @@ class HistoryManager {
     }
 }
 
-window.HistoryManager = HistoryManager;
+// Export for global use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = HistoryManager;
+} else {
+    window.HistoryManager = HistoryManager;
+}
