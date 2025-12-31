@@ -1,219 +1,424 @@
-// AI Ranker - Complete Fixed Version
-class AIRanker {
+// COMPLETE HistoryManager.js - READY TO USE
+class HistoryManager {
     constructor() {
-        this.tools = {
-            chatgpt: {
-                name: "ChatGPT",
-                icon: "fa-comment-dots",
-                color: "#10a37f",
-                strengths: ["General tasks", "Writing", "Analysis", "Education", "Conversation", "Creative writing", "Problem solving"],
-                weaknesses: ["Real-time data", "Latest information", "Free tier limited"],
-                description: "Best for general-purpose tasks, creative writing, and detailed explanations",
-                score: 0,
-                bestFor: ["General queries", "Creative writing", "Code explanation", "Email drafting", "Brainstorming", "Learning", "Analysis"]
-            },
-            gemini: {
-                name: "Gemini",
-                icon: "fa-google",
-                color: "#4285f4",
-                strengths: ["Research", "Coding", "Multimodal", "Free tier", "Real-time", "Technical"],
-                weaknesses: ["Creative writing", "Long-form content"],
-                description: "Great for research, technical tasks, coding, and multimodal understanding",
-                score: 0,
-                bestFor: ["Research", "Coding help", "Technical analysis", "Web searches", "Learning", "Multimodal tasks"]
-            },
-            claude: {
-                name: "Claude",
-                icon: "fa-brain",
-                color: "#d4a017",
-                strengths: ["Long-form writing", "Analysis", "Business documents", "Reasoning", "Ethical responses"],
-                weaknesses: ["Code generation", "Creative", "Multimodal"],
-                description: "Excellent for long-form content, analysis, business writing, and reasoning",
-                score: 0,
-                bestFor: ["Long articles", "Business documents", "Analysis reports", "Legal writing", "Academic papers", "Detailed analysis"]
-            },
-            perplexity: {
-                name: "Perplexity",
-                icon: "fa-search",
-                color: "#000000",
-                strengths: ["Research", "Citations", "Facts", "Web search", "Accuracy", "Summaries"],
-                weaknesses: ["Creative writing", "Long-form", "Conversational"],
-                description: "Perfect for research, fact-checking, citations, and accurate information",
-                score: 0,
-                bestFor: ["Research papers", "Fact-checking", "Citations", "News summaries", "Web research", "Academic work"]
-            },
-            copilot: {
-                name: "Copilot",
-                icon: "fa-code",
-                color: "#0078d4",
-                strengths: ["Coding", "Development", "Snippets", "Integration", "Debugging", "Assistance"],
-                weaknesses: ["General writing", "Creative", "Non-technical"],
-                description: "Ideal for coding assistance, snippets, debugging, and development workflow",
-                score: 0,
-                bestFor: ["Code generation", "Debugging", "Code review", "API documentation", "Development", "Technical solutions"]
-            },
-            grok: {
-                name: "Grok",
-                icon: "fa-bolt",
-                color: "#bf3989",
-                strengths: ["Creative", "Humor", "Casual", "Entertainment", "Trends", "Social"],
-                weaknesses: ["Professional", "Technical", "Formal"],
-                description: "Fun for creative writing, humor, casual chat, and trending topics",
-                score: 0,
-                bestFor: ["Creative writing", "Humor", "Casual chat", "Social media", "Entertainment", "Storytelling"]
-            }
-        };
+        this.storage = new StorageService();
+        this.history = this.loadHistory();
+        this.maxItems = 50;
+        this.init();
     }
 
-    analyzeIntent(text) {
-        text = text.toLowerCase();
-        let intent = {
-            isTechnical: false,
-            isCreative: false,
-            isResearch: false,
-            isBusiness: false,
-            isEducational: false,
-            isCoding: false
-        };
-
-        // Detect intent
-        const technicalKeywords = ['code', 'programming', 'algorithm', 'software', 'api', 'database', 'function', 'debug', 'technical', 'develop'];
-        const creativeKeywords = ['write', 'story', 'creative', 'poem', 'script', 'marketing', 'social media', 'content', 'advertisement'];
-        const researchKeywords = ['research', 'study', 'analysis', 'data', 'statistics', 'survey', 'report', 'findings', 'evidence'];
-        const businessKeywords = ['business', 'strategy', 'plan', 'proposal', 'meeting', 'email', 'presentation', 'report', 'executive'];
-        const educationalKeywords = ['learn', 'teach', 'explain', 'tutorial', 'guide', 'education', 'student', 'study', 'understanding'];
-        const codingKeywords = ['javascript', 'python', 'java', 'c++', 'html', 'css', 'react', 'node', 'function', 'variable', 'loop'];
-
-        technicalKeywords.forEach(keyword => {
-            if (text.includes(keyword)) intent.isTechnical = true;
-        });
-
-        creativeKeywords.forEach(keyword => {
-            if (text.includes(keyword)) intent.isCreative = true;
-        });
-
-        researchKeywords.forEach(keyword => {
-            if (text.includes(keyword)) intent.isResearch = true;
-        });
-
-        businessKeywords.forEach(keyword => {
-            if (text.includes(keyword)) intent.isBusiness = true;
-        });
-
-        educationalKeywords.forEach(keyword => {
-            if (text.includes(keyword)) intent.isEducational = true;
-        });
-
-        codingKeywords.forEach(keyword => {
-            if (text.includes(keyword)) intent.isCoding = true;
-        });
-
-        return intent;
+    init() {
+        // Setup event listeners
+        this.setupEventListeners();
+        console.log('History Manager initialized with', this.history.length, 'items');
     }
 
-    rankTools(intent) {
-        // Reset scores
-        Object.keys(this.tools).forEach(tool => {
-            this.tools[tool].score = 0;
-        });
-
-        // Score based on intent
-        if (intent.isTechnical || intent.isCoding) {
-            this.tools.copilot.score += 30;
-            this.tools.gemini.score += 25;
-            this.tools.chatgpt.score += 20;
-            this.tools.perplexity.score += 15;
+    loadHistory() {
+        try {
+            const saved = this.storage.get('prompt_history', []);
+            // Validate and clean history
+            return saved.filter(item => 
+                item && 
+                item.id && 
+                item.timestamp && 
+                (item.input || item.prompt)
+            );
+        } catch (error) {
+            console.error('Error loading history:', error);
+            return [];
         }
-
-        if (intent.isCreative) {
-            this.tools.grok.score += 30;
-            this.tools.chatgpt.score += 25;
-            this.tools.claude.score += 20;
-            this.tools.gemini.score += 10;
-        }
-
-        if (intent.isResearch) {
-            this.tools.perplexity.score += 30;
-            this.tools.gemini.score += 25;
-            this.tools.claude.score += 20;
-            this.tools.chatgpt.score += 15;
-        }
-
-        if (intent.isBusiness) {
-            this.tools.claude.score += 30;
-            this.tools.chatgpt.score += 25;
-            this.tools.gemini.score += 20;
-            this.tools.perplexity.score += 15;
-        }
-
-        if (intent.isEducational) {
-            this.tools.chatgpt.score += 30;
-            this.tools.gemini.score += 25;
-            this.tools.perplexity.score += 20;
-            this.tools.claude.score += 15;
-        }
-
-        // Add base scores
-        Object.keys(this.tools).forEach(tool => {
-            this.tools[tool].score += 10; // Base score
-        });
-
-        // Sort tools by score
-        const rankedTools = Object.keys(this.tools)
-            .map(key => ({ ...this.tools[key], id: key }))
-            .sort((a, b) => b.score - a.score);
-
-        return rankedTools;
     }
 
-    renderRankedPlatforms(intent) {
-        const platformsGrid = document.getElementById('platformsGrid');
-        const emptyState = document.getElementById('platformsEmptyState');
-        
-        if (!platformsGrid) return;
+    saveHistory(history) {
+        this.history = history;
+        return this.storage.set('prompt_history', history);
+    }
 
-        // Clear existing content
-        platformsGrid.innerHTML = '';
-
-        // Get ranked tools
-        const rankedTools = this.rankTools(intent);
-
-        if (rankedTools.length === 0 && emptyState) {
-            platformsGrid.appendChild(emptyState);
-            return;
-        }
-
-        // Render platforms
-        rankedTools.forEach((tool, index) => {
-            const platformCard = document.createElement('div');
-            platformCard.className = 'platform-card';
-            if (index === 0) platformCard.classList.add('recommended');
+    add(input, prompt, model = 'gemini-1.5-flash', metadata = {}) {
+        try {
+            const historyItem = {
+                id: Date.now().toString(),
+                input: input.substring(0, 500), // Limit input length
+                prompt: prompt.substring(0, 5000), // Limit prompt length
+                model: model,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }),
+                time: new Date().toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                tags: this.extractTags(input),
+                ...metadata
+            };
             
-            platformCard.innerHTML = `
-                <div class="platform-logo-container" style="background: ${tool.color}">
-                    <i class="fas ${tool.icon}"></i>
-                </div>
-                <div class="platform-info">
-                    <div class="platform-name">
-                        ${tool.name}
-                        ${index === 0 ? '<span class="recommended-badge">Recommended</span>' : ''}
+            // Add to beginning
+            this.history.unshift(historyItem);
+            
+            // Limit items
+            if (this.history.length > this.maxItems) {
+                this.history = this.history.slice(0, this.maxItems);
+            }
+            
+            this.saveHistory(this.history);
+            
+            // Dispatch event
+            this.dispatchHistoryUpdate();
+            
+            return historyItem;
+            
+        } catch (error) {
+            console.error('Error adding to history:', error);
+            return null;
+        }
+    }
+
+    getAll() {
+        return [...this.history];
+    }
+
+    getById(id) {
+        return this.history.find(item => item.id === id);
+    }
+
+    getRecent(limit = 10) {
+        return this.history.slice(0, limit);
+    }
+
+    getByModel(model) {
+        return this.history.filter(item => item.model === model);
+    }
+
+    search(query) {
+        const searchTerm = query.toLowerCase();
+        return this.history.filter(item => 
+            (item.input && item.input.toLowerCase().includes(searchTerm)) ||
+            (item.prompt && item.prompt.toLowerCase().includes(searchTerm)) ||
+            (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+        );
+    }
+
+    delete(id) {
+        const index = this.history.findIndex(item => item.id === id);
+        if (index !== -1) {
+            this.history.splice(index, 1);
+            this.saveHistory(this.history);
+            this.dispatchHistoryUpdate();
+            return true;
+        }
+        return false;
+    }
+
+    deleteAll() {
+        this.history = [];
+        this.saveHistory(this.history);
+        this.dispatchHistoryUpdate();
+        return true;
+    }
+
+    clear() {
+        return this.deleteAll();
+    }
+
+    getStats() {
+        const today = new Date().toDateString();
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        
+        return {
+            total: this.history.length,
+            today: this.history.filter(item => 
+                new Date(item.timestamp).toDateString() === today
+            ).length,
+            thisWeek: this.history.filter(item => 
+                new Date(item.timestamp) >= oneWeekAgo
+            ).length,
+            byModel: this.history.reduce((acc, item) => {
+                acc[item.model] = (acc[item.model] || 0) + 1;
+                return acc;
+            }, {})
+        };
+    }
+
+    extractTags(text) {
+        const tags = [];
+        const textLower = text.toLowerCase();
+        
+        // Common tags
+        if (/(email|message|letter)/i.test(text)) tags.push('email');
+        if (/(code|programming|function|debug)/i.test(text)) tags.push('code');
+        if (/(write|creative|story|content)/i.test(text)) tags.push('writing');
+        if (/(research|analysis|data|report)/i.test(text)) tags.push('research');
+        if (/(business|strategy|plan|proposal)/i.test(text)) tags.push('business');
+        if (/(learn|teach|explain|tutorial)/i.test(text)) tags.push('education');
+        if (/(urgent|quick|fast|asap)/i.test(text)) tags.push('urgent');
+        
+        return tags;
+    }
+
+    renderHistoryList(container) {
+        if (!container) return;
+        
+        if (this.history.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-history"></i>
                     </div>
-                    <p class="platform-desc">${tool.description}</p>
-                    <div class="platform-tags">
-                        ${tool.bestFor.slice(0, 3).map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
-                    </div>
-                    <div class="platform-score">
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${Math.min(100, tool.score)}%"></div>
-                        </div>
-                        <span class="score-text">Match: ${tool.score}%</span>
-                    </div>
+                    <h3>No History Yet</h3>
+                    <p>Your generated prompts will appear here</p>
+                    <p class="empty-state-hint">Generate a prompt to see it in history</p>
                 </div>
             `;
-
-            platformsGrid.appendChild(platformCard);
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        this.history.forEach(item => {
+            const historyEl = this.createHistoryElement(item);
+            container.appendChild(historyEl);
         });
+    }
+
+    createHistoryElement(item) {
+        const historyEl = document.createElement('div');
+        historyEl.className = 'history-item';
+        historyEl.dataset.id = item.id;
+        
+        const truncatedInput = this.truncateText(item.input || 'No input', 80);
+        const truncatedPrompt = this.truncateText(item.prompt || '', 60);
+        
+        historyEl.innerHTML = `
+            <div class="history-content">
+                <div class="history-text" title="${this.escapeHtml(item.input || '')}">
+                    ${this.escapeHtml(truncatedInput)}
+                </div>
+                <div class="history-preview">
+                    <i class="fas fa-chevron-right"></i>
+                    ${this.escapeHtml(truncatedPrompt)}
+                </div>
+                <div class="history-details">
+                    <span class="history-time">
+                        <i class="fas fa-clock"></i>
+                        ${item.time} • ${item.date}
+                    </span>
+                    <span class="history-model">
+                        <i class="fas fa-robot"></i>
+                        ${item.model || 'Unknown'}
+                    </span>
+                    ${item.tags && item.tags.length > 0 ? `
+                        <span class="history-tags">
+                            ${item.tags.slice(0, 2).map(tag => 
+                                `<span class="history-tag">${tag}</span>`
+                            ).join('')}
+                        </span>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="history-actions">
+                <button class="history-action-btn" data-action="load" title="Load this prompt">
+                    <i class="fas fa-upload"></i>
+                </button>
+                <button class="history-action-btn" data-action="copy" title="Copy prompt">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="history-action-btn" data-action="delete" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        // Add event listeners
+        this.setupHistoryElementEvents(historyEl, item);
+        
+        return historyEl;
+    }
+
+    setupHistoryElementEvents(element, item) {
+        const buttons = element.querySelectorAll('.history-action-btn');
+        
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = btn.dataset.action;
+                
+                switch(action) {
+                    case 'load':
+                        this.loadItem(item);
+                        break;
+                    case 'copy':
+                        this.copyItem(item);
+                        break;
+                    case 'delete':
+                        this.deleteItem(item.id);
+                        break;
+                }
+            });
+        });
+        
+        // Click on item loads it
+        element.addEventListener('click', (e) => {
+            if (!e.target.closest('.history-action-btn')) {
+                this.loadItem(item);
+            }
+        });
+    }
+
+    loadItem(item) {
+        // Dispatch load event
+        const event = new CustomEvent('history:load', {
+            detail: { item }
+        });
+        document.dispatchEvent(event);
+    }
+
+    copyItem(item) {
+        if (item.prompt) {
+            navigator.clipboard.writeText(item.prompt)
+                .then(() => {
+                    this.showNotification('Prompt copied to clipboard!', 'success');
+                })
+                .catch(() => {
+                    this.showNotification('Failed to copy', 'error');
+                });
+        }
+    }
+
+    deleteItem(id) {
+        if (confirm('Delete this history item?')) {
+            this.delete(id);
+            this.showNotification('History item deleted', 'info');
+        }
+    }
+
+    setupEventListeners() {
+        // Listen for new prompt events
+        document.addEventListener('prompt:generated', (e) => {
+            const { input, prompt, model } = e.detail;
+            if (input && prompt) {
+                this.add(input, prompt, model);
+            }
+        });
+        
+        // Listen for clear events
+        document.addEventListener('app:clear', () => {
+            // Don't clear history on app reset
+        });
+    }
+
+    dispatchHistoryUpdate() {
+        const event = new CustomEvent('history:updated', {
+            detail: { history: this.history }
+        });
+        document.dispatchEvent(event);
+    }
+
+    truncateText(text, maxLength) {
+        if (!text) return '';
+        if (text.length <= maxLength) return this.escapeHtml(text);
+        return this.escapeHtml(text.substring(0, maxLength)) + '...';
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    showNotification(message, type = 'info') {
+        const event = new CustomEvent('notification', {
+            detail: { type, message }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // Export/Import functionality
+    exportHistory(format = 'json') {
+        const data = {
+            version: '1.0',
+            exportedAt: new Date().toISOString(),
+            count: this.history.length,
+            history: this.history
+        };
+        
+        if (format === 'json') {
+            return JSON.stringify(data, null, 2);
+        } else if (format === 'csv') {
+            return this.convertToCSV(data.history);
+        }
+        return data;
+    }
+
+    importHistory(data) {
+        try {
+            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+            
+            if (parsed.history && Array.isArray(parsed.history)) {
+                // Validate each item
+                const validItems = parsed.history.filter(item => 
+                    item && 
+                    (item.input || item.prompt) &&
+                    item.timestamp
+                );
+                
+                // Add to existing history
+                validItems.forEach(item => {
+                    if (!this.history.some(h => h.id === item.id)) {
+                        this.history.push(item);
+                    }
+                });
+                
+                // Sort by timestamp
+                this.history.sort((a, b) => 
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                );
+                
+                // Limit items
+                if (this.history.length > this.maxItems) {
+                    this.history = this.history.slice(0, this.maxItems);
+                }
+                
+                this.saveHistory(this.history);
+                this.dispatchHistoryUpdate();
+                
+                return {
+                    success: true,
+                    imported: validItems.length,
+                    skipped: parsed.history.length - validItems.length
+                };
+            }
+            
+            return { success: false, error: 'Invalid format' };
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    convertToCSV(history) {
+        const headers = ['Timestamp', 'Input', 'Prompt', 'Model', 'Tags'];
+        const rows = history.map(item => [
+            item.timestamp,
+            `"${(item.input || '').replace(/"/g, '""')}"`,
+            `"${(item.prompt || '').replace(/"/g, '""')}"`,
+            item.model || '',
+            item.tags ? item.tags.join(', ') : ''
+        ]);
+        
+        return [headers, ...rows]
+            .map(row => row.join(','))
+            .join('\n');
     }
 }
 
-window.AIRanker = AIRanker;
+// Export for global use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = HistoryManager;
+} else {
+    window.HistoryManager = HistoryManager;
+}
