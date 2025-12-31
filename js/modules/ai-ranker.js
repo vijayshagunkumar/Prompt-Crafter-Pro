@@ -1,8 +1,12 @@
+// AIRanker.js - COMPLETE FIXED VERSION
 class AIRanker {
     constructor() {
         this.toolProfiles = window.AI_TOOL_PROFILES || {
             chatgpt: {
                 name: "ChatGPT",
+                icon: "fas fa-comment-alt",
+                color: "#10A37F",
+                launchUrl: "https://chat.openai.com/",
                 strengths: ["general", "writing", "email", "education", "analysis", "professional", "formal", "conversational", "creative", "technical"],
                 weaknesses: ["real-time", "latest", "free", "image"],
                 tone: ["professional", "friendly", "formal", "authoritative", "casual", "humorous", "persuasive"],
@@ -16,6 +20,9 @@ class AIRanker {
             },
             claude: {
                 name: "Claude",
+                icon: "fas fa-brain",
+                color: "#D4A574",
+                launchUrl: "https://claude.ai/",
                 strengths: ["writing", "analysis", "business", "detailed", "long-form", "reasoning", "ethical", "safe"],
                 weaknesses: ["code", "creative", "image", "real-time"],
                 tone: ["professional", "formal", "authoritative", "serious", "ethical"],
@@ -29,6 +36,9 @@ class AIRanker {
             },
             gemini: {
                 name: "Gemini",
+                icon: "fab fa-google",
+                color: "#8B5CF6",
+                launchUrl: "https://gemini.google.com/",
                 strengths: ["research", "analysis", "education", "technical", "code", "multimodal", "latest", "real-time"],
                 weaknesses: ["creative", "casual", "long-form"],
                 tone: ["professional", "technical", "informative"],
@@ -42,6 +52,9 @@ class AIRanker {
             },
             perplexity: {
                 name: "Perplexity",
+                icon: "fas fa-search",
+                color: "#6B7280",
+                launchUrl: "https://www.perplexity.ai/",
                 strengths: ["research", "analysis", "brief", "concise", "factual", "citations", "web", "latest"],
                 weaknesses: ["creative", "long-form", "conversational"],
                 tone: ["professional", "casual", "factual"],
@@ -55,6 +68,9 @@ class AIRanker {
             },
             deepseek: {
                 name: "DeepSeek",
+                icon: "fas fa-code",
+                color: "#3B82F6",
+                launchUrl: "https://chat.deepseek.com/",
                 strengths: ["code", "technical", "structured", "mathematical", "programming", "algorithms", "free"],
                 weaknesses: ["creative", "casual", "general", "non-technical"],
                 tone: ["technical", "professional", "precise"],
@@ -68,6 +84,9 @@ class AIRanker {
             },
             copilot: {
                 name: "Copilot",
+                icon: "fab fa-microsoft",
+                color: "#0078D4",
+                launchUrl: "https://copilot.microsoft.com/",
                 strengths: ["code", "quick", "assistance", "snippets", "development", "integrated", "contextual"],
                 weaknesses: ["long-form", "creative", "analysis", "non-technical"],
                 tone: ["technical", "casual", "assistive"],
@@ -81,6 +100,9 @@ class AIRanker {
             },
             grok: {
                 name: "Grok",
+                icon: "fab fa-x-twitter",
+                color: "#FF6B35",
+                launchUrl: "https://grok.x.ai/",
                 strengths: ["creative", "general", "casual", "humorous", "entertainment", "conversational", "trendy"],
                 weaknesses: ["professional", "technical", "serious", "formal"],
                 tone: ["casual", "humorous", "friendly", "sarcastic", "entertaining"],
@@ -97,8 +119,105 @@ class AIRanker {
         this.defaultOrder = ["chatgpt", "claude", "gemini", "perplexity", "deepseek", "copilot", "grok"];
     }
 
+    analyzeIntent(text) {
+        if (!text || typeof text !== 'string') {
+            return {
+                taskType: 'general',
+                tone: 'neutral',
+                format: 'free',
+                depth: 'normal',
+                audience: 'general',
+                constraints: [],
+                urgency: 'normal'
+            };
+        }
+        
+        text = text.toLowerCase();
+        const intent = {
+            taskType: 'general',
+            tone: 'neutral',
+            format: 'free',
+            depth: 'normal',
+            audience: 'general',
+            constraints: [],
+            urgency: 'normal'
+        };
+        
+        // Detect task type
+        if (/(email|message|letter|communication)/i.test(text)) {
+            intent.taskType = 'email';
+        } else if (/(code|programming|algorithm|function|debug|api)/i.test(text)) {
+            intent.taskType = 'code';
+            intent.constraints.push('code');
+        } else if (/(write|story|creative|article|blog|content|marketing)/i.test(text)) {
+            intent.taskType = 'writing';
+            intent.constraints.push('creative');
+        } else if (/(research|study|analysis|data|statistics|report|findings)/i.test(text)) {
+            intent.taskType = 'research';
+            intent.constraints.push('research');
+        } else if (/(business|strategy|plan|proposal|meeting|presentation)/i.test(text)) {
+            intent.taskType = 'business';
+            intent.constraints.push('business');
+        } else if (/(learn|teach|explain|tutorial|guide|education)/i.test(text)) {
+            intent.taskType = 'education';
+            intent.constraints.push('education');
+        } else if (/(summary|brief|quick|fast|urgent|asap)/i.test(text)) {
+            intent.taskType = 'summary';
+            intent.urgency = 'high';
+        }
+        
+        // Detect tone
+        if (/(professional|formal|business|serious)/i.test(text)) {
+            intent.tone = 'professional';
+        } else if (/(friendly|casual|informal|chat)/i.test(text)) {
+            intent.tone = 'casual';
+        } else if (/(technical|detailed|complex|advanced)/i.test(text)) {
+            intent.tone = 'technical';
+        } else if (/(humorous|funny|joke|entertaining)/i.test(text)) {
+            intent.tone = 'humorous';
+        }
+        
+        // Detect format preference
+        if (/(bullet|points|list|numbered)/i.test(text)) {
+            intent.format = 'bullet points';
+        } else if (/(code|snippet|function|class)/i.test(text)) {
+            intent.format = 'code';
+        } else if (/(paragraph|essay|article|long)/i.test(text)) {
+            intent.format = 'paragraph';
+        } else if (/(email|message|letter)/i.test(text)) {
+            intent.format = 'email';
+        }
+        
+        // Detect depth
+        if (/(detailed|thorough|comprehensive|complete)/i.test(text)) {
+            intent.depth = 'detailed';
+        } else if (/(brief|quick|short|concise)/i.test(text)) {
+            intent.depth = 'brief';
+        } else if (/(simple|basic|beginner|easy)/i.test(text)) {
+            intent.depth = 'simple';
+        } else if (/(expert|advanced|complex)/i.test(text)) {
+            intent.depth = 'expert';
+        }
+        
+        // Detect audience
+        if (/(beginner|student|new|learning)/i.test(text)) {
+            intent.audience = 'beginners';
+        } else if (/(expert|professional|developer|technical)/i.test(text)) {
+            intent.audience = 'technical';
+        } else if (/(business|executive|manager)/i.test(text)) {
+            intent.audience = 'business';
+        }
+        
+        // Detect urgency
+        if (/(urgent|asap|quick|fast|now|immediately)/i.test(text)) {
+            intent.urgency = 'high';
+        }
+        
+        return intent;
+    }
+
     rankTools(intent) {
-        if (!intent || !intent.taskType) {
+        if (!intent) {
             return this.defaultOrder;
         }
         
@@ -254,19 +373,24 @@ class AIRanker {
         return sorted;
     }
 
-    renderRankedPlatforms(intent, containerId = "platformsGrid") {
-        const container = document.getElementById(containerId);
+    renderRankedPlatforms(text) {
+        const container = document.getElementById("platformsGrid");
         if (!container) return;
         
+        const emptyState = document.getElementById("platformsEmptyState");
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
+        
+        // Analyze intent from text
+        const intent = this.analyzeIntent(text);
+        
+        // Get ranked tools
         const toolOrder = this.rankTools(intent);
         const topToolKey = toolOrder[0];
         const topTool = this.toolProfiles[topToolKey];
         
         container.innerHTML = '';
-        
-        if (containerId === "platformsGrid" && document.getElementById("platformsEmptyState")) {
-            document.getElementById("platformsEmptyState").style.display = "none";
-        }
         
         toolOrder.forEach((toolKey, index) => {
             const tool = this.toolProfiles[toolKey];
@@ -278,125 +402,88 @@ class AIRanker {
             
             // Add ranking indicator
             const rank = index + 1;
-            
-            // Mark as recommended if it's the top tool and has a good score
             const isRecommended = index === 0 && tool.score >= 10;
+            
             if (isRecommended) {
                 platformCard.classList.add('recommended');
             }
             
-            // Platform-specific data
-            const platformData = {
-                chatgpt: {
-                    icon: 'fas fa-comment-alt',
-                    color: '#10A37F',
-                    launchUrl: 'https://chat.openai.com/',
-                    description: 'Industry-leading conversational AI',
-                    tags: ['Conversational', 'Popular', 'OpenAI']
-                },
-                claude: {
-                    icon: 'fas fa-brain',
-                    color: '#D4A574',
-                    launchUrl: 'https://claude.ai/',
-                    description: 'Constitutional AI with safety focus',
-                    tags: ['Safe', 'Contextual', 'Anthropic']
-                },
-                gemini: {
-                    icon: 'fab fa-google',
-                    color: '#8B5CF6',
-                    launchUrl: 'https://gemini.google.com/',
-                    description: 'Advanced reasoning and multimodal capabilities',
-                    tags: ['Multimodal', 'Advanced', 'Google']
-                },
-                perplexity: {
-                    icon: 'fas fa-search',
-                    color: '#6B7280',
-                    launchUrl: 'https://www.perplexity.ai/',
-                    description: 'Search-enhanced AI with citations',
-                    tags: ['Search', 'Citations', 'Real-time']
-                },
-                deepseek: {
-                    icon: 'fas fa-code',
-                    color: '#3B82F6',
-                    launchUrl: 'https://chat.deepseek.com/',
-                    description: 'Code-focused AI with reasoning',
-                    tags: ['Code', 'Developer', 'Reasoning']
-                },
-                copilot: {
-                    icon: 'fab fa-microsoft',
-                    color: '#0078D4',
-                    launchUrl: 'https://copilot.microsoft.com/',
-                    description: 'Microsoft-powered AI assistant',
-                    tags: ['Microsoft', 'Productivity', 'Office']
-                },
-                grok: {
-                    icon: 'fab fa-x-twitter',
-                    color: '#FF6B35',
-                    launchUrl: 'https://grok.x.ai/',
-                    description: 'Real-time knowledge AI',
-                    tags: ['Real-time', 'X', 'Elon']
-                }
-            }[toolKey] || {
-                icon: 'fas fa-robot',
-                color: '#6B7280',
-                launchUrl: '#',
-                description: 'AI Platform',
-                tags: ['AI']
-            };
+            // Calculate match percentage
+            const matchPercentage = Math.min(100, Math.round((tool.score / 50) * 100));
             
             platformCard.innerHTML = `
                 ${isRecommended ? '<div class="platform-ranking">1</div>' : ''}
-                <div class="platform-logo-container" style="background: ${platformData.color}">
-                    <i class="${platformData.icon}"></i>
+                <div class="platform-logo-container" style="background: ${tool.color}">
+                    <i class="${tool.icon}"></i>
                 </div>
                 <div class="platform-info">
                     <div class="platform-name">
                         ${tool.name}
-                        ${tool.score > 0 ? `<span class="match-score-badge">${Math.min(100, Math.round((tool.score / 50) * 100))}%</span>` : ''}
+                        ${tool.score > 0 ? `<span class="match-score-badge">${matchPercentage}%</span>` : ''}
                         ${isRecommended ? '<span class="recommended-badge">Best Match</span>' : ''}
                     </div>
-                    <div class="platform-desc">${platformData.description}</div>
+                    <div class="platform-desc">${tool.tooltip}</div>
                     <div class="platform-tags">
-                        ${platformData.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
+                        ${tool.bestFor.slice(0, 3).map(item => `<span class="platform-tag">${item}</span>`).join('')}
                         ${tool.matchReason ? `<span class="platform-tag reason" title="${tool.matchReason}"><i class="fas fa-bullseye"></i> ${tool.matchReason.split(',')[0]}</span>` : ''}
+                    </div>
+                    <div class="platform-score">
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${matchPercentage}%"></div>
+                        </div>
+                        <span class="score-text">Match: ${matchPercentage}%</span>
                     </div>
                 </div>
             `;
             
             // Add click handler
-            platformCard.addEventListener('click', async (e) => {
+            platformCard.addEventListener('click', (e) => {
                 e.preventDefault();
-                const prompt = document.getElementById('outputArea')?.textContent.trim();
-                if (prompt && prompt !== 'Your optimized prompt will appear here...') {
-                    try {
-                        await navigator.clipboard.writeText(prompt);
-                        
-                        // Show success notification
-                        if (window.notificationService) {
-                            window.notificationService.show(`Prompt copied! Opening ${tool.name}...`, 'success');
-                        }
-                        
-                        // Open platform in new tab
-                        setTimeout(() => {
-                            window.open(platformData.launchUrl, '_blank');
-                        }, 500);
-                        
-                    } catch (err) {
-                        if (window.notificationService) {
-                            window.notificationService.show('Failed to copy prompt. Please try again.', 'error');
-                        }
-                    }
+                const outputArea = document.getElementById('outputArea');
+                const prompt = outputArea ? outputArea.textContent.trim() : '';
+                
+                if (prompt && prompt !== 'Your optimized prompt will appear here...' && prompt !== '') {
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(prompt)
+                        .then(() => {
+                            // Show notification
+                            const event = new CustomEvent('notification', {
+                                detail: { 
+                                    type: 'success', 
+                                    message: `Prompt copied! Opening ${tool.name}...` 
+                                }
+                            });
+                            document.dispatchEvent(event);
+                            
+                            // Open in new tab after delay
+                            setTimeout(() => {
+                                if (tool.launchUrl && tool.launchUrl !== '#') {
+                                    window.open(tool.launchUrl, '_blank');
+                                }
+                            }, 500);
+                        })
+                        .catch(() => {
+                            const event = new CustomEvent('notification', {
+                                detail: { 
+                                    type: 'error', 
+                                    message: 'Failed to copy prompt. Please try again.' 
+                                }
+                            });
+                            document.dispatchEvent(event);
+                        });
                 } else {
-                    if (window.notificationService) {
-                        window.notificationService.show('Please generate a prompt first', 'error');
-                    }
+                    const event = new CustomEvent('notification', {
+                        detail: { 
+                            type: 'error', 
+                            message: 'Please generate a prompt first' 
+                        }
+                    });
+                    document.dispatchEvent(event);
                 }
             });
             
-            // Add tooltip for match reason
-            if (tool.matchReason) {
-                platformCard.title = `${tool.name}: ${tool.matchReason}`;
-            }
+            // Add tooltip
+            platformCard.title = `${tool.name}: ${tool.matchReason || tool.tooltip}`;
             
             container.appendChild(platformCard);
         });
@@ -408,23 +495,23 @@ class AIRanker {
         const container = document.getElementById("platformsGrid");
         if (!container) return;
         
-        // Clear any ranking indicators
-        document.querySelectorAll('.platform-card').forEach(card => {
-            card.classList.remove('recommended');
-            const ranking = card.querySelector('.platform-ranking');
-            if (ranking) ranking.remove();
-            const matchBadge = card.querySelector('.match-score-badge');
-            if (matchBadge) matchBadge.remove();
-        });
+        // Show empty state
+        const emptyState = document.getElementById("platformsEmptyState");
+        if (emptyState) {
+            container.innerHTML = '';
+            container.appendChild(emptyState);
+            emptyState.style.display = 'block';
+        }
     }
 
     setupTooltips() {
-        // This would setup custom tooltips for each platform
-        // You can implement this based on your UI needs
+        // Tooltip setup if needed
     }
 }
 
-// Export for module usage
+// Export for global use
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AIRanker;
+} else {
+    window.AIRanker = AIRanker;
 }
