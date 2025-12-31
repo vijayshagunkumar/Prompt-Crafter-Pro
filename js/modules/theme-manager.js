@@ -1,29 +1,81 @@
-/**
- * Theme Manager
- * Handles theme switching and management
- */
+// Theme Manager - Complete Fixed Version
 class ThemeManager {
     constructor() {
         this.storage = new StorageService();
-        this.themes = window.THEMES || [];
-        this.currentTheme = this.loadTheme();
-        this.systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this.themes = [
+            { 
+                id: 'cyberpunk', 
+                name: 'Cyberpunk Neon', 
+                primary: '#ff00ff',
+                secondary: '#00ffff',
+                background: '#0a0a0a',
+                card: '#1a1a2e',
+                text: '#ffffff',
+                icon: 'fa-bolt'
+            },
+            { 
+                id: 'sunset', 
+                name: 'Sunset Glow', 
+                primary: '#ff6b6b',
+                secondary: '#ffa726',
+                background: '#fff3e0',
+                card: '#ffffff',
+                text: '#333333',
+                icon: 'fa-sun'
+            },
+            { 
+                id: 'ocean', 
+                name: 'Ocean Deep', 
+                primary: '#2196f3',
+                secondary: '#00bcd4',
+                background: '#e3f2fd',
+                card: '#ffffff',
+                text: '#1565c0',
+                icon: 'fa-water'
+            },
+            { 
+                id: 'forest', 
+                name: 'Forest Green', 
+                primary: '#4caf50',
+                secondary: '#8bc34a',
+                background: '#f1f8e9',
+                card: '#ffffff',
+                text: '#2e7d32',
+                icon: 'fa-tree'
+            },
+            { 
+                id: 'midnight', 
+                name: 'Midnight Blue', 
+                primary: '#5c6bc0',
+                secondary: '#7986cb',
+                background: '#1a237e',
+                card: '#283593',
+                text: '#e8eaf6',
+                icon: 'fa-moon'
+            },
+            { 
+                id: 'rose', 
+                name: 'Rose Gold', 
+                primary: '#e91e63',
+                secondary: '#ff4081',
+                background: '#fce4ec',
+                card: '#ffffff',
+                text: '#880e4f',
+                icon: 'fa-heart'
+            }
+        ];
         
+        this.currentTheme = this.loadTheme();
         this.init();
     }
 
     init() {
         this.applyTheme(this.currentTheme);
-        this.setupMediaQueryListener();
+        this.setupThemeSelector();
     }
 
     loadTheme() {
-        try {
-            return this.storage.get('theme', 'dark');
-        } catch (error) {
-            console.error('Error loading theme:', error);
-            return 'dark';
-        }
+        return this.storage.get('theme', 'dark');
     }
 
     saveTheme(theme) {
@@ -31,151 +83,143 @@ class ThemeManager {
         return this.storage.set('theme', theme);
     }
 
-    applyTheme(theme) {
-        const actualTheme = theme === 'auto' ? 
-            (this.systemPrefersDark ? 'dark' : 'light') : 
-            theme;
+    applyTheme(themeId) {
+        // Remove all theme classes
+        document.body.classList.remove('dark-theme', 'light-theme', 'cyberpunk-theme', 'sunset-theme', 'ocean-theme', 'forest-theme', 'midnight-theme', 'rose-theme');
         
-        if (actualTheme === 'dark') {
+        if (themeId === 'dark') {
             document.body.classList.add('dark-theme');
+        } else if (themeId === 'light') {
+            document.body.classList.add('light-theme');
         } else {
-            document.body.classList.remove('dark-theme');
+            // Apply custom theme
+            const theme = this.themes.find(t => t.id === themeId);
+            if (theme) {
+                document.body.classList.add(`${themeId}-theme`);
+                this.applyCustomTheme(theme);
+            } else {
+                document.body.classList.add('dark-theme');
+            }
         }
         
-        this.emitThemeChange(actualTheme);
-        return actualTheme;
-    }
-
-    getCurrentTheme() {
-        return this.currentTheme;
-    }
-
-    getActualTheme() {
-        if (this.currentTheme === 'auto') {
-            return this.systemPrefersDark ? 'dark' : 'light';
-        }
-        return this.currentTheme;
-    }
-
-    setTheme(theme) {
-        if (!this.themes.find(t => t.id === theme) && theme !== 'auto') {
-            console.warn(`Theme ${theme} not found`);
-            return false;
-        }
+        this.saveTheme(themeId);
+        this.dispatchThemeChange(themeId);
         
-        this.saveTheme(theme);
-        this.applyTheme(theme);
-        
-        if (window.notification) {
-            const themeName = this.getThemeName(theme);
-            window.notification.success(`Theme changed to ${themeName}`);
-        }
-        
-        return true;
-    }
-
-    toggleTheme() {
-        const current = this.getActualTheme();
-        const newTheme = current === 'dark' ? 'light' : 'dark';
-        return this.setTheme(newTheme);
-    }
-
-    toggleAutoTheme() {
-        const current = this.getCurrentTheme();
-        if (current === 'auto') {
-            return this.setTheme('dark');
-        } else {
-            return this.setTheme('auto');
+        // Update theme display
+        const currentThemeEl = document.getElementById('currentTheme');
+        if (currentThemeEl) {
+            const themeName = this.getThemeName(themeId);
+            currentThemeEl.textContent = themeName;
         }
     }
 
-    getThemeName(themeId) {
-        if (themeId === 'auto') {
-            return 'Auto (System)';
-        }
+    applyCustomTheme(theme) {
+        const root = document.documentElement;
         
-        const theme = this.themes.find(t => t.id === themeId);
-        return theme ? theme.name : themeId;
+        root.style.setProperty('--primary', theme.primary);
+        root.style.setProperty('--primary-light', this.lightenColor(theme.primary, 20));
+        root.style.setProperty('--primary-dark', this.darkenColor(theme.primary, 20));
+        root.style.setProperty('--secondary', theme.secondary);
+        root.style.setProperty('--bg-color', theme.background);
+        root.style.setProperty('--card-bg', theme.card);
+        root.style.setProperty('--text-primary', theme.text);
+        
+        // Update primary gradient
+        root.style.setProperty('--primary-gradient', `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`);
+        root.style.setProperty('--header-gradient', `linear-gradient(135deg, ${theme.primary} 0%, ${this.darkenColor(theme.primary, 30)} 100%)`);
     }
 
-    getAvailableThemes() {
-        return [
-            { id: 'auto', name: 'Auto (System)', mood: 'Follows System Preference', icon: 'fa-robot' },
-            ...this.themes
+    lightenColor(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+    }
+
+    darkenColor(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) - amt;
+        const G = (num >> 8 & 0x00FF) - amt;
+        const B = (num & 0x0000FF) - amt;
+        
+        return "#" + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
+            (G > 0 ? G : 0) * 0x100 +
+            (B > 0 ? B : 0)).toString(16).slice(1);
+    }
+
+    setupThemeSelector() {
+        const themeSelect = document.getElementById('themeSelect');
+        if (!themeSelect) return;
+        
+        // Clear existing options
+        themeSelect.innerHTML = '';
+        
+        // Add default themes
+        const defaultThemes = [
+            { id: 'dark', name: 'Dark Theme' },
+            { id: 'light', name: 'Light Theme' },
+            { id: 'auto', name: 'Auto (System)' }
         ];
-    }
-
-    renderThemeSelector(selectElement) {
-        if (!selectElement) return;
         
-        selectElement.innerHTML = '';
-        
-        this.getAvailableThemes().forEach(theme => {
+        defaultThemes.forEach(theme => {
             const option = document.createElement('option');
             option.value = theme.id;
             option.textContent = theme.name;
             if (theme.id === this.currentTheme) {
                 option.selected = true;
             }
-            selectElement.appendChild(option);
+            themeSelect.appendChild(option);
         });
         
-        selectElement.addEventListener('change', (e) => {
-            this.setTheme(e.target.value);
-        });
-    }
-
-    setupMediaQueryListener() {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        const handler = (e) => {
-            this.systemPrefersDark = e.matches;
-            if (this.currentTheme === 'auto') {
-                this.applyTheme('auto');
+        // Add custom themes
+        this.themes.forEach(theme => {
+            const option = document.createElement('option');
+            option.value = theme.id;
+            option.textContent = theme.name;
+            if (theme.id === this.currentTheme) {
+                option.selected = true;
             }
-        };
+            themeSelect.appendChild(option);
+        });
         
-        mediaQuery.addEventListener('change', handler);
-        
-        this.mediaQueryHandler = handler;
+        // Add event listener
+        themeSelect.addEventListener('change', (e) => {
+            this.applyTheme(e.target.value);
+        });
     }
 
-    emitThemeChange(theme) {
+    getThemeName(themeId) {
+        if (themeId === 'dark') return 'Dark';
+        if (themeId === 'light') return 'Light';
+        if (themeId === 'auto') return 'Auto';
+        
+        const theme = this.themes.find(t => t.id === themeId);
+        return theme ? theme.name : 'Dark';
+    }
+
+    dispatchThemeChange(themeId) {
         const event = new CustomEvent('themechange', {
-            detail: { theme }
+            detail: { theme: themeId }
         });
         document.dispatchEvent(event);
     }
 
-    isDark() {
-        return this.getActualTheme() === 'dark';
+    getCurrentTheme() {
+        return this.currentTheme;
     }
 
-    isLight() {
-        return this.getActualTheme() === 'light';
-    }
-
-    getThemeColors() {
-        const isDark = this.isDark();
-        return {
-            primary: '#4F46E5',
-            background: isDark ? '#0F172A' : '#F8FAFC',
-            card: isDark ? '#1E293B' : '#FFFFFF',
-            text: isDark ? '#F1F5F9' : '#0F172A',
-            border: isDark ? '#334155' : '#E2E8F0'
-        };
-    }
-
-    destroy() {
-        if (this.mediaQueryHandler) {
-            window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mediaQueryHandler);
-        }
+    toggleTheme() {
+        const current = this.getCurrentTheme();
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        this.applyTheme(newTheme);
+        return newTheme;
     }
 }
 
-// Export for global use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ThemeManager;
-} else {
-    window.ThemeManager = ThemeManager;
-}
+window.ThemeManager = ThemeManager;
