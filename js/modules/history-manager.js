@@ -1,262 +1,182 @@
-// HistoryManager.js - COMPLETE & SAFE VERSION
-
-class HistoryManager {
+// history-manager.js - History system management
+export class HistoryManager {
     constructor() {
-        this.storage = new StorageService();
-        this.maxItems = 50;
+        this.maxItems = 25;
         this.history = this.loadHistory();
-        this.init();
     }
-
-    init() {
-        this.setupEventListeners();
-        console.log('History Manager initialized with', this.history.length, 'items');
-    }
-
-    /* =========================
-       STORAGE
-    ========================= */
 
     loadHistory() {
         try {
-            const saved = this.storage.get('prompt_history', []);
-            return Array.isArray(saved)
-                ? saved.filter(item =>
-                    item &&
-                    item.id &&
-                    item.timestamp &&
-                    (item.input || item.prompt)
-                )
-                : [];
-        } catch (err) {
-            console.error('Error loading history:', err);
+            const saved = localStorage.getItem('promptCraftHistory');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error('Failed to load history:', e);
             return [];
         }
     }
 
-    saveHistory(history) {
-        this.history = history;
-        this.storage.set('prompt_history', history);
-    }
-
-    /* =========================
-       ADD HISTORY (SAFE)
-    ========================= */
-
-    add(input, prompt = '', model = 'gemini-1.5-flash', metadata = {}) {
+    saveHistory() {
         try {
-            const safeInput =
-                typeof input === 'string'
-                    ? input
-                    : typeof input === 'object' && input !== null
-                        ? input.input || input.text || input.prompt || JSON.stringify(input)
-                        : '';
-
-            const safePrompt =
-                typeof prompt === 'string'
-                    ? prompt
-                    : typeof prompt === 'object' && prompt !== null
-                        ? prompt.prompt || prompt.text || JSON.stringify(prompt)
-                        : '';
-
-            if (!safeInput && !safePrompt) return null;
-
-            const item = {
-                id: Date.now().toString(),
-                input: safeInput.substring(0, 500),
-                prompt: safePrompt.substring(0, 5000),
-                model,
-                timestamp: new Date().toISOString(),
-                date: new Date().toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                }),
-                time: new Date().toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }),
-                tags: this.extractTags(safeInput),
-                ...metadata
-            };
-
-            this.history.unshift(item);
-
-            if (this.history.length > this.maxItems) {
-                this.history = this.history.slice(0, this.maxItems);
-            }
-
-            this.saveHistory(this.history);
-            this.dispatchHistoryUpdate();
-
-            return item;
-
-        } catch (err) {
-            console.error('Error adding to history:', err);
-            return null;
+            localStorage.setItem('promptCraftHistory', JSON.stringify(this.history));
+        } catch (e) {
+            console.error('Failed to save history:', e);
         }
     }
 
-    /* =========================
-       GETTERS
-    ========================= */
+    add(input, output) {
+        const historyItem = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            input: this.truncateText(input, 100),
+            output: this.truncateText(output, 200),
+            fullInput: input,
+            fullOutput: output
+        };
 
-    getAll() {
-        return [...this.history];
+        this.history.unshift(historyItem);
+
+        // Limit history size
+        if (this.history.length > this.maxItems) {
+            this.history = this.history.slice(0, this.maxItems);
+        }
+
+        this.saveHistory();
+        return historyItem;
     }
 
-    getRecent(limit = 10) {
-        return this.history.slice(0, limit);
+    getAll() {
+        return this.history;
     }
 
     getById(id) {
         return this.history.find(item => item.id === id);
     }
 
-    getByModel(model) {
-        return this.history.filter(item => item.model === model);
+    getByDateRange(startDate, endDate) {
+        return this.history.filter(item => {
+            const itemDate = new Date(item.timestamp);
+            return itemDate >= startDate && itemDate <= endDate;
+        });
     }
 
     search(query) {
-        const q = (query || '').toLowerCase();
-        return this.history.filter(item =>
-            (item.input || '').toLowerCase().includes(q) ||
-            (item.prompt || '').toLowerCase().includes(q) ||
-            (item.tags || []).some(tag => tag.toLowerCase().includes(q))
+        const lowerQuery = query.toLowerCase();
+        return this.history.filter(item => 
+            item.input.toLowerCase().includes(lowerQuery) ||
+            item.output.toLowerCase().includes(lowerQuery)
         );
     }
 
-    /* =========================
-       DELETE
-    ========================= */
+    clear() {
+        this.history = [];
+        this.saveHistory();
+        return true;
+    }
 
     delete(id) {
         const index = this.history.findIndex(item => item.id === id);
         if (index !== -1) {
-            this.history.splice(index, 1);
-            this.saveHistory(this.history);
-            this.dispatchHistoryUpdate();
-            return true;
+            const deleted = this.history.splice(index, 1);
+            this.saveHistory();
+            return deleted[0];
         }
-        return false;
+        return null;
     }
 
-    deleteAll() {
-        this.history = [];
-        this.saveHistory(this.history);
-        this.dispatchHistoryUpdate();
-        return true;
+    updateMaxItems(max) {
+        this.maxItems = max;
+        if (this.history.length > max) {
+            this.history = this.history.slice(0, max);
+            this.saveHistory();
+        }
     }
 
-    clear() {
-        return this.deleteAll();
+    getStats() {
+        return {
+            total: this.history.length,
+            lastUsed: this.history.length > 0 ? new Date(this.history[0].timestamp) : null,
+            oldest: this.history.length > 0 ? new Date(this.history[this.history.length - 1].timestamp) : null
+        };
     }
 
-    /* =========================
-       TAGGING
-    ========================= */
+    exportHistory() {
+        const data = {
+            version: '1.0',
+            exportDate: new Date().toISOString(),
+            itemCount: this.history.length,
+            items: this.history
+        };
 
-    extractTags(text) {
-        const t = (text || '').toLowerCase();
-        const tags = [];
-
-        if (/(email|message|letter)/i.test(t)) tags.push('email');
-        if (/(code|programming|function|debug|api)/i.test(t)) tags.push('code');
-        if (/(write|creative|story|content|blog)/i.test(t)) tags.push('writing');
-        if (/(research|analysis|data|report)/i.test(t)) tags.push('research');
-        if (/(business|strategy|plan|proposal)/i.test(t)) tags.push('business');
-        if (/(learn|teach|explain|tutorial)/i.test(t)) tags.push('education');
-        if (/(urgent|quick|fast|asap)/i.test(t)) tags.push('urgent');
-
-        return tags;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `promptcraft-history-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    /* =========================
-       EVENTS
-    ========================= */
+    importHistory(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // Validate imported data
+                    if (!data.items || !Array.isArray(data.items)) {
+                        throw new Error('Invalid history file format');
+                    }
 
-    setupEventListeners() {
-        document.addEventListener('prompt:generated', (e) => {
-            const { input, prompt, model, metadata } = e.detail || {};
-            if (input || prompt) {
-                this.add(input, prompt, model, metadata);
-            }
+                    // Merge with existing history
+                    const newItems = data.items.filter(newItem => 
+                        !this.history.some(existingItem => 
+                            existingItem.id === newItem.id || 
+                            (existingItem.fullInput === newItem.fullInput && 
+                             existingItem.fullOutput === newItem.fullOutput)
+                        )
+                    );
+
+                    this.history = [...newItems, ...this.history];
+                    
+                    // Apply max items limit
+                    if (this.history.length > this.maxItems) {
+                        this.history = this.history.slice(0, this.maxItems);
+                    }
+
+                    this.saveHistory();
+                    resolve(newItems.length);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
         });
     }
 
-    dispatchHistoryUpdate() {
-        document.dispatchEvent(new CustomEvent('history:updated', {
-            detail: { history: this.history }
-        }));
+    truncateText(text, maxLength) {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
     }
 
-    /* =========================
-       UI HELPERS
-    ========================= */
+    formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
 
-    truncateText(text, max = 80) {
-        if (!text) return '';
-        return text.length > max
-            ? this.escapeHtml(text.substring(0, max)) + '...'
-            : this.escapeHtml(text);
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    showNotification(message, type = 'info') {
-        document.dispatchEvent(new CustomEvent('notification', {
-            detail: { type, message }
-        }));
-    }
-
-    /* =========================
-       EXPORT / IMPORT
-    ========================= */
-
-    exportHistory() {
-        return JSON.stringify({
-            version: '1.0',
-            exportedAt: new Date().toISOString(),
-            history: this.history
-        }, null, 2);
-    }
-
-    importHistory(data) {
-        try {
-            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-            if (!Array.isArray(parsed.history)) return false;
-
-            parsed.history.forEach(item => {
-                if (!this.history.some(h => h.id === item.id)) {
-                    this.history.push(item);
-                }
-            });
-
-            this.history.sort((a, b) =>
-                new Date(b.timestamp) - new Date(a.timestamp)
-            );
-
-            if (this.history.length > this.maxItems) {
-                this.history = this.history.slice(0, this.maxItems);
-            }
-
-            this.saveHistory(this.history);
-            this.dispatchHistoryUpdate();
-            return true;
-
-        } catch (err) {
-            console.error('Import error:', err);
-            return false;
-        }
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} min ago`;
+        if (diffHours < 24) return `${diffHours} hr ago`;
+        if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        
+        return date.toLocaleDateString();
     }
 }
-
-/* =========================
-   GLOBAL EXPORT
-========================= */
-
-window.HistoryManager = HistoryManager;
