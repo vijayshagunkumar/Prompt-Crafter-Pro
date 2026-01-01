@@ -15,7 +15,7 @@
     <style>
         /* ===== CSS VARIABLES ===== */
         :root {
-            /* Dark Theme */
+            /* Dark Theme (Default) */
             --primary-color: #3b82f6;
             --primary-hover: #2563eb;
             --secondary-color: #8b5cf6;
@@ -103,6 +103,7 @@
             background-image: 
                 radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
                 radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+            transition: background-color var(--transition-normal), color var(--transition-normal);
         }
 
         body.modal-open {
@@ -115,6 +116,44 @@
             padding: 0 var(--spacing-lg);
         }
 
+        /* ===== THEME VARIATIONS ===== */
+        body.light-theme {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-tertiary: #e2e8f0;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-overlay: rgba(248, 250, 252, 0.95);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-tertiary: #64748b;
+            --text-muted: #94a3b8;
+            
+            --border-color: #cbd5e1;
+            --border-light: rgba(0, 0, 0, 0.1);
+            
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(0, 0, 0, 0.1);
+        }
+
+        body.sunset-theme {
+            --primary-color: #FF6B35;
+            --primary-hover: #E55A2B;
+            --secondary-color: #FFA500;
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+        }
+
+        body.aurora-theme {
+            --primary-color: #8A2BE2;
+            --primary-hover: #7B1FA2;
+            --secondary-color: #00CED1;
+            --bg-primary: #0A0A1A;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1e293b;
+        }
+
         /* ===== HEADER ===== */
         .app-header {
             background: var(--bg-secondary);
@@ -124,6 +163,7 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(10px);
+            transition: all var(--transition-normal);
         }
 
         .header-content {
@@ -157,6 +197,11 @@
             justify-content: center;
             font-size: var(--font-size-2xl);
             color: white;
+            transition: transform var(--transition-normal);
+        }
+
+        .logo:hover .logo-icon {
+            transform: rotate(15deg);
         }
 
         .logo-text h1 {
@@ -267,7 +312,7 @@
         }
 
         .card:hover {
-            border-color: rgba(59, 130, 246, 0.3);
+            border-color: rgba(var(--primary-color), 0.3);
             box-shadow: var(--shadow-lg);
         }
 
@@ -305,12 +350,49 @@
             color: var(--text-tertiary);
         }
 
-        /* ===== INPUT SECTION ===== */
+        /* ===== STEP 1: INPUT SECTION ===== */
+        .input-section {
+            position: relative;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
         .input-label {
             font-size: var(--font-size-lg);
-            color: var(--text-secondary);
+            color: var(--text-primary);
             font-weight: 500;
-            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* FIX 1: Need Inspiration Button Placement */
+        .inspiration-trigger-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            white-space: nowrap;
+        }
+
+        .inspiration-trigger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .textarea-container {
@@ -331,13 +413,19 @@
             z-index: 2;
         }
 
-        .textarea-top-right-controls {
+        /* FIX 8: Action Icons Size & Placement */
+        .textarea-top-controls {
             position: absolute;
-            top: var(--spacing-sm);
-            right: var(--spacing-sm);
+            top: -45px;
+            right: 0;
             display: flex;
             gap: var(--spacing-xs);
             z-index: 2;
+        }
+
+        .textarea-top-controls .action-btn {
+            width: 36px;
+            height: 36px;
         }
 
         textarea.textarea {
@@ -352,12 +440,13 @@
             resize: vertical;
             font-family: inherit;
             transition: all var(--transition-normal);
+            min-height: 180px;
         }
 
         textarea.textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
         }
 
         .textarea-controls {
@@ -401,31 +490,7 @@
             cursor: not-allowed;
         }
 
-        /* ===== INSPIRATION SECTION ===== */
-        .inspiration-container {
-            margin-top: var(--spacing-lg);
-        }
-
-        .need-inspiration-btn {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm) var(--spacing-md);
-            background: linear-gradient(135deg, var(--warning-color), #d97706);
-            color: white;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-size: var(--font-size-base);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-normal);
-        }
-
-        .need-inspiration-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
+        /* FIX 5: Inspiration Options - Compact Design */
         .inspiration-panel {
             margin-top: var(--spacing-md);
             background: var(--bg-secondary);
@@ -433,16 +498,11 @@
             border-radius: var(--radius-lg);
             padding: var(--spacing-lg);
             display: none;
+            animation: slideDown 0.3s ease;
         }
 
         .inspiration-panel.show {
             display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .inspiration-header {
@@ -477,7 +537,7 @@
         .inspiration-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: var(--spacing-md);
+            gap: var(--spacing-sm);
         }
 
         .inspiration-item {
@@ -485,7 +545,7 @@
             flex-direction: column;
             align-items: center;
             gap: var(--spacing-sm);
-            padding: var(--spacing-lg);
+            padding: var(--spacing-md);
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
@@ -493,6 +553,8 @@
             color: var(--text-primary);
             transition: all var(--transition-normal);
             cursor: pointer;
+            min-height: 100px;
+            justify-content: center;
         }
 
         .inspiration-item:hover {
@@ -503,14 +565,14 @@
         }
 
         .inspiration-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: var(--radius-lg);
+            width: 40px;
+            height: 40px;
+            background: rgba(var(--primary-color), 0.1);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: var(--font-size-xl);
+            font-size: var(--font-size-lg);
             color: var(--primary-color);
         }
 
@@ -525,7 +587,7 @@
             text-align: center;
         }
 
-        /* ===== OUTPUT SECTION ===== */
+        /* ===== STEP 2 & 3: OUTPUT SECTION ===== */
         .output-section {
             display: none;
             gap: var(--spacing-xl);
@@ -546,21 +608,28 @@
             position: relative;
         }
 
+        /* FIX 8: Action Icons in Step 2 */
         .output-actions {
             position: absolute;
-            top: var(--spacing-sm);
-            right: var(--spacing-sm);
+            top: -45px;
+            right: 0;
             display: flex;
             gap: var(--spacing-xs);
             z-index: 2;
         }
 
-        .save-btn {
+        .output-actions .action-btn {
+            width: 36px;
+            height: 36px;
+        }
+
+        /* FIX 11: Undo Button Visibility */
+        #undoPromptBtn {
             position: absolute;
             bottom: var(--spacing-sm);
             right: var(--spacing-sm);
             padding: var(--spacing-xs) var(--spacing-md);
-            background: var(--success-color);
+            background: var(--warning-color);
             color: white;
             border: none;
             border-radius: var(--radius-md);
@@ -574,18 +643,13 @@
             display: none;
         }
 
-        .save-btn.show {
+        #undoPromptBtn.show {
             display: flex;
             animation: slideUp 0.3s ease;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .save-btn:hover {
-            background: #0da271;
+        #undoPromptBtn:hover {
+            background: #d97706;
             transform: translateY(-2px);
         }
 
@@ -602,6 +666,7 @@
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            position: relative;
         }
 
         .output-area[contenteditable="true"]:empty:before {
@@ -610,11 +675,27 @@
             pointer-events: none;
         }
 
-        /* ===== PLATFORMS SIDEBAR ===== */
+        /* FIX 7: Read/Volume Button Toggle */
+        #speakBtn.listening {
+            background: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* ===== STEP 3: AI PLATFORMS SIDEBAR ===== */
         .platforms-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: var(--spacing-md);
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: var(--spacing-sm);
         }
 
         .platform-card {
@@ -627,6 +708,7 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-md);
+            position: relative;
         }
 
         .platform-card:hover {
@@ -634,6 +716,34 @@
             border-color: var(--primary-color);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
+        }
+
+        /* FIX 13: Recommended AI Tool */
+        .platform-card.recommended {
+            border: 2px solid var(--success-color);
+            background: linear-gradient(135deg, var(--bg-tertiary), rgba(16, 185, 129, 0.1));
+            order: -1;
+        }
+
+        .platform-card.recommended::before {
+            content: '✨';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 1.25rem;
+            z-index: 2;
+        }
+
+        .platform-card.recommended .recommended-tag {
+            position: absolute;
+            top: var(--spacing-xs);
+            right: var(--spacing-xs);
+            background: var(--success-color);
+            color: white;
+            font-size: var(--font-size-xs);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
         }
 
         .platform-icon {
@@ -655,6 +765,9 @@
         .platform-name {
             font-weight: 600;
             margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
         }
 
         .platform-desc {
@@ -681,6 +794,7 @@
         /* ===== HISTORY SECTION ===== */
         .history-section {
             display: none;
+            margin-top: var(--spacing-xl);
         }
 
         .history-section.show {
@@ -711,6 +825,10 @@
         .history-list {
             max-height: 400px;
             overflow-y: auto;
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
         }
 
         .history-item {
@@ -734,6 +852,7 @@
 
         .history-content {
             flex: 1;
+            min-width: 0;
         }
 
         .history-text {
@@ -762,6 +881,7 @@
             opacity: 1;
         }
 
+        /* FIX 4: Reuse History Items */
         .history-reuse-btn {
             width: 32px;
             height: 32px;
@@ -908,7 +1028,7 @@
             margin-bottom: var(--spacing-xs);
         }
 
-        /* ===== MODALS ===== */
+        /* ===== SETTINGS MODAL ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -970,12 +1090,17 @@
             background: rgba(15, 23, 42, 0.7);
         }
 
+        /* FIX 2: Settings Panel Visual Hierarchy */
         .settings-group {
             margin-bottom: var(--spacing-2xl);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .settings-group:last-child {
             margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
         .settings-group-title {
@@ -983,14 +1108,23 @@
             align-items: center;
             gap: var(--spacing-sm);
             font-size: var(--font-size-lg);
-            color: var(--text-secondary); /* FIX 8: Changed from blue */
+            color: var(--text-primary);
             margin-bottom: var(--spacing-lg);
             padding-bottom: var(--spacing-sm);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .setting-item {
             margin-bottom: var(--spacing-lg);
+            padding-left: var(--spacing-md);
+            border-left: 2px solid var(--border-color);
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
         }
 
         .setting-label {
@@ -998,6 +1132,7 @@
             font-weight: 500;
             color: var(--text-primary);
             margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-base);
         }
 
         select, input {
@@ -1015,13 +1150,14 @@
         select:focus, input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
         }
 
         .helper-text {
             font-size: var(--font-size-sm);
             color: var(--text-tertiary);
             margin-top: var(--spacing-xs);
+            line-height: 1.4;
         }
 
         .settings-actions {
@@ -1293,7 +1429,7 @@
         .loading-spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid rgba(59, 130, 246, 0.3);
+            border: 4px solid rgba(var(--primary-color), 0.3);
             border-top-color: var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -1317,6 +1453,10 @@
             .output-section.show {
                 grid-template-columns: 1fr;
             }
+            
+            .inspiration-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
         }
 
         @media (max-width: 768px) {
@@ -1335,8 +1475,14 @@
                 text-align: center;
             }
             
+            .input-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-md);
+            }
+            
             .inspiration-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
             
             .footer-info {
@@ -1352,12 +1498,21 @@
             
             .sticky-cta {
                 padding: var(--spacing-sm) var(--spacing-lg);
+                font-size: var(--font-size-sm);
+            }
+            
+            .textarea-top-controls,
+            .output-actions {
+                position: relative;
+                top: 0;
+                margin-bottom: var(--spacing-sm);
+                justify-content: flex-end;
             }
         }
 
         @media (max-width: 480px) {
             .inspiration-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
             
             .step-header {
@@ -1368,6 +1523,21 @@
             
             .step-number {
                 align-self: center;
+            }
+            
+            .inspiration-item {
+                padding: var(--spacing-sm);
+                min-height: 80px;
+            }
+            
+            .inspiration-icon {
+                width: 32px;
+                height: 32px;
+                font-size: var(--font-size-base);
+            }
+            
+            .inspiration-text {
+                font-size: var(--font-size-xs);
             }
         }
     </style>
@@ -1425,14 +1595,24 @@
                         </div>
                     </div>
                     
-                    <div class="input-label">What would you like the AI to help you with?</div>
+                    <!-- FIX 1: Need Inspiration Button Placement -->
+                    <div class="input-header">
+                        <div class="input-label">
+                            <i class="fas fa-question-circle"></i>
+                            What would you like the AI to help you with?
+                        </div>
+                        <button id="needInspirationBtn" class="inspiration-trigger-btn">
+                            <i class="fas fa-lightbulb"></i>
+                            Need Inspiration?
+                        </button>
+                    </div>
                     
                     <div class="textarea-container">
                         <!-- Character Counter -->
                         <div class="char-counter" id="charCounter">0/5000</div>
                         
-                        <!-- FIX 1: Maximize Button -->
-                        <div class="textarea-top-right-controls">
+                        <!-- FIX 8: Action Icons Placement -->
+                        <div class="textarea-top-controls">
                             <button id="maximizeInputBtn" class="action-btn" title="Maximize Editor">
                                 <i class="fas fa-expand"></i>
                                 <span class="action-btn-tooltip">Maximize</span>
@@ -1455,7 +1635,7 @@
                                 </button>
                             </div>
                             <div class="right-controls">
-                                <!-- FIX 3: Clear Button (replaces Undo) -->
+                                <!-- Clear Button -->
                                 <button id="clearInputBtn" class="undo-btn" title="Clear All Text">
                                     <i class="fas fa-times"></i>
                                     <span class="action-btn-tooltip">Clear</span>
@@ -1464,61 +1644,54 @@
                         </div>
                     </div>
                     
-                    <!-- FIX 2: Need Inspiration Button -->
-                    <div class="inspiration-container">
-                        <button id="needInspirationBtn" class="need-inspiration-btn">
-                            <i class="fas fa-lightbulb"></i>
-                            Need Inspiration?
-                        </button>
-                        
-                        <div class="inspiration-panel" id="inspirationPanel">
-                            <div class="inspiration-header">
-                                <div class="inspiration-title">
-                                    <i class="fas fa-lightbulb"></i>
-                                    Inspiration Templates
+                    <!-- FIX 5: Inspiration Panel -->
+                    <div class="inspiration-panel" id="inspirationPanel">
+                        <div class="inspiration-header">
+                            <div class="inspiration-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Inspiration Templates
+                            </div>
+                            <button class="close-inspiration-btn" id="closeInspirationBtn" title="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="inspiration-grid">
+                            <a href="#" class="inspiration-item" data-type="email">
+                                <div class="inspiration-icon">
+                                    <i class="fas fa-envelope"></i>
                                 </div>
-                                <button class="close-inspiration-btn" id="closeInspirationBtn" title="Close">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="inspiration-grid">
-                                <a href="#" class="inspiration-item" data-type="email">
-                                    <div class="inspiration-icon">
-                                        <i class="fas fa-envelope"></i>
-                                    </div>
-                                    <div class="inspiration-text">Business Email</div>
-                                </a>
-                                <a href="#" class="inspiration-item" data-type="code">
-                                    <div class="inspiration-icon">
-                                        <i class="fas fa-code"></i>
-                                    </div>
-                                    <div class="inspiration-text">Code Generation</div>
-                                </a>
-                                <a href="#" class="inspiration-item" data-type="analysis">
-                                    <div class="inspiration-icon">
-                                        <i class="fas fa-chart-bar"></i>
-                                    </div>
-                                    <div class="inspiration-text">Data Analysis</div>
-                                </a>
-                                <a href="#" class="inspiration-item" data-type="creative">
-                                    <div class="inspiration-icon">
-                                        <i class="fas fa-paint-brush"></i>
-                                    </div>
-                                    <div class="inspiration-text">Creative Writing</div>
-                                </a>
-                                <a href="#" class="inspiration-item" data-type="strategy">
-                                    <div class="inspiration-icon">
-                                        <i class="fas fa-chess"></i>
-                                    </div>
-                                    <div class="inspiration-text">Business Strategy</div>
-                                </a>
-                                <a href="#" class="inspiration-item" data-type="research">
-                                    <div class="inspiration-icon">
-                                        <i class="fas fa-search"></i>
-                                    </div>
-                                    <div class="inspiration-text">Research Summary</div>
-                                </a>
-                            </div>
+                                <div class="inspiration-text">Business Email</div>
+                            </a>
+                            <a href="#" class="inspiration-item" data-type="code">
+                                <div class="inspiration-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="inspiration-text">Code Generation</div>
+                            </a>
+                            <a href="#" class="inspiration-item" data-type="analysis">
+                                <div class="inspiration-icon">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="inspiration-text">Data Analysis</div>
+                            </a>
+                            <a href="#" class="inspiration-item" data-type="creative">
+                                <div class="inspiration-icon">
+                                    <i class="fas fa-paint-brush"></i>
+                                </div>
+                                <div class="inspiration-text">Creative Writing</div>
+                            </a>
+                            <a href="#" class="inspiration-item" data-type="strategy">
+                                <div class="inspiration-icon">
+                                    <i class="fas fa-chess"></i>
+                                </div>
+                                <div class="inspiration-text">Business Strategy</div>
+                            </a>
+                            <a href="#" class="inspiration-item" data-type="research">
+                                <div class="inspiration-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <div class="inspiration-text">Research Summary</div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -1537,8 +1710,9 @@
                     </div>
                     
                     <div class="output-container">
-                        <!-- Output Actions -->
+                        <!-- FIX 8: Action Icons in Step 2 -->
                         <div class="output-actions">
+                            <!-- FIX 7: Volume Button Toggle -->
                             <button id="speakBtn" class="action-btn" title="Listen to Prompt">
                                 <i class="fas fa-volume-up"></i>
                                 <span class="action-btn-tooltip">Listen</span>
@@ -1551,15 +1725,14 @@
                                 <i class="fas fa-download"></i>
                                 <span class="action-btn-tooltip">Export</span>
                             </button>
-                            <!-- FIX 1: Maximize Button -->
                             <button id="maximizeOutputBtn" class="action-btn" title="Maximize Editor">
                                 <i class="fas fa-expand"></i>
                                 <span class="action-btn-tooltip">Maximize</span>
                             </button>
                         </div>
                         
-                        <!-- FIX 5: Undo Button -->
-                        <button id="undoPromptBtn" class="save-btn" title="Undo Last Change" style="display: none; background: var(--warning-color);">
+                        <!-- FIX 11: Undo Button -->
+                        <button id="undoPromptBtn" class="save-btn" title="Undo Last Change">
                             <i class="fas fa-undo"></i>
                             Undo
                         </button>
@@ -1585,6 +1758,7 @@
                             </div>
                         </div>
                         
+                        <!-- FIX 9: AI Tools Visibility -->
                         <div id="platformsGrid" class="platforms-grid">
                             <!-- Platforms will be added dynamically -->
                             <div class="empty-state" id="platformsEmptyState">
@@ -1598,7 +1772,7 @@
                 </div>
             </div>
             
-            <!-- FIX 10: History Section -->
+            <!-- FIX 4: History Section -->
             <div class="history-section" id="historySection">
                 <div class="card">
                     <div class="history-header">
@@ -1630,7 +1804,6 @@
 
         <!-- Sticky CTA Buttons -->
         <div class="sticky-cta-container">
-            <!-- FIX 7: Prepare Prompt → Reset Button -->
             <button id="stickyPrepareBtn" class="sticky-cta prepare">
                 <i class="fas fa-magic cta-icon"></i>
                 <span>Prepare Prompt</span>
@@ -1650,7 +1823,7 @@
                 <div class="footer-info">
                     <div class="footer-item">
                         <span class="status-indicator"></span>
-                        <span>Status: <strong>Online</strong></span>
+                        <span>Status: <strong id="statusText">Online</strong></span>
                     </div>
                     <div class="footer-item">
                         <i class="fas fa-robot"></i>
@@ -1695,7 +1868,8 @@
                         <select id="themeSelect">
                             <option value="dark">Dark Theme</option>
                             <option value="light">Light Theme</option>
-                            <option value="auto">Auto (System Preference)</option>
+                            <option value="sunset">Sunset Theme</option>
+                            <option value="aurora">Aurora Theme</option>
                         </select>
                         <p class="helper-text">Choose your preferred visual theme</p>
                     </div>
@@ -1756,7 +1930,6 @@
                     <button id="cancelSettingsBtn" class="settings-cancel-btn">
                         Cancel
                     </button>
-                    <!-- FIX 9: Save Settings Button -->
                     <button id="saveSettingsBtn" class="settings-save-btn" disabled>
                         <i class="fas fa-save"></i>
                         Save Changes
@@ -1766,7 +1939,7 @@
         </div>
     </div>
 
-    <!-- FIX 1: Full Screen Editor -->
+    <!-- Full Screen Editor -->
     <div id="fullScreenEditor" class="full-screen-editor">
         <div class="editor-header">
             <div class="editor-title">
@@ -1774,7 +1947,7 @@
                 <span id="editorTitle">Edit Prompt</span>
             </div>
             <div class="editor-actions">
-                <!-- FIX 4: Prepare Prompt button (hidden in Step 2 maximized view) -->
+                <!-- FIX 14: Prepare Prompt in Maximized View -->
                 <button id="editorPrepareBtn" class="editor-prepare-btn" disabled>
                     <i class="fas fa-magic"></i>
                     Prepare Prompt
@@ -1788,8 +1961,7 @@
         <div class="editor-content">
             <div class="editor-controls">
                 <div class="editor-left-controls">
-                    <!-- FIX 5: Undo button in editor -->
-                    <button id="editorUndoBtn" class="undo-btn" title="Undo Last Change">
+                    <button id="editorUndoBtn" class="undo-btn" title="Undo Last Change" disabled>
                         <i class="fas fa-undo"></i>
                         <span class="action-btn-tooltip">Undo</span>
                     </button>
@@ -1802,7 +1974,7 @@
     <!-- Notifications Container -->
     <div class="notification-container" id="notificationContainer"></div>
 
-    <!-- FIX 6: Global Loading Indicator -->
+    <!-- Global Loading Indicator -->
     <div class="global-loading" id="globalLoading">
         <div class="loading-spinner"></div>
         <div class="loading-text" id="loadingText">Generating your prompt...</div>
@@ -1817,8 +1989,182 @@
             settings: JSON.parse(localStorage.getItem('promptcraft_settings') || '{}'),
             isMaximized: false,
             currentStep: 1,
-            settingsChanged: false
+            settingsChanged: false,
+            isSpeaking: false,
+            isListening: false,
+            speechSynthesis: null,
+            speechRecognition: null,
+            undoStack: [],
+            redoStack: []
         };
+
+        // ===== THEME MANAGEMENT =====
+        // FIX 3: Theme Switching
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('promptcraft_theme') || 'dark';
+            applyTheme(savedTheme);
+            document.getElementById('themeSelect').value = savedTheme;
+            updateThemeDisplay(savedTheme);
+        }
+
+        function applyTheme(themeName) {
+            document.body.className = themeName + '-theme';
+            localStorage.setItem('promptcraft_theme', themeName);
+            updateThemeDisplay(themeName);
+        }
+
+        function updateThemeDisplay(themeName) {
+            const displayNames = {
+                'dark': 'Dark',
+                'light': 'Light',
+                'sunset': 'Sunset',
+                'aurora': 'Aurora'
+            };
+            document.getElementById('currentTheme').textContent = displayNames[themeName] || 'Dark';
+        }
+
+        // ===== VOICE MANAGEMENT =====
+        // FIX 6 & 7: Voice Input & Output
+        function initializeVoice() {
+            // Check for speech synthesis support
+            if ('speechSynthesis' in window) {
+                state.speechSynthesis = window.speechSynthesis;
+            }
+
+            // Check for speech recognition support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                state.speechRecognition = new SpeechRecognition();
+                state.speechRecognition.continuous = false;
+                state.speechRecognition.interimResults = false;
+                state.speechRecognition.maxAlternatives = 1;
+                
+                state.speechRecognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    handleVoiceTranscript(transcript);
+                };
+                
+                state.speechRecognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    state.isListening = false;
+                    updateMicButton();
+                    showNotification('Voice input failed. Please try again.', 'error');
+                };
+                
+                state.speechRecognition.onend = () => {
+                    state.isListening = false;
+                    updateMicButton();
+                };
+            }
+        }
+
+        function toggleVoiceInput() {
+            if (!state.speechRecognition) {
+                showNotification('Voice input is not supported in your browser.', 'warning');
+                return;
+            }
+
+            if (state.isListening) {
+                stopVoiceInput();
+            } else {
+                startVoiceInput();
+            }
+        }
+
+        function startVoiceInput() {
+            try {
+                state.speechRecognition.start();
+                state.isListening = true;
+                updateMicButton();
+                showNotification('Listening... Speak now.', 'info');
+            } catch (error) {
+                console.error('Failed to start voice input:', error);
+                showNotification('Failed to start voice input.', 'error');
+            }
+        }
+
+        function stopVoiceInput() {
+            if (state.speechRecognition && state.isListening) {
+                state.speechRecognition.stop();
+                state.isListening = false;
+                updateMicButton();
+            }
+        }
+
+        function handleVoiceTranscript(transcript) {
+            const activeElement = document.activeElement;
+            if (activeElement.id === 'userInput' || activeElement.id === 'editorTextarea') {
+                activeElement.value += transcript;
+                if (activeElement.id === 'userInput') {
+                    updateCharCounter();
+                }
+            }
+            showNotification('Voice input captured.', 'success');
+        }
+
+        function toggleSpeech() {
+            const outputText = document.getElementById('outputArea').textContent.trim();
+            if (!outputText || outputText.includes('Your optimized prompt will appear here')) {
+                showNotification('No prompt text to read.', 'warning');
+                return;
+            }
+
+            const speakBtn = document.getElementById('speakBtn');
+            
+            if (state.isSpeaking) {
+                // FIX 7: Stop speech
+                state.speechSynthesis.cancel();
+                state.isSpeaking = false;
+                speakBtn.classList.remove('listening');
+                speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
+                speakBtn.title = 'Listen to Prompt';
+            } else {
+                // Start speech
+                if (state.speechSynthesis) {
+                    const utterance = new SpeechSynthesisUtterance(outputText);
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+                    
+                    utterance.onstart = () => {
+                        state.isSpeaking = true;
+                        speakBtn.classList.add('listening');
+                        speakBtn.innerHTML = '<i class="fas fa-stop"></i><span class="action-btn-tooltip">Stop</span>';
+                        speakBtn.title = 'Stop Playback';
+                    };
+                    
+                    utterance.onend = () => {
+                        state.isSpeaking = false;
+                        speakBtn.classList.remove('listening');
+                        speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
+                        speakBtn.title = 'Listen to Prompt';
+                    };
+                    
+                    utterance.onerror = () => {
+                        state.isSpeaking = false;
+                        speakBtn.classList.remove('listening');
+                        speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
+                        speakBtn.title = 'Listen to Prompt';
+                        showNotification('Failed to read prompt.', 'error');
+                    };
+                    
+                    state.speechSynthesis.speak(utterance);
+                } else {
+                    showNotification('Text-to-speech is not supported in your browser.', 'warning');
+                }
+            }
+        }
+
+        function updateMicButton() {
+            const micBtn = document.getElementById('micBtn');
+            if (state.isListening) {
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = '<i class="fas fa-stop"></i><span class="action-btn-tooltip">Stop</span>';
+            } else {
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i><span class="action-btn-tooltip">Voice Input</span>';
+            }
+        }
 
         // ===== UTILITY FUNCTIONS =====
         function showNotification(message, type = 'info') {
@@ -1864,69 +2210,7 @@
             }
         }
 
-        // ===== FIX 1: MAXIMIZE BUTTON =====
-        document.getElementById('maximizeInputBtn').addEventListener('click', () => {
-            const input = document.getElementById('userInput').value;
-            document.getElementById('editorTitle').textContent = 'Step 1: Describe Your Task';
-            document.getElementById('editorTextarea').value = input;
-            document.getElementById('editorPrepareBtn').disabled = !input.trim();
-            document.getElementById('fullScreenEditor').classList.add('show');
-            state.isMaximized = true;
-            
-            // Focus on textarea
-            setTimeout(() => {
-                document.getElementById('editorTextarea').focus();
-            }, 100);
-        });
-
-        document.getElementById('maximizeOutputBtn').addEventListener('click', () => {
-            const output = document.getElementById('outputArea').textContent;
-            document.getElementById('editorTitle').textContent = 'Step 2: Generated Prompt';
-            document.getElementById('editorTextarea').value = output;
-            
-            // FIX 4: Hide Prepare Prompt button in maximized Step 2 view
-            document.getElementById('editorPrepareBtn').style.display = 'none';
-            
-            document.getElementById('fullScreenEditor').classList.add('show');
-            state.isMaximized = true;
-            
-            setTimeout(() => {
-                document.getElementById('editorTextarea').focus();
-            }, 100);
-        });
-
-        document.getElementById('closeEditorBtn').addEventListener('click', () => {
-            document.getElementById('fullScreenEditor').classList.remove('show');
-            state.isMaximized = false;
-            
-            // Restore Prepare Prompt button visibility
-            document.getElementById('editorPrepareBtn').style.display = 'flex';
-            
-            // Save changes if needed
-            if (state.isMaximized) {
-                const editorText = document.getElementById('editorTextarea').value;
-                const title = document.getElementById('editorTitle').textContent;
-                
-                if (title.includes('Step 1')) {
-                    document.getElementById('userInput').value = editorText;
-                    updateCharCounter();
-                } else if (title.includes('Step 2')) {
-                    document.getElementById('outputArea').textContent = editorText;
-                }
-            }
-        });
-
-        // FIX 5: Undo in editor
-        document.getElementById('editorUndoBtn').addEventListener('click', () => {
-            if (state.lastPromptState) {
-                document.getElementById('outputArea').innerHTML = state.lastPromptState;
-                state.lastPromptState = null;
-                document.getElementById('undoPromptBtn').style.display = 'none';
-                showNotification('Undo completed', 'info');
-            }
-        });
-
-        // ===== FIX 2: NEED INSPIRATION BUTTON =====
+        // ===== FIX 1: NEED INSPIRATION BUTTON =====
         document.getElementById('needInspirationBtn').addEventListener('click', () => {
             const panel = document.getElementById('inspirationPanel');
             panel.classList.toggle('show');
@@ -1958,91 +2242,7 @@
             });
         });
 
-        // ===== FIX 3: CLEAR TEXT BUTTON =====
-        document.getElementById('clearInputBtn').addEventListener('click', () => {
-            document.getElementById('userInput').value = '';
-            updateCharCounter();
-            document.getElementById('outputArea').innerHTML = '';
-            document.getElementById('outputSection').classList.remove('show');
-            document.getElementById('stickyPrepareBtn').classList.remove('hidden');
-            document.getElementById('stickyResetBtn').classList.add('hidden');
-            document.getElementById('progressFill').style.width = '33%';
-            
-            showNotification('All content cleared', 'success');
-        });
-
-        // ===== FIX 5: UNDO BUTTON =====
-        document.getElementById('undoPromptBtn').addEventListener('click', () => {
-            if (state.lastPromptState) {
-                document.getElementById('outputArea').innerHTML = state.lastPromptState;
-                state.lastPromptState = null;
-                this.style.display = 'none';
-                showNotification('Undo completed', 'info');
-            }
-        });
-
-        // ===== FIX 6: PROCESSING LOADER =====
-        // Already implemented in showLoading function
-
-        // ===== FIX 7: PREPARE PROMPT → RESET BUTTON =====
-        document.getElementById('stickyPrepareBtn').addEventListener('click', async () => {
-            const inputText = document.getElementById('userInput').value.trim();
-            if (!inputText) {
-                showNotification('Please enter some text in Step 1 first.', 'error');
-                return;
-            }
-
-            // Save state for undo
-            state.lastPromptState = document.getElementById('outputArea').innerHTML;
-            document.getElementById('undoPromptBtn').style.display = 'flex';
-
-            // Show loading
-            showLoading(true, 'Crafting your perfect prompt...');
-
-            try {
-                // Get selected style
-                const style = document.getElementById('promptStyleSelect')?.value || 'detailed';
-                
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Generate mock prompt
-                const mockPrompt = generateMockPrompt(inputText, style);
-                
-                // Display the generated prompt
-                document.getElementById('outputArea').innerHTML = mockPrompt;
-                document.getElementById('outputSection').classList.add('show');
-                
-                // Update progress
-                document.getElementById('progressFill').style.width = '66%';
-                
-                // FIX 7: Change button to Reset
-                document.getElementById('stickyPrepareBtn').classList.add('hidden');
-                document.getElementById('stickyResetBtn').classList.remove('hidden');
-                
-                // Add to history
-                addToHistory(inputText, mockPrompt, style);
-                
-                // Load AI platforms
-                loadAIPlatforms();
-                
-                showNotification('Prompt successfully generated!', 'success');
-                
-            } catch (error) {
-                console.error('Error generating prompt:', error);
-                showNotification('Failed to generate prompt. Please try again.', 'error');
-            } finally {
-                showLoading(false);
-            }
-        });
-
-        // Reset button
-        document.getElementById('stickyResetBtn').addEventListener('click', () => {
-            document.getElementById('clearInputBtn').click();
-            showNotification('Application reset', 'success');
-        });
-
-        // ===== FIX 8 & 9: SETTINGS MANAGEMENT =====
+        // ===== FIX 2 & 3: SETTINGS MANAGEMENT =====
         document.getElementById('settingsBtn').addEventListener('click', () => {
             // Load saved settings
             if (state.settings.theme) {
@@ -2077,10 +2277,15 @@
             select.addEventListener('change', () => {
                 state.settingsChanged = true;
                 document.getElementById('saveSettingsBtn').disabled = false;
+                
+                // Apply theme immediately for preview
+                if (select.id === 'themeSelect') {
+                    applyTheme(select.value);
+                }
             });
         });
 
-        // FIX 9: Save Settings
+        // Save Settings
         document.getElementById('saveSettingsBtn').addEventListener('click', () => {
             if (!state.settingsChanged) return;
             
@@ -2094,13 +2299,10 @@
             localStorage.setItem('promptcraft_settings', JSON.stringify(state.settings));
             
             // Apply theme
-            document.body.className = `${state.settings.theme}-theme`;
-            document.getElementById('currentTheme').textContent = 
-                state.settings.theme.charAt(0).toUpperCase() + state.settings.theme.slice(1);
+            applyTheme(state.settings.theme);
             
             // Update model indicator
-            document.getElementById('currentModel').textContent = 
-                getModelDisplayName(state.settings.aiModel);
+            updateModelDisplay(state.settings.aiModel);
             
             // Close modal
             document.getElementById('settingsModal').classList.remove('show');
@@ -2112,10 +2314,26 @@
             showNotification('Settings saved successfully!', 'success');
         });
 
-        // ===== FIX 10: HISTORY NAVIGATION =====
+        function updateModelDisplay(model) {
+            const modelNames = {
+                'gemini': 'Google Gemini',
+                'chatgpt': 'OpenAI ChatGPT',
+                'claude': 'Anthropic Claude',
+                'llama': 'Meta Llama'
+            };
+            document.getElementById('currentModel').textContent = modelNames[model] || 'Google Gemini';
+        }
+
+        // ===== FIX 4: HISTORY NAVIGATION =====
         document.getElementById('historyBtn').addEventListener('click', () => {
-            document.getElementById('historySection').classList.add('show');
+            const historySection = document.getElementById('historySection');
+            historySection.classList.add('show');
             loadHistory();
+            
+            // Scroll to history section
+            setTimeout(() => {
+                historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         });
 
         document.getElementById('closeHistoryBtn').addEventListener('click', () => {
@@ -2166,12 +2384,18 @@
                     document.getElementById('outputSection').classList.add('show');
                     document.getElementById('historySection').classList.remove('show');
                     
+                    // Scroll to Step 1
+                    document.querySelector('.input-section').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                    
                     // Update buttons
                     document.getElementById('stickyPrepareBtn').classList.add('hidden');
                     document.getElementById('stickyResetBtn').classList.remove('hidden');
                     
                     // Load platforms
-                    loadAIPlatforms();
+                    loadAIPlatforms(item.prompt);
                     
                     showNotification('Prompt loaded from history', 'success');
                 });
@@ -2200,6 +2424,246 @@
             localStorage.setItem('promptcraft_history', JSON.stringify(state.history));
         }
 
+        // ===== FIX 9 & 13: AI PLATFORMS & RANKING =====
+        function loadAIPlatforms(promptContent) {
+            const platformsGrid = document.getElementById('platformsGrid');
+            platformsGrid.innerHTML = '';
+            
+            const platforms = [
+                {
+                    id: 'gemini',
+                    name: 'Google Gemini',
+                    icon: 'fas fa-robot',
+                    desc: 'Google\'s advanced AI model',
+                    url: 'https://gemini.google.com',
+                    strengths: ['complex reasoning', 'technical analysis', 'multimodal'],
+                    recommended: false
+                },
+                {
+                    id: 'chatgpt',
+                    name: 'OpenAI ChatGPT',
+                    icon: 'fas fa-comment',
+                    desc: 'OpenAI\'s conversational AI',
+                    url: 'https://chat.openai.com',
+                    strengths: ['creative writing', 'conversation', 'general tasks'],
+                    recommended: false
+                },
+                {
+                    id: 'claude',
+                    name: 'Anthropic Claude',
+                    icon: 'fas fa-brain',
+                    desc: 'Anthropic\'s safety-focused AI',
+                    url: 'https://claude.ai',
+                    strengths: ['business docs', 'analysis', 'safety'],
+                    recommended: false
+                },
+                {
+                    id: 'perplexity',
+                    name: 'Perplexity',
+                    icon: 'fas fa-search',
+                    desc: 'AI-powered search assistant',
+                    url: 'https://perplexity.ai',
+                    strengths: ['research', 'fact-finding', 'citations'],
+                    recommended: false
+                }
+            ];
+            
+            // FIX 13: AI Tool Ranking
+            const promptText = promptContent.toLowerCase();
+            platforms.forEach(platform => {
+                // Simple ranking logic based on prompt content
+                if (promptText.includes('code') || promptText.includes('technical')) {
+                    if (platform.id === 'gemini') platform.recommended = true;
+                } else if (promptText.includes('creative') || promptText.includes('story')) {
+                    if (platform.id === 'chatgpt') platform.recommended = true;
+                } else if (promptText.includes('business') || promptText.includes('analysis')) {
+                    if (platform.id === 'claude') platform.recommended = true;
+                } else if (promptText.includes('research') || promptText.includes('find')) {
+                    if (platform.id === 'perplexity') platform.recommended = true;
+                }
+            });
+            
+            // Sort by recommended first
+            platforms.sort((a, b) => b.recommended - a.recommended);
+            
+            platforms.forEach(platform => {
+                const platformCard = document.createElement('div');
+                platformCard.className = `platform-card ${platform.recommended ? 'recommended' : ''}`;
+                platformCard.innerHTML = `
+                    <div class="platform-icon">
+                        <i class="${platform.icon}"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">
+                            ${platform.name}
+                            ${platform.recommended ? '<span class="recommended-tag">Recommended</span>' : ''}
+                        </div>
+                        <div class="platform-desc">${platform.desc}</div>
+                    </div>
+                `;
+                
+                platformCard.addEventListener('click', () => {
+                    navigator.clipboard.writeText(promptContent).then(() => {
+                        showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
+                        setTimeout(() => {
+                            window.open(platform.url, '_blank');
+                        }, 1000);
+                    });
+                });
+                
+                platformsGrid.appendChild(platformCard);
+            });
+        }
+
+        // ===== FIX 11: UNDO BUTTON =====
+        function updateUndoButton() {
+            const undoBtn = document.getElementById('undoPromptBtn');
+            if (state.lastPromptState) {
+                undoBtn.classList.add('show');
+            } else {
+                undoBtn.classList.remove('show');
+            }
+        }
+
+        document.getElementById('undoPromptBtn').addEventListener('click', () => {
+            if (state.lastPromptState) {
+                document.getElementById('outputArea').innerHTML = state.lastPromptState;
+                state.lastPromptState = null;
+                updateUndoButton();
+                showNotification('Undo completed', 'info');
+            }
+        });
+
+        // ===== FIX 14: MAXIMIZED VIEW PREPARE PROMPT =====
+        document.getElementById('maximizeInputBtn').addEventListener('click', () => {
+            const input = document.getElementById('userInput').value;
+            document.getElementById('editorTitle').textContent = 'Step 1: Describe Your Task';
+            document.getElementById('editorTextarea').value = input;
+            document.getElementById('editorPrepareBtn').disabled = !input.trim();
+            document.getElementById('fullScreenEditor').classList.add('show');
+            state.isMaximized = true;
+            
+            setTimeout(() => {
+                document.getElementById('editorTextarea').focus();
+            }, 100);
+        });
+
+        document.getElementById('maximizeOutputBtn').addEventListener('click', () => {
+            const output = document.getElementById('outputArea').textContent;
+            document.getElementById('editorTitle').textContent = 'Step 2: Generated Prompt';
+            document.getElementById('editorTextarea').value = output;
+            document.getElementById('editorPrepareBtn').style.display = 'none';
+            document.getElementById('fullScreenEditor').classList.add('show');
+            state.isMaximized = true;
+            
+            setTimeout(() => {
+                document.getElementById('editorTextarea').focus();
+            }, 100);
+        });
+
+        document.getElementById('closeEditorBtn').addEventListener('click', () => {
+            document.getElementById('fullScreenEditor').classList.remove('show');
+            state.isMaximized = false;
+            
+            // Restore Prepare Prompt button visibility
+            document.getElementById('editorPrepareBtn').style.display = 'flex';
+        });
+
+        document.getElementById('editorPrepareBtn').addEventListener('click', () => {
+            const editorText = document.getElementById('editorTextarea').value;
+            document.getElementById('userInput').value = editorText;
+            updateCharCounter();
+            
+            // Close editor and return to main screen
+            document.getElementById('fullScreenEditor').classList.remove('show');
+            state.isMaximized = false;
+            
+            // Start prompt generation
+            setTimeout(() => {
+                document.getElementById('stickyPrepareBtn').click();
+            }, 300);
+        });
+
+        // ===== PROMPT GENERATION =====
+        document.getElementById('stickyPrepareBtn').addEventListener('click', async () => {
+            const inputText = document.getElementById('userInput').value.trim();
+            if (!inputText) {
+                showNotification('Please enter some text in Step 1 first.', 'error');
+                return;
+            }
+
+            // Save state for undo
+            state.lastPromptState = document.getElementById('outputArea').innerHTML;
+            updateUndoButton();
+
+            // Show loading
+            showLoading(true, 'Crafting your perfect prompt...');
+
+            try {
+                // Get selected style
+                const style = document.getElementById('promptStyleSelect')?.value || 'detailed';
+                
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Generate mock prompt
+                const mockPrompt = generateMockPrompt(inputText, style);
+                
+                // Display the generated prompt
+                document.getElementById('outputArea').innerHTML = mockPrompt;
+                document.getElementById('outputSection').classList.add('show');
+                
+                // Update progress
+                document.getElementById('progressFill').style.width = '66%';
+                
+                // Change button to Reset
+                document.getElementById('stickyPrepareBtn').classList.add('hidden');
+                document.getElementById('stickyResetBtn').classList.remove('hidden');
+                
+                // Add to history
+                addToHistory(inputText, mockPrompt, style);
+                
+                // Load AI platforms with ranking
+                loadAIPlatforms(mockPrompt);
+                
+                showNotification('Prompt successfully generated!', 'success');
+                
+            } catch (error) {
+                console.error('Error generating prompt:', error);
+                showNotification('Failed to generate prompt. Please try again.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Reset button
+        document.getElementById('stickyResetBtn').addEventListener('click', () => {
+            document.getElementById('userInput').value = '';
+            updateCharCounter();
+            document.getElementById('outputArea').innerHTML = '';
+            document.getElementById('outputSection').classList.remove('show');
+            document.getElementById('stickyPrepareBtn').classList.remove('hidden');
+            document.getElementById('stickyResetBtn').classList.add('hidden');
+            document.getElementById('progressFill').style.width = '33%';
+            document.getElementById('platformsGrid').innerHTML = `
+                <div class="empty-state" id="platformsEmptyState">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <p>Generate a prompt first to see AI platform options</p>
+                </div>
+            `;
+            
+            showNotification('Application reset', 'success');
+        });
+
+        // Clear button
+        document.getElementById('clearInputBtn').addEventListener('click', () => {
+            document.getElementById('userInput').value = '';
+            updateCharCounter();
+            showNotification('Input cleared', 'info');
+        });
+
         // ===== HELPER FUNCTIONS =====
         function updateCharCounter() {
             const textarea = document.getElementById('userInput');
@@ -2216,162 +2680,82 @@
             }
         }
 
-        function getModelDisplayName(model) {
-            const models = {
-                'gemini': 'Google Gemini',
-                'chatgpt': 'OpenAI ChatGPT',
-                'claude': 'Anthropic Claude',
-                'llama': 'Meta Llama'
-            };
-            return models[model] || 'Google Gemini';
-        }
-
         function generateMockPrompt(input, style) {
             const styles = {
-                detailed: `You are an expert AI assistant. Based on the user request: "${input}"
+                detailed: `# TASK OVERVIEW
+User Request: "${input}"
 
-Please create a comprehensive and detailed response that includes:
+## INSTRUCTIONS FOR AI ASSISTANT
 
-1. **Role Definition**: Specify the exact role you should embody
-2. **Core Objective**: Clearly state the main goal
-3. **Key Components**: Break down into essential elements
-4. **Step-by-Step Process**: Provide actionable steps
-5. **Best Practices**: Include industry standards and tips
-6. **Expected Output**: Describe the final deliverable
-7. **Quality Criteria**: List success metrics and evaluation criteria
+### ROLE & CONTEXT
+- You are an expert AI assistant specializing in ${input.toLowerCase().includes('business') ? 'business strategy' : input.toLowerCase().includes('code') ? 'software development' : 'general productivity'}
+- Approach this task with precision and professionalism
 
-Format the response in a structured, professional manner with clear headings and bullet points where appropriate.`,
-                
+### PRIMARY OBJECTIVES
+1. Understand the core requirements
+2. Break down complex elements
+3. Provide actionable solutions
+4. Include best practices
+
+### EXPECTED OUTPUT FORMAT
+- Clear, structured response
+- Bullet points for key insights
+- Step-by-step implementation guide
+- Quality assurance checklist
+
+### SUCCESS METRICS
+- Clarity of explanation
+- Practical applicability
+- Comprehensive coverage
+- Professional formatting`,
+
                 concise: `Task: ${input}
 
-Provide a direct, focused response with clear, actionable instructions. Keep it brief but comprehensive.`,
-                
-                creative: `Creative Request: ${input}
+Provide a direct, actionable response. Focus on key elements and clear instructions. Avoid unnecessary elaboration.`,
 
-Approach this with imagination and innovation. Use engaging language, incorporate storytelling elements, and focus on unique perspectives. Be inspiring and original in your response structure.`,
-                
-                professional: `Professional Assignment: ${input}
+                creative: `Creative Assignment: "${input}"
 
-Prepare a formal, business-appropriate response structured as:
+Approach with imagination and innovation. Focus on storytelling elements, engaging language, and unique perspectives. Be inspiring and original.`,
 
-• Executive Summary
-• Background Context
-• Strategic Analysis
-• Implementation Plan
-• Risk Assessment
-• Next Steps
-• Success Metrics
+                professional: `Professional Request: ${input}
 
-Use professional tone and corporate formatting.`
+Format: Executive Summary → Analysis → Recommendations → Implementation Plan → Success Metrics
+
+Tone: Formal, business-appropriate, data-driven`
             };
             
             return styles[style] || styles.detailed;
         }
 
-        function loadAIPlatforms() {
-            const platformsGrid = document.getElementById('platformsGrid');
-            platformsGrid.innerHTML = '';
-            
-            const platforms = [
-                {
-                    name: 'Google Gemini',
-                    icon: 'fas fa-robot',
-                    desc: 'Google\'s advanced AI model',
-                    url: 'https://gemini.google.com'
-                },
-                {
-                    name: 'ChatGPT',
-                    icon: 'fas fa-comment',
-                    desc: 'OpenAI\'s conversational AI',
-                    url: 'https://chat.openai.com'
-                },
-                {
-                    name: 'Claude',
-                    icon: 'fas fa-brain',
-                    desc: 'Anthropic\'s safety-focused AI',
-                    url: 'https://claude.ai'
-                },
-                {
-                    name: 'Perplexity',
-                    icon: 'fas fa-search',
-                    desc: 'AI-powered search assistant',
-                    url: 'https://perplexity.ai'
-                }
-            ];
-            
-            platforms.forEach(platform => {
-                const platformCard = document.createElement('div');
-                platformCard.className = 'platform-card';
-                platformCard.innerHTML = `
-                    <div class="platform-icon">
-                        <i class="${platform.icon}"></i>
-                    </div>
-                    <div class="platform-info">
-                        <div class="platform-name">${platform.name}</div>
-                        <div class="platform-desc">${platform.desc}</div>
-                    </div>
-                `;
-                
-                platformCard.addEventListener('click', () => {
-                    const promptText = document.getElementById('outputArea').textContent;
-                    navigator.clipboard.writeText(promptText).then(() => {
-                        showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
-                        setTimeout(() => {
-                            window.open(platform.url, '_blank');
-                        }, 1000);
-                    });
-                });
-                
-                platformsGrid.appendChild(platformCard);
-            });
-        }
+        // ===== COPY FUNCTIONALITY =====
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const promptText = document.getElementById('outputArea').textContent;
+            if (promptText && !promptText.includes('Your optimized prompt will appear here')) {
+                navigator.clipboard.writeText(promptText);
+                showNotification('Prompt copied to clipboard!', 'success');
+            }
+        });
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', () => {
-            // Load saved settings
-            if (state.settings.theme) {
-                document.body.className = `${state.settings.theme}-theme`;
-                document.getElementById('currentTheme').textContent = 
-                    state.settings.theme.charAt(0).toUpperCase() + state.settings.theme.slice(1);
-            }
+            // Initialize theme
+            initializeTheme();
             
-            if (state.settings.aiModel) {
-                document.getElementById('currentModel').textContent = getModelDisplayName(state.settings.aiModel);
-            }
+            // Initialize voice
+            initializeVoice();
             
             // Initialize character counter
             updateCharCounter();
             document.getElementById('userInput').addEventListener('input', updateCharCounter);
             
+            // Initialize voice buttons
+            document.getElementById('micBtn').addEventListener('click', toggleVoiceInput);
+            document.getElementById('speakBtn').addEventListener('click', toggleSpeech);
+            
             // Initialize editor textarea
             document.getElementById('editorTextarea').addEventListener('input', function() {
                 const hasText = this.value.trim().length > 0;
                 document.getElementById('editorPrepareBtn').disabled = !hasText;
-            });
-            
-            // Copy button
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                const promptText = document.getElementById('outputArea').textContent;
-                if (promptText && !promptText.includes('Your optimized prompt will appear here')) {
-                    navigator.clipboard.writeText(promptText);
-                    showNotification('Prompt copied to clipboard!', 'success');
-                }
-            });
-            
-            // Speak button
-            document.getElementById('speakBtn').addEventListener('click', () => {
-                const promptText = document.getElementById('outputArea').textContent;
-                if (promptText && !promptText.includes('Your optimized prompt will appear here')) {
-                    if ('speechSynthesis' in window) {
-                        const speech = new SpeechSynthesisUtterance(promptText);
-                        speech.lang = 'en-US';
-                        speech.rate = 0.9;
-                        window.speechSynthesis.speak(speech);
-                        showNotification('Reading prompt aloud...', 'info');
-                    } else {
-                        showNotification('Text-to-speech not supported in your browser', 'warning');
-                    }
-                }
             });
             
             // Close modals with Escape key
