@@ -1,34 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PromptCraft Pro - Enterprise AI Prompt Assistant">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PromptCraft Pro - Enterprise AI Prompt Assistant" />
     <title>PromptCraft Pro | Enterprise AI Prompt Assistant</title>
-    
+
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
-    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Your CSS Files -->
-    <!-- If you have ONE styles.css file in css folder -->
-    <link rel="stylesheet" href="css/styles.css">
-    
-    <!-- OR if you have multiple CSS files as in your structure -->
-    <!-- 
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/ui-components.css">
-    -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="./css/styles.css" />
 </head>
+
 <body class="dark-theme">
-    <!-- Header -->
+
+    <!-- ================= HEADER ================= -->
     <header class="app-header">
         <div class="container">
             <div class="header-content">
@@ -39,26 +32,20 @@
                         </div>
                         <div class="logo-text">
                             <h1>PromptCraft Pro</h1>
-                            <p>Enterprise-grade AI prompt optimization for professional workflows</p>
+                            <p>Enterprise-grade AI prompt optimization</p>
                         </div>
                     </a>
-                    
+
                     <div class="header-actions">
-                        <!-- History Button -->
-                        <button id="historyBtn" class="action-btn glass-effect" title="Prompt History">
+                        <button id="historyBtn" class="action-btn">
                             <i class="fas fa-history"></i>
-                            <span class="action-btn-tooltip">History</span>
                         </button>
-                        
-                        <!-- Settings Button -->
-                        <button id="settingsBtn" class="action-btn glass-effect" title="Settings">
+                        <button id="settingsBtn" class="action-btn">
                             <i class="fas fa-sliders-h"></i>
-                            <span class="action-btn-tooltip">Settings</span>
                         </button>
                     </div>
                 </div>
-                
-                <!-- Progress Indicator -->
+
                 <div class="progress-indicator">
                     <div id="progressFill" class="progress-fill"></div>
                 </div>
@@ -66,429 +53,124 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- ================= MAIN ================= -->
     <main class="container">
         <div class="app-container">
-            <!-- Step 1: Input Section -->
-            <div class="input-section">
-                <div class="card">
-                    <div class="step-header">
-                        <div class="step-number">1</div>
-                        <div>
-                            <div class="step-title">Describe Your Task</div>
-                            <div class="step-subtitle">Provide detailed context for optimal AI prompt generation</div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-header">
-                        <div class="input-label">
-                            <i class="fas fa-question-circle"></i>
-                            What would you like the AI to help you with?
-                        </div>
-                        <button id="needInspirationBtn" class="inspiration-trigger-btn">
-                            <i class="fas fa-lightbulb"></i>
-                            Need Inspiration?
-                        </button>
-                    </div>
-                    
-                    <div class="textarea-container">
-                        <!-- Character Counter -->
-                        <div class="char-counter" id="charCounter">0/5000</div>
-                        
-                        <div class="textarea-top-controls">
-                            <button id="maximizeInputBtn" class="action-btn" title="Maximize Editor">
-                                <i class="fas fa-expand"></i>
-                                <span class="action-btn-tooltip">Maximize</span>
-                            </button>
-                        </div>
-                        
-                        <textarea 
-                            id="userInput"
-                            class="textarea"
-                            placeholder="Example: Create a comprehensive project proposal for implementing an AI-powered customer service chatbot that reduces response time by 40% while maintaining customer satisfaction scores..."
-                            rows="8"
-                        ></textarea>
-                        
-                        <div class="textarea-controls">
-                            <div class="left-controls">
-                                <button id="micBtn" class="action-btn" title="Voice Input">
-                                    <i class="fas fa-microphone"></i>
-                                    <span class="action-btn-tooltip">Voice Input</span>
-                                </button>
-                            </div>
-                            <div class="right-controls">
-                                <!-- Clear Button -->
-                                <button id="clearInputBtn" class="undo-btn" title="Clear All Text">
-                                    <i class="fas fa-times"></i>
-                                    <span class="action-btn-tooltip">Clear</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Step 2 & 3: Output Section -->
-            <div class="output-section" id="outputSection">
-                <!-- Step 2: Generated Prompt -->
-                <div class="card" id="outputCard">
-                    <div class="step-header">
-                        <div class="step-number">2</div>
-                        <div>
-                            <div class="step-title">Generated Prompt</div>
-                            <div class="step-subtitle">Optimized for maximum AI performance and clarity</div>
-                        </div>
-                    </div>
-                    
-                    <div class="output-container">
-                        <div class="output-actions">
-                            <button id="speakBtn" class="action-btn" title="Listen to Prompt">
-                                <i class="fas fa-volume-up"></i>
-                                <span class="action-btn-tooltip">Listen</span>
-                            </button>
-                            <button id="copyBtn" class="action-btn" title="Copy Prompt">
-                                <i class="fas fa-copy"></i>
-                                <span class="action-btn-tooltip">Copy</span>
-                            </button>
-                            <button id="exportBtn" class="action-btn" title="Export Prompt">
-                                <i class="fas fa-download"></i>
-                                <span class="action-btn-tooltip">Export</span>
-                            </button>
-                            <button id="maximizeOutputBtn" class="action-btn" title="Maximize Editor">
-                                <i class="fas fa-expand"></i>
-                                <span class="action-btn-tooltip">Maximize</span>
-                            </button>
-                        </div>
-                        
-                        <button id="undoPromptBtn" class="save-btn" title="Undo Last Change">
-                            <i class="fas fa-undo"></i>
-                            Undo
-                        </button>
-                        
-                        <div 
-                            id="outputArea" 
-                            class="output-area" 
-                            contenteditable="true"
-                            data-placeholder="Your optimized prompt will appear here. Describe your task in Step 1 and click 'Prepare Prompt' to generate."
-                        ></div>
+            <!-- STEP 1 -->
+            <section class="card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div>
+                        <div class="step-title">Describe Your Task</div>
+                        <div class="step-subtitle">Provide context for prompt generation</div>
                     </div>
                 </div>
 
-                <!-- Step 3: AI Platforms Sidebar -->
-                <div class="platforms-sidebar">
-                    <div class="card" id="aiCard" style="height: 100%;">
-                        <div class="step-header">
-                            <div class="step-number">3</div>
-                            <div>
-                                <div class="step-title">Deploy to AI</div>
-                                <div class="step-subtitle">Select a platform to launch your prompt</div>
-                            </div>
-                        </div>
-                        
-                        <div id="platformsGrid" class="platforms-grid">
-                            <!-- Platforms will be loaded dynamically -->
-                            <div class="empty-state" id="platformsEmptyState">
-                                <div class="empty-state-icon">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <p>Generate a prompt first to see AI platform options</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- History Section -->
-            <div class="history-section" id="historySection">
-                <div class="card">
-                    <div class="history-header">
-                        <div class="step-header">
-                            <div class="step-number">
-                                <i class="fas fa-history"></i>
-                            </div>
-                            <div>
-                                <div class="step-title">Prompt History</div>
-                                <div class="step-subtitle">Recently generated and saved prompts</div>
-                            </div>
-                        </div>
-                        <button class="history-close-btn" id="closeHistoryBtn" title="Close History">
+                <div class="textarea-container">
+                    <div class="char-counter" id="charCounter">0 / 5000</div>
+
+                    <textarea
+                        id="userInput"
+                        class="textarea"
+                        rows="8"
+                        placeholder="Describe what you want the AI to do..."
+                    ></textarea>
+
+                    <div class="textarea-controls">
+                        <button id="micBtn" class="action-btn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="clearInputBtn" class="action-btn">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="history-list" id="historyList">
-                        <div class="history-empty">
-                            <div class="history-empty-icon">
-                                <i class="fas fa-history"></i>
-                            </div>
-                            <p>No prompt history yet</p>
-                            <p class="history-empty-hint">Generate some prompts to see them here</p>
-                        </div>
+                </div>
+            </section>
+
+            <!-- STEP 2 -->
+            <section class="card">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div>
+                        <div class="step-title">Generated Prompt</div>
+                        <div class="step-subtitle">Optimized structured output</div>
                     </div>
                 </div>
-            </div>
+
+                <div class="output-container">
+                    <div class="output-actions">
+                        <button id="speakBtn" class="action-btn"><i class="fas fa-volume-up"></i></button>
+                        <button id="copyBtn" class="action-btn"><i class="fas fa-copy"></i></button>
+                        <button id="exportBtn" class="action-btn"><i class="fas fa-download"></i></button>
+                    </div>
+
+                    <div
+                        id="outputArea"
+                        class="output-area"
+                        contenteditable="true"
+                        data-placeholder="Generated prompt will appear here..."
+                    ></div>
+                </div>
+            </section>
+
+            <!-- STEP 3 -->
+            <aside class="card">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div>
+                        <div class="step-title">Deploy to AI</div>
+                        <div class="step-subtitle">Click a platform</div>
+                    </div>
+                </div>
+
+                <div id="platformsGrid" class="platforms-grid">
+                    <p class="empty-state">Generate a prompt to see AI tools</p>
+                </div>
+            </aside>
+
         </div>
 
-        <!-- Sticky CTA Buttons -->
+        <!-- Sticky Buttons -->
         <div class="sticky-cta-container">
             <button id="stickyPrepareBtn" class="sticky-cta prepare">
-                <i class="fas fa-magic cta-icon"></i>
-                <span>Prepare Prompt</span>
+                <i class="fas fa-magic"></i> Prepare Prompt
             </button>
-            
             <button id="stickyResetBtn" class="sticky-cta reset hidden">
-                <i class="fas fa-redo cta-icon"></i>
-                <span>Reset</span>
+                <i class="fas fa-redo"></i> Reset
             </button>
         </div>
     </main>
 
-    <!-- Compact Footer -->
+    <!-- ================= FOOTER ================= -->
     <footer class="app-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <div class="footer-item">
-                        <span class="status-indicator"></span>
-                        <span>Status: <strong id="statusText">Online</strong></span>
-                    </div>
-                    <div class="footer-item">
-                        <i class="fas fa-robot"></i>
-                        <span>AI Model: <strong id="currentModel">Google Gemini</strong></span>
-                    </div>
-                    <div class="footer-item">
-                        <i class="fas fa-palette"></i>
-                        <span>Theme: <strong id="currentTheme">Dark</strong></span>
-                    </div>
-                </div>
-                <div class="footer-copyright">
-                    <p>© 2024 PromptCraft Pro. Enterprise AI Prompt Assistant v2.0</p>
-                    <p>Optimizing AI interactions for professional workflows</p>
-                </div>
-            </div>
-        </div>
+        <p>© 2024 PromptCraft Pro</p>
     </footer>
 
-    <!-- Full Screen Editor -->
-    <div id="fullScreenEditor" class="full-screen-editor">
-        <div class="editor-header">
-            <div class="editor-title">
-                <i class="fas fa-expand"></i>
-                <span id="editorTitle">Full Screen Editor</span>
-            </div>
-            <div class="editor-actions">
-                <!-- Core Actions in Maximized View -->
-                <div class="editor-core-actions">
-                    <button id="editorPrepareBtn" class="editor-prepare-btn">
-                        <i class="fas fa-magic"></i>
-                        Prepare Prompt
-                    </button>
-                    <button id="editorInspirationBtn" class="editor-inspiration-btn">
-                        <i class="fas fa-lightbulb"></i>
-                        Need Inspiration?
-                    </button>
-                </div>
-                <button id="closeEditorBtn" class="action-btn" title="Close (ESC)">
-                    <i class="fas fa-times"></i>
-                    <span class="action-btn-tooltip">Close</span>
-                </button>
-            </div>
-        </div>
-        <div class="editor-content">
-            <textarea id="editorTextarea" class="editor-textarea" placeholder="Start typing..."></textarea>
-        </div>
-    </div>
+    <!-- ================= JS (ORDER MATTERS) ================= -->
 
-    <!-- Inspiration Modal -->
-    <div id="inspirationModal" class="modal-overlay">
-        <div class="inspiration-modal-content">
-            <div class="inspiration-modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-lightbulb"></i>
-                    Inspiration Templates
-                </div>
-                <button id="closeInspirationModalBtn" class="action-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="inspiration-modal-body">
-                <div class="inspiration-grid">
-                    <a href="#" class="inspiration-item" data-type="email">
-                        <div class="inspiration-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="inspiration-text">Business Email</div>
-                    </a>
-                    <a href="#" class="inspiration-item" data-type="code">
-                        <div class="inspiration-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <div class="inspiration-text">Code Generation</div>
-                    </a>
-                    <a href="#" class="inspiration-item" data-type="analysis">
-                        <div class="inspiration-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <div class="inspiration-text">Data Analysis</div>
-                    </a>
-                    <a href="#" class="inspiration-item" data-type="creative">
-                        <div class="inspiration-icon">
-                            <i class="fas fa-paint-brush"></i>
-                        </div>
-                        <div class="inspiration-text">Creative Writing</div>
-                    </a>
-                    <a href="#" class="inspiration-item" data-type="strategy">
-                        <div class="inspiration-icon">
-                            <i class="fas fa-chess"></i>
-                        </div>
-                        <div class="inspiration-text">Business Strategy</div>
-                    </a>
-                    <a href="#" class="inspiration-item" data-type="research">
-                        <div class="inspiration-icon">
-                            <i class="fas fa-search"></i>
-                        </div>
-                        <div class="inspiration-text">Research Summary</div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Utils -->
+    <script src="./js/utils/constants.js"></script>
+    <script src="./js/utils/helpers.js"></script>
+    <script src="./js/utils/debounce.js"></script>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-cog"></i>
-                    Settings & Preferences
-                </div>
-                <button id="closeSettingsBtn" class="action-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="settings-group">
-                    <h3 class="settings-group-title">
-                        <i class="fas fa-palette"></i>
-                        Appearance & Interface
-                    </h3>
-                    
-                    <div class="setting-item">
-                        <label class="setting-label">Theme</label>
-                        <select id="themeSelect">
-                            <option value="dark">Dark Theme</option>
-                            <option value="light">Light Theme</option>
-                            <option value="sunset">Sunset Theme</option>
-                            <option value="aurora">Aurora Theme</option>
-                        </select>
-                        <p class="helper-text">Choose your preferred visual theme</p>
-                    </div>
-                </div>
-                
-                <!-- AI Preferences -->
-                <div class="settings-group">
-                    <h3 class="settings-group-title">
-                        <i class="fas fa-robot"></i>
-                        AI Model Preferences
-                    </h3>
-                    
-                    <div class="setting-item">
-                        <label class="setting-label">Default AI Model</label>
-                        <select id="aiModelSelect">
-                            <option value="gemini">Google Gemini</option>
-                            <option value="chatgpt">OpenAI ChatGPT</option>
-                            <option value="claude">Anthropic Claude</option>
-                            <option value="llama">Meta Llama</option>
-                        </select>
-                        <p class="helper-text">Select your preferred AI model</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label class="setting-label">Prompt Style</label>
-                        <select id="promptStyleSelect">
-                            <option value="detailed">Detailed & Structured</option>
-                            <option value="concise">Concise & Direct</option>
-                            <option value="creative">Creative & Engaging</option>
-                            <option value="professional">Professional & Formal</option>
-                        </select>
-                        <p class="helper-text">Define the style of generated prompts</p>
-                    </div>
-                </div>
-                
-                <!-- Advanced Settings -->
-                <div class="settings-group">
-                    <h3 class="settings-group-title">
-                        <i class="fas fa-tools"></i>
-                        Advanced Settings
-                    </h3>
-                    
-                    <div class="setting-item">
-                        <label class="setting-label">Max History Items</label>
-                        <select id="maxHistoryItems">
-                            <option value="10">10 items</option>
-                            <option value="25">25 items</option>
-                            <option value="50">50 items</option>
-                            <option value="100">100 items</option>
-                        </select>
-                        <p class="helper-text">Maximum number of prompts to save in history</p>
-                    </div>
-                </div>
-                
-                <div class="settings-actions">
-                    <button id="cancelSettingsBtn" class="settings-cancel-btn">
-                        Cancel
-                    </button>
-                    <button id="saveSettingsBtn" class="settings-save-btn">
-                        <i class="fas fa-save"></i>
-                        Save Changes
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Services -->
+    <script src="./js/services/storage-service.js"></script>
+    <script src="./js/services/api-service.js"></script>
+    <script src="./js/services/notification-service.js"></script>
 
-    <!-- Notifications Container -->
-    <div class="notification-container" id="notificationContainer"></div>
+    <!-- Core -->
+    <script src="./js/core/state.js"></script>
+    <script src="./js/core/theme-manager.js"></script>
+    <script src="./js/core/voice-manager.js"></script>
+    <script src="./js/core/history-manager.js"></script>
+    <script src="./js/core/template-manager.js"></script>
+    <script src="./js/core/prompt-generator.js"></script>
+    <script src="./js/core/ai-ranker.js"></script>
+    <script src="./js/core/intent-detector.js"></script>
 
-    <!-- Global Loading Indicator -->
-    <div class="global-loading" id="globalLoading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text" id="loadingText">Generating your prompt...</div>
-        <div class="loading-subtext">This usually takes 2-3 seconds</div>
-    </div>
+    <!-- App (MODULE) -->
+    <script type="module" src="./js/app.js"></script>
 
-    <!-- JavaScript Files (Load in correct order) -->
-    
-    <!-- 1. Utilities First -->
-    <script src="js/utils/constants.js"></script>
-    <script src="js/utils/helpers.js"></script>
-    <script src="js/utils/debounce.js"></script>
-    
-    <!-- 2. Services -->
-    <script src="js/services/storage-service.js"></script>
-    <script src="js/services/api-service.js"></script>
-    <script src="js/services/notification-service.js"></script>
-    
-    <!-- 3. Modules -->
-    <script src="js/modules/state.js"></script>
-    <script src="js/modules/theme-manager.js"></script>
-    <script src="js/modules/voice-manager.js"></script>
-    <script src="js/modules/history-manager.js"></script>
-    <script src="js/modules/template-manager.js"></script>
-    <script src="js/modules/prompt-generator.js"></script>
-    <script src="js/modules/ai-ranker.js"></script>
-    <script src="js/modules/intent-detector.js"></script>
-    
-    <!-- 4. Main Application -->
-    <!-- Choose ONE of these: -->
-    
-    <!-- Option A: For development (uses modular files) -->
-    <script src="js/app.js"></script>
-    
-    <!-- Option B: For production (bundled/minified) -->
-    <!-- 
-    <script src="js/app-bundle.js"></script>
-    -->
-    
 </body>
 </html>
