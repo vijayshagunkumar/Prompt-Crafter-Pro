@@ -1,287 +1,169 @@
-class PromptGenerator {
-    constructor() {
-        this.currentPreset = "default";
-        this.userPresetLocked = false;
-        this.lastPresetSource = "auto";
-        this.lastTaskLabel = "General";
-        this.lastRole = "expert assistant";
-    }
-
-    setPreset(presetId) {
-        if (!window.PRESETS || !window.PRESETS[presetId]) return;
-        
-        this.currentPreset = presetId;
-        this.userPresetLocked = true;
-        this.lastPresetSource = "manual";
-        
-        return presetId;
-    }
-
-    getPreset(presetId = null) {
-        const preset = presetId || this.currentPreset;
-        return window.PRESETS[preset] || window.PRESETS.default;
-    }
-
-    generate(requirement, role = null, preset = null) {
-        if (!requirement || !requirement.trim()) return "";
-        
-        const intentDetector = new (window.IntentDetector || (() => {
-            // Fallback if intent detector not loaded
-            return { getRoleAndPreset: () => ({ role: "expert assistant", preset: "default", label: "General" }) };
-        }))();
-        
-        const { role: detectedRole, preset: detectedPreset } = intentDetector.getRoleAndPreset(requirement);
-        
-        const finalRole = role || detectedRole || this.lastRole;
-        const finalPreset = preset || detectedPreset || this.currentPreset;
-        
-        if (!this.userPresetLocked && detectedPreset && window.PRESETS[detectedPreset]) {
-            this.currentPreset = detectedPreset;
-            this.lastPresetSource = "auto";
+// prompt-generator.js - Generate optimized prompts
+export class PromptGenerator {
+    static styles = {
+        detailed: {
+            name: 'Detailed & Structured',
+            icon: 'fas fa-file-alt',
+            description: 'Comprehensive prompts with clear structure'
+        },
+        concise: {
+            name: 'Concise & Direct',
+            icon: 'fas fa-bolt',
+            description: 'Short and to-the-point prompts'
+        },
+        creative: {
+            name: 'Creative & Engaging',
+            icon: 'fas fa-paint-brush',
+            description: 'Imaginative prompts with creative flair'
+        },
+        professional: {
+            name: 'Professional & Formal',
+            icon: 'fas fa-briefcase',
+            description: 'Business-appropriate formal prompts'
         }
-        
-        this.lastRole = finalRole;
-        this.lastTaskLabel = intentDetector.getRoleAndPreset(requirement).label;
-        
-        const presetFunction = this.getPreset(finalPreset);
-        if (typeof presetFunction === 'function') {
-            return presetFunction(finalRole, requirement);
-        }
-        
-        // Fallback to default if preset is not a function
-        return window.PRESETS.default(finalRole, requirement);
-    }
+    };
 
-    sanitizePrompt(text) {
-        if (!text) return "";
-        let cleaned = text;
+    static templates = {
+        email: `Compose a professional email that:
 
-        // Remove code block markers
-        cleaned = cleaned.replace(/^```[^\n]*\n?/g, "");
-        cleaned = cleaned.replace(/```$/g, "");
+Context: [USER_INPUT]
 
-        const forbiddenLineRegex =
-            /(prompt generator|generate a prompt|convert .*requirement .*prompt|rewrite .*prompt|rewrite .*requirement)/i;
+Requirements:
+1. Use formal but approachable tone
+2. Include clear subject line
+3. Structure with greeting, body, and closing
+4. Be concise (under 200 words)
+5. Include appropriate call-to-action
+6. Add professional signature if needed
 
-        cleaned = cleaned
-            .split("\n")
-            .filter((line) => {
-                const trimmed = line.trim();
-                if (/^```/.test(trimmed)) return false;
-                if (forbiddenLineRegex.test(trimmed)) return false;
-                return true;
-            })
-            .join("\n");
+Please craft an email that achieves the above goals effectively.`,
 
-        cleaned = cleaned.replace(/prompt generator/gi, "assistant");
-        cleaned = cleaned.replace(
-            /generate a prompt/gi,
-            "perform the task and return the final answer"
-        );
+        code: `Write code that:
 
-        return cleaned.trim();
-    }
+Task: [USER_INPUT]
 
-    async generateWithAI(requirement, model = null) {
-        if (!requirement || !requirement.trim()) {
-            throw new Error("Requirement is required");
-        }
+Requirements:
+1. Use proper coding standards and conventions
+2. Include comprehensive comments
+3. Add error handling where appropriate
+4. Optimize for readability and maintainability
+5. Include usage examples if applicable
+6. Consider edge cases and performance
 
-        try {
-            const selectedModel = model || localStorage.getItem("promptcrafter_model") || "gemini-1.5-flash";
-            const modelName = window.MODEL_CONFIG?.[selectedModel]?.name || selectedModel;
-            
-            console.log(`Generating with model: ${selectedModel} (${modelName})`);
+Please provide clean, well-documented code that solves the problem effectively.`,
 
-            // Call Cloudflare Worker
-            const WORKER_URL = window.API_CONFIG?.WORKER_URL || "https://promptcraft-api.vijay-shagunkumar.workers.dev";
-            const API_KEY = window.API_CONFIG?.DEFAULT_API_KEY || "promptcraft-app-secret-123";
-            
-            const response = await fetch(WORKER_URL, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "x-api-key": API_KEY
-                },
-                body: JSON.stringify({ 
-                    prompt: requirement,
-                    model: selectedModel
-                }),
-                signal: AbortSignal.timeout(window.API_CONFIG?.TIMEOUT || 30000)
-            });
+        analysis: `Provide analysis for:
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const errorMsg = errorData.error || `API error: ${response.status}`;
-                throw new Error(errorMsg);
-            }
-            
-            const data = await response.json();
-            let generatedPrompt = data.result || "";
+Data/Context: [USER_INPUT]
 
-            // Sanitize the prompt
-            generatedPrompt = this.sanitizePrompt(generatedPrompt);
+Analysis Requirements:
+1. Provide executive summary first
+2. Include key findings and insights
+3. Use data-driven observations
+4. Structure with clear sections
+5. Highlight trends and patterns
+6. Offer actionable recommendations
+7. Include potential limitations
 
-            return {
-                prompt: generatedPrompt,
-                model: selectedModel,
-                modelName: modelName,
-                provider: data.provider || "unknown",
-                usage: data.usage || {},
-                success: true
-            };
+Please deliver a comprehensive, evidence-based analysis.`,
 
-        } catch (error) {
-            console.error("AI generation error:", error);
-            
-            // Fallback to local generation
-            const localPrompt = this.generate(requirement);
-            
-            return {
-                prompt: localPrompt,
-                model: "local-fallback",
-                modelName: "Local Fallback",
-                provider: "local",
-                usage: {},
-                success: false,
-                error: error.message,
-                fallback: true
-            };
-        }
-    }
+        creative: `Create creative content about:
 
-    // Template management
-    loadTemplates() {
-        try {
-            const saved = localStorage.getItem("promptTemplates");
-            return saved ? JSON.parse(saved) : window.DEFAULT_TEMPLATES || [];
-        } catch (error) {
-            console.error("Error loading templates:", error);
-            return window.DEFAULT_TEMPLATES || [];
-        }
-    }
+Theme: [USER_INPUT]
 
-    saveTemplates(templates) {
-        try {
-            localStorage.setItem("promptTemplates", JSON.stringify(templates));
-            return true;
-        } catch (error) {
-            console.error("Error saving templates:", error);
-            return false;
-        }
-    }
+Creative Requirements:
+1. Use engaging and vivid language
+2. Show, don't tell
+3. Include sensory details
+4. Develop compelling narrative
+5. Maintain consistent tone and style
+6. Be original and imaginative
+7. Evoke appropriate emotions
 
-    addTemplate(template) {
-        const templates = this.loadTemplates();
-        const newTemplate = {
-            ...template,
-            id: template.id || `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            usageCount: 0,
-            createdAt: template.createdAt || Date.now(),
-            isDefault: template.isDefault || false
+Please craft creative content that captivates and engages the audience.`
+    };
+
+    static generate(input, style = 'detailed') {
+        const basePrompt = `You are an expert AI assistant. Your task is to:
+
+User Request: ${input}
+
+Please provide a comprehensive response that addresses all aspects of the request.`;
+
+        const stylePrompts = {
+            detailed: `${basePrompt}
+
+Response Requirements:
+1. Provide thorough, detailed analysis
+2. Structure with clear sections (Introduction, Analysis, Conclusion)
+3. Include specific examples and evidence
+4. Use professional terminology appropriately
+5. Consider multiple perspectives and edge cases
+6. Offer practical, actionable recommendations
+7. Maintain formal but accessible tone
+
+Format: Well-structured with headings and bullet points where appropriate.`,
+
+            concise: `Task: ${input}
+
+Provide a direct, concise response focusing on key points. Use clear language and avoid unnecessary elaboration. Get straight to the point.`,
+
+            creative: `Creative Prompt: ${input}
+
+Approach this with innovative thinking and imaginative solutions. Use engaging language, storytelling elements where appropriate, and focus on unique perspectives. Be original and inspiring in your response.`,
+
+            professional: `Professional Request: ${input}
+
+Prepare a formal, business-appropriate response that includes:
+• Executive summary
+• Background and context
+• Detailed analysis
+• Strategic recommendations
+• Implementation considerations
+• Risk assessment
+• Next steps
+
+Use professional tone and formal structure suitable for business communications.`
         };
-        
-        templates.push(newTemplate);
-        this.saveTemplates(templates);
-        return newTemplate;
+
+        return stylePrompts[style] || stylePrompts.detailed;
     }
 
-    updateTemplate(id, updates) {
-        const templates = this.loadTemplates();
-        const index = templates.findIndex(t => t.id === id);
-        
-        if (index === -1) return null;
-        
-        templates[index] = { ...templates[index], ...updates };
-        this.saveTemplates(templates);
-        return templates[index];
+    static applyTemplate(templateType, input) {
+        const template = this.templates[templateType];
+        if (!template) return this.generate(input);
+
+        return template.replace('[USER_INPUT]', input);
     }
 
-    deleteTemplate(id) {
-        const templates = this.loadTemplates();
-        const filtered = templates.filter(t => t.id !== id);
-        this.saveTemplates(filtered);
-        return filtered;
+    static getStyleInfo(style) {
+        return this.styles[style] || this.styles.detailed;
     }
 
-    useTemplate(id) {
-        const templates = this.loadTemplates();
-        const template = templates.find(t => t.id === id);
-        
-        if (!template) return null;
-        
-        // Increment usage count
-        template.usageCount = (template.usageCount || 0) + 1;
-        this.saveTemplates(templates);
-        
-        return template;
+    static getAllStyles() {
+        return Object.entries(this.styles).map(([key, value]) => ({
+            id: key,
+            ...value
+        }));
     }
 
-    getTemplateCategories() {
-        return window.TEMPLATE_CATEGORIES || {};
+    static getAllTemplates() {
+        return Object.entries(this.templates).map(([key]) => ({
+            id: key,
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            icon: this.getTemplateIcon(key)
+        }));
     }
 
-    filterTemplates(category = "all", searchQuery = "") {
-        let templates = this.loadTemplates();
-        
-        if (category !== "all") {
-            templates = templates.filter(t => t.category === category);
-        }
-        
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            templates = templates.filter(
-                t => t.name.toLowerCase().includes(q) ||
-                    (t.description || "").toLowerCase().includes(q) ||
-                    (t.example || "").toLowerCase().includes(q)
-            );
-        }
-        
-        return templates;
+    static getTemplateIcon(templateType) {
+        const icons = {
+            email: 'fas fa-envelope',
+            code: 'fas fa-code',
+            analysis: 'fas fa-chart-bar',
+            creative: 'fas fa-paint-brush',
+            business: 'fas fa-briefcase',
+            research: 'fas fa-search'
+        };
+        return icons[templateType] || 'fas fa-file-alt';
     }
-
-    // History management
-    saveToHistory(requirement, prompt) {
-        try {
-            const history = this.loadHistory();
-            const historyItem = {
-                id: Date.now(),
-                requirement,
-                prompt,
-                timestamp: new Date().toISOString(),
-                preset: this.currentPreset,
-                role: this.lastRole
-            };
-            
-            history.unshift(historyItem);
-            // Keep only last 50 items
-            const trimmedHistory = history.slice(0, 50);
-            
-            localStorage.setItem("promptHistory", JSON.stringify(trimmedHistory));
-            return historyItem;
-        } catch (error) {
-            console.error("Error saving to history:", error);
-            return null;
-        }
-    }
-
-    loadHistory() {
-        try {
-            const saved = localStorage.getItem("promptHistory");
-            return saved ? JSON.parse(saved) : [];
-        } catch (error) {
-            console.error("Error loading history:", error);
-            return [];
-        }
-    }
-
-    clearHistory() {
-        localStorage.removeItem("promptHistory");
-        return [];
-    }
-}
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PromptGenerator;
 }
