@@ -1,6 +1,4 @@
-## 📁 Project Structure
-
-```bash
+📁 Project Structure
 Prompt-Crafter-Pro
 ├── css
 │   ├── components.css
