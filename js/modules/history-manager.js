@@ -1,107 +1,141 @@
-// history-manager.js - History management
+// js/modules/history-manager.js
 (function() {
     'use strict';
     
     class HistoryManager {
         constructor() {
-            this.storage = new StorageService();
-            this.history = [];
-            this.maxItems = 25;
+            this.storageKey = 'promptcraft_history';
+            this.maxItems = 50; // Maximum number of history items to store
+            this.history = this.loadHistory();
+            
+            console.log('[HistoryManager] Initialized with', this.history.length, 'items');
         }
         
-        async load() {
-            const saved = this.storage.get('history', []);
-            this.history = saved.slice(0, this.maxItems);
-            return this.history;
-        }
-        
-        save(input, output, metadata = {}) {
-            const historyItem = {
-                id: 'prompt_' + Date.now(),
-                timestamp: new Date().toISOString(),
-                input: input,
-                output: output,
-                metadata: {
-                    ...metadata,
-                    length: output.length,
-                    wordCount: output.split(/\s+/).length
+        loadHistory() {
+            try {
+                const saved = localStorage.getItem(this.storageKey);
+                if (saved) {
+                    return JSON.parse(saved);
                 }
-            };
+            } catch (error) {
+                console.error('[HistoryManager] Error loading history:', error);
+            }
             
-            // Add to beginning of array
-            this.history.unshift(historyItem);
+            return [];
+        }
+        
+        saveHistory() {
+            try {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.history));
+                return true;
+            } catch (error) {
+                console.error('[HistoryManager] Error saving history:', error);
+                return false;
+            }
+        }
+        
+        add(item) {
+            // Add timestamp if not present
+            if (!item.timestamp) {
+                item.timestamp = new Date().toISOString();
+            }
             
-            // Keep only maxItems
+            // Add ID if not present
+            if (!item.id) {
+                item.id = Date.now();
+            }
+            
+            // Add to beginning of array (newest first)
+            this.history.unshift(item);
+            
+            // Limit to max items
             if (this.history.length > this.maxItems) {
                 this.history = this.history.slice(0, this.maxItems);
             }
             
-            // Save to storage
-            this.storage.set('history', this.history);
+            this.saveHistory();
+            console.log('[HistoryManager] Added item:', item.id);
             
-            return historyItem;
+            return item.id;
+        }
+        
+        get(id) {
+            return this.history.find(item => item.id == id);
         }
         
         getAll() {
-            return this.history;
+            return [...this.history];
         }
         
-        getById(id) {
-            return this.history.find(item => item.id === id);
-        }
-        
-        getRecent(count = 5) {
-            return this.history.slice(0, count);
-        }
-        
-        delete(id) {
-            const index = this.history.findIndex(item => item.id === id);
-            if (index !== -1) {
-                this.history.splice(index, 1);
-                this.storage.set('history', this.history);
+        remove(id) {
+            const initialLength = this.history.length;
+            this.history = this.history.filter(item => item.id != id);
+            
+            if (this.history.length < initialLength) {
+                this.saveHistory();
+                console.log('[HistoryManager] Removed item:', id);
                 return true;
             }
+            
             return false;
         }
         
         clear() {
             this.history = [];
-            this.storage.remove('history');
+            this.saveHistory();
+            console.log('[HistoryManager] Cleared all history');
+            return true;
         }
         
+        update(id, updates) {
+            const item = this.get(id);
+            if (item) {
+                Object.assign(item, updates);
+                this.saveHistory();
+                console.log('[HistoryManager] Updated item:', id);
+                return true;
+            }
+            return false;
+        }
+        
+        // Search history by input text
         search(query) {
             const searchTerm = query.toLowerCase();
             return this.history.filter(item => 
                 item.input.toLowerCase().includes(searchTerm) ||
-                item.output.toLowerCase().includes(searchTerm) ||
-                item.metadata.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
+                item.prompt.toLowerCase().includes(searchTerm)
             );
         }
         
-        exportHistory() {
-            const data = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                items: this.history
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `promptcraft-history-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        // Get recent items
+        getRecent(limit = 10) {
+            return this.history.slice(0, limit);
         }
         
-        setMaxItems(max) {
-            this.maxItems = max;
-            if (this.history.length > max) {
-                this.history = this.history.slice(0, max);
-                this.storage.set('history', this.history);
+        // Get count
+        count() {
+            return this.history.length;
+        }
+        
+        // Export history
+        export() {
+            return JSON.stringify(this.history, null, 2);
+        }
+        
+        // Import history
+        import(jsonString) {
+            try {
+                const imported = JSON.parse(jsonString);
+                if (Array.isArray(imported)) {
+                    this.history = imported;
+                    this.saveHistory();
+                    console.log('[HistoryManager] Imported', imported.length, 'items');
+                    return true;
+                }
+            } catch (error) {
+                console.error('[HistoryManager] Error importing history:', error);
             }
+            return false;
         }
     }
     
