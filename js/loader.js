@@ -1,4 +1,4 @@
-// loader.js - Load all scripts in correct order
+// loader.js - Updated to include all modules
 (function() {
     'use strict';
     
@@ -14,6 +14,16 @@
         'js/services/notification-service.js',
         'js/services/api-service.js',
         
+        // Modules
+        'js/modules/intent-detector.js',
+        'js/modules/prompt-generator.js',
+        'js/modules/ai-ranker.js',
+        'js/modules/voice-manager.js',
+        'js/modules/template-manager.js',
+        'js/modules/history-manager.js',
+        'js/modules/theme-manager.js',
+        'js/core/events.js',
+        
         // Core
         'js/core/state.js',
         'js/core/app.js'
@@ -22,7 +32,7 @@
     function loadScript(src, callback) {
         const script = document.createElement('script');
         script.src = src;
-        script.async = false; // Load sequentially
+        script.async = false;
         script.onload = function() {
             console.log('Loaded:', src);
             callback();
@@ -40,8 +50,9 @@
             
             // Check if all required classes are available
             const requiredClasses = [
-                'AppState', 'NotificationService', 
-                'StorageService', 'SettingsService', 'ApiService',
+                'AppState', 'EventManager', 'IntentDetector', 'PromptGenerator', 'AIRanker',
+                'VoiceManager', 'ThemeManager', 'HistoryManager', 'TemplateManager',
+                'NotificationService', 'StorageService', 'SettingsService', 'ApiService',
                 'PromptCraftApp'
             ];
             
