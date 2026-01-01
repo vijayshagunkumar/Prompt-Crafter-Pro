@@ -357,61 +357,107 @@
             this.updateButtonStates();
         }
 
-        async preparePrompt() {
-            const inputText = this.elements.userInput?.value.trim() || '';
-            
-            if (!inputText) {
-                this.notificationService.show('Please describe your task first', 'error');
-                return;
+  async preparePrompt() {
+    const inputText = this.elements.userInput?.value.trim() || '';
+    
+    if (!inputText) {
+        this.notificationService.show('Please describe your task first', 'error');
+        return;
+    }
+    
+    if (inputText.length < 10) {
+        this.notificationService.show('Please provide more details for better results', 'warning');
+        return;
+    }
+    
+    // Show loading state
+    this.showLoading(true);
+    this.notificationService.show('Crafting your perfect prompt...', 'info');
+    
+    try {
+        // Use API service to generate prompt
+        const result = await this.apiService.generatePrompt(
+            inputText, 
+            this.state.settings.defaultModel
+        );
+        
+        if (result.success) {
+            // Update output
+            if (this.elements.outputArea) {
+                this.elements.outputArea.textContent = result.content;
+                this.state.originalPrompt = result.content;
+                this.state.promptModified = false;
+                this.state.hasGeneratedPrompt = true;
             }
             
-            if (inputText.length < 10) {
-                this.notificationService.show('Please provide more details for better results', 'warning');
-                return;
+            // Show output section
+            if (this.elements.outputSection) {
+                this.elements.outputSection.classList.add('visible');
             }
             
-            // Show loading state
-            this.showLoading(true);
+            // Update platforms
+            this.updatePlatformCards();
             
-            try {
-                // Simulate AI processing
-                await this.simulateAIProcessing();
-                
-                // Generate enhanced prompt
-                const enhancedPrompt = this.generateEnhancedPrompt(inputText);
-                
-                // Update output
-                if (this.elements.outputArea) {
-                    this.elements.outputArea.textContent = enhancedPrompt;
-                    this.state.originalPrompt = enhancedPrompt;
-                    this.state.promptModified = false;
-                    this.state.hasGeneratedPrompt = true;
-                }
-                
-                // Show output section
-                if (this.elements.outputSection) {
-                    this.elements.outputSection.classList.add('visible');
-                }
-                
-                // Update platforms
-                this.updatePlatformCards();
-                
-                // Update progress and buttons
-                this.updateProgress();
-                this.updateButtonStates();
-                
-                // Save to history
-                this.historyManager.save(inputText, enhancedPrompt);
-                
-                this.notificationService.show('Prompt successfully generated!', 'success');
-                
-            } catch (error) {
-                this.notificationService.show('Failed to generate prompt. Please try again.', 'error');
-                console.error('Prompt generation error:', error);
-            } finally {
-                this.showLoading(false);
-            }
+            // Update progress and buttons
+            this.updateProgress();
+            this.updateButtonStates();
+            
+            // Save to history
+            this.historyManager.save(inputText, result.content);
+            
+            // Generate suggestions
+            this.generateSuggestions();
+            
+            // Scroll to output section
+            this.elements.outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            this.notificationService.show('Prompt successfully generated!', 'success');
+            
+        } else {
+            throw new Error('Failed to generate prompt');
         }
+        
+    } catch (error) {
+        console.error('Prompt generation error:', error);
+        this.notificationService.show('Failed to generate prompt. Please try again.', 'error');
+        
+        // Fallback to local generation
+        await this.generateFallbackPrompt(inputText);
+        
+    } finally {
+        this.showLoading(false);
+    }
+}
+
+async generateFallbackPrompt(inputText) {
+    // Fallback to local generation
+    const enhancedPrompt = this.generateEnhancedPrompt(inputText);
+    
+    // Update output
+    if (this.elements.outputArea) {
+        this.elements.outputArea.textContent = enhancedPrompt;
+        this.state.originalPrompt = enhancedPrompt;
+        this.state.promptModified = false;
+        this.state.hasGeneratedPrompt = true;
+    }
+    
+    // Show output section
+    if (this.elements.outputSection) {
+        this.elements.outputSection.classList.add('visible');
+    }
+    
+    // Update platforms
+    this.updatePlatformCards();
+    
+    // Update progress and buttons
+    this.updateProgress();
+    this.updateButtonStates();
+    
+    // Save to history
+    this.historyManager.save(inputText, enhancedPrompt);
+    
+    this.notificationService.show('Prompt generated offline', 'info');
+}
 
         async prepareFromEditor() {
             const text = this.elements.editorTextarea?.value.trim() || '';
