@@ -494,6 +494,94 @@
             cursor: not-allowed;
         }
 
+        /* ===== FULL SCREEN EDITOR ===== */
+        .full-screen-editor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .full-screen-editor.show {
+            display: flex;
+        }
+
+        .editor-header {
+            padding: var(--spacing-lg) var(--spacing-xl);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .editor-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .editor-save-btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transition: all var(--transition-normal);
+        }
+
+        .editor-save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: var(--spacing-xl);
+            position: relative;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            height: 100%;
+            padding: var(--spacing-xl);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: var(--font-size-base);
+            line-height: 1.6;
+            resize: none;
+            font-family: inherit;
+            transition: all var(--transition-normal);
+        }
+
+        .editor-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
+        }
+
         /* ===== INSPIRATION MODAL ===== */
         #inspirationModal {
             display: none;
@@ -694,20 +782,13 @@
         .platforms-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: var(--spacing-sm);
-            max-height: 400px;
-            overflow-y: auto;
+            gap: var(--spacing-xs);
             padding-right: var(--spacing-xs);
         }
 
-        /* FIX 4: Remove scrollbar and fit all tools */
-        .platforms-grid.no-scroll {
-            max-height: none;
-            overflow-y: visible;
-        }
-
+        /* FIX 2: Remove scrollbar by making grid compact */
         .platform-card {
-            padding: var(--spacing-sm) var(--spacing-md);
+            padding: var(--spacing-sm);
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
@@ -717,7 +798,7 @@
             align-items: center;
             gap: var(--spacing-sm);
             position: relative;
-            min-height: 70px;
+            min-height: 60px;
         }
 
         .platform-card.recommended {
@@ -748,14 +829,14 @@
         }
 
         .platform-icon {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: var(--font-size-base);
+            font-size: var(--font-size-sm);
             flex-shrink: 0;
         }
 
@@ -777,7 +858,11 @@
         .platform-desc {
             font-size: var(--font-size-xs);
             color: var(--text-tertiary);
-            line-height: 1.3;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .platform-card:hover .platform-desc {
@@ -1062,7 +1147,7 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
             width: 100%;
-            max-width: 600px; /* Reduced from 800px */
+            max-width: 600px;
             max-height: 90vh;
             overflow: hidden;
             backdrop-filter: blur(10px);
@@ -1403,6 +1488,25 @@
                 margin-bottom: var(--spacing-sm);
                 justify-content: flex-end;
             }
+            
+            .platform-card {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                min-height: 55px;
+            }
+            
+            .platform-icon {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .platform-name {
+                font-size: var(--font-size-xs);
+            }
+            
+            .platform-desc {
+                font-size: 0.7rem;
+                -webkit-line-clamp: 1;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1527,7 +1631,7 @@
                                 </button>
                             </div>
                             <div class="right-controls">
-                                <!-- FIX 6: Clear Button -->
+                                <!-- Clear Button -->
                                 <button id="clearInputBtn" class="undo-btn" title="Clear All Text">
                                     <i class="fas fa-times"></i>
                                     <span class="action-btn-tooltip">Clear</span>
@@ -1595,7 +1699,7 @@
                             </div>
                         </div>
                         
-                        <!-- FIX 4: AI Tools List -->
+                        <!-- FIX 2: AI Tools List - No Scroll -->
                         <div id="platformsGrid" class="platforms-grid">
                             <!-- Platforms will be loaded dynamically -->
                             <div class="empty-state" id="platformsEmptyState">
@@ -1678,6 +1782,25 @@
             </div>
         </div>
     </footer>
+
+    <!-- Full Screen Editor -->
+    <div id="fullScreenEditor" class="full-screen-editor">
+        <div class="editor-header">
+            <div class="editor-title">
+                <i class="fas fa-expand"></i>
+                <span id="editorTitle">Full Screen Editor</span>
+            </div>
+            <div class="editor-actions">
+                <button id="closeEditorBtn" class="action-btn" title="Close (ESC)">
+                    <i class="fas fa-times"></i>
+                    <span class="action-btn-tooltip">Close</span>
+                </button>
+            </div>
+        </div>
+        <div class="editor-content">
+            <textarea id="editorTextarea" class="editor-textarea" placeholder="Start typing..."></textarea>
+        </div>
+    </div>
 
     <!-- Inspiration Modal -->
     <div id="inspirationModal" class="modal-overlay">
@@ -1852,21 +1975,231 @@
             speechSynthesis: null,
             speechRecognition: null,
             originalSettings: {},
-            settingsChanged: false
+            settingsChanged: false,
+            editorType: null // 'input' or 'output'
         };
 
-        // ===== FIX 1: NEED INSPIRATION BUTTON POSITIONING =====
-        function updateInspirationButtonPosition() {
-            const inspirationBtn = document.getElementById('needInspirationBtn');
-            const maximizeBtn = document.getElementById('maximizeInputBtn');
+        // ===== FIX 1: MAXIMIZE BUTTONS FUNCTIONALITY =====
+        function setupMaximizeButtons() {
+            // Step 1 Maximize Button
+            document.getElementById('maximizeInputBtn').addEventListener('click', () => {
+                const inputText = document.getElementById('userInput').value;
+                document.getElementById('editorTitle').textContent = 'Edit Your Task Description';
+                document.getElementById('editorTextarea').value = inputText;
+                document.getElementById('fullScreenEditor').classList.add('show');
+                state.editorType = 'input';
+                
+                // Focus and select all text
+                setTimeout(() => {
+                    const editor = document.getElementById('editorTextarea');
+                    editor.focus();
+                    editor.select();
+                }, 100);
+            });
             
-            if (window.innerWidth >= 768) {
-                inspirationBtn.style.marginRight = '60px';
-                inspirationBtn.style.marginTop = '-5px';
-            } else {
-                inspirationBtn.style.marginRight = '0';
-                inspirationBtn.style.marginTop = '0';
+            // Step 2 Maximize Button
+            document.getElementById('maximizeOutputBtn').addEventListener('click', () => {
+                const outputText = document.getElementById('outputArea').textContent;
+                document.getElementById('editorTitle').textContent = 'Edit Generated Prompt';
+                document.getElementById('editorTextarea').value = outputText;
+                document.getElementById('fullScreenEditor').classList.add('show');
+                state.editorType = 'output';
+                
+                // Focus and select all text
+                setTimeout(() => {
+                    const editor = document.getElementById('editorTextarea');
+                    editor.focus();
+                    editor.select();
+                }, 100);
+            });
+            
+            // Close Editor Button
+            document.getElementById('closeEditorBtn').addEventListener('click', () => {
+                const editorText = document.getElementById('editorTextarea').value;
+                
+                // Save the edited text back to the appropriate field
+                if (state.editorType === 'input') {
+                    document.getElementById('userInput').value = editorText;
+                    updateCharCounter();
+                } else if (state.editorType === 'output') {
+                    document.getElementById('outputArea').innerHTML = editorText;
+                }
+                
+                document.getElementById('fullScreenEditor').classList.remove('show');
+                state.editorType = null;
+            });
+            
+            // Close editor with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.getElementById('fullScreenEditor').classList.contains('show')) {
+                    document.getElementById('closeEditorBtn').click();
+                }
+            });
+        }
+
+        // ===== FIX 2: NO SCROLL IN STEP 3 =====
+        function loadAIPlatforms(promptContent) {
+            const platformsGrid = document.getElementById('platformsGrid');
+            platformsGrid.innerHTML = '';
+            
+            const platforms = [
+                {
+                    id: 'gemini',
+                    name: 'Google Gemini',
+                    icon: 'fas fa-robot',
+                    desc: 'Advanced AI for complex reasoning',
+                    url: 'https://gemini.google.com',
+                    strengths: ['complex reasoning', 'technical analysis', 'multimodal', 'code'],
+                    score: 0
+                },
+                {
+                    id: 'chatgpt',
+                    name: 'OpenAI ChatGPT',
+                    icon: 'fas fa-comment',
+                    desc: 'Conversational AI for creative tasks',
+                    url: 'https://chat.openai.com',
+                    strengths: ['creative writing', 'conversation', 'general tasks', 'storytelling'],
+                    score: 0
+                },
+                {
+                    id: 'claude',
+                    name: 'Anthropic Claude',
+                    icon: 'fas fa-brain',
+                    desc: 'Safety-focused AI for business',
+                    url: 'https://claude.ai',
+                    strengths: ['business docs', 'analysis', 'safety', 'strategy'],
+                    score: 0
+                },
+                {
+                    id: 'deepseek',
+                    name: 'DeepSeek',
+                    icon: 'fas fa-search',
+                    desc: 'Advanced reasoning model',
+                    url: 'https://deepseek.com',
+                    strengths: ['reasoning', 'research', 'problem-solving', 'analysis'],
+                    score: 0
+                },
+                {
+                    id: 'copilot',
+                    name: 'Microsoft Copilot',
+                    icon: 'fas fa-code',
+                    desc: 'AI assistant for productivity',
+                    url: 'https://copilot.microsoft.com',
+                    strengths: ['productivity', 'development', 'integration', 'business'],
+                    score: 0
+                },
+                {
+                    id: 'grok',
+                    name: 'Grok AI',
+                    icon: 'fas fa-bolt',
+                    desc: 'Real-time AI with current info',
+                    url: 'https://grok.com',
+                    strengths: ['real-time', 'conversational', 'current events', 'humor'],
+                    score: 0
+                }
+            ];
+            
+            // Calculate scores based on prompt content
+            const promptText = promptContent.toLowerCase();
+            
+            platforms.forEach(platform => {
+                platform.score = 0;
+                
+                // Check for keywords matching platform strengths
+                platform.strengths.forEach(strength => {
+                    const strengthKeywords = {
+                        'complex reasoning': ['analyze', 'evaluate', 'compare', 'explain', 'complex', 'detailed'],
+                        'technical analysis': ['code', 'programming', 'technical', 'algorithm', 'function', 'api'],
+                        'multimodal': ['image', 'picture', 'photo', 'visual', 'graph', 'chart'],
+                        'creative writing': ['creative', 'story', 'narrative', 'poem', 'script', 'fiction'],
+                        'conversation': ['chat', 'conversation', 'dialogue', 'discuss', 'talk'],
+                        'business docs': ['business', 'report', 'proposal', 'strategy', 'plan', 'executive'],
+                        'analysis': ['analyze', 'data', 'statistics', 'metrics', 'trends', 'patterns'],
+                        'research': ['research', 'find', 'search', 'investigate', 'study', 'paper'],
+                        'code': ['code', 'program', 'script', 'function', 'algorithm', 'debug'],
+                        'reasoning': ['logic', 'reason', 'deduce', 'infer', 'conclude'],
+                        'problem-solving': ['solve', 'solution', 'fix', 'resolve', 'troubleshoot'],
+                        'productivity': ['efficient', 'fast', 'quick', 'automate', 'streamline'],
+                        'real-time': ['current', 'news', 'update', 'latest', 'now'],
+                        'current events': ['news', 'current', 'trending', 'recent', 'update']
+                    };
+                    
+                    if (strengthKeywords[strength]) {
+                        strengthKeywords[strength].forEach(keyword => {
+                            if (promptText.includes(keyword)) {
+                                platform.score += 2;
+                            }
+                        });
+                    }
+                });
+                
+                // Bonus points for specific patterns
+                if (promptText.includes('code') || promptText.includes('programming')) {
+                    if (platform.id === 'gemini') platform.score += 3;
+                    if (platform.id === 'copilot') platform.score += 3;
+                }
+                if (promptText.includes('creative') || promptText.includes('story')) {
+                    if (platform.id === 'chatgpt') platform.score += 3;
+                }
+                if (promptText.includes('business') || promptText.includes('strategy')) {
+                    if (platform.id === 'claude') platform.score += 3;
+                    if (platform.id === 'copilot') platform.score += 2;
+                }
+                if (promptText.includes('research') || promptText.includes('find')) {
+                    if (platform.id === 'deepseek') platform.score += 3;
+                }
+                if (promptText.includes('real-time') || promptText.includes('current')) {
+                    if (platform.id === 'grok') platform.score += 3;
+                }
+                
+                // Base score for all platforms
+                platform.score += 1;
+            });
+            
+            // Sort by score (highest first)
+            platforms.sort((a, b) => b.score - a.score);
+            
+            // Mark top platform as recommended
+            if (platforms.length > 0 && platforms[0].score > 1) {
+                platforms[0].recommended = true;
             }
+            
+            // Display all platforms
+            platforms.forEach(platform => {
+                const platformCard = document.createElement('div');
+                platformCard.className = `platform-card ${platform.recommended ? 'recommended' : ''}`;
+                platformCard.innerHTML = `
+                    <div class="platform-icon">
+                        <i class="${platform.icon}"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">
+                            ${platform.name}
+                            ${platform.recommended ? '<span class="recommended-tag">Recommended</span>' : ''}
+                        </div>
+                        <div class="platform-desc">${platform.desc}</div>
+                    </div>
+                `;
+                
+                platformCard.addEventListener('click', () => {
+                    navigator.clipboard.writeText(promptContent).then(() => {
+                        showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
+                        setTimeout(() => {
+                            window.open(platform.url, '_blank');
+                        }, 1000);
+                    });
+                });
+                
+                platformsGrid.appendChild(platformCard);
+            });
+            
+            // FIX 2: Ensure no scroll by checking container height
+            const aiCard = document.getElementById('aiCard');
+            const platformsContainer = platformsGrid;
+            
+            // Force no scroll by making sure content fits
+            platformsContainer.style.overflowY = 'hidden';
+            platformsContainer.style.maxHeight = 'none';
         }
 
         // ===== THEME MANAGEMENT =====
@@ -1893,7 +2226,7 @@
             document.getElementById('currentTheme').textContent = displayNames[themeName] || 'Dark';
         }
 
-        // ===== FIX 3: VOICE INPUT =====
+        // ===== VOICE INPUT =====
         function initializeVoice() {
             // Initialize Speech Synthesis
             if ('speechSynthesis' in window) {
@@ -2067,182 +2400,7 @@
             });
         });
 
-        // ===== FIX 4: AI TOOLS WITH NEW ADDITIONS =====
-        function loadAIPlatforms(promptContent) {
-            const platformsGrid = document.getElementById('platformsGrid');
-            platformsGrid.innerHTML = '';
-            
-            const platforms = [
-                {
-                    id: 'gemini',
-                    name: 'Google Gemini',
-                    icon: 'fas fa-robot',
-                    desc: 'Google\'s advanced AI model for complex reasoning and multimodal tasks',
-                    url: 'https://gemini.google.com',
-                    strengths: ['complex reasoning', 'technical analysis', 'multimodal', 'code'],
-                    score: 0
-                },
-                {
-                    id: 'chatgpt',
-                    name: 'OpenAI ChatGPT',
-                    icon: 'fas fa-comment',
-                    desc: 'OpenAI\'s conversational AI for creative writing and general tasks',
-                    url: 'https://chat.openai.com',
-                    strengths: ['creative writing', 'conversation', 'general tasks', 'storytelling'],
-                    score: 0
-                },
-                {
-                    id: 'claude',
-                    name: 'Anthropic Claude',
-                    icon: 'fas fa-brain',
-                    desc: 'Anthropic\'s safety-focused AI for business documents and analysis',
-                    url: 'https://claude.ai',
-                    strengths: ['business docs', 'analysis', 'safety', 'strategy'],
-                    score: 0
-                },
-                // FIX 4: Added new AI tools
-                {
-                    id: 'deepseek',
-                    name: 'DeepSeek',
-                    icon: 'fas fa-search',
-                    desc: 'Advanced reasoning model for complex problem-solving and research',
-                    url: 'https://deepseek.com',
-                    strengths: ['reasoning', 'research', 'problem-solving', 'analysis'],
-                    score: 0
-                },
-                {
-                    id: 'copilot',
-                    name: 'Microsoft Copilot',
-                    icon: 'fas fa-code',
-                    desc: 'Microsoft\'s AI assistant for productivity and development tasks',
-                    url: 'https://copilot.microsoft.com',
-                    strengths: ['productivity', 'development', 'integration', 'business'],
-                    score: 0
-                },
-                {
-                    id: 'grok',
-                    name: 'Grok AI',
-                    icon: 'fas fa-bolt',
-                    desc: 'Real-time AI with up-to-date information and conversational style',
-                    url: 'https://grok.com',
-                    strengths: ['real-time', 'conversational', 'current events', 'humor'],
-                    score: 0
-                },
-                {
-                    id: 'perplexity',
-                    name: 'Perplexity',
-                    icon: 'fas fa-question',
-                    desc: 'AI-powered search assistant for research and fact-finding',
-                    url: 'https://perplexity.ai',
-                    strengths: ['research', 'fact-finding', 'citations', 'data analysis'],
-                    score: 0
-                }
-            ];
-            
-            // Calculate scores based on prompt content
-            const promptText = promptContent.toLowerCase();
-            
-            platforms.forEach(platform => {
-                platform.score = 0;
-                
-                // Check for keywords matching platform strengths
-                platform.strengths.forEach(strength => {
-                    const strengthKeywords = {
-                        'complex reasoning': ['analyze', 'evaluate', 'compare', 'explain', 'complex', 'detailed'],
-                        'technical analysis': ['code', 'programming', 'technical', 'algorithm', 'function', 'api'],
-                        'multimodal': ['image', 'picture', 'photo', 'visual', 'graph', 'chart'],
-                        'creative writing': ['creative', 'story', 'narrative', 'poem', 'script', 'fiction'],
-                        'conversation': ['chat', 'conversation', 'dialogue', 'discuss', 'talk'],
-                        'business docs': ['business', 'report', 'proposal', 'strategy', 'plan', 'executive'],
-                        'analysis': ['analyze', 'data', 'statistics', 'metrics', 'trends', 'patterns'],
-                        'research': ['research', 'find', 'search', 'investigate', 'study', 'paper'],
-                        'code': ['code', 'program', 'script', 'function', 'algorithm', 'debug'],
-                        'reasoning': ['logic', 'reason', 'deduce', 'infer', 'conclude'],
-                        'problem-solving': ['solve', 'solution', 'fix', 'resolve', 'troubleshoot'],
-                        'productivity': ['efficient', 'fast', 'quick', 'automate', 'streamline'],
-                        'real-time': ['current', 'news', 'update', 'latest', 'now'],
-                        'current events': ['news', 'current', 'trending', 'recent', 'update']
-                    };
-                    
-                    if (strengthKeywords[strength]) {
-                        strengthKeywords[strength].forEach(keyword => {
-                            if (promptText.includes(keyword)) {
-                                platform.score += 2;
-                            }
-                        });
-                    }
-                });
-                
-                // Bonus points for specific patterns
-                if (promptText.includes('code') || promptText.includes('programming')) {
-                    if (platform.id === 'gemini') platform.score += 3;
-                    if (platform.id === 'copilot') platform.score += 3;
-                }
-                if (promptText.includes('creative') || promptText.includes('story')) {
-                    if (platform.id === 'chatgpt') platform.score += 3;
-                }
-                if (promptText.includes('business') || promptText.includes('strategy')) {
-                    if (platform.id === 'claude') platform.score += 3;
-                    if (platform.id === 'copilot') platform.score += 2;
-                }
-                if (promptText.includes('research') || promptText.includes('find')) {
-                    if (platform.id === 'deepseek') platform.score += 3;
-                    if (platform.id === 'perplexity') platform.score += 3;
-                }
-                if (promptText.includes('real-time') || promptText.includes('current')) {
-                    if (platform.id === 'grok') platform.score += 3;
-                }
-                
-                // Base score for all platforms
-                platform.score += 1;
-            });
-            
-            // Sort by score (highest first)
-            platforms.sort((a, b) => b.score - a.score);
-            
-            // Mark top platform as recommended
-            if (platforms.length > 0 && platforms[0].score > 1) {
-                platforms[0].recommended = true;
-            }
-            
-            // FIX 4: Remove scrollbar class if platforms fit
-            if (platforms.length <= 6) {
-                platformsGrid.classList.add('no-scroll');
-            } else {
-                platformsGrid.classList.remove('no-scroll');
-            }
-            
-            // Display all platforms
-            platforms.forEach(platform => {
-                const platformCard = document.createElement('div');
-                platformCard.className = `platform-card ${platform.recommended ? 'recommended' : ''}`;
-                platformCard.innerHTML = `
-                    <div class="platform-icon">
-                        <i class="${platform.icon}"></i>
-                    </div>
-                    <div class="platform-info">
-                        <div class="platform-name">
-                            ${platform.name}
-                            ${platform.recommended ? '<span class="recommended-tag">Recommended</span>' : ''}
-                        </div>
-                        <div class="platform-desc">${platform.desc}</div>
-                    </div>
-                `;
-                
-                platformCard.addEventListener('click', () => {
-                    navigator.clipboard.writeText(promptContent).then(() => {
-                        showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
-                        setTimeout(() => {
-                            window.open(platform.url, '_blank');
-                        }, 1000);
-                    });
-                });
-                
-                platformsGrid.appendChild(platformCard);
-            });
-        }
-
-        // ===== FIX 2 & 3: SETTINGS MANAGEMENT =====
+        // ===== SETTINGS MANAGEMENT =====
         function saveOriginalSettings() {
             state.originalSettings = {
                 theme: document.getElementById('themeSelect').value,
@@ -2287,7 +2445,7 @@
             document.getElementById('settingsModal').classList.add('show');
         });
 
-        // FIX 3: Monitor settings changes
+        // Monitor settings changes
         document.querySelectorAll('#themeSelect, #aiModelSelect, #promptStyleSelect, #maxHistoryItems').forEach(select => {
             select.addEventListener('change', checkSettingsChanged);
         });
@@ -2300,7 +2458,7 @@
             document.getElementById('settingsModal').classList.remove('show');
         });
 
-        // FIX 3: Save Settings Button - Now clickable
+        // Save Settings Button
         document.getElementById('saveSettingsBtn').addEventListener('click', () => {
             // Get settings
             state.settings.theme = document.getElementById('themeSelect').value;
@@ -2394,7 +2552,7 @@
                 reuseBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     
-                    // FIX 5: Clear Step 2 when reusing from history
+                    // Clear Step 2 when reusing from history
                     document.getElementById('outputArea').innerHTML = '';
                     document.getElementById('outputSection').classList.remove('show');
                     
@@ -2455,13 +2613,13 @@
             localStorage.setItem('promptcraft_history', JSON.stringify(state.history));
         }
 
-        // ===== FIX 6: CLEAR BUTTON CLEARS STEP 2 =====
+        // ===== CLEAR BUTTON CLEARS STEP 2 =====
         document.getElementById('clearInputBtn').addEventListener('click', () => {
             // Clear Step 1
             document.getElementById('userInput').value = '';
             updateCharCounter();
             
-            // FIX 6: Also clear Step 2
+            // Also clear Step 2
             document.getElementById('outputArea').innerHTML = '';
             document.getElementById('outputSection').classList.remove('show');
             
@@ -2706,6 +2864,9 @@ Depth: Comprehensive analysis`
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', () => {
+            // FIX 1: Setup maximize buttons
+            setupMaximizeButtons();
+            
             // Initialize theme
             initializeTheme();
             
@@ -2720,11 +2881,7 @@ Depth: Comprehensive analysis`
             document.getElementById('micBtn').addEventListener('click', toggleVoiceInput);
             document.getElementById('speakBtn').addEventListener('click', toggleSpeech);
             
-            // FIX 1: Update inspiration button position
-            updateInspirationButtonPosition();
-            window.addEventListener('resize', updateInspirationButtonPosition);
-            
-            // FIX 3: Initialize undo button
+            // Initialize undo button
             document.getElementById('undoPromptBtn').addEventListener('click', () => {
                 if (state.lastPromptState) {
                     document.getElementById('outputArea').innerHTML = state.lastPromptState;
