@@ -1,4 +1,4 @@
-// settings-service.js - Settings management
+// js/services/settings-service.js
 (function() {
     'use strict';
     
@@ -6,66 +6,122 @@
         constructor() {
             this.defaultSettings = {
                 theme: 'dark',
-                voiceLanguage: 'en-US',
+                density: 'comfortable',
+                aiModel: 'gemini-3-flash-preview',
                 autoConvert: true,
                 autoConvertDelay: 5000,
                 promptStyle: 'detailed',
-                maxHistoryItems: 25,
-                notificationDuration: 3000,
-                uiDensity: 'comfortable',
-                defaultModel: 'gemini',
-                interfaceLanguage: 'en'
+                voiceLanguage: 'en-US'
             };
             
-            this.storage = new StorageService();
+            this.settings = this.loadSettings();
+            this.listeners = [];
+            
+            console.log('[SettingsService] Initialized with:', this.settings);
         }
         
-        load() {
-            const saved = this.storage.get('settings');
-            if (saved) {
-                return { ...this.defaultSettings, ...saved };
+        loadSettings() {
+            try {
+                const saved = localStorage.getItem('promptcraft_settings');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    // Merge with defaults to ensure all properties exist
+                    return { ...this.defaultSettings, ...parsed };
+                }
+            } catch (error) {
+                console.error('[SettingsService] Error loading settings:', error);
             }
-            return this.defaultSettings;
+            
+            return { ...this.defaultSettings };
         }
         
-        save(settings) {
-            return this.storage.set('settings', settings);
-        }
-        
-        reset() {
-            this.storage.remove('settings');
-            return this.defaultSettings;
-        }
-        
-        update(key, value) {
-            const current = this.load();
-            const updated = { ...current, [key]: value };
-            this.save(updated);
-            return updated;
+        saveSettings() {
+            try {
+                localStorage.setItem('promptcraft_settings', JSON.stringify(this.settings));
+                console.log('[SettingsService] Settings saved:', this.settings);
+                
+                // Notify listeners
+                this.notifyListeners();
+                
+                return true;
+            } catch (error) {
+                console.error('[SettingsService] Error saving settings:', error);
+                return false;
+            }
         }
         
         get(key) {
-            const settings = this.load();
-            return settings[key];
+            return this.settings[key];
         }
         
-        exportSettings() {
-            const settings = this.load();
-            const data = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                settings: settings
+        set(key, value) {
+            const oldValue = this.settings[key];
+            if (oldValue !== value) {
+                this.settings[key] = value;
+                console.log(`[SettingsService] Setting updated: ${key} = ${value}`);
+                return true;
+            }
+            return false;
+        }
+        
+        updateMultiple(updates) {
+            let changed = false;
+            for (const [key, value] of Object.entries(updates)) {
+                if (this.set(key, value)) {
+                    changed = true;
+                }
+            }
+            
+            if (changed) {
+                this.saveSettings();
+            }
+            
+            return changed;
+        }
+        
+        resetToDefaults() {
+            this.settings = { ...this.defaultSettings };
+            this.saveSettings();
+            console.log('[SettingsService] Reset to defaults');
+            return true;
+        }
+        
+        getAll() {
+            return { ...this.settings };
+        }
+        
+        addListener(callback) {
+            this.listeners.push(callback);
+        }
+        
+        removeListener(callback) {
+            const index = this.listeners.indexOf(callback);
+            if (index > -1) {
+                this.listeners.splice(index, 1);
+            }
+        }
+        
+        notifyListeners() {
+            this.listeners.forEach(callback => {
+                try {
+                    callback(this.settings);
+                } catch (error) {
+                    console.error('[SettingsService] Listener error:', error);
+                }
+            });
+        }
+        
+        // Helper method to get model display name
+        getModelDisplayName(modelValue) {
+            const modelNames = {
+                'gemini-3-flash-preview': 'Google Gemini 3 Flash Preview',
+                'gpt-4o-mini': 'OpenAI GPT-4o Mini',
+                'llama-3.1-8b-instant': 'Meta Llama 3.1 8B (via Groq)',
+                'gemini-1.5-flash-latest': 'Google Gemini 1.5 Flash Latest',
+                'gemini-1.5-flash': 'Google Gemini 1.5 Flash'
             };
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `promptcraft-settings-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            return modelNames[modelValue] || modelValue;
         }
     }
     
