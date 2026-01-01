@@ -1,182 +1,111 @@
-// history-manager.js - History system management
-export class HistoryManager {
-    constructor() {
-        this.maxItems = 25;
-        this.history = this.loadHistory();
-    }
-
-    loadHistory() {
-        try {
-            const saved = localStorage.getItem('promptCraftHistory');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            console.error('Failed to load history:', e);
-            return [];
+// history-manager.js - History management
+(function() {
+    'use strict';
+    
+    class HistoryManager {
+        constructor() {
+            this.storage = new StorageService();
+            this.history = [];
+            this.maxItems = 25;
         }
-    }
-
-    saveHistory() {
-        try {
-            localStorage.setItem('promptCraftHistory', JSON.stringify(this.history));
-        } catch (e) {
-            console.error('Failed to save history:', e);
+        
+        async load() {
+            const saved = this.storage.get('history', []);
+            this.history = saved.slice(0, this.maxItems);
+            return this.history;
         }
-    }
-
-    add(input, output) {
-        const historyItem = {
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            input: this.truncateText(input, 100),
-            output: this.truncateText(output, 200),
-            fullInput: input,
-            fullOutput: output
-        };
-
-        this.history.unshift(historyItem);
-
-        // Limit history size
-        if (this.history.length > this.maxItems) {
-            this.history = this.history.slice(0, this.maxItems);
-        }
-
-        this.saveHistory();
-        return historyItem;
-    }
-
-    getAll() {
-        return this.history;
-    }
-
-    getById(id) {
-        return this.history.find(item => item.id === id);
-    }
-
-    getByDateRange(startDate, endDate) {
-        return this.history.filter(item => {
-            const itemDate = new Date(item.timestamp);
-            return itemDate >= startDate && itemDate <= endDate;
-        });
-    }
-
-    search(query) {
-        const lowerQuery = query.toLowerCase();
-        return this.history.filter(item => 
-            item.input.toLowerCase().includes(lowerQuery) ||
-            item.output.toLowerCase().includes(lowerQuery)
-        );
-    }
-
-    clear() {
-        this.history = [];
-        this.saveHistory();
-        return true;
-    }
-
-    delete(id) {
-        const index = this.history.findIndex(item => item.id === id);
-        if (index !== -1) {
-            const deleted = this.history.splice(index, 1);
-            this.saveHistory();
-            return deleted[0];
-        }
-        return null;
-    }
-
-    updateMaxItems(max) {
-        this.maxItems = max;
-        if (this.history.length > max) {
-            this.history = this.history.slice(0, max);
-            this.saveHistory();
-        }
-    }
-
-    getStats() {
-        return {
-            total: this.history.length,
-            lastUsed: this.history.length > 0 ? new Date(this.history[0].timestamp) : null,
-            oldest: this.history.length > 0 ? new Date(this.history[this.history.length - 1].timestamp) : null
-        };
-    }
-
-    exportHistory() {
-        const data = {
-            version: '1.0',
-            exportDate: new Date().toISOString(),
-            itemCount: this.history.length,
-            items: this.history
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `promptcraft-history-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    importHistory(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    // Validate imported data
-                    if (!data.items || !Array.isArray(data.items)) {
-                        throw new Error('Invalid history file format');
-                    }
-
-                    // Merge with existing history
-                    const newItems = data.items.filter(newItem => 
-                        !this.history.some(existingItem => 
-                            existingItem.id === newItem.id || 
-                            (existingItem.fullInput === newItem.fullInput && 
-                             existingItem.fullOutput === newItem.fullOutput)
-                        )
-                    );
-
-                    this.history = [...newItems, ...this.history];
-                    
-                    // Apply max items limit
-                    if (this.history.length > this.maxItems) {
-                        this.history = this.history.slice(0, this.maxItems);
-                    }
-
-                    this.saveHistory();
-                    resolve(newItems.length);
-                } catch (error) {
-                    reject(error);
+        
+        save(input, output, metadata = {}) {
+            const historyItem = {
+                id: 'prompt_' + Date.now(),
+                timestamp: new Date().toISOString(),
+                input: input,
+                output: output,
+                metadata: {
+                    ...metadata,
+                    length: output.length,
+                    wordCount: output.split(/\s+/).length
                 }
             };
-
-            reader.onerror = () => reject(new Error('Failed to read file'));
-            reader.readAsText(file);
-        });
-    }
-
-    truncateText(text, maxLength) {
-        if (text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
-    }
-
-    formatTimestamp(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins} min ago`;
-        if (diffHours < 24) return `${diffHours} hr ago`;
-        if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            
+            // Add to beginning of array
+            this.history.unshift(historyItem);
+            
+            // Keep only maxItems
+            if (this.history.length > this.maxItems) {
+                this.history = this.history.slice(0, this.maxItems);
+            }
+            
+            // Save to storage
+            this.storage.set('history', this.history);
+            
+            return historyItem;
+        }
         
-        return date.toLocaleDateString();
+        getAll() {
+            return this.history;
+        }
+        
+        getById(id) {
+            return this.history.find(item => item.id === id);
+        }
+        
+        getRecent(count = 5) {
+            return this.history.slice(0, count);
+        }
+        
+        delete(id) {
+            const index = this.history.findIndex(item => item.id === id);
+            if (index !== -1) {
+                this.history.splice(index, 1);
+                this.storage.set('history', this.history);
+                return true;
+            }
+            return false;
+        }
+        
+        clear() {
+            this.history = [];
+            this.storage.remove('history');
+        }
+        
+        search(query) {
+            const searchTerm = query.toLowerCase();
+            return this.history.filter(item => 
+                item.input.toLowerCase().includes(searchTerm) ||
+                item.output.toLowerCase().includes(searchTerm) ||
+                item.metadata.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        exportHistory() {
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                items: this.history
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `promptcraft-history-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        setMaxItems(max) {
+            this.maxItems = max;
+            if (this.history.length > max) {
+                this.history = this.history.slice(0, max);
+                this.storage.set('history', this.history);
+            }
+        }
     }
-}
+    
+    // Export to global scope
+    window.HistoryManager = HistoryManager;
+    
+})();
