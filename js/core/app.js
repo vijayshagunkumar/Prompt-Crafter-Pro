@@ -487,96 +487,132 @@ Use professional tone and formal structure suitable for business communications.
             return promptStyles[style] || promptStyles.detailed;
         }
 
-        updatePlatformCards() {
-            if (!this.elements.platformsGrid) return;
-            
-            this.elements.platformsGrid.innerHTML = '';
-            
-            if (this.elements.platformsEmptyState) {
-                this.elements.platformsEmptyState.style.display = 'none';
-            }
-            
-            // Add platform cards
-            const platforms = [
-                {
-                    id: 'gemini',
-                    name: 'Google Gemini',
-                    icon: 'fab fa-google',
-                    color: '#8B5CF6',
-                    description: 'Advanced reasoning and multimodal capabilities',
-                    tags: ['Multimodal', 'Advanced', 'Google'],
-                    launchUrl: 'https://gemini.google.com/',
-                    recommended: true
-                },
-                {
-                    id: 'chatgpt',
-                    name: 'ChatGPT',
-                    icon: 'fas fa-comment-alt',
-                    color: '#10A37F',
-                    description: 'Industry-leading conversational AI',
-                    tags: ['Conversational', 'Popular', 'OpenAI'],
-                    launchUrl: 'https://chat.openai.com/'
-                },
-                {
-                    id: 'claude',
-                    name: 'Anthropic Claude',
-                    icon: 'fas fa-brain',
-                    color: '#D4A574',
-                    description: 'Constitutional AI with safety focus',
-                    tags: ['Safe', 'Contextual', 'Anthropic'],
-                    launchUrl: 'https://claude.ai/'
-                }
-            ];
-            
-            platforms.forEach(platform => {
-                const platformCard = document.createElement('div');
-                platformCard.className = 'platform-card';
-                platformCard.dataset.platform = platform.id;
-                
-                if (platform.recommended) {
-                    platformCard.classList.add('recommended');
-                }
-                
-                platformCard.innerHTML = `
-                    <div class="platform-logo-container" style="background: ${platform.color}">
-                        <i class="${platform.icon}"></i>
-                    </div>
-                    <div class="platform-info">
-                        <div class="platform-name">
-                            ${platform.name}
-                            ${platform.recommended ? '<span class="recommended-badge">Recommended</span>' : ''}
-                        </div>
-                        <div class="platform-desc">${platform.description}</div>
-                        <div class="platform-tags">
-                            ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
-                        </div>
-                    </div>
-                `;
-                
-                platformCard.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const prompt = this.elements.outputArea?.textContent.trim() || '';
-                    if (prompt && prompt !== this.elements.outputArea?.dataset.placeholder) {
-                        try {
-                            await navigator.clipboard.writeText(prompt);
-                            this.notificationService.show(`Prompt copied! Opening ${platform.name}...`, 'success');
-                            
-                            // Open platform in new tab
-                            setTimeout(() => {
-                                window.open(platform.launchUrl, '_blank');
-                            }, 500);
-                            
-                        } catch (err) {
-                            this.notificationService.show('Failed to copy prompt. Please try again.', 'error');
-                        }
-                    } else {
-                        this.notificationService.show('Please generate a prompt first', 'error');
-                    }
-                });
-                
-                this.elements.platformsGrid.appendChild(platformCard);
-            });
+updatePlatformCards() {
+    if (!this.elements.platformsGrid) return;
+    
+    this.elements.platformsGrid.innerHTML = '';
+    
+    if (this.elements.platformsEmptyState) {
+        this.elements.platformsEmptyState.style.display = 'none';
+    }
+    
+    // Add platform cards - Updated with correct icons and colors
+    const platforms = [
+        {
+            id: 'gemini',
+            name: 'Google Gemini',
+            icon: 'fab fa-google',
+            color: '#8B5CF6',
+            description: 'Advanced reasoning and multimodal capabilities',
+            tags: ['Multimodal', 'Advanced', 'Google'],
+            launchUrl: 'https://gemini.google.com/',
+            recommended: true
+        },
+        {
+            id: 'chatgpt',
+            name: 'ChatGPT',
+            icon: 'fas fa-comment-alt',
+            color: '#10A37F',
+            description: 'Industry-leading conversational AI',
+            tags: ['Conversational', 'Popular', 'OpenAI'],
+            launchUrl: 'https://chat.openai.com/'
+        },
+        {
+            id: 'claude',
+            name: 'Anthropic Claude',
+            icon: 'fas fa-brain',
+            color: '#D4A574',
+            description: 'Constitutional AI with safety focus',
+            tags: ['Safe', 'Contextual', 'Anthropic'],
+            launchUrl: 'https://claude.ai/'
+        },
+        {
+            id: 'perplexity',
+            name: 'Perplexity AI',
+            icon: 'fas fa-search',
+            color: '#6B7280',
+            description: 'Search-enhanced AI with citations',
+            tags: ['Search', 'Citations', 'Real-time'],
+            launchUrl: 'https://www.perplexity.ai/'
+        },
+        {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            icon: 'fas fa-code',
+            color: '#3B82F6',
+            description: 'Code-focused AI with reasoning',
+            tags: ['Code', 'Developer', 'Reasoning'],
+            launchUrl: 'https://chat.deepseek.com/'
+        },
+        {
+            id: 'copilot',
+            name: 'Microsoft Copilot',
+            icon: 'fab fa-microsoft',
+            color: '#0078D4',
+            description: 'Microsoft-powered AI assistant',
+            tags: ['Microsoft', 'Productivity', 'Office'],
+            launchUrl: 'https://copilot.microsoft.com/'
+        },
+        {
+            id: 'grok',
+            name: 'Grok AI',
+            icon: 'fab fa-x-twitter',
+            color: '#FF6B35',
+            description: 'Real-time knowledge AI',
+            tags: ['Real-time', 'X', 'Elon'],
+            launchUrl: 'https://grok.x.ai/'
         }
+    ];
+    
+    platforms.forEach(platform => {
+        const platformCard = document.createElement('div');
+        platformCard.className = 'platform-card';
+        platformCard.dataset.platform = platform.id;
+        
+        if (platform.recommended) {
+            platformCard.classList.add('recommended');
+        }
+        
+        platformCard.innerHTML = `
+            <div class="platform-logo-container" style="background: ${platform.color}">
+                <i class="${platform.icon}"></i>
+            </div>
+            <div class="platform-info">
+                <div class="platform-name">
+                    ${platform.name}
+                    ${platform.recommended ? '<span class="recommended-badge">Recommended</span>' : ''}
+                </div>
+                <div class="platform-desc">${platform.description}</div>
+                <div class="platform-tags">
+                    ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
+                </div>
+            </div>
+        `;
+        
+        platformCard.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const prompt = this.elements.outputArea?.textContent.trim() || '';
+            if (prompt && prompt !== this.elements.outputArea?.dataset.placeholder) {
+                try {
+                    await navigator.clipboard.writeText(prompt);
+                    this.notificationService.show(`Prompt copied! Opening ${platform.name}...`, 'success');
+                    
+                    // Open platform in new tab
+                    setTimeout(() => {
+                        window.open(platform.launchUrl, '_blank');
+                    }, 500);
+                    
+                } catch (err) {
+                    this.notificationService.show('Failed to copy prompt. Please try again.', 'error');
+                }
+            } else {
+                this.notificationService.show('Please generate a prompt first', 'error');
+            }
+        });
+        
+        this.elements.platformsGrid.appendChild(platformCard);
+    });
+}
 
         copyPrompt() {
             const text = this.elements.outputArea?.textContent.trim() || '';
