@@ -16,10 +16,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Your CSS Files -->
+    <!-- If you have ONE styles.css file in css folder -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- OR if you have multiple CSS files as in your structure -->
+    <!-- 
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/ui-components.css">
+    -->
 </head>
 <body class="dark-theme">
     <!-- Header -->
@@ -474,11 +480,15 @@
     <script src="js/modules/intent-detector.js"></script>
     
     <!-- 4. Main Application -->
-    <!-- Development version -->
+    <!-- Choose ONE of these: -->
+    
+    <!-- Option A: For development (uses modular files) -->
     <script src="js/app.js"></script>
     
-    <!-- OR Production bundle (comment out app.js and uncomment below) -->
-    <!-- <script src="js/app-bundle.js"></script> -->
+    <!-- Option B: For production (bundled/minified) -->
+    <!-- 
+    <script src="js/app-bundle.js"></script>
+    -->
     
 </body>
 </html>
