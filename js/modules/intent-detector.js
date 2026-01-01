@@ -1,107 +1,79 @@
-// intent-detector.js - Intent detection from user input
-export class IntentDetector {
-    static patterns = {
-        email: /\b(email|mail|message|follow.?up|respond|inquiry|query)\b/i,
-        code: /\b(code|function|program|script|algorithm|debug|fix|implement|develop|API)\b/i,
-        analysis: /\b(analyze|analysis|report|summary|insight|data|statistics|trends|metrics)\b/i,
-        creative: /\b(story|creative|write|narrative|imaginative|poem|fiction|plot|character)\b/i,
-        business: /\b(business|strategy|plan|proposal|market|sales|marketing|financial|budget)\b/i,
-        research: /\b(research|study|findings|paper|academic|thesis|dissertation|literature)\b/i,
-        technical: /\b(technical|specification|documentation|manual|guide|tutorial|how.?to)\b/i,
-        social: /\b(social|media|post|tweet|caption|content|engagement|viral|trending)\b/i
-    };
-
-    static analyzeInput(text) {
-        if (!text || text.trim().length < 10) {
-            return {
-                taskType: 'general',
-                format: 'free',
-                depth: 'normal',
-                audience: 'general',
-                constraints: [],
-                allIntents: ['general']
+// intent-detector.js - Detect user intent from input
+(function() {
+    'use strict';
+    
+    class IntentDetector {
+        constructor() {
+            this.intents = {
+                writing: ['write', 'create', 'draft', 'compose', 'generate text'],
+                coding: ['code', 'program', 'function', 'script', 'algorithm', 'debug'],
+                analysis: ['analyze', 'analyze', 'evaluate', 'assess', 'review', 'examine'],
+                creative: ['creative', 'story', 'poem', 'art', 'design', 'imagine'],
+                business: ['business', 'strategy', 'plan', 'proposal', 'report', 'presentation'],
+                email: ['email', 'message', 'letter', 'correspondence', 'mail'],
+                research: ['research', 'study', 'investigate', 'explore', 'find'],
+                translation: ['translate', 'convert language', 'interpret'],
+                summary: ['summarize', 'brief', 'overview', 'abstract', 'recap'],
+                explanation: ['explain', 'describe', 'clarify', 'define', 'teach']
             };
         }
-
-        const detectedIntents = [];
-        const constraints = [];
-        let format = 'free';
-        let depth = 'normal';
-        let audience = 'general';
-
-        // Detect intents
-        for (const [intent, pattern] of Object.entries(this.patterns)) {
-            if (pattern.test(text)) {
-                detectedIntents.push(intent);
+        
+        detect(inputText) {
+            const text = inputText.toLowerCase();
+            const detectedIntents = [];
+            
+            for (const [intent, keywords] of Object.entries(this.intents)) {
+                if (keywords.some(keyword => text.includes(keyword))) {
+                    detectedIntents.push(intent);
+                }
             }
+            
+            // If no intent detected, return general
+            if (detectedIntents.length === 0) {
+                detectedIntents.push('general');
+            }
+            
+            // Return primary intent (first detected)
+            return {
+                primary: detectedIntents[0],
+                all: detectedIntents,
+                confidence: this.calculateConfidence(detectedIntents, text)
+            };
         }
-
-        // Detect format
-        if (/\b(email|mail)\b/i.test(text)) format = 'email';
-        if (/\b(code|program|script)\b/i.test(text)) format = 'code';
-        if (/\b(document|report|paper)\b/i.test(text)) format = 'document';
-
-        // Detect depth
-        if (/\b(detailed|comprehensive|thorough|in.?depth)\b/i.test(text)) depth = 'deep';
-        if (/\b(concise|brief|short|quick)\b/i.test(text)) depth = 'normal';
-
-        // Detect audience
-        if (/\b(business|professional|corporate|executive)\b/i.test(text)) audience = 'business';
-        if (/\b(academic|educational|student|research)\b/i.test(text)) audience = 'academic';
-        if (/\b(technical|developer|engineer|programmer)\b/i.test(text)) audience = 'technical';
-
-        // Detect constraints
-        if (/\b(formal|professional|official)\b/i.test(text)) constraints.push('formal');
-        if (/\b(casual|informal|friendly)\b/i.test(text)) constraints.push('casual');
-        if (/\b(persuasive|convincing|sales)\b/i.test(text)) constraints.push('persuasive');
-        if (/\b(educational|explanatory|tutorial)\b/i.test(text)) constraints.push('educational');
-
-        // Determine primary task type
-        let taskType = 'general';
-        if (detectedIntents.includes('email')) taskType = 'email';
-        else if (detectedIntents.includes('code')) taskType = 'code';
-        else if (detectedIntents.includes('analysis')) taskType = 'analysis';
-        else if (detectedIntents.includes('creative')) taskType = 'creative';
-        else if (detectedIntents.includes('business')) taskType = 'business';
-        else if (detectedIntents.length > 0) taskType = detectedIntents[0];
-
-        return {
-            taskType,
-            format,
-            depth,
-            audience,
-            constraints,
-            allIntents: detectedIntents.length > 0 ? detectedIntents : ['general']
-        };
+        
+        calculateConfidence(intents, text) {
+            if (intents.length > 1) {
+                return 0.7; // Multiple intents detected
+            }
+            
+            const wordCount = text.split(/\s+/).length;
+            if (wordCount < 5) {
+                return 0.5; // Low confidence for short inputs
+            }
+            
+            return 0.9; // High confidence for clear intent
+        }
+        
+        getRecommendation(intent) {
+            const recommendations = {
+                writing: 'Consider specifying tone, audience, and key points for better results.',
+                coding: 'Include programming language, framework, and specific requirements.',
+                analysis: 'Provide data sources, metrics, and desired output format.',
+                creative: 'Mention style, mood, themes, and creative constraints.',
+                business: 'Include stakeholders, objectives, timeline, and budget.',
+                email: 'Specify recipient, purpose, tone, and key messages.',
+                research: 'Define scope, sources, methodology, and expected findings.',
+                translation: 'Mention source and target languages, context, and formality.',
+                summary: 'Include source material length, key points, and summary length.',
+                explanation: 'Define target audience, complexity level, and key concepts.',
+                general: 'Provide as much context as possible for optimal results.'
+            };
+            
+            return recommendations[intent] || recommendations.general;
+        }
     }
-
-    static getIntentColor(intent) {
-        const colors = {
-            email: '#3B82F6',      // Blue
-            code: '#10B981',       // Green
-            analysis: '#8B5CF6',   // Purple
-            creative: '#F59E0B',   // Yellow
-            business: '#EF4444',   // Red
-            research: '#06B6D4',   // Cyan
-            technical: '#6366F1',  // Indigo
-            social: '#EC4899',     // Pink
-            general: '#6B7280'     // Gray
-        };
-        return colors[intent] || colors.general;
-    }
-
-    static getIntentIcon(intent) {
-        const icons = {
-            email: 'fas fa-envelope',
-            code: 'fas fa-code',
-            analysis: 'fas fa-chart-bar',
-            creative: 'fas fa-paint-brush',
-            business: 'fas fa-briefcase',
-            research: 'fas fa-search',
-            technical: 'fas fa-cogs',
-            social: 'fas fa-share-alt',
-            general: 'fas fa-question-circle'
-        };
-        return icons[intent] || icons.general;
-    }
-}
+    
+    // Export to global scope
+    window.IntentDetector = IntentDetector;
+    
+})();
