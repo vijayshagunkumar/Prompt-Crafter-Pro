@@ -1,223 +1,138 @@
-/**
- * Template Manager
- * Handles template loading, rendering, and management
- */
-class TemplateManager {
+// template-manager.js - Template library management
+export class TemplateManager {
     constructor() {
-        this.storage = new StorageService();
         this.templates = this.loadTemplates();
-        this.categories = window.TEMPLATE_CATEGORIES || {};
-        this.selectedCategory = 'all';
     }
 
     loadTemplates() {
-        try {
-            const saved = this.storage.get('templates');
-            const defaults = window.DEFAULT_TEMPLATES || [];
-            
-            if (!saved || saved.length === 0) {
-                this.saveTemplates(defaults);
-                return defaults;
+        const defaultTemplates = [
+            {
+                id: 'email_client',
+                name: 'Client Email',
+                category: 'email',
+                description: 'Professional email to a client',
+                content: `Compose a professional email to a client regarding [topic]. The email should:
+1. Start with appropriate greeting
+2. Clearly state the purpose
+3. Provide necessary details
+4. Include call-to-action
+5. End with professional closing
+6. Maintain professional tone throughout`
+            },
+            {
+                id: 'code_function',
+                name: 'Python Function',
+                category: 'code',
+                description: 'Python function with documentation',
+                content: `Write a Python function that [function purpose]. Requirements:
+1. Include docstring with parameters and return values
+2. Add type hints
+3. Include error handling
+4. Add comments for complex logic
+5. Follow PEP 8 style guide
+6. Include usage example`
+            },
+            {
+                id: 'analysis_report',
+                name: 'Data Analysis',
+                category: 'analysis',
+                description: 'Data analysis report template',
+                content: `Analyze the following data and provide insights:
+Data: [describe data]
+Analysis requirements:
+1. Executive summary
+2. Key findings
+3. Trends and patterns
+4. Comparative analysis
+5. Recommendations
+6. Limitations
+7. Visual suggestions`
+            },
+            {
+                id: 'creative_story',
+                name: 'Short Story',
+                category: 'creative',
+                description: 'Creative short story template',
+                content: `Write a short story about [theme]. Include:
+1. Engaging opening
+2. Character development
+3. Plot progression
+4. Conflict and resolution
+5. Descriptive language
+6. Emotional depth
+7. Satisfying conclusion`
             }
-            
-            return saved;
-        } catch (error) {
-            console.error('Error loading templates:', error);
-            return window.DEFAULT_TEMPLATES || [];
-        }
-    }
+        ];
 
-    saveTemplates(templates) {
-        this.templates = templates;
-        return this.storage.set('templates', templates);
-    }
-
-    getTemplates(category = null) {
-        const cat = category || this.selectedCategory;
+        // Load saved templates from localStorage
+        const saved = localStorage.getItem('customTemplates');
+        const customTemplates = saved ? JSON.parse(saved) : [];
         
-        if (cat === 'all') {
-            return this.templates;
-        }
-        
-        return this.templates.filter(t => t.category === cat);
+        return [...defaultTemplates, ...customTemplates];
     }
 
-    getTemplateById(id) {
+    getTemplatesByCategory(category) {
+        if (!category) return this.templates;
+        return this.templates.filter(t => t.category === category);
+    }
+
+    getTemplate(id) {
         return this.templates.find(t => t.id === id);
     }
 
     addTemplate(template) {
-        const newTemplate = {
-            ...template,
-            id: Date.now().toString(),
-            usageCount: 0,
-            createdAt: Date.now(),
-            isDefault: false
-        };
-        
-        this.templates.unshift(newTemplate);
-        this.saveTemplates(this.templates);
-        return newTemplate;
+        template.id = `custom_${Date.now()}`;
+        this.templates.push(template);
+        this.saveTemplates();
+        return template;
     }
 
     updateTemplate(id, updates) {
         const index = this.templates.findIndex(t => t.id === id);
-        if (index === -1) return null;
-        
-        this.templates[index] = { ...this.templates[index], ...updates };
-        this.saveTemplates(this.templates);
-        return this.templates[index];
+        if (index !== -1) {
+            this.templates[index] = { ...this.templates[index], ...updates };
+            this.saveTemplates();
+            return this.templates[index];
+        }
+        return null;
     }
 
     deleteTemplate(id) {
         const index = this.templates.findIndex(t => t.id === id);
-        if (index === -1) return false;
-        
-        this.templates.splice(index, 1);
-        this.saveTemplates(this.templates);
-        return true;
+        if (index !== -1) {
+            const deleted = this.templates.splice(index, 1);
+            this.saveTemplates();
+            return deleted[0];
+        }
+        return null;
     }
 
-    incrementUsage(id) {
-        const template = this.getTemplateById(id);
-        if (!template) return false;
-        
-        template.usageCount = (template.usageCount || 0) + 1;
-        this.saveTemplates(this.templates);
-        return true;
+    saveTemplates() {
+        const customTemplates = this.templates.filter(t => t.id.startsWith('custom_'));
+        localStorage.setItem('customTemplates', JSON.stringify(customTemplates));
     }
 
     getCategories() {
-        return Object.keys(this.categories).map(key => ({
-            id: key,
-            ...this.categories[key]
-        }));
+        const categories = new Set(this.templates.map(t => t.category));
+        return Array.from(categories);
     }
 
-    renderCategoryButtons(container, onClick) {
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        // "All" button
-        const allBtn = document.createElement('button');
-        allBtn.className = `template-category-btn ${this.selectedCategory === 'all' ? 'active' : ''}`;
-        allBtn.dataset.category = 'all';
-        allBtn.innerHTML = `
-            <i class="fas fa-th"></i>
-            <span>All</span>
-        `;
-        allBtn.addEventListener('click', () => {
-            this.selectedCategory = 'all';
-            onClick('all');
-            this.updateCategoryButtons(container);
-        });
-        container.appendChild(allBtn);
-        
-        // Category buttons
-        this.getCategories().forEach(category => {
-            const btn = document.createElement('button');
-            btn.className = `template-category-btn ${this.selectedCategory === category.id ? 'active' : ''}`;
-            btn.dataset.category = category.id;
-            btn.innerHTML = `
-                <i class="fas ${category.icon}"></i>
-                <span>${category.name}</span>
-            `;
-            btn.style.color = category.color;
-            btn.addEventListener('click', () => {
-                this.selectedCategory = category.id;
-                onClick(category.id);
-                this.updateCategoryButtons(container);
-            });
-            container.appendChild(btn);
-        });
+    searchTemplates(query) {
+        const lowerQuery = query.toLowerCase();
+        return this.templates.filter(t => 
+            t.name.toLowerCase().includes(lowerQuery) ||
+            t.description.toLowerCase().includes(lowerQuery) ||
+            t.category.toLowerCase().includes(lowerQuery)
+        );
     }
 
-    updateCategoryButtons(container) {
-        const buttons = container.querySelectorAll('.template-category-btn');
-        buttons.forEach(btn => {
-            const category = btn.dataset.category;
-            btn.classList.toggle('active', category === this.selectedCategory);
-        });
+    applyTemplate(templateId, userInput) {
+        const template = this.getTemplate(templateId);
+        if (!template) return userInput;
+        
+        return template.content.replace('[topic]', userInput)
+                               .replace('[function purpose]', userInput)
+                               .replace('[describe data]', userInput)
+                               .replace('[theme]', userInput);
     }
-
-    renderTemplatesGrid(container, onSelect) {
-        if (!container) return;
-        
-        const templates = this.getTemplates();
-        
-        if (templates.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <p>No templates found</p>
-                </div>
-            `;
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        templates.forEach(template => {
-            const templateEl = document.createElement('div');
-            templateEl.className = 'template-item';
-            templateEl.dataset.id = template.id;
-            
-            const category = this.categories[template.category];
-            
-            templateEl.innerHTML = `
-                <div class="template-icon" style="background: ${category?.color || '#6b7280'}">
-                    <i class="fas ${category?.icon || 'fa-file-alt'}"></i>
-                </div>
-                <div class="template-content">
-                    <div class="template-header">
-                        <h4 class="template-title">${this.escapeHtml(template.name)}</h4>
-                        <span class="template-category" style="color: ${category?.color || '#6b7280'}">
-                            ${category?.name || 'Other'}
-                        </span>
-                    </div>
-                    <p class="template-description">${this.escapeHtml(template.description)}</p>
-                    <div class="template-footer">
-                        <span class="template-usage">
-                            <i class="fas fa-chart-line"></i>
-                            Used ${template.usageCount || 0} times
-                        </span>
-                        <button class="template-use-btn">
-                            <i class="fas fa-plus"></i>
-                            Use
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            const useBtn = templateEl.querySelector('.template-use-btn');
-            useBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.incrementUsage(template.id);
-                onSelect(template);
-            });
-            
-            templateEl.addEventListener('click', () => {
-                this.incrementUsage(template.id);
-                onSelect(template);
-            });
-            
-            container.appendChild(templateEl);
-        });
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-}
-
-// Export for global use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = TemplateManager;
-} else {
-    window.TemplateManager = TemplateManager;
 }
