@@ -1,4 +1,4 @@
-// app.js - Main application (complete version)
+// app.js - Main application (complete version with debounce fix)
 (function() {
     'use strict';
     
@@ -284,6 +284,22 @@
             document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
         }
 
+        // Debounce helper method
+        debounce(func, wait, immediate) {
+            let timeout;
+            return function() {
+                const context = this, args = arguments;
+                const later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                const callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
+        }
+
         async loadSettings() {
             try {
                 const settings = this.settingsService.load();
@@ -319,7 +335,7 @@
             if (this.state.settings.autoConvert && this.state.settings.autoConvertDelay > 0) {
                 const delay = parseInt(this.state.settings.autoConvertDelay);
                 if (this.elements.userInput) {
-                    this.elements.userInput.addEventListener('input', debounce(() => {
+                    this.elements.userInput.addEventListener('input', this.debounce(() => {
                         if (this.elements.userInput.value.trim().length > 10) {
                             this.preparePrompt();
                         }
