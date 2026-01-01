@@ -2522,3 +2522,111 @@ select:focus, .language-select:focus {
         gap: 10px;
     }
 }
+
+/* ============================================
+   MAIN LAYOUT FIXES
+   ============================================ */
+
+/* Fix for Settings Modal Save Button (FIX 9) */
+#saveSettings {
+    transition: all 0.3s ease;
+}
+
+#saveSettings:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#saveSettings:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+}
+
+/* Fix for History Section Scroll (FIX 10) */
+#historySection {
+    scroll-margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+#historySection.visible {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fix for Responsive Maximized Modal */
+@media (max-width: 768px) {
+    .maximize-modal-content {
+        width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .maximize-modal-body {
+        max-height: calc(100vh - 150px);
+        padding: 20px;
+    }
+    
+    .maximized-textarea {
+        min-height: 300px;
+        font-size: 14px;
+    }
+    
+    .maximized-prompt-content {
+        max-height: 400px;
+        font-size: 13px;
+        padding: 15px;
+    }
+    
+    .maximize-modal-footer {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .maximize-modal-footer .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+/* Fix for Step 2 Maximized View - Hide Prepare Prompt (FIX 4) */
+.maximize-modal[data-type="output"] .btn-primary:not(#copyMaximizedPrompt) {
+    display: none !important;
+}
+
+/* Fix for Input Header Layout */
+.step-input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Fix for Undo button in maximized view */
+#maximizeUndoBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Fix for body scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+body.modal-open .app-container {
+    filter: blur(2px);
+    pointer-events: none;
+}
