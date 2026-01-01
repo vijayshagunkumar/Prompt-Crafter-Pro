@@ -1,175 +1,229 @@
-/**
- * Storage Service
- * Handles localStorage with prefixing and error handling
- */
-class StorageService {
-    constructor() {
-        this.prefix = 'promptcraft_';
-    }
-
-    // Core methods
-    set(key, value) {
-        try {
-            localStorage.setItem(this.prefix + key, JSON.stringify(value));
-            return true;
-        } catch (error) {
-            console.error('Storage set error:', error);
-            return false;
+// storage-service.js - localStorage wrapper
+(function() {
+    'use strict';
+    
+    class StorageService {
+        constructor() {
+            this.prefix = 'promptCraft_';
         }
-    }
-
-    get(key, defaultValue = null) {
-        try {
-            const item = localStorage.getItem(this.prefix + key);
-            return item ? JSON.parse(item) : defaultValue;
-        } catch (error) {
-            console.error('Storage get error:', error);
-            return defaultValue;
+        
+        set(key, value) {
+            try {
+                const storageKey = this.prefix + key;
+                const serializedValue = JSON.stringify(value);
+                localStorage.setItem(storageKey, serializedValue);
+                return true;
+            } catch (e) {
+                console.error('Failed to set storage item:', e);
+                return false;
+            }
         }
-    }
-
-    remove(key) {
-        try {
-            localStorage.removeItem(this.prefix + key);
-            return true;
-        } catch (error) {
-            console.error('Storage remove error:', error);
-            return false;
+        
+        get(key, defaultValue = null) {
+            try {
+                const storageKey = this.prefix + key;
+                const item = localStorage.getItem(storageKey);
+                return item ? JSON.parse(item) : defaultValue;
+            } catch (e) {
+                console.error('Failed to get storage item:', e);
+                return defaultValue;
+            }
         }
-    }
-
-    clear(prefix = null) {
-        try {
-            if (prefix) {
-                const keys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith(this.prefix + prefix)) {
-                        keys.push(key);
-                    }
-                }
-                keys.forEach(key => localStorage.removeItem(key));
-            } else {
-                const keys = [];
+        
+        remove(key) {
+            try {
+                const storageKey = this.prefix + key;
+                localStorage.removeItem(storageKey);
+                return true;
+            } catch (e) {
+                console.error('Failed to remove storage item:', e);
+                return false;
+            }
+        }
+        
+        clear() {
+            try {
+                // Only remove items with our prefix
+                const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     if (key.startsWith(this.prefix)) {
-                        keys.push(key);
+                        keysToRemove.push(key);
                     }
                 }
-                keys.forEach(key => localStorage.removeItem(key));
+                
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                return true;
+            } catch (e) {
+                console.error('Failed to clear storage:', e);
+                return false;
             }
-            return true;
-        } catch (error) {
-            console.error('Storage clear error:', error);
-            return false;
+        }
+        
+        exists(key) {
+            const storageKey = this.prefix + key;
+            return localStorage.getItem(storageKey) !== null;
+        }
+        
+        getAll() {
+            const items = {};
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith(this.prefix)) {
+                        const cleanKey = key.substring(this.prefix.length);
+                        items[cleanKey] = JSON.parse(localStorage.getItem(key));
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to get all storage items:', e);
+            }
+            return items;
+        }
+        
+        // Specific methods for our app
+        saveSettings(settings) {
+            return this.set('settings', settings);
+        }
+        
+        loadSettings() {
+            return this.get('settings', {});
+        }
+        
+        saveHistory(history) {
+            return this.set('history', history);
+        }
+        
+        loadHistory() {
+            return this.get('history', []);
+        }
+        
+        saveTemplates(templates) {
+            return this.set('templates', templates);
+        }
+        
+        loadTemplates() {
+            return this.get('templates', []);
+        }
+        
+        // Session storage methods (temporary data)
+        setSession(key, value) {
+            try {
+                const storageKey = this.prefix + key;
+                const serializedValue = JSON.stringify(value);
+                sessionStorage.setItem(storageKey, serializedValue);
+                return true;
+            } catch (e) {
+                console.error('Failed to set session item:', e);
+                return false;
+            }
+        }
+        
+        getSession(key, defaultValue = null) {
+            try {
+                const storageKey = this.prefix + key;
+                const item = sessionStorage.getItem(storageKey);
+                return item ? JSON.parse(item) : defaultValue;
+            } catch (e) {
+                console.error('Failed to get session item:', e);
+                return defaultValue;
+            }
+        }
+        
+        // Utility methods
+        getStorageInfo() {
+            const totalBytes = this.estimateStorageSize();
+            const usedBytes = this.estimateUsedStorage();
+            const availableBytes = totalBytes - usedBytes;
+            
+            return {
+                total: this.formatBytes(totalBytes),
+                used: this.formatBytes(usedBytes),
+                available: this.formatBytes(availableBytes),
+                percentage: Math.round((usedBytes / totalBytes) * 100),
+                itemsCount: Object.keys(this.getAll()).length
+            };
+        }
+        
+        estimateStorageSize() {
+            // Most browsers allow ~5MB per domain
+            return 5 * 1024 * 1024; // 5MB in bytes
+        }
+        
+        estimateUsedStorage() {
+            let total = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                total += key.length + value.length;
+            }
+            return total * 2; // Each character is 2 bytes in UTF-16
+        }
+        
+        formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+        
+        // Backup and restore
+        backup() {
+            const data = this.getAll();
+            data._backupDate = new Date().toISOString();
+            data._version = '1.0';
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `promptcraft-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        async restore(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Clear existing data
+                        this.clear();
+                        
+                        // Restore data
+                        Object.keys(data).forEach(key => {
+                            if (key !== '_backupDate' && key !== '_version') {
+                                this.set(key, data[key]);
+                            }
+                        });
+                        
+                        resolve({
+                            success: true,
+                            itemsRestored: Object.keys(data).length - 2, // Exclude metadata
+                            backupDate: data._backupDate
+                        });
+                    } catch (error) {
+                        reject(new Error('Invalid backup file format'));
+                    }
+                };
+                
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsText(file);
+            });
         }
     }
-
-    // App-specific methods
-    saveSettings(settings) {
-        return this.set('settings', settings);
-    }
-
-    loadSettings() {
-        return this.get('settings', {});
-    }
-
-    saveTheme(theme) {
-        return this.set('theme', theme);
-    }
-
-    loadTheme(defaultValue = 'dark') {
-        return this.get('theme', defaultValue);
-    }
-
-    saveModel(model) {
-        return this.set('model', model);
-    }
-
-    loadModel(defaultValue = 'gemini-1.5-flash') {
-        return this.get('model', defaultValue);
-    }
-
-    saveVoiceLanguage(language) {
-        return this.set('voice_language', language);
-    }
-
-    loadVoiceLanguage(defaultValue = 'en-US') {
-        return this.get('voice_language', defaultValue);
-    }
-
-    saveHistory(history) {
-        return this.set('prompt_history', history);
-    }
-
-    loadHistory(defaultValue = []) {
-        return this.get('prompt_history', defaultValue);
-    }
-
-    saveTemplates(templates) {
-        return this.set('templates', templates);
-    }
-
-    loadTemplates(defaultValue = []) {
-        return this.get('templates', defaultValue);
-    }
-
-    saveAutoDelay(delay) {
-        return this.set('auto_delay', delay);
-    }
-
-    loadAutoDelay(defaultValue = 0) {
-        return this.get('auto_delay', defaultValue);
-    }
-
-    // Voice settings
-    getVoiceSettings() {
-        return {
-            inputLanguage: this.get('voice_input_lang', 'en-US'),
-            outputLanguage: this.get('voice_output_lang', 'en-US'),
-            enabled: this.get('voice_enabled', true)
-        };
-    }
-
-    saveVoiceSettings(settings) {
-        this.set('voice_input_lang', settings.inputLanguage);
-        this.set('voice_output_lang', settings.outputLanguage);
-        this.set('voice_enabled', settings.enabled);
-        return true;
-    }
-
-    // App state
-    saveAppState(state) {
-        return this.set('app_state', state);
-    }
-
-    loadAppState(defaultValue = {}) {
-        return this.get('app_state', defaultValue);
-    }
-
-    // Recent items
-    saveRecentItems(items) {
-        return this.set('recent_items', items);
-    }
-
-    loadRecentItems(defaultValue = []) {
-        return this.get('recent_items', defaultValue);
-    }
-
-    // User preferences
-    savePreferences(prefs) {
-        return this.set('preferences', prefs);
-    }
-
-    loadPreferences(defaultValue = {}) {
-        return this.get('preferences', defaultValue);
-    }
-}
-
-// Export for global use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = StorageService;
-} else {
+    
+    // Export to global scope
     window.StorageService = StorageService;
-}
+    
+})();
