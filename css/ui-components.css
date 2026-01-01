@@ -223,3 +223,133 @@
         transform: rotate(360deg);
     }
 }
+
+/* ============================================
+   BUTTON VARIATIONS (FIX 3, 7)
+   ============================================ */
+.btn-clear {
+    background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-dark) 100%);
+    color: white;
+    border: none;
+}
+
+.btn-clear:hover {
+    background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger-darker) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(var(--danger-rgb), 0.2);
+}
+
+.btn-reset {
+    background: linear-gradient(135deg, var(--success-color) 0%, var(--success-dark) 100%);
+    color: white;
+    border: none;
+}
+
+.btn-reset:hover {
+    background: linear-gradient(135deg, var(--success-dark) 0%, var(--success-darker) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(var(--success-rgb), 0.2);
+}
+
+/* Button States */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Action Button Group */
+.action-button-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* ============================================
+   TEXTAREA ACTIONS (FIX 3)
+   ============================================ */
+.textarea-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 0 5px;
+}
+
+.char-counter {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.char-counter.warning {
+    color: var(--warning-color);
+}
+
+.char-counter.error {
+    color: var(--danger-color);
+}
+
+/* ============================================
+   SETTINGS HEADER STYLES (FIX 8)
+   ============================================ */
+.settings-section-header {
+    color: var(--text-primary) !important; /* Override any blue color */
+    font-size: 1.1rem;
+    margin: 25px 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-section-header i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+/* Settings Group */
+.settings-group {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-group:hover {
+    border-color: var(--border-hover);
+}
+
+/* Settings Item */
+.setting-item {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.setting-description {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-left: 26px;
+    line-height: 1.5;
+}
