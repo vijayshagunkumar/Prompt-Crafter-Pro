@@ -1,3 +1,23 @@
+# 🚀 Prompt Crafter Pro
+
+Prompt Crafter Pro is a modern, enterprise-grade web application that converts **simple ideas into structured, optimized AI prompts** with intelligent recommendations and modular extensibility.
+
+---
+
+## ✨ Key Features
+
+- 🧠 Structured prompt generation
+- 🎙️ Voice input support
+- 🤖 AI tool ranking & recommendations
+- 🕒 Prompt history management
+- 🎨 Theme switching (Light / Dark)
+- 📦 Modular, scalable architecture
+
+---
+
+## 📁 Project Structure
+
+```text
 Prompt-Crafter-Pro
 ├── css
 │   ├── components.css        # Reusable UI components
@@ -21,7 +41,7 @@ Prompt-Crafter-Pro
 │   │
 │   ├── services              # External & internal services
 │   │   ├── api-service.js    # API interaction layer
-│   │   ├── notification-service.js # Toasts, alerts, messages
+│   │   ├── notification-service.js # Toasts & alerts
 │   │   └── storage-service.js# Local/session storage abstraction
 │   │
 │   ├── utils                 # Utility helpers
