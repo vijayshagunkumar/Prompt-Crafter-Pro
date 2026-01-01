@@ -53,6 +53,7 @@
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
             --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
             
             /* Spacing */
             --spacing-xs: 0.5rem;
@@ -317,7 +318,6 @@
         }
 
         /* ===== STEP HEADERS ===== */
-        /* FIX 4: Reduce Step Header Space */
         .step-header {
             display: flex;
             align-items: center;
@@ -358,6 +358,7 @@
             position: relative;
         }
 
+        /* FIX 1: Need Inspiration Button Positioning */
         .input-header {
             display: flex;
             justify-content: space-between;
@@ -365,6 +366,7 @@
             margin-bottom: var(--spacing-md);
             flex-wrap: wrap;
             gap: var(--spacing-sm);
+            position: relative;
         }
 
         .input-label {
@@ -375,9 +377,9 @@
             align-items: center;
             gap: var(--spacing-sm);
             flex: 1;
+            min-height: 40px;
         }
 
-        /* FIX 1 & 5: Need Inspiration Button Placement */
         .inspiration-trigger-btn {
             display: flex;
             align-items: center;
@@ -393,8 +395,9 @@
             transition: all var(--transition-normal);
             white-space: nowrap;
             position: relative;
-            z-index: 10;
+            z-index: 5;
             margin-top: -5px;
+            margin-right: 60px; /* Make space for maximize button */
         }
 
         .inspiration-trigger-btn:hover {
@@ -420,17 +423,15 @@
             z-index: 2;
         }
 
-        /* FIX 8: Action Icons Placement */
         .textarea-top-controls {
             position: absolute;
             top: -40px;
             right: 0;
             display: flex;
             gap: var(--spacing-xs);
-            z-index: 2;
+            z-index: 10;
         }
 
-        /* FIX 4: Increase Textarea Height */
         textarea.textarea {
             width: 100%;
             padding: var(--spacing-lg);
@@ -493,7 +494,7 @@
             cursor: not-allowed;
         }
 
-        /* FIX 7: Modal-Based Inspiration Panel */
+        /* ===== INSPIRATION MODAL ===== */
         #inspirationModal {
             display: none;
             position: fixed;
@@ -612,7 +613,6 @@
             position: relative;
         }
 
-        /* FIX 8: Action Icons in Step 2 */
         .output-actions {
             position: absolute;
             top: -40px;
@@ -622,7 +622,6 @@
             z-index: 2;
         }
 
-        /* FIX 11: Undo Button Visibility */
         #undoPromptBtn {
             position: absolute;
             bottom: var(--spacing-sm);
@@ -657,7 +656,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* FIX 6: Increase Output Area Height */
         .output-area {
             min-height: 250px;
             max-height: 500px;
@@ -680,7 +678,6 @@
             pointer-events: none;
         }
 
-        /* FIX 1: Speech Button States */
         #speakBtn.listening {
             background: var(--danger-color);
             color: white;
@@ -697,14 +694,20 @@
         .platforms-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: var(--spacing-md);
+            gap: var(--spacing-sm);
             max-height: 400px;
             overflow-y: auto;
-            padding-right: var(--spacing-sm);
+            padding-right: var(--spacing-xs);
+        }
+
+        /* FIX 4: Remove scrollbar and fit all tools */
+        .platforms-grid.no-scroll {
+            max-height: none;
+            overflow-y: visible;
         }
 
         .platform-card {
-            padding: var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
@@ -712,11 +715,11 @@
             transition: all var(--transition-normal);
             display: flex;
             align-items: center;
-            gap: var(--spacing-md);
+            gap: var(--spacing-sm);
             position: relative;
+            min-height: 70px;
         }
 
-        /* FIX 2 & 13: AI Tool Ranking */
         .platform-card.recommended {
             border: 2px solid var(--success-color);
             background: linear-gradient(135deg, var(--bg-tertiary), rgba(16, 185, 129, 0.1));
@@ -745,14 +748,14 @@
         }
 
         .platform-icon {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: var(--font-size-lg);
+            font-size: var(--font-size-base);
             flex-shrink: 0;
         }
 
@@ -763,16 +766,18 @@
 
         .platform-name {
             font-weight: 600;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.125rem;
             display: flex;
             align-items: center;
             gap: var(--spacing-xs);
             flex-wrap: wrap;
+            font-size: var(--font-size-sm);
         }
 
         .platform-desc {
             font-size: var(--font-size-xs);
             color: var(--text-tertiary);
+            line-height: 1.3;
         }
 
         .platform-card:hover .platform-desc {
@@ -866,6 +871,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-size: var(--font-size-sm);
         }
 
         .history-meta {
@@ -886,7 +892,6 @@
             opacity: 1;
         }
 
-        /* FIX 4: History Reuse Button */
         .history-reuse-btn {
             width: 32px;
             height: 32px;
@@ -976,7 +981,7 @@
             font-size: var(--font-size-lg);
         }
 
-        /* ===== FIX 6: COMPACT FOOTER ===== */
+        /* ===== COMPACT FOOTER ===== */
         .app-footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
@@ -1051,12 +1056,13 @@
             animation: fadeIn 0.3s ease;
         }
 
+        /* FIX 2: Reduced Settings Panel Width */
         .modal-content {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
             width: 100%;
-            max-width: 800px;
+            max-width: 600px; /* Reduced from 800px */
             max-height: 90vh;
             overflow: hidden;
             backdrop-filter: blur(10px);
@@ -1064,7 +1070,7 @@
         }
 
         .modal-header {
-            padding: var(--spacing-lg) var(--spacing-xl);
+            padding: var(--spacing-lg);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -1081,28 +1087,20 @@
         }
 
         .modal-body {
-            padding: var(--spacing-xl);
+            padding: var(--spacing-lg);
             max-height: calc(90vh - 150px);
             overflow-y: auto;
         }
 
         .modal-footer {
-            padding: var(--spacing-lg) var(--spacing-xl);
+            padding: var(--spacing-lg);
             border-top: 1px solid var(--border-color);
             background: rgba(15, 23, 42, 0.7);
         }
 
-        /* FIX 2: Settings Panel Visual Hierarchy */
+        /* FIX 2: Settings Form Improvements */
         .settings-group {
             margin-bottom: var(--spacing-xl);
-            padding-bottom: var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .settings-group:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
-            padding-bottom: 0;
         }
 
         .settings-group-title {
@@ -1111,16 +1109,13 @@
             gap: var(--spacing-sm);
             font-size: var(--font-size-lg);
             color: var(--text-primary);
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
             padding-bottom: var(--spacing-sm);
             border-bottom: 2px solid var(--primary-color);
-            font-weight: 600;
         }
 
         .setting-item {
             margin-bottom: var(--spacing-lg);
-            padding-left: var(--spacing-md);
-            border-left: 2px solid var(--border-color);
         }
 
         .setting-item:last-child {
@@ -1132,7 +1127,6 @@
             font-weight: 500;
             color: var(--text-primary);
             margin-bottom: var(--spacing-xs);
-            font-size: var(--font-size-base);
         }
 
         select, input {
@@ -1157,17 +1151,18 @@
             font-size: var(--font-size-sm);
             color: var(--text-tertiary);
             margin-top: var(--spacing-xs);
-            line-height: 1.4;
         }
 
+        /* FIX 3: Save Settings Button Fix */
         .settings-actions {
             display: flex;
             justify-content: flex-end;
             gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
         }
 
         .settings-cancel-btn {
-            padding: var(--spacing-sm) var(--spacing-xl);
+            padding: var(--spacing-sm) var(--spacing-lg);
             background: var(--bg-tertiary);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
@@ -1184,7 +1179,7 @@
         }
 
         .settings-save-btn {
-            padding: var(--spacing-sm) var(--spacing-xl);
+            padding: var(--spacing-sm) var(--spacing-lg);
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
@@ -1195,122 +1190,11 @@
             align-items: center;
             gap: var(--spacing-sm);
             transition: all var(--transition-normal);
-        }
-
-        .settings-save-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
 
         .settings-save-btn:not(:disabled):hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-        }
-
-        /* ===== FULL SCREEN EDITOR ===== */
-        .full-screen-editor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg-primary);
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-        }
-
-        .full-screen-editor.show {
-            display: flex;
-        }
-
-        .editor-header {
-            padding: var(--spacing-lg) var(--spacing-xl);
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .editor-title {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            font-size: var(--font-size-xl);
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .editor-actions {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-        }
-
-        .editor-prepare-btn {
-            padding: var(--spacing-sm) var(--spacing-xl);
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            border-radius: var(--radius-md);
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            transition: all var(--transition-normal);
-        }
-
-        .editor-prepare-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .editor-prepare-btn:not(:disabled):hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .editor-content {
-            flex: 1;
-            padding: var(--spacing-xl);
-            position: relative;
-        }
-
-        .editor-controls {
-            position: absolute;
-            bottom: var(--spacing-lg);
-            left: var(--spacing-xl);
-            right: var(--spacing-xl);
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .editor-controls .action-btn,
-        .editor-controls .undo-btn {
-            pointer-events: auto;
-        }
-
-        .editor-textarea {
-            width: 100%;
-            height: 100%;
-            padding: var(--spacing-xl);
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            color: var(--text-primary);
-            font-size: var(--font-size-lg);
-            line-height: 1.8;
-            resize: none;
-            font-family: inherit;
-        }
-
-        .editor-textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
         }
 
         /* ===== NOTIFICATIONS ===== */
@@ -1483,6 +1367,14 @@
             
             .inspiration-trigger-btn {
                 align-self: flex-start;
+                margin-right: 0;
+            }
+            
+            .textarea-top-controls {
+                position: relative;
+                top: 0;
+                margin-top: var(--spacing-sm);
+                justify-content: flex-end;
             }
             
             .inspiration-grid {
@@ -1505,7 +1397,6 @@
                 font-size: var(--font-size-sm);
             }
             
-            .textarea-top-controls,
             .output-actions {
                 position: relative;
                 top: 0;
@@ -1599,7 +1490,6 @@
                         </div>
                     </div>
                     
-                    <!-- FIX 1 & 5: Need Inspiration Button Placement -->
                     <div class="input-header">
                         <div class="input-label">
                             <i class="fas fa-question-circle"></i>
@@ -1615,7 +1505,6 @@
                         <!-- Character Counter -->
                         <div class="char-counter" id="charCounter">0/5000</div>
                         
-                        <!-- FIX 8: Action Icons Placement -->
                         <div class="textarea-top-controls">
                             <button id="maximizeInputBtn" class="action-btn" title="Maximize Editor">
                                 <i class="fas fa-expand"></i>
@@ -1623,7 +1512,6 @@
                             </button>
                         </div>
                         
-                        <!-- FIX 4: Increased Textarea Height -->
                         <textarea 
                             id="userInput"
                             class="textarea"
@@ -1633,14 +1521,13 @@
                         
                         <div class="textarea-controls">
                             <div class="left-controls">
-                                <!-- FIX 3: Voice Input Button -->
                                 <button id="micBtn" class="action-btn" title="Voice Input">
                                     <i class="fas fa-microphone"></i>
                                     <span class="action-btn-tooltip">Voice Input</span>
                                 </button>
                             </div>
                             <div class="right-controls">
-                                <!-- Clear Button -->
+                                <!-- FIX 6: Clear Button -->
                                 <button id="clearInputBtn" class="undo-btn" title="Clear All Text">
                                     <i class="fas fa-times"></i>
                                     <span class="action-btn-tooltip">Clear</span>
@@ -1664,9 +1551,7 @@
                     </div>
                     
                     <div class="output-container">
-                        <!-- FIX 8: Action Icons in Step 2 -->
                         <div class="output-actions">
-                            <!-- FIX 1 & 7: Volume Button Toggle -->
                             <button id="speakBtn" class="action-btn" title="Listen to Prompt">
                                 <i class="fas fa-volume-up"></i>
                                 <span class="action-btn-tooltip">Listen</span>
@@ -1685,13 +1570,11 @@
                             </button>
                         </div>
                         
-                        <!-- FIX 11: Undo Button -->
                         <button id="undoPromptBtn" class="save-btn" title="Undo Last Change">
                             <i class="fas fa-undo"></i>
                             Undo
                         </button>
                         
-                        <!-- FIX 6: Increased Output Area Height -->
                         <div 
                             id="outputArea" 
                             class="output-area" 
@@ -1712,7 +1595,7 @@
                             </div>
                         </div>
                         
-                        <!-- FIX 2 & 13: AI Tools with Dynamic Ranking -->
+                        <!-- FIX 4: AI Tools List -->
                         <div id="platformsGrid" class="platforms-grid">
                             <!-- Platforms will be loaded dynamically -->
                             <div class="empty-state" id="platformsEmptyState">
@@ -1726,7 +1609,7 @@
                 </div>
             </div>
             
-            <!-- FIX 4: History Section -->
+            <!-- History Section -->
             <div class="history-section" id="historySection">
                 <div class="card">
                     <div class="history-header">
@@ -1770,7 +1653,7 @@
         </div>
     </main>
 
-    <!-- FIX 6: Compact Footer -->
+    <!-- Compact Footer -->
     <footer class="app-footer">
         <div class="container">
             <div class="footer-content">
@@ -1796,7 +1679,7 @@
         </div>
     </footer>
 
-    <!-- FIX 7: Inspiration Modal -->
+    <!-- Inspiration Modal -->
     <div id="inspirationModal" class="modal-overlay">
         <div class="inspiration-modal-content">
             <div class="inspiration-modal-header">
@@ -1865,7 +1748,6 @@
             </div>
             
             <div class="modal-body">
-                <!-- FIX 2: Improved Settings Hierarchy -->
                 <div class="settings-group">
                     <h3 class="settings-group-title">
                         <i class="fas fa-palette"></i>
@@ -1932,51 +1814,18 @@
                         <p class="helper-text">Maximum number of prompts to save in history</p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="modal-footer">
+                
+                <!-- FIX 3: Save Settings Button with proper spacing -->
                 <div class="settings-actions">
                     <button id="cancelSettingsBtn" class="settings-cancel-btn">
                         Cancel
                     </button>
-                    <button id="saveSettingsBtn" class="settings-save-btn" disabled>
+                    <button id="saveSettingsBtn" class="settings-save-btn">
                         <i class="fas fa-save"></i>
                         Save Changes
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Full Screen Editor -->
-    <div id="fullScreenEditor" class="full-screen-editor">
-        <div class="editor-header">
-            <div class="editor-title">
-                <i class="fas fa-edit"></i>
-                <span id="editorTitle">Edit Prompt</span>
-            </div>
-            <div class="editor-actions">
-                <!-- FIX 14: Prepare Prompt in Maximized View -->
-                <button id="editorPrepareBtn" class="editor-prepare-btn" disabled>
-                    <i class="fas fa-magic"></i>
-                    Prepare Prompt
-                </button>
-                <button id="closeEditorBtn" class="action-btn" title="Close (ESC)">
-                    <i class="fas fa-times"></i>
-                    <span class="action-btn-tooltip">Close</span>
-                </button>
-            </div>
-        </div>
-        <div class="editor-content">
-            <div class="editor-controls">
-                <div class="editor-left-controls">
-                    <button id="editorUndoBtn" class="undo-btn" title="Undo Last Change" disabled>
-                        <i class="fas fa-undo"></i>
-                        <span class="action-btn-tooltip">Undo</span>
-                    </button>
-                </div>
-            </div>
-            <textarea id="editorTextarea" class="editor-textarea" placeholder="Start typing your prompt..."></textarea>
         </div>
     </div>
 
@@ -1996,14 +1845,29 @@
             lastPromptState: null,
             history: JSON.parse(localStorage.getItem('promptcraft_history') || '[]'),
             settings: JSON.parse(localStorage.getItem('promptcraft_settings') || '{}'),
-            isMaximized: false,
             isSpeaking: false,
             isListening: false,
             currentTheme: 'dark',
             undoStack: [],
             speechSynthesis: null,
-            speechRecognition: null
+            speechRecognition: null,
+            originalSettings: {},
+            settingsChanged: false
         };
+
+        // ===== FIX 1: NEED INSPIRATION BUTTON POSITIONING =====
+        function updateInspirationButtonPosition() {
+            const inspirationBtn = document.getElementById('needInspirationBtn');
+            const maximizeBtn = document.getElementById('maximizeInputBtn');
+            
+            if (window.innerWidth >= 768) {
+                inspirationBtn.style.marginRight = '60px';
+                inspirationBtn.style.marginTop = '-5px';
+            } else {
+                inspirationBtn.style.marginRight = '0';
+                inspirationBtn.style.marginTop = '0';
+            }
+        }
 
         // ===== THEME MANAGEMENT =====
         function initializeTheme() {
@@ -2122,7 +1986,7 @@
             }
         }
 
-        // ===== FIX 1 & 7: SPEECH PLAYBACK =====
+        // ===== SPEECH PLAYBACK =====
         function toggleSpeech() {
             const outputText = document.getElementById('outputArea').textContent.trim();
             if (!outputText || outputText.includes('Your optimized prompt will appear here')) {
@@ -2133,14 +1997,12 @@
             const speakBtn = document.getElementById('speakBtn');
             
             if (state.isSpeaking) {
-                // FIX 1: User-friendly stop message
                 state.speechSynthesis.cancel();
                 state.isSpeaking = false;
                 speakBtn.classList.remove('listening');
                 speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
                 showNotification('Playback stopped', 'info');
             } else {
-                // Start speech
                 if (state.speechSynthesis) {
                     const utterance = new SpeechSynthesisUtterance(outputText);
                     utterance.rate = 0.9;
@@ -2163,12 +2025,7 @@
                         state.isSpeaking = false;
                         speakBtn.classList.remove('listening');
                         speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
-                        // FIX 1: Better error message
-                        if (event.error === 'interrupted') {
-                            showNotification('Playback interrupted', 'info');
-                        } else {
-                            showNotification('Unable to read prompt', 'warning');
-                        }
+                        showNotification('Unable to read prompt', 'warning');
                     };
                     
                     state.speechSynthesis.speak(utterance);
@@ -2179,7 +2036,7 @@
             }
         }
 
-        // ===== FIX 7: INSPIRATION MODAL =====
+        // ===== INSPIRATION MODAL =====
         document.getElementById('needInspirationBtn').addEventListener('click', () => {
             document.getElementById('inspirationModal').classList.add('show');
         });
@@ -2210,7 +2067,7 @@
             });
         });
 
-        // ===== FIX 2 & 13: AI TOOLS RANKING =====
+        // ===== FIX 4: AI TOOLS WITH NEW ADDITIONS =====
         function loadAIPlatforms(promptContent) {
             const platformsGrid = document.getElementById('platformsGrid');
             platformsGrid.innerHTML = '';
@@ -2243,10 +2100,38 @@
                     strengths: ['business docs', 'analysis', 'safety', 'strategy'],
                     score: 0
                 },
+                // FIX 4: Added new AI tools
+                {
+                    id: 'deepseek',
+                    name: 'DeepSeek',
+                    icon: 'fas fa-search',
+                    desc: 'Advanced reasoning model for complex problem-solving and research',
+                    url: 'https://deepseek.com',
+                    strengths: ['reasoning', 'research', 'problem-solving', 'analysis'],
+                    score: 0
+                },
+                {
+                    id: 'copilot',
+                    name: 'Microsoft Copilot',
+                    icon: 'fas fa-code',
+                    desc: 'Microsoft\'s AI assistant for productivity and development tasks',
+                    url: 'https://copilot.microsoft.com',
+                    strengths: ['productivity', 'development', 'integration', 'business'],
+                    score: 0
+                },
+                {
+                    id: 'grok',
+                    name: 'Grok AI',
+                    icon: 'fas fa-bolt',
+                    desc: 'Real-time AI with up-to-date information and conversational style',
+                    url: 'https://grok.com',
+                    strengths: ['real-time', 'conversational', 'current events', 'humor'],
+                    score: 0
+                },
                 {
                     id: 'perplexity',
                     name: 'Perplexity',
-                    icon: 'fas fa-search',
+                    icon: 'fas fa-question',
                     desc: 'AI-powered search assistant for research and fact-finding',
                     url: 'https://perplexity.ai',
                     strengths: ['research', 'fact-finding', 'citations', 'data analysis'],
@@ -2254,10 +2139,9 @@
                 }
             ];
             
-            // FIX 13: Dynamic ranking based on prompt content
+            // Calculate scores based on prompt content
             const promptText = promptContent.toLowerCase();
             
-            // Calculate scores based on prompt content
             platforms.forEach(platform => {
                 platform.score = 0;
                 
@@ -2272,7 +2156,12 @@
                         'business docs': ['business', 'report', 'proposal', 'strategy', 'plan', 'executive'],
                         'analysis': ['analyze', 'data', 'statistics', 'metrics', 'trends', 'patterns'],
                         'research': ['research', 'find', 'search', 'investigate', 'study', 'paper'],
-                        'code': ['code', 'program', 'script', 'function', 'algorithm', 'debug']
+                        'code': ['code', 'program', 'script', 'function', 'algorithm', 'debug'],
+                        'reasoning': ['logic', 'reason', 'deduce', 'infer', 'conclude'],
+                        'problem-solving': ['solve', 'solution', 'fix', 'resolve', 'troubleshoot'],
+                        'productivity': ['efficient', 'fast', 'quick', 'automate', 'streamline'],
+                        'real-time': ['current', 'news', 'update', 'latest', 'now'],
+                        'current events': ['news', 'current', 'trending', 'recent', 'update']
                     };
                     
                     if (strengthKeywords[strength]) {
@@ -2287,15 +2176,21 @@
                 // Bonus points for specific patterns
                 if (promptText.includes('code') || promptText.includes('programming')) {
                     if (platform.id === 'gemini') platform.score += 3;
+                    if (platform.id === 'copilot') platform.score += 3;
                 }
                 if (promptText.includes('creative') || promptText.includes('story')) {
                     if (platform.id === 'chatgpt') platform.score += 3;
                 }
                 if (promptText.includes('business') || promptText.includes('strategy')) {
                     if (platform.id === 'claude') platform.score += 3;
+                    if (platform.id === 'copilot') platform.score += 2;
                 }
                 if (promptText.includes('research') || promptText.includes('find')) {
+                    if (platform.id === 'deepseek') platform.score += 3;
                     if (platform.id === 'perplexity') platform.score += 3;
+                }
+                if (promptText.includes('real-time') || promptText.includes('current')) {
+                    if (platform.id === 'grok') platform.score += 3;
                 }
                 
                 // Base score for all platforms
@@ -2306,8 +2201,15 @@
             platforms.sort((a, b) => b.score - a.score);
             
             // Mark top platform as recommended
-            if (platforms.length > 0) {
+            if (platforms.length > 0 && platforms[0].score > 1) {
                 platforms[0].recommended = true;
+            }
+            
+            // FIX 4: Remove scrollbar class if platforms fit
+            if (platforms.length <= 6) {
+                platformsGrid.classList.add('no-scroll');
+            } else {
+                platformsGrid.classList.remove('no-scroll');
             }
             
             // Display all platforms
@@ -2341,6 +2243,27 @@
         }
 
         // ===== FIX 2 & 3: SETTINGS MANAGEMENT =====
+        function saveOriginalSettings() {
+            state.originalSettings = {
+                theme: document.getElementById('themeSelect').value,
+                aiModel: document.getElementById('aiModelSelect').value,
+                promptStyle: document.getElementById('promptStyleSelect').value,
+                maxHistoryItems: document.getElementById('maxHistoryItems').value
+            };
+        }
+
+        function checkSettingsChanged() {
+            const currentSettings = {
+                theme: document.getElementById('themeSelect').value,
+                aiModel: document.getElementById('aiModelSelect').value,
+                promptStyle: document.getElementById('promptStyleSelect').value,
+                maxHistoryItems: document.getElementById('maxHistoryItems').value
+            };
+            
+            state.settingsChanged = JSON.stringify(currentSettings) !== JSON.stringify(state.originalSettings);
+            document.getElementById('saveSettingsBtn').disabled = !state.settingsChanged;
+        }
+
         document.getElementById('settingsBtn').addEventListener('click', () => {
             // Load saved settings
             if (state.settings.theme) {
@@ -2356,7 +2279,17 @@
                 document.getElementById('maxHistoryItems').value = state.settings.maxHistoryItems;
             }
             
+            // Save original settings for comparison
+            saveOriginalSettings();
+            state.settingsChanged = false;
+            document.getElementById('saveSettingsBtn').disabled = true;
+            
             document.getElementById('settingsModal').classList.add('show');
+        });
+
+        // FIX 3: Monitor settings changes
+        document.querySelectorAll('#themeSelect, #aiModelSelect, #promptStyleSelect, #maxHistoryItems').forEach(select => {
+            select.addEventListener('change', checkSettingsChanged);
         });
 
         document.getElementById('closeSettingsBtn').addEventListener('click', () => {
@@ -2367,6 +2300,7 @@
             document.getElementById('settingsModal').classList.remove('show');
         });
 
+        // FIX 3: Save Settings Button - Now clickable
         document.getElementById('saveSettingsBtn').addEventListener('click', () => {
             // Get settings
             state.settings.theme = document.getElementById('themeSelect').value;
@@ -2382,6 +2316,11 @@
             
             // Update model indicator
             updateModelDisplay(state.settings.aiModel);
+            
+            // Save original settings
+            saveOriginalSettings();
+            state.settingsChanged = false;
+            document.getElementById('saveSettingsBtn').disabled = true;
             
             // Close modal
             document.getElementById('settingsModal').classList.remove('show');
@@ -2399,7 +2338,7 @@
             document.getElementById('currentModel').textContent = modelNames[model] || 'Google Gemini';
         }
 
-        // ===== FIX 4: HISTORY NAVIGATION =====
+        // ===== HISTORY NAVIGATION =====
         document.getElementById('historyBtn').addEventListener('click', () => {
             const historySection = document.getElementById('historySection');
             historySection.classList.add('show');
@@ -2452,12 +2391,36 @@
                 
                 // Add reuse functionality
                 const reuseBtn = historyItem.querySelector('.history-reuse-btn');
-                reuseBtn.addEventListener('click', () => {
+                reuseBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // FIX 5: Clear Step 2 when reusing from history
+                    document.getElementById('outputArea').innerHTML = '';
+                    document.getElementById('outputSection').classList.remove('show');
+                    
+                    // Load input
                     document.getElementById('userInput').value = item.input;
                     updateCharCounter();
-                    document.getElementById('outputArea').innerHTML = item.prompt;
-                    document.getElementById('outputSection').classList.add('show');
+                    
+                    // Hide history
                     document.getElementById('historySection').classList.remove('show');
+                    
+                    // Reset buttons
+                    document.getElementById('stickyPrepareBtn').classList.remove('hidden');
+                    document.getElementById('stickyResetBtn').classList.add('hidden');
+                    
+                    // Reset progress
+                    document.getElementById('progressFill').style.width = '33%';
+                    
+                    // Clear platforms
+                    document.getElementById('platformsGrid').innerHTML = `
+                        <div class="empty-state" id="platformsEmptyState">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <p>Generate a prompt first to see AI platform options</p>
+                        </div>
+                    `;
                     
                     // Scroll to Step 1
                     document.querySelector('.input-section').scrollIntoView({ 
@@ -2465,14 +2428,7 @@
                         block: 'start' 
                     });
                     
-                    // Update buttons
-                    document.getElementById('stickyPrepareBtn').classList.add('hidden');
-                    document.getElementById('stickyResetBtn').classList.remove('hidden');
-                    
-                    // Load platforms
-                    loadAIPlatforms(item.prompt);
-                    
-                    showNotification('Prompt loaded from history', 'success');
+                    showNotification('Prompt loaded from history - Ready for new generation', 'success');
                 });
                 
                 historyList.appendChild(historyItem);
@@ -2499,73 +2455,34 @@
             localStorage.setItem('promptcraft_history', JSON.stringify(state.history));
         }
 
-        // ===== FIX 11: UNDO BUTTON =====
-        function updateUndoButton() {
-            const undoBtn = document.getElementById('undoPromptBtn');
-            if (state.lastPromptState) {
-                undoBtn.classList.add('show');
-            } else {
-                undoBtn.classList.remove('show');
-            }
-        }
-
-        document.getElementById('undoPromptBtn').addEventListener('click', () => {
-            if (state.lastPromptState) {
-                document.getElementById('outputArea').innerHTML = state.lastPromptState;
-                state.lastPromptState = null;
-                updateUndoButton();
-                showNotification('Undo completed', 'info');
-            }
-        });
-
-        // ===== FIX 14: MAXIMIZED VIEW PREPARE PROMPT =====
-        document.getElementById('maximizeInputBtn').addEventListener('click', () => {
-            const input = document.getElementById('userInput').value;
-            document.getElementById('editorTitle').textContent = 'Step 1: Describe Your Task';
-            document.getElementById('editorTextarea').value = input;
-            document.getElementById('editorPrepareBtn').disabled = !input.trim();
-            document.getElementById('fullScreenEditor').classList.add('show');
-            state.isMaximized = true;
-            
-            setTimeout(() => {
-                document.getElementById('editorTextarea').focus();
-            }, 100);
-        });
-
-        document.getElementById('maximizeOutputBtn').addEventListener('click', () => {
-            const output = document.getElementById('outputArea').textContent;
-            document.getElementById('editorTitle').textContent = 'Step 2: Generated Prompt';
-            document.getElementById('editorTextarea').value = output;
-            document.getElementById('editorPrepareBtn').style.display = 'none';
-            document.getElementById('fullScreenEditor').classList.add('show');
-            state.isMaximized = true;
-            
-            setTimeout(() => {
-                document.getElementById('editorTextarea').focus();
-            }, 100);
-        });
-
-        document.getElementById('closeEditorBtn').addEventListener('click', () => {
-            document.getElementById('fullScreenEditor').classList.remove('show');
-            state.isMaximized = false;
-            
-            // Restore Prepare Prompt button visibility
-            document.getElementById('editorPrepareBtn').style.display = 'flex';
-        });
-
-        document.getElementById('editorPrepareBtn').addEventListener('click', () => {
-            const editorText = document.getElementById('editorTextarea').value;
-            document.getElementById('userInput').value = editorText;
+        // ===== FIX 6: CLEAR BUTTON CLEARS STEP 2 =====
+        document.getElementById('clearInputBtn').addEventListener('click', () => {
+            // Clear Step 1
+            document.getElementById('userInput').value = '';
             updateCharCounter();
             
-            // Close editor and return to main screen
-            document.getElementById('fullScreenEditor').classList.remove('show');
-            state.isMaximized = false;
+            // FIX 6: Also clear Step 2
+            document.getElementById('outputArea').innerHTML = '';
+            document.getElementById('outputSection').classList.remove('show');
             
-            // Start prompt generation
-            setTimeout(() => {
-                document.getElementById('stickyPrepareBtn').click();
-            }, 300);
+            // Reset buttons
+            document.getElementById('stickyPrepareBtn').classList.remove('hidden');
+            document.getElementById('stickyResetBtn').classList.add('hidden');
+            
+            // Reset progress
+            document.getElementById('progressFill').style.width = '33%';
+            
+            // Clear platforms
+            document.getElementById('platformsGrid').innerHTML = `
+                <div class="empty-state" id="platformsEmptyState">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <p>Generate a prompt first to see AI platform options</p>
+                </div>
+            `;
+            
+            showNotification('Input and generated prompt cleared', 'info');
         });
 
         // ===== PROMPT GENERATION =====
@@ -2607,7 +2524,7 @@
                 // Add to history
                 addToHistory(inputText, mockPrompt, style);
                 
-                // FIX 2 & 13: Load AI platforms with dynamic ranking
+                // Load AI platforms with dynamic ranking
                 loadAIPlatforms(mockPrompt);
                 
                 showNotification('Prompt successfully generated!', 'success');
@@ -2639,13 +2556,6 @@
             `;
             
             showNotification('Application reset', 'success');
-        });
-
-        // Clear button
-        document.getElementById('clearInputBtn').addEventListener('click', () => {
-            document.getElementById('userInput').value = '';
-            updateCharCounter();
-            showNotification('Input cleared', 'info');
         });
 
         // Copy button
@@ -2785,6 +2695,15 @@ Depth: Comprehensive analysis`
             }
         }
 
+        function updateUndoButton() {
+            const undoBtn = document.getElementById('undoPromptBtn');
+            if (state.lastPromptState) {
+                undoBtn.classList.add('show');
+            } else {
+                undoBtn.classList.remove('show');
+            }
+        }
+
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize theme
@@ -2801,18 +2720,23 @@ Depth: Comprehensive analysis`
             document.getElementById('micBtn').addEventListener('click', toggleVoiceInput);
             document.getElementById('speakBtn').addEventListener('click', toggleSpeech);
             
-            // Initialize editor textarea
-            document.getElementById('editorTextarea').addEventListener('input', function() {
-                const hasText = this.value.trim().length > 0;
-                document.getElementById('editorPrepareBtn').disabled = !hasText;
+            // FIX 1: Update inspiration button position
+            updateInspirationButtonPosition();
+            window.addEventListener('resize', updateInspirationButtonPosition);
+            
+            // FIX 3: Initialize undo button
+            document.getElementById('undoPromptBtn').addEventListener('click', () => {
+                if (state.lastPromptState) {
+                    document.getElementById('outputArea').innerHTML = state.lastPromptState;
+                    state.lastPromptState = null;
+                    updateUndoButton();
+                    showNotification('Undo completed', 'info');
+                }
             });
             
             // Close modals with Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    if (document.getElementById('fullScreenEditor').classList.contains('show')) {
-                        document.getElementById('closeEditorBtn').click();
-                    }
                     if (document.getElementById('settingsModal').classList.contains('show')) {
                         document.getElementById('closeSettingsBtn').click();
                     }
