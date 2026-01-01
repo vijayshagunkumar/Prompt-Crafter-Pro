@@ -295,10 +295,10 @@
 
         /* ===== MAIN CONTENT ===== */
         .app-container {
-            padding: var(--spacing-2xl) 0;
+            padding: var(--spacing-xl) 0;
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-2xl);
+            gap: var(--spacing-xl);
         }
 
         /* ===== CARDS ===== */
@@ -306,7 +306,7 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
-            padding: var(--spacing-xl);
+            padding: var(--spacing-lg);
             backdrop-filter: blur(10px);
             transition: all var(--transition-normal);
         }
@@ -317,16 +317,19 @@
         }
 
         /* ===== STEP HEADERS ===== */
+        /* FIX 4: Reduce Step Header Space */
         .step-header {
             display: flex;
             align-items: center;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-xl);
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .step-number {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border-radius: var(--radius-lg);
@@ -334,19 +337,19 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: var(--font-size-lg);
+            font-size: var(--font-size-base);
             flex-shrink: 0;
         }
 
         .step-title {
-            font-size: var(--font-size-xl);
+            font-size: var(--font-size-lg);
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.125rem;
         }
 
         .step-subtitle {
-            font-size: var(--font-size-sm);
+            font-size: var(--font-size-xs);
             color: var(--text-tertiary);
         }
 
@@ -358,36 +361,40 @@
         .input-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: var(--spacing-md);
             flex-wrap: wrap;
             gap: var(--spacing-sm);
         }
 
         .input-label {
-            font-size: var(--font-size-lg);
+            font-size: var(--font-size-base);
             color: var(--text-primary);
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: var(--spacing-sm);
+            flex: 1;
         }
 
-        /* FIX 1: Need Inspiration Button Placement */
+        /* FIX 1 & 5: Need Inspiration Button Placement */
         .inspiration-trigger-btn {
             display: flex;
             align-items: center;
             gap: var(--spacing-sm);
-            padding: var(--spacing-sm) var(--spacing-md);
+            padding: var(--spacing-xs) var(--spacing-md);
             background: linear-gradient(135deg, var(--warning-color), #d97706);
             color: white;
             border: none;
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             font-size: var(--font-size-sm);
             font-weight: 500;
             cursor: pointer;
             transition: all var(--transition-normal);
             white-space: nowrap;
+            position: relative;
+            z-index: 10;
+            margin-top: -5px;
         }
 
         .inspiration-trigger-btn:hover {
@@ -413,21 +420,17 @@
             z-index: 2;
         }
 
-        /* FIX 8: Action Icons Size & Placement */
+        /* FIX 8: Action Icons Placement */
         .textarea-top-controls {
             position: absolute;
-            top: -45px;
+            top: -40px;
             right: 0;
             display: flex;
             gap: var(--spacing-xs);
             z-index: 2;
         }
 
-        .textarea-top-controls .action-btn {
-            width: 36px;
-            height: 36px;
-        }
-
+        /* FIX 4: Increase Textarea Height */
         textarea.textarea {
             width: 100%;
             padding: var(--spacing-lg);
@@ -440,7 +443,7 @@
             resize: vertical;
             font-family: inherit;
             transition: all var(--transition-normal);
-            min-height: 180px;
+            min-height: 200px;
         }
 
         textarea.textarea:focus {
@@ -490,54 +493,55 @@
             cursor: not-allowed;
         }
 
-        /* FIX 5: Inspiration Options - Compact Design */
-        .inspiration-panel {
-            margin-top: var(--spacing-md);
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-lg);
+        /* FIX 7: Modal-Based Inspiration Panel */
+        #inspirationModal {
             display: none;
-            animation: slideDown 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-overlay);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
         }
 
-        .inspiration-panel.show {
-            display: block;
+        #inspirationModal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
         }
 
-        .inspiration-header {
+        .inspiration-modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .inspiration-modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--spacing-lg);
         }
 
-        .inspiration-title {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            font-size: var(--font-size-lg);
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .close-inspiration-btn {
-            background: none;
-            border: none;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            padding: var(--spacing-xs);
-            transition: color var(--transition-fast);
-        }
-
-        .close-inspiration-btn:hover {
-            color: var(--text-primary);
+        .inspiration-modal-body {
+            padding: var(--spacing-lg);
+            max-height: calc(80vh - 140px);
+            overflow-y: auto;
         }
 
         .inspiration-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: var(--spacing-sm);
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--spacing-md);
         }
 
         .inspiration-item {
@@ -545,7 +549,7 @@
             flex-direction: column;
             align-items: center;
             gap: var(--spacing-sm);
-            padding: var(--spacing-md);
+            padding: var(--spacing-lg);
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
@@ -553,7 +557,7 @@
             color: var(--text-primary);
             transition: all var(--transition-normal);
             cursor: pointer;
-            min-height: 100px;
+            min-height: 120px;
             justify-content: center;
         }
 
@@ -565,14 +569,14 @@
         }
 
         .inspiration-icon {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             background: rgba(var(--primary-color), 0.1);
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: var(--font-size-lg);
+            font-size: var(--font-size-xl);
             color: var(--primary-color);
         }
 
@@ -611,16 +615,11 @@
         /* FIX 8: Action Icons in Step 2 */
         .output-actions {
             position: absolute;
-            top: -45px;
+            top: -40px;
             right: 0;
             display: flex;
             gap: var(--spacing-xs);
             z-index: 2;
-        }
-
-        .output-actions .action-btn {
-            width: 36px;
-            height: 36px;
         }
 
         /* FIX 11: Undo Button Visibility */
@@ -636,11 +635,11 @@
             font-size: var(--font-size-sm);
             font-weight: 500;
             cursor: pointer;
-            display: flex;
+            display: none;
             align-items: center;
             gap: var(--spacing-xs);
             transition: all var(--transition-normal);
-            display: none;
+            z-index: 10;
         }
 
         #undoPromptBtn.show {
@@ -653,9 +652,15 @@
             transform: translateY(-2px);
         }
 
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* FIX 6: Increase Output Area Height */
         .output-area {
-            min-height: 200px;
-            max-height: 400px;
+            min-height: 250px;
+            max-height: 500px;
             padding: var(--spacing-lg);
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -675,7 +680,7 @@
             pointer-events: none;
         }
 
-        /* FIX 7: Read/Volume Button Toggle */
+        /* FIX 1: Speech Button States */
         #speakBtn.listening {
             background: var(--danger-color);
             color: white;
@@ -685,7 +690,7 @@
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.05); }
         }
 
         /* ===== STEP 3: AI PLATFORMS SIDEBAR ===== */
@@ -711,14 +716,7 @@
             position: relative;
         }
 
-        .platform-card:hover {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* FIX 13: Recommended AI Tool */
+        /* FIX 2 & 13: AI Tool Ranking */
         .platform-card.recommended {
             border: 2px solid var(--success-color);
             background: linear-gradient(135deg, var(--bg-tertiary), rgba(16, 185, 129, 0.1));
@@ -760,6 +758,7 @@
 
         .platform-info {
             flex: 1;
+            min-width: 0;
         }
 
         .platform-name {
@@ -768,6 +767,7 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-xs);
+            flex-wrap: wrap;
         }
 
         .platform-desc {
@@ -781,12 +781,12 @@
 
         .empty-state {
             text-align: center;
-            padding: var(--spacing-2xl);
+            padding: var(--spacing-xl);
             color: var(--text-tertiary);
         }
 
         .empty-state-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: var(--spacing-md);
             opacity: 0.5;
         }
@@ -800,6 +800,11 @@
         .history-section.show {
             display: block;
             animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .history-header {
@@ -881,7 +886,7 @@
             opacity: 1;
         }
 
-        /* FIX 4: Reuse History Items */
+        /* FIX 4: History Reuse Button */
         .history-reuse-btn {
             width: 32px;
             height: 32px;
@@ -903,12 +908,12 @@
 
         .history-empty {
             text-align: center;
-            padding: var(--spacing-2xl);
+            padding: var(--spacing-xl);
             color: var(--text-tertiary);
         }
 
         .history-empty-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: var(--spacing-md);
             opacity: 0.5;
         }
@@ -921,8 +926,8 @@
         /* ===== STICKY CTA BUTTONS ===== */
         .sticky-cta-container {
             position: fixed;
-            bottom: var(--spacing-xl);
-            right: var(--spacing-xl);
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
             display: flex;
             flex-direction: column;
             gap: var(--spacing-sm);
@@ -930,7 +935,7 @@
         }
 
         .sticky-cta {
-            padding: var(--spacing-md) var(--spacing-xl);
+            padding: var(--spacing-md) var(--spacing-lg);
             border: none;
             border-radius: var(--radius-lg);
             font-size: var(--font-size-base);
@@ -971,18 +976,18 @@
             font-size: var(--font-size-lg);
         }
 
-        /* ===== FOOTER ===== */
+        /* ===== FIX 6: COMPACT FOOTER ===== */
         .app-footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
-            padding: var(--spacing-xl) 0;
-            margin-top: var(--spacing-2xl);
+            padding: var(--spacing-lg) 0;
+            margin-top: var(--spacing-xl);
         }
 
         .footer-content {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xl);
+            gap: var(--spacing-md);
         }
 
         .footer-info {
@@ -990,7 +995,7 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: var(--spacing-lg);
+            gap: var(--spacing-md);
         }
 
         .footer-item {
@@ -1013,19 +1018,16 @@
             animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
         .footer-copyright {
             text-align: center;
             color: var(--text-muted);
-            font-size: var(--font-size-sm);
+            font-size: var(--font-size-xs);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--border-color);
         }
 
         .footer-copyright p:first-child {
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: 0.25rem;
         }
 
         /* ===== SETTINGS MODAL ===== */
@@ -1092,8 +1094,8 @@
 
         /* FIX 2: Settings Panel Visual Hierarchy */
         .settings-group {
-            margin-bottom: var(--spacing-2xl);
-            padding-bottom: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -1113,8 +1115,6 @@
             padding-bottom: var(--spacing-sm);
             border-bottom: 2px solid var(--primary-color);
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .setting-item {
@@ -1455,7 +1455,7 @@
             }
             
             .inspiration-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             }
         }
 
@@ -1481,8 +1481,12 @@
                 gap: var(--spacing-md);
             }
             
+            .inspiration-trigger-btn {
+                align-self: flex-start;
+            }
+            
             .inspiration-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             }
             
             .footer-info {
@@ -1512,7 +1516,7 @@
 
         @media (max-width: 480px) {
             .inspiration-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
             
             .step-header {
@@ -1526,14 +1530,14 @@
             }
             
             .inspiration-item {
-                padding: var(--spacing-sm);
-                min-height: 80px;
+                padding: var(--spacing-md);
+                min-height: 100px;
             }
             
             .inspiration-icon {
-                width: 32px;
-                height: 32px;
-                font-size: var(--font-size-base);
+                width: 40px;
+                height: 40px;
+                font-size: var(--font-size-lg);
             }
             
             .inspiration-text {
@@ -1595,7 +1599,7 @@
                         </div>
                     </div>
                     
-                    <!-- FIX 1: Need Inspiration Button Placement -->
+                    <!-- FIX 1 & 5: Need Inspiration Button Placement -->
                     <div class="input-header">
                         <div class="input-label">
                             <i class="fas fa-question-circle"></i>
@@ -1619,16 +1623,17 @@
                             </button>
                         </div>
                         
+                        <!-- FIX 4: Increased Textarea Height -->
                         <textarea 
                             id="userInput"
                             class="textarea"
                             placeholder="Example: Create a comprehensive project proposal for implementing an AI-powered customer service chatbot that reduces response time by 40% while maintaining customer satisfaction scores..."
-                            rows="5"
+                            rows="8"
                         ></textarea>
                         
                         <div class="textarea-controls">
                             <div class="left-controls">
-                                <!-- Voice Input Button -->
+                                <!-- FIX 3: Voice Input Button -->
                                 <button id="micBtn" class="action-btn" title="Voice Input">
                                     <i class="fas fa-microphone"></i>
                                     <span class="action-btn-tooltip">Voice Input</span>
@@ -1641,57 +1646,6 @@
                                     <span class="action-btn-tooltip">Clear</span>
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- FIX 5: Inspiration Panel -->
-                    <div class="inspiration-panel" id="inspirationPanel">
-                        <div class="inspiration-header">
-                            <div class="inspiration-title">
-                                <i class="fas fa-lightbulb"></i>
-                                Inspiration Templates
-                            </div>
-                            <button class="close-inspiration-btn" id="closeInspirationBtn" title="Close">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="inspiration-grid">
-                            <a href="#" class="inspiration-item" data-type="email">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                                <div class="inspiration-text">Business Email</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="code">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-code"></i>
-                                </div>
-                                <div class="inspiration-text">Code Generation</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="analysis">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-chart-bar"></i>
-                                </div>
-                                <div class="inspiration-text">Data Analysis</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="creative">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-paint-brush"></i>
-                                </div>
-                                <div class="inspiration-text">Creative Writing</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="strategy">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-chess"></i>
-                                </div>
-                                <div class="inspiration-text">Business Strategy</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="research">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <div class="inspiration-text">Research Summary</div>
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -1712,7 +1666,7 @@
                     <div class="output-container">
                         <!-- FIX 8: Action Icons in Step 2 -->
                         <div class="output-actions">
-                            <!-- FIX 7: Volume Button Toggle -->
+                            <!-- FIX 1 & 7: Volume Button Toggle -->
                             <button id="speakBtn" class="action-btn" title="Listen to Prompt">
                                 <i class="fas fa-volume-up"></i>
                                 <span class="action-btn-tooltip">Listen</span>
@@ -1737,7 +1691,7 @@
                             Undo
                         </button>
                         
-                        <!-- Output Area -->
+                        <!-- FIX 6: Increased Output Area Height -->
                         <div 
                             id="outputArea" 
                             class="output-area" 
@@ -1758,9 +1712,9 @@
                             </div>
                         </div>
                         
-                        <!-- FIX 9: AI Tools Visibility -->
+                        <!-- FIX 2 & 13: AI Tools with Dynamic Ranking -->
                         <div id="platformsGrid" class="platforms-grid">
-                            <!-- Platforms will be added dynamically -->
+                            <!-- Platforms will be loaded dynamically -->
                             <div class="empty-state" id="platformsEmptyState">
                                 <div class="empty-state-icon">
                                     <i class="fas fa-robot"></i>
@@ -1816,7 +1770,7 @@
         </div>
     </main>
 
-    <!-- Footer -->
+    <!-- FIX 6: Compact Footer -->
     <footer class="app-footer">
         <div class="container">
             <div class="footer-content">
@@ -1842,6 +1796,61 @@
         </div>
     </footer>
 
+    <!-- FIX 7: Inspiration Modal -->
+    <div id="inspirationModal" class="modal-overlay">
+        <div class="inspiration-modal-content">
+            <div class="inspiration-modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Inspiration Templates
+                </div>
+                <button id="closeInspirationModalBtn" class="action-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="inspiration-modal-body">
+                <div class="inspiration-grid">
+                    <a href="#" class="inspiration-item" data-type="email">
+                        <div class="inspiration-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="inspiration-text">Business Email</div>
+                    </a>
+                    <a href="#" class="inspiration-item" data-type="code">
+                        <div class="inspiration-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="inspiration-text">Code Generation</div>
+                    </a>
+                    <a href="#" class="inspiration-item" data-type="analysis">
+                        <div class="inspiration-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="inspiration-text">Data Analysis</div>
+                    </a>
+                    <a href="#" class="inspiration-item" data-type="creative">
+                        <div class="inspiration-icon">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <div class="inspiration-text">Creative Writing</div>
+                    </a>
+                    <a href="#" class="inspiration-item" data-type="strategy">
+                        <div class="inspiration-icon">
+                            <i class="fas fa-chess"></i>
+                        </div>
+                        <div class="inspiration-text">Business Strategy</div>
+                    </a>
+                    <a href="#" class="inspiration-item" data-type="research">
+                        <div class="inspiration-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="inspiration-text">Research Summary</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal-overlay">
         <div class="modal-content">
@@ -1856,7 +1865,7 @@
             </div>
             
             <div class="modal-body">
-                <!-- Appearance Settings -->
+                <!-- FIX 2: Improved Settings Hierarchy -->
                 <div class="settings-group">
                     <h3 class="settings-group-title">
                         <i class="fas fa-palette"></i>
@@ -1988,18 +1997,15 @@
             history: JSON.parse(localStorage.getItem('promptcraft_history') || '[]'),
             settings: JSON.parse(localStorage.getItem('promptcraft_settings') || '{}'),
             isMaximized: false,
-            currentStep: 1,
-            settingsChanged: false,
             isSpeaking: false,
             isListening: false,
-            speechSynthesis: null,
-            speechRecognition: null,
+            currentTheme: 'dark',
             undoStack: [],
-            redoStack: []
+            speechSynthesis: null,
+            speechRecognition: null
         };
 
         // ===== THEME MANAGEMENT =====
-        // FIX 3: Theme Switching
         function initializeTheme() {
             const savedTheme = localStorage.getItem('promptcraft_theme') || 'dark';
             applyTheme(savedTheme);
@@ -2023,15 +2029,14 @@
             document.getElementById('currentTheme').textContent = displayNames[themeName] || 'Dark';
         }
 
-        // ===== VOICE MANAGEMENT =====
-        // FIX 6 & 7: Voice Input & Output
+        // ===== FIX 3: VOICE INPUT =====
         function initializeVoice() {
-            // Check for speech synthesis support
+            // Initialize Speech Synthesis
             if ('speechSynthesis' in window) {
                 state.speechSynthesis = window.speechSynthesis;
             }
 
-            // Check for speech recognition support
+            // Initialize Speech Recognition
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
                 state.speechRecognition = new SpeechRecognition();
@@ -2041,14 +2046,25 @@
                 
                 state.speechRecognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript;
-                    handleVoiceTranscript(transcript);
+                    document.getElementById('userInput').value += ' ' + transcript;
+                    updateCharCounter();
+                    state.isListening = false;
+                    updateMicButton();
+                    showNotification('Voice input captured', 'success');
                 };
                 
                 state.speechRecognition.onerror = (event) => {
                     console.error('Speech recognition error:', event.error);
                     state.isListening = false;
                     updateMicButton();
-                    showNotification('Voice input failed. Please try again.', 'error');
+                    
+                    if (event.error === 'not-allowed') {
+                        showNotification('Microphone access denied. Please allow microphone permissions.', 'error');
+                    } else if (event.error === 'audio-capture') {
+                        showNotification('No microphone found. Please check your audio devices.', 'error');
+                    } else {
+                        showNotification('Voice input failed. Please try again.', 'error');
+                    }
                 };
                 
                 state.speechRecognition.onend = () => {
@@ -2079,7 +2095,7 @@
                 showNotification('Listening... Speak now.', 'info');
             } catch (error) {
                 console.error('Failed to start voice input:', error);
-                showNotification('Failed to start voice input.', 'error');
+                showNotification('Failed to start voice input. Please try again.', 'error');
             }
         }
 
@@ -2091,33 +2107,38 @@
             }
         }
 
-        function handleVoiceTranscript(transcript) {
-            const activeElement = document.activeElement;
-            if (activeElement.id === 'userInput' || activeElement.id === 'editorTextarea') {
-                activeElement.value += transcript;
-                if (activeElement.id === 'userInput') {
-                    updateCharCounter();
-                }
+        function updateMicButton() {
+            const micBtn = document.getElementById('micBtn');
+            if (state.isListening) {
+                micBtn.style.background = 'var(--danger-color)';
+                micBtn.style.color = 'white';
+                micBtn.style.borderColor = 'var(--danger-color)';
+                micBtn.innerHTML = '<i class="fas fa-stop"></i><span class="action-btn-tooltip">Stop</span>';
+            } else {
+                micBtn.style.background = '';
+                micBtn.style.color = '';
+                micBtn.style.borderColor = '';
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i><span class="action-btn-tooltip">Voice Input</span>';
             }
-            showNotification('Voice input captured.', 'success');
         }
 
+        // ===== FIX 1 & 7: SPEECH PLAYBACK =====
         function toggleSpeech() {
             const outputText = document.getElementById('outputArea').textContent.trim();
             if (!outputText || outputText.includes('Your optimized prompt will appear here')) {
-                showNotification('No prompt text to read.', 'warning');
+                showNotification('No prompt to read', 'warning');
                 return;
             }
 
             const speakBtn = document.getElementById('speakBtn');
             
             if (state.isSpeaking) {
-                // FIX 7: Stop speech
+                // FIX 1: User-friendly stop message
                 state.speechSynthesis.cancel();
                 state.isSpeaking = false;
                 speakBtn.classList.remove('listening');
                 speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
-                speakBtn.title = 'Listen to Prompt';
+                showNotification('Playback stopped', 'info');
             } else {
                 // Start speech
                 if (state.speechSynthesis) {
@@ -2130,97 +2151,44 @@
                         state.isSpeaking = true;
                         speakBtn.classList.add('listening');
                         speakBtn.innerHTML = '<i class="fas fa-stop"></i><span class="action-btn-tooltip">Stop</span>';
-                        speakBtn.title = 'Stop Playback';
                     };
                     
                     utterance.onend = () => {
                         state.isSpeaking = false;
                         speakBtn.classList.remove('listening');
                         speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
-                        speakBtn.title = 'Listen to Prompt';
                     };
                     
-                    utterance.onerror = () => {
+                    utterance.onerror = (event) => {
                         state.isSpeaking = false;
                         speakBtn.classList.remove('listening');
                         speakBtn.innerHTML = '<i class="fas fa-volume-up"></i><span class="action-btn-tooltip">Listen</span>';
-                        speakBtn.title = 'Listen to Prompt';
-                        showNotification('Failed to read prompt.', 'error');
+                        // FIX 1: Better error message
+                        if (event.error === 'interrupted') {
+                            showNotification('Playback interrupted', 'info');
+                        } else {
+                            showNotification('Unable to read prompt', 'warning');
+                        }
                     };
                     
                     state.speechSynthesis.speak(utterance);
+                    showNotification('Reading prompt...', 'info');
                 } else {
                     showNotification('Text-to-speech is not supported in your browser.', 'warning');
                 }
             }
         }
 
-        function updateMicButton() {
-            const micBtn = document.getElementById('micBtn');
-            if (state.isListening) {
-                micBtn.classList.add('listening');
-                micBtn.innerHTML = '<i class="fas fa-stop"></i><span class="action-btn-tooltip">Stop</span>';
-            } else {
-                micBtn.classList.remove('listening');
-                micBtn.innerHTML = '<i class="fas fa-microphone"></i><span class="action-btn-tooltip">Voice Input</span>';
-            }
-        }
-
-        // ===== UTILITY FUNCTIONS =====
-        function showNotification(message, type = 'info') {
-            const container = document.getElementById('notificationContainer');
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <div class="notification-icon">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-message">${message}</div>
-                </div>
-                <button class="notification-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(notification);
-            
-            // Auto-remove after 3 seconds
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-            
-            // Manual close
-            notification.querySelector('.notification-close').addEventListener('click', () => {
-                notification.remove();
-            });
-        }
-
-        function showLoading(show, message = 'Generating your prompt...') {
-            const loading = document.getElementById('globalLoading');
-            const text = document.getElementById('loadingText');
-            
-            if (show) {
-                text.textContent = message;
-                loading.classList.add('show');
-            } else {
-                loading.classList.remove('show');
-            }
-        }
-
-        // ===== FIX 1: NEED INSPIRATION BUTTON =====
+        // ===== FIX 7: INSPIRATION MODAL =====
         document.getElementById('needInspirationBtn').addEventListener('click', () => {
-            const panel = document.getElementById('inspirationPanel');
-            panel.classList.toggle('show');
+            document.getElementById('inspirationModal').classList.add('show');
         });
 
-        document.getElementById('closeInspirationBtn').addEventListener('click', () => {
-            document.getElementById('inspirationPanel').classList.remove('show');
+        document.getElementById('closeInspirationModalBtn').addEventListener('click', () => {
+            document.getElementById('inspirationModal').classList.remove('show');
         });
 
-        // Template selection
+        // Template selection in modal
         document.querySelectorAll('.inspiration-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -2236,11 +2204,141 @@
                 
                 document.getElementById('userInput').value = templates[type] || '';
                 updateCharCounter();
-                document.getElementById('inspirationPanel').classList.remove('show');
+                document.getElementById('inspirationModal').classList.remove('show');
                 
                 showNotification(`Loaded ${item.querySelector('.inspiration-text').textContent} template`, 'success');
             });
         });
+
+        // ===== FIX 2 & 13: AI TOOLS RANKING =====
+        function loadAIPlatforms(promptContent) {
+            const platformsGrid = document.getElementById('platformsGrid');
+            platformsGrid.innerHTML = '';
+            
+            const platforms = [
+                {
+                    id: 'gemini',
+                    name: 'Google Gemini',
+                    icon: 'fas fa-robot',
+                    desc: 'Google\'s advanced AI model for complex reasoning and multimodal tasks',
+                    url: 'https://gemini.google.com',
+                    strengths: ['complex reasoning', 'technical analysis', 'multimodal', 'code'],
+                    score: 0
+                },
+                {
+                    id: 'chatgpt',
+                    name: 'OpenAI ChatGPT',
+                    icon: 'fas fa-comment',
+                    desc: 'OpenAI\'s conversational AI for creative writing and general tasks',
+                    url: 'https://chat.openai.com',
+                    strengths: ['creative writing', 'conversation', 'general tasks', 'storytelling'],
+                    score: 0
+                },
+                {
+                    id: 'claude',
+                    name: 'Anthropic Claude',
+                    icon: 'fas fa-brain',
+                    desc: 'Anthropic\'s safety-focused AI for business documents and analysis',
+                    url: 'https://claude.ai',
+                    strengths: ['business docs', 'analysis', 'safety', 'strategy'],
+                    score: 0
+                },
+                {
+                    id: 'perplexity',
+                    name: 'Perplexity',
+                    icon: 'fas fa-search',
+                    desc: 'AI-powered search assistant for research and fact-finding',
+                    url: 'https://perplexity.ai',
+                    strengths: ['research', 'fact-finding', 'citations', 'data analysis'],
+                    score: 0
+                }
+            ];
+            
+            // FIX 13: Dynamic ranking based on prompt content
+            const promptText = promptContent.toLowerCase();
+            
+            // Calculate scores based on prompt content
+            platforms.forEach(platform => {
+                platform.score = 0;
+                
+                // Check for keywords matching platform strengths
+                platform.strengths.forEach(strength => {
+                    const strengthKeywords = {
+                        'complex reasoning': ['analyze', 'evaluate', 'compare', 'explain', 'complex', 'detailed'],
+                        'technical analysis': ['code', 'programming', 'technical', 'algorithm', 'function', 'api'],
+                        'multimodal': ['image', 'picture', 'photo', 'visual', 'graph', 'chart'],
+                        'creative writing': ['creative', 'story', 'narrative', 'poem', 'script', 'fiction'],
+                        'conversation': ['chat', 'conversation', 'dialogue', 'discuss', 'talk'],
+                        'business docs': ['business', 'report', 'proposal', 'strategy', 'plan', 'executive'],
+                        'analysis': ['analyze', 'data', 'statistics', 'metrics', 'trends', 'patterns'],
+                        'research': ['research', 'find', 'search', 'investigate', 'study', 'paper'],
+                        'code': ['code', 'program', 'script', 'function', 'algorithm', 'debug']
+                    };
+                    
+                    if (strengthKeywords[strength]) {
+                        strengthKeywords[strength].forEach(keyword => {
+                            if (promptText.includes(keyword)) {
+                                platform.score += 2;
+                            }
+                        });
+                    }
+                });
+                
+                // Bonus points for specific patterns
+                if (promptText.includes('code') || promptText.includes('programming')) {
+                    if (platform.id === 'gemini') platform.score += 3;
+                }
+                if (promptText.includes('creative') || promptText.includes('story')) {
+                    if (platform.id === 'chatgpt') platform.score += 3;
+                }
+                if (promptText.includes('business') || promptText.includes('strategy')) {
+                    if (platform.id === 'claude') platform.score += 3;
+                }
+                if (promptText.includes('research') || promptText.includes('find')) {
+                    if (platform.id === 'perplexity') platform.score += 3;
+                }
+                
+                // Base score for all platforms
+                platform.score += 1;
+            });
+            
+            // Sort by score (highest first)
+            platforms.sort((a, b) => b.score - a.score);
+            
+            // Mark top platform as recommended
+            if (platforms.length > 0) {
+                platforms[0].recommended = true;
+            }
+            
+            // Display all platforms
+            platforms.forEach(platform => {
+                const platformCard = document.createElement('div');
+                platformCard.className = `platform-card ${platform.recommended ? 'recommended' : ''}`;
+                platformCard.innerHTML = `
+                    <div class="platform-icon">
+                        <i class="${platform.icon}"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">
+                            ${platform.name}
+                            ${platform.recommended ? '<span class="recommended-tag">Recommended</span>' : ''}
+                        </div>
+                        <div class="platform-desc">${platform.desc}</div>
+                    </div>
+                `;
+                
+                platformCard.addEventListener('click', () => {
+                    navigator.clipboard.writeText(promptContent).then(() => {
+                        showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
+                        setTimeout(() => {
+                            window.open(platform.url, '_blank');
+                        }, 1000);
+                    });
+                });
+                
+                platformsGrid.appendChild(platformCard);
+            });
+        }
 
         // ===== FIX 2 & 3: SETTINGS MANAGEMENT =====
         document.getElementById('settingsBtn').addEventListener('click', () => {
@@ -2258,9 +2356,6 @@
                 document.getElementById('maxHistoryItems').value = state.settings.maxHistoryItems;
             }
             
-            state.settingsChanged = false;
-            document.getElementById('saveSettingsBtn').disabled = true;
-            
             document.getElementById('settingsModal').classList.add('show');
         });
 
@@ -2272,23 +2367,7 @@
             document.getElementById('settingsModal').classList.remove('show');
         });
 
-        // Track settings changes
-        document.querySelectorAll('#settingsModal select').forEach(select => {
-            select.addEventListener('change', () => {
-                state.settingsChanged = true;
-                document.getElementById('saveSettingsBtn').disabled = false;
-                
-                // Apply theme immediately for preview
-                if (select.id === 'themeSelect') {
-                    applyTheme(select.value);
-                }
-            });
-        });
-
-        // Save Settings
         document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-            if (!state.settingsChanged) return;
-            
             // Get settings
             state.settings.theme = document.getElementById('themeSelect').value;
             state.settings.aiModel = document.getElementById('aiModelSelect').value;
@@ -2306,10 +2385,6 @@
             
             // Close modal
             document.getElementById('settingsModal').classList.remove('show');
-            
-            // Reset state
-            state.settingsChanged = false;
-            document.getElementById('saveSettingsBtn').disabled = true;
             
             showNotification('Settings saved successfully!', 'success');
         });
@@ -2357,7 +2432,7 @@
             }
             
             historyList.innerHTML = '';
-            state.history.forEach((item, index) => {
+            state.history.forEach((item) => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 historyItem.innerHTML = `
@@ -2422,97 +2497,6 @@
             }
             
             localStorage.setItem('promptcraft_history', JSON.stringify(state.history));
-        }
-
-        // ===== FIX 9 & 13: AI PLATFORMS & RANKING =====
-        function loadAIPlatforms(promptContent) {
-            const platformsGrid = document.getElementById('platformsGrid');
-            platformsGrid.innerHTML = '';
-            
-            const platforms = [
-                {
-                    id: 'gemini',
-                    name: 'Google Gemini',
-                    icon: 'fas fa-robot',
-                    desc: 'Google\'s advanced AI model',
-                    url: 'https://gemini.google.com',
-                    strengths: ['complex reasoning', 'technical analysis', 'multimodal'],
-                    recommended: false
-                },
-                {
-                    id: 'chatgpt',
-                    name: 'OpenAI ChatGPT',
-                    icon: 'fas fa-comment',
-                    desc: 'OpenAI\'s conversational AI',
-                    url: 'https://chat.openai.com',
-                    strengths: ['creative writing', 'conversation', 'general tasks'],
-                    recommended: false
-                },
-                {
-                    id: 'claude',
-                    name: 'Anthropic Claude',
-                    icon: 'fas fa-brain',
-                    desc: 'Anthropic\'s safety-focused AI',
-                    url: 'https://claude.ai',
-                    strengths: ['business docs', 'analysis', 'safety'],
-                    recommended: false
-                },
-                {
-                    id: 'perplexity',
-                    name: 'Perplexity',
-                    icon: 'fas fa-search',
-                    desc: 'AI-powered search assistant',
-                    url: 'https://perplexity.ai',
-                    strengths: ['research', 'fact-finding', 'citations'],
-                    recommended: false
-                }
-            ];
-            
-            // FIX 13: AI Tool Ranking
-            const promptText = promptContent.toLowerCase();
-            platforms.forEach(platform => {
-                // Simple ranking logic based on prompt content
-                if (promptText.includes('code') || promptText.includes('technical')) {
-                    if (platform.id === 'gemini') platform.recommended = true;
-                } else if (promptText.includes('creative') || promptText.includes('story')) {
-                    if (platform.id === 'chatgpt') platform.recommended = true;
-                } else if (promptText.includes('business') || promptText.includes('analysis')) {
-                    if (platform.id === 'claude') platform.recommended = true;
-                } else if (promptText.includes('research') || promptText.includes('find')) {
-                    if (platform.id === 'perplexity') platform.recommended = true;
-                }
-            });
-            
-            // Sort by recommended first
-            platforms.sort((a, b) => b.recommended - a.recommended);
-            
-            platforms.forEach(platform => {
-                const platformCard = document.createElement('div');
-                platformCard.className = `platform-card ${platform.recommended ? 'recommended' : ''}`;
-                platformCard.innerHTML = `
-                    <div class="platform-icon">
-                        <i class="${platform.icon}"></i>
-                    </div>
-                    <div class="platform-info">
-                        <div class="platform-name">
-                            ${platform.name}
-                            ${platform.recommended ? '<span class="recommended-tag">Recommended</span>' : ''}
-                        </div>
-                        <div class="platform-desc">${platform.desc}</div>
-                    </div>
-                `;
-                
-                platformCard.addEventListener('click', () => {
-                    navigator.clipboard.writeText(promptContent).then(() => {
-                        showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
-                        setTimeout(() => {
-                            window.open(platform.url, '_blank');
-                        }, 1000);
-                    });
-                });
-                
-                platformsGrid.appendChild(platformCard);
-            });
         }
 
         // ===== FIX 11: UNDO BUTTON =====
@@ -2623,7 +2607,7 @@
                 // Add to history
                 addToHistory(inputText, mockPrompt, style);
                 
-                // Load AI platforms with ranking
+                // FIX 2 & 13: Load AI platforms with dynamic ranking
                 loadAIPlatforms(mockPrompt);
                 
                 showNotification('Prompt successfully generated!', 'success');
@@ -2664,6 +2648,15 @@
             showNotification('Input cleared', 'info');
         });
 
+        // Copy button
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const promptText = document.getElementById('outputArea').textContent;
+            if (promptText && !promptText.includes('Your optimized prompt will appear here')) {
+                navigator.clipboard.writeText(promptText);
+                showNotification('Prompt copied to clipboard!', 'success');
+            }
+        });
+
         // ===== HELPER FUNCTIONS =====
         function updateCharCounter() {
             const textarea = document.getElementById('userInput');
@@ -2682,59 +2675,115 @@
 
         function generateMockPrompt(input, style) {
             const styles = {
-                detailed: `# TASK OVERVIEW
-User Request: "${input}"
+                detailed: `# TASK ANALYSIS & OPTIMIZED PROMPT
 
-## INSTRUCTIONS FOR AI ASSISTANT
+## USER REQUEST:
+"${input}"
 
-### ROLE & CONTEXT
-- You are an expert AI assistant specializing in ${input.toLowerCase().includes('business') ? 'business strategy' : input.toLowerCase().includes('code') ? 'software development' : 'general productivity'}
-- Approach this task with precision and professionalism
+## CONTEXT ANALYSIS:
+- Primary intent: ${input.toLowerCase().includes('business') ? 'Business Strategy' : input.toLowerCase().includes('code') ? 'Technical Implementation' : 'General Assistance'}
+- Complexity level: ${input.split(' ').length > 50 ? 'High' : 'Medium'}
+- Required expertise: ${input.toLowerCase().includes('technical') ? 'Technical Specialist' : 'General AI Assistant'}
 
-### PRIMARY OBJECTIVES
-1. Understand the core requirements
-2. Break down complex elements
-3. Provide actionable solutions
-4. Include best practices
+## OPTIMIZED PROMPT STRUCTURE:
 
-### EXPECTED OUTPUT FORMAT
-- Clear, structured response
-- Bullet points for key insights
-- Step-by-step implementation guide
-- Quality assurance checklist
+### 1. ROLE DEFINITION
+You are an expert ${input.toLowerCase().includes('business') ? 'business strategist' : input.toLowerCase().includes('code') ? 'software architect' : 'AI assistant'} with specialized knowledge in this domain.
 
-### SUCCESS METRICS
-- Clarity of explanation
+### 2. CORE OBJECTIVE
+${input}
+
+### 3. KEY REQUIREMENTS
+- Provide comprehensive, well-structured response
+- Include practical examples and applications
+- Consider potential challenges and solutions
+- Maintain professional tone and clarity
+
+### 4. EXPECTED OUTPUT FORMAT
+- Executive summary
+- Detailed analysis
+- Actionable recommendations
+- Implementation roadmap
+- Success metrics
+
+### 5. QUALITY CRITERIA
+- Accuracy and relevance
 - Practical applicability
-- Comprehensive coverage
-- Professional formatting`,
+- Clear organization
+- Professional presentation
+
+## ADDITIONAL INSTRUCTIONS:
+Focus on delivering maximum value while maintaining clarity and precision. Adapt the response depth based on the complexity of the request.`,
 
                 concise: `Task: ${input}
 
-Provide a direct, actionable response. Focus on key elements and clear instructions. Avoid unnecessary elaboration.`,
+Provide a direct, actionable response focused on key elements and clear instructions. Avoid unnecessary elaboration.`,
 
                 creative: `Creative Assignment: "${input}"
 
-Approach with imagination and innovation. Focus on storytelling elements, engaging language, and unique perspectives. Be inspiring and original.`,
+Approach with imagination and innovation. Focus on storytelling elements, engaging language, unique perspectives, and creative solutions. Be inspiring and original.`,
 
                 professional: `Professional Request: ${input}
 
-Format: Executive Summary → Analysis → Recommendations → Implementation Plan → Success Metrics
+Response Structure:
+1. Executive Summary
+2. Background & Context
+3. Analysis & Findings
+4. Recommendations
+5. Implementation Plan
+6. Success Metrics
+7. Next Steps
 
-Tone: Formal, business-appropriate, data-driven`
+Tone: Formal, data-driven, business-appropriate
+Format: Professional document structure
+Depth: Comprehensive analysis`
             };
             
             return styles[style] || styles.detailed;
         }
 
-        // ===== COPY FUNCTIONALITY =====
-        document.getElementById('copyBtn').addEventListener('click', () => {
-            const promptText = document.getElementById('outputArea').textContent;
-            if (promptText && !promptText.includes('Your optimized prompt will appear here')) {
-                navigator.clipboard.writeText(promptText);
-                showNotification('Prompt copied to clipboard!', 'success');
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+            
+            // Manual close
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+        }
+
+        function showLoading(show, message = 'Generating your prompt...') {
+            const loading = document.getElementById('globalLoading');
+            const text = document.getElementById('loadingText');
+            
+            if (show) {
+                text.textContent = message;
+                loading.classList.add('show');
+            } else {
+                loading.classList.remove('show');
             }
-        });
+        }
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', () => {
@@ -2767,8 +2816,8 @@ Tone: Formal, business-appropriate, data-driven`
                     if (document.getElementById('settingsModal').classList.contains('show')) {
                         document.getElementById('closeSettingsBtn').click();
                     }
-                    if (document.getElementById('inspirationPanel').classList.contains('show')) {
-                        document.getElementById('closeInspirationBtn').click();
+                    if (document.getElementById('inspirationModal').classList.contains('show')) {
+                        document.getElementById('closeInspirationModalBtn').click();
                     }
                     if (document.getElementById('historySection').classList.contains('show')) {
                         document.getElementById('closeHistoryBtn').click();
