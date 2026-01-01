@@ -1,92 +1,157 @@
-// js/state.js
-class StorageService {
+// state.js - Application State Management
+export class AppState {
     constructor() {
-        this.prefix = 'promptcraft_';
+        // Default settings
+        this.settings = {
+            theme: 'dark',
+            voiceLanguage: 'en-US',
+            autoConvert: true,
+            autoConvertDelay: 5000,
+            promptStyle: 'detailed',
+            maxHistoryItems: 25,
+            notificationDuration: 3000,
+            uiDensity: 'comfortable'
+        };
+        
+        // Application state
+        this.currentStep = 1;
+        this.isListening = false;
+        this.isSpeaking = false;
+        this.isEditorOpen = false;
+        this.currentEditor = null;
+        this.selectedPlatform = null;
+        this.originalPrompt = null;
+        this.promptModified = false;
+        this.hasGeneratedPrompt = false;
+        
+        // Data
+        this.promptHistory = [];
+        this.undoStack = [];
+        this.redoStack = [];
+        this.templates = [];
     }
 
-    save(key, value) {
+    updateSetting(key, value) {
+        this.settings[key] = value;
+        this.saveSettings();
+        return this.settings;
+    }
+
+    saveSettings() {
         try {
-            localStorage.setItem(this.prefix + key, JSON.stringify(value));
-            return true;
-        } catch (error) {
-            console.error('Error saving to localStorage:', error);
-            return false;
+            localStorage.setItem('promptCraftSettings', JSON.stringify(this.settings));
+        } catch (e) {
+            console.error('Failed to save settings:', e);
         }
     }
 
-    load(key, defaultValue = null) {
+    loadSettings() {
         try {
-            const item = localStorage.getItem(this.prefix + key);
-            return item ? JSON.parse(item) : defaultValue;
-        } catch (error) {
-            console.error('Error loading from localStorage:', error);
-            return defaultValue;
+            const saved = localStorage.getItem('promptCraftSettings');
+            if (saved) {
+                this.settings = { ...this.settings, ...JSON.parse(saved) };
+            }
+        } catch (e) {
+            console.error('Failed to load settings:', e);
         }
+        return this.settings;
     }
 
-    remove(key) {
-        localStorage.removeItem(this.prefix + key);
+    addToHistory(input, output) {
+        const historyItem = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
+            output: output.substring(0, 200) + (output.length > 200 ? '...' : ''),
+            fullInput: input,
+            fullOutput: output
+        };
+
+        this.promptHistory.unshift(historyItem);
+
+        // Limit history size
+        if (this.promptHistory.length > this.settings.maxHistoryItems) {
+            this.promptHistory = this.promptHistory.slice(0, this.settings.maxHistoryItems);
+        }
+
+        this.saveHistory();
+        return historyItem;
     }
 
-    clear() {
-        Object.keys(localStorage)
-            .filter(key => key.startsWith(this.prefix))
-            .forEach(key => localStorage.removeItem(key));
-    }
-
-    // Specific methods for common data
-    saveSettings(settings) {
-        return this.save('settings', settings);
-    }
-
-    loadSettings(defaultSettings = {}) {
-        return this.load('settings', defaultSettings);
-    }
-
-    saveHistory(history) {
-        return this.save('history', history);
+    saveHistory() {
+        try {
+            localStorage.setItem('promptCraftHistory', JSON.stringify(this.promptHistory));
+        } catch (e) {
+            console.error('Failed to save history:', e);
+        }
     }
 
     loadHistory() {
-        return this.load('history', []);
+        try {
+            const saved = localStorage.getItem('promptCraftHistory');
+            if (saved) {
+                this.promptHistory = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('Failed to load history:', e);
+        }
+        return this.promptHistory;
     }
 
-    saveTemplates(templates) {
-        return this.save('templates', templates);
+    clearHistory() {
+        this.promptHistory = [];
+        localStorage.removeItem('promptCraftHistory');
     }
 
-    loadTemplates() {
-        return this.load('templates', []);
+    addToUndoStack(value, type) {
+        this.undoStack.push({
+            value,
+            type,
+            timestamp: Date.now()
+        });
+
+        // Keep only last 50 undo steps
+        if (this.undoStack.length > 50) {
+            this.undoStack.shift();
+        }
+
+        this.redoStack = []; // Clear redo stack on new action
     }
 
-    saveTheme(theme) {
-        return this.save('theme', theme);
+    undo() {
+        if (this.undoStack.length === 0) return null;
+        
+        const lastState = this.undoStack.pop();
+        this.redoStack.push(lastState);
+        
+        // Return previous state
+        if (this.undoStack.length > 0) {
+            return this.undoStack[this.undoStack.length - 1];
+        }
+        return { value: '', type: lastState.type };
     }
 
-    loadTheme(defaultTheme = 'dark') {
-        return this.load('theme', defaultTheme);
+    redo() {
+        if (this.redoStack.length === 0) return null;
+        
+        const nextState = this.redoStack.pop();
+        this.undoStack.push(nextState);
+        return nextState;
     }
 
-    saveModel(model) {
-        return this.save('model', model);
+    reset() {
+        this.currentStep = 1;
+        this.isListening = false;
+        this.isSpeaking = false;
+        this.isEditorOpen = false;
+        this.currentEditor = null;
+        this.selectedPlatform = null;
+        this.originalPrompt = null;
+        this.promptModified = false;
+        this.hasGeneratedPrompt = false;
+        this.undoStack = [];
+        this.redoStack = [];
+        
+        return this;
     }
-
-    loadModel(defaultModel = 'gemini') {
-        return this.load('model', defaultModel);
-    }
-
-    saveVoiceLanguage(lang) {
-        return this.save('voice_lang', lang);
-    }
-
-    loadVoiceLanguage(defaultLang = 'en-US') {
-        return this.load('voice_lang', defaultLang);
-    }
-}
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = StorageService;
-} else {
-    window.StorageService = StorageService;
 }
