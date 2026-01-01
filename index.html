@@ -3,779 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Enterprise AI Prompt Assistant - Transform ideas into perfect AI prompts instantly">
-    <title>PromptCraft Pro | Enterprise AI Prompt Assistant</title>
+    <meta name="description" content="PromptCraft Pro - Cyberpunk AI Prompt Optimizer">
+    <title>PromptCraft Pro | Cyberpunk AI Prompt Assistant</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Courier+New:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- CSS Files -->
+    <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/themes.css">
-    <link rel="stylesheet" href="css/ui-components.css">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
-    
-    <style>
-        /* Quick fixes for platform cards */
-        .platforms-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .platform-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 18px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .platform-card:hover {
-            transform: translateX(5px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .platform-card.recommended {
-            border: 2px solid var(--success);
-            background: linear-gradient(135deg, var(--card-bg), rgba(16, 185, 129, 0.05));
-        }
-        
-        .platform-card.selected {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, var(--card-bg), rgba(79, 70, 229, 0.1));
-        }
-        
-        .platform-logo-container {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            color: white;
-            flex-shrink: 0;
-        }
-        
-        .platform-info {
-            flex: 1;
-        }
-        
-        .platform-name {
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .platform-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-        
-        .platform-tags {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-        
-        .platform-tag {
-            background: var(--primary-50);
-            color: var(--primary);
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: 500;
-        }
-        
-        .dark-theme .platform-tag {
-            background: rgba(79, 70, 229, 0.2);
-            color: var(--primary-light);
-        }
-        
-        .recommended-badge {
-            background: var(--success);
-            color: white;
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 20px;
-            margin-left: 8px;
-        }
-        
-        /* Output section visibility */
-        .output-section {
-            display: none;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            width: 100%;
-            margin-top: 24px;
-        }
-        
-        .output-section.visible {
-            display: grid;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Platform logos - brand colors */
-        .platform-logo-container.gemini { background: linear-gradient(135deg, #4285F4, #34A853); }
-        .platform-logo-container.chatgpt { background: linear-gradient(135deg, #10A37F, #0D8E6F); }
-        .platform-logo-container.claude { background: linear-gradient(135deg, #D4A017, #B8860B); }
-        .platform-logo-container.perplexity { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
-        .platform-logo-container.deepseek { background: linear-gradient(135deg, #2563EB, #1D4ED8); }
-        .platform-logo-container.copilot { background: linear-gradient(135deg, #0078D4, #106EBE); }
-        .platform-logo-container.grok { background: linear-gradient(135deg, #FF6B35, #E94E1B); }
-        
-        /* Ensure empty state shows */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            text-align: center;
-            color: var(--text-tertiary);
-        }
-        
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-        
-        /* Fix button visibility */
-        .hidden {
-            display: none !important;
-        }
-        
-        .visible {
-            display: block !important;
-        }
-        
-        .removed {
-            display: none !important;
-        }
-        
-        /* Progress bar */
-        .progress-indicator {
-            height: 3px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 9999px;
-            overflow: hidden;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ffffff, #E0E7FF);
-            border-radius: 9999px;
-            width: 33%;
-            transition: width 0.3s ease;
-        }
-    </style>
+    <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
 </head>
-<body class="dark-theme">
-    <!-- Header -->
-    <header class="app-header">
-        <div class="container">
-            <div class="header-content">
-                <div class="header-top">
-                    <a href="#" class="logo">
-                        <div class="logo-icon">
-                            <i class="fas fa-magic"></i>
+<body data-theme="dark">
+    <!-- Animated Scan Line -->
+    <div class="scan-line"></div>
+    
+    <!-- Main Page Container -->
+    <div class="page">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-top">
+                <div class="hero-brand">
+                    <!-- Circuit Board Logo -->
+                    <div class="hero-logo">
+                        <div class="logo-circuit">
+                            <div class="circuit-line circuit-horizontal"></div>
+                            <div class="circuit-line circuit-vertical"></div>
+                            <div class="circuit-node circuit-node-1"></div>
+                            <div class="circuit-node circuit-node-2"></div>
+                            <div class="circuit-node circuit-node-3"></div>
+                            <div class="circuit-node circuit-node-4"></div>
                         </div>
-                        <div class="logo-text">
-                            <h1>PromptCraft Pro</h1>
-                            <p>Enterprise-grade AI prompt optimization for professional workflows</p>
-                        </div>
-                    </a>
+                    </div>
                     
-                    <div class="header-actions">
-                        <!-- History Button -->
-                        <button id="historyBtn" class="action-btn glass-effect" title="Prompt History">
-                            <i class="fas fa-history"></i>
-                        </button>
-                        
-                        <!-- Settings Button -->
-                        <button id="settingsBtn" class="action-btn glass-effect" title="Settings">
-                            <i class="fas fa-sliders-h"></i>
-                        </button>
+                    <!-- Title -->
+                    <div class="hero-title-block">
+                        <h1 class="hero-title">Prompt<span>Craft</span> Pro</h1>
+                        <p class="hero-subtitle">Cyberpunk AI prompt optimizer with intent detection & multi-platform deployment</p>
                     </div>
                 </div>
                 
-                <!-- Progress Indicator -->
-                <div class="progress-indicator">
-                    <div id="progressFill" class="progress-fill"></div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container">
-        <div class="app-container">
-            <!-- Step 1: Input -->
-            <div class="input-section">
-                <div class="card">
-                    <div class="step-header">
-                        <div class="step-number">1</div>
-                        <div>
-                            <div class="step-title">Describe Your Task</div>
-                            <div class="step-subtitle">Provide detailed context for optimal AI prompt generation</div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-label">What would you like the AI to help you with?</div>
-                    
-                    <div class="textarea-container">
-                        <!-- Character Counter -->
-                        <div class="char-counter" id="charCounter">0/5000</div>
-                        
-                        <!-- Main Textarea -->
-                        <textarea 
-                            id="userInput"
-                            class="textarea"
-                            placeholder="Example: Create a comprehensive project proposal for implementing an AI-powered customer service chatbot that reduces response time by 40% while maintaining customer satisfaction scores..."
-                            rows="5"
-                        ></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Steps 2 & 3: Output and AI Platforms -->
-            <div class="output-section" id="outputSection">
-                <!-- Step 2: Generated Prompt -->
-                <div class="card" id="outputCard">
-                    <div class="step-header">
-                        <div class="step-number">2</div>
-                        <div>
-                            <div class="step-title">Generated Prompt</div>
-                            <div class="step-subtitle">Optimized for maximum AI performance and clarity</div>
-                        </div>
-                    </div>
-                    
-                    <div class="output-container">
-                        <!-- Output Action Buttons -->
-                        <div class="output-actions">
-                            <button id="copyBtn" class="action-btn" title="Copy Prompt" disabled>
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button id="exportBtn" class="action-btn" title="Export Prompt" disabled>
-                                <i class="fas fa-download"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Editable Output Area -->
-                        <div 
-                            id="outputArea" 
-                            class="output-area" 
-                            contenteditable="true"
-                            data-placeholder="Your optimized prompt will appear here. Describe your task in Step 1 and click 'Prepare Prompt' to generate."
-                        ></div>
-                    </div>
-                </div>
-
-                <!-- Step 3: AI Platforms Sidebar -->
-                <div class="platforms-sidebar">
-                    <div class="card" id="aiCard">
-                        <div class="step-header">
-                            <div class="step-number">3</div>
-                            <div>
-                                <div class="step-title">Deploy to AI</div>
-                                <div class="step-subtitle">Smart-ranked based on your task</div>
-                            </div>
-                        </div>
-                        
-                        <div class="platforms-header">
-                            <p>
-                                <i class="fas fa-sort-amount-down"></i> Ranked by suitability for your task
-                            </p>
-                        </div>
-                        
-                        <!-- AI Platforms Grid -->
-                        <div id="platformsGrid" class="platforms-grid">
-                            <!-- AI Platform Cards will be inserted here -->
-                        </div>
-                        
-                        <!-- Empty state -->
-                        <div class="empty-state" id="platformsEmptyState">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <p>Generate a prompt first to see AI platform options</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sticky CTA Buttons -->
-        <div class="sticky-cta-container">
-            <button id="stickyPrepareBtn" class="sticky-cta prepare">
-                <i class="fas fa-magic cta-icon"></i>
-                <span>Prepare Prompt</span>
-            </button>
-        </div>
-        
-        <!-- Reset Button -->
-        <button id="stickyResetBtn" class="sticky-cta reset hidden">
-            <i class="fas fa-redo cta-icon"></i>
-            <span>Reset</span>
-        </button>
-    </main>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <div class="footer-item">
-                        <span class="status-indicator"></span>
-                        <span>Status: <strong>Online</strong></span>
-                    </div>
-                    <div class="footer-item">
-                        <i class="fas fa-robot"></i>
-                        <span>AI Model: <strong id="currentModel">Google Gemini</strong></span>
-                    </div>
-                    <div class="footer-item">
+                <!-- Actions -->
+                <div class="hero-actions">
+                    <button class="settings-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                    <button class="theme-toggle-btn" id="themeToggleBtn">
                         <i class="fas fa-palette"></i>
-                        <span>Theme: <strong id="currentTheme">Dark</strong></span>
+                        Theme
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Progress Indicator -->
+            <div class="progress-indicator">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </section>
+        
+        <!-- Workflow Grid -->
+        <section class="workflow">
+            <div class="cards-grid">
+                <!-- Card 1: Input -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-pill">1</div>
+                        <div class="step-header-main">
+                            <h2>Describe Your Task</h2>
+                            <p class="step-subtitle">What do you want the AI to help you with?</p>
+                        </div>
+                        <div class="step-meta">
+                            <span class="meta-pill" id="charCount">0 chars</span>
+                            <span class="meta-pill" id="wordCount">0 words</span>
+                        </div>
                     </div>
-                    <div class="footer-item">
-                        <i class="fas fa-language"></i>
-                        <span>Language: <strong id="currentLanguage">English</strong></span>
+                    
+                    <!-- Intent Detection -->
+                    <div class="intent-row">
+                        <div class="intent-scroll" id="intentTags">
+                            <!-- Intent chips will be added here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Templates -->
+                    <div class="chip-row">
+                        <div class="chip" data-template="email">
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </div>
+                        <div class="chip" data-template="code">
+                            <i class="fas fa-code"></i>
+                            Code
+                        </div>
+                        <div class="chip" data-template="analysis">
+                            <i class="fas fa-chart-bar"></i>
+                            Analysis
+                        </div>
+                        <div class="chip" data-template="creative">
+                            <i class="fas fa-paint-brush"></i>
+                            Creative
+                        </div>
+                    </div>
+                    
+                    <!-- Auto-Convert Toggle -->
+                    <div class="auto-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoConvertToggle" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Auto-Convert</span>
+                        </label>
+                        <span class="timer-badge" id="autoTimer">
+                            <i class="fas fa-clock"></i>
+                            5s
+                        </span>
+                    </div>
+                    
+                    <!-- Text Input -->
+                    <div class="field-block">
+                        <div class="textarea-wrapper">
+                            <textarea 
+                                id="userInput" 
+                                class="textarea-idea" 
+                                placeholder="Describe your task in detail... Example: Write a professional email to a client about project delays, include apology and new timeline"
+                                rows="6"
+                            ></textarea>
+                            
+                            <!-- Voice & Clear Buttons -->
+                            <div class="textarea-buttons">
+                                <div class="left-controls">
+                                    <button id="voiceInputBtn" class="voice-input-btn" title="Voice Input">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                    <button id="clearBtn" class="clear-input-btn" title="Clear Input">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="right-controls">
+                                    <span class="char-counter" id="charCounter">0/5000</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Voice Status -->
+                        <div class="voice-status" id="voiceInputStatus" style="display: none;">
+                            <i class="fas fa-circle"></i>
+                            <span>Listening...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <div class="card-actions">
+                        <button id="convertBtn" class="btn-primary btn-full">
+                            <i class="fas fa-magic"></i>
+                            Generate Prompt
+                        </button>
+                    </div>
+                    
+                    <!-- Expand Button -->
+                    <button class="expand-btn" id="expandInputBtn" title="Expand Editor">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                </div>
+                
+                <!-- Card 2: Generated Prompt -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-pill">2</div>
+                        <div class="step-header-main">
+                            <h2>Optimized Prompt</h2>
+                            <p class="step-subtitle">AI-enhanced & structured for best results</p>
+                        </div>
+                        <div class="step-meta">
+                            <span class="meta-pill converted-badge hidden" id="convertedBadge"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Preset Selector -->
+                    <div class="preset-selector">
+                        <div class="preset-option active" data-preset="detailed">
+                            <i class="fas fa-file-alt"></i>
+                            Detailed
+                        </div>
+                        <div class="preset-option" data-preset="concise">
+                            <i class="fas fa-bolt"></i>
+                            Concise
+                        </div>
+                        <div class="preset-option" data-preset="creative">
+                            <i class="fas fa-paint-brush"></i>
+                            Creative
+                        </div>
+                        <div class="preset-option" data-preset="professional">
+                            <i class="fas fa-briefcase"></i>
+                            Professional
+                        </div>
+                    </div>
+                    
+                    <!-- Output Textarea -->
+                    <div class="field-block-output">
+                        <div class="textarea-wrapper">
+                            <textarea 
+                                id="output" 
+                                class="output-textarea" 
+                                placeholder="Your optimized prompt will appear here..."
+                                readonly
+                            ></textarea>
+                            
+                            <!-- Voice Output Button -->
+                            <div class="textarea-buttons">
+                                <div class="left-controls">
+                                    <button id="voiceOutputBtn" class="voice-output-btn" title="Read Aloud" style="display: none;">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                                <div class="right-controls">
+                                    <span class="size-info" id="outputSize">0 chars</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Voice Output Status -->
+                    <div class="voice-status" id="voiceOutputStatus" style="display: none;">
+                        <i class="fas fa-volume-up"></i>
+                        <span>Reading aloud...</span>
+                    </div>
+                    
+                    <!-- Output Actions -->
+                    <div class="output-footer">
+                        <div class="output-actions">
+                            <button id="copyBtn" class="btn-ghost-small" title="Copy Prompt">
+                                <i class="fas fa-copy"></i>
+                                Copy
+                            </button>
+                            <button id="saveBtn" class="btn-ghost-small" title="Save to History">
+                                <i class="fas fa-save"></i>
+                                Save
+                            </button>
+                            <button id="exportBtn" class="btn-ghost-small" title="Export as File">
+                                <i class="fas fa-download"></i>
+                                Export
+                            </button>
+                        </div>
+                        <div class="stats-row">
+                            <span id="outputStats">Ready</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Expand Button -->
+                    <button class="expand-btn" id="expandOutputBtn" title="Expand Editor">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                </div>
+                
+                <!-- Card 3: AI Platforms -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-pill">3</div>
+                        <div class="step-header-main">
+                            <h2>Deploy to AI</h2>
+                            <p class="step-subtitle">Click any tool to copy prompt & launch</p>
+                        </div>
+                        <div class="step-meta">
+                            <span class="meta-pill" id="bestMatch">Best Match</span>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Ranking Explanation -->
+                    <div class="ai-ranking-explanation hidden" id="aiExplanation">
+                        <i class="fas fa-info-circle"></i>
+                        Tools are ranked based on your task type and requirements
+                    </div>
+                    
+                    <!-- Launch Buttons -->
+                    <div class="launch-list">
+                        <!-- ChatGPT -->
+                        <button id="chatgptBtn" class="launch-btn launch-chatgpt" title="Open ChatGPT">
+                            <div class="launch-icon">
+                                <i class="fas fa-comment-alt"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">ChatGPT</div>
+                                <div class="launch-sub">Best for writing & conversation</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                        
+                        <!-- Claude -->
+                        <button id="claudeBtn" class="launch-btn launch-claude" title="Open Claude">
+                            <div class="launch-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Claude</div>
+                                <div class="launch-sub">Best for analysis & business</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                        
+                        <!-- Gemini -->
+                        <button id="geminiBtn" class="launch-btn launch-gemini" title="Open Google Gemini">
+                            <div class="launch-icon">
+                                <i class="fab fa-google"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Gemini</div>
+                                <div class="launch-sub">Best for research & education</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                        
+                        <!-- Perplexity -->
+                        <button id="perplexityBtn" class="launch-btn launch-perplexity" title="Open Perplexity">
+                            <div class="launch-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Perplexity</div>
+                                <div class="launch-sub">Best for research with citations</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                        
+                        <!-- DeepSeek -->
+                        <button id="deepseekBtn" class="launch-btn launch-deepseek" title="Open DeepSeek">
+                            <div class="launch-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">DeepSeek</div>
+                                <div class="launch-sub">Best for coding & development</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                        
+                        <!-- Copilot -->
+                        <button id="copilotBtn" class="launch-btn launch-copilot" title="Open Copilot">
+                            <div class="launch-icon">
+                                <i class="fab fa-microsoft"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Copilot</div>
+                                <div class="launch-sub">Best for coding & Office integration</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                        
+                        <!-- Grok -->
+                        <button id="grokBtn" class="launch-btn launch-grok" title="Open Grok">
+                            <div class="launch-icon">
+                                <i class="fab fa-x-twitter"></i>
+                            </div>
+                            <div class="launch-text">
+                                <div class="launch-name">Grok</div>
+                                <div class="launch-sub">Best for creative & real-time</div>
+                            </div>
+                            <div class="match-score">0 pts</div>
+                        </button>
+                    </div>
+                    
+                    <!-- History Panel -->
+                    <div class="history-panel">
+                        <div class="history-header">
+                            <span>Recent Prompts</span>
+                            <button id="clearHistoryBtn" class="btn-ghost-small danger" title="Clear History">
+                                <i class="fas fa-trash"></i>
+                                Clear
+                            </button>
+                        </div>
+                        <div id="historyList">
+                            <!-- History items will be added here -->
+                        </div>
                     </div>
                 </div>
-                <div class="footer-copyright">
-                    <p>© 2024 PromptCraft Pro. Enterprise AI Prompt Assistant v2.0</p>
-                    <p>Optimizing AI interactions for professional workflows</p>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span><i class="fas fa-robot"></i> AI-Powered</span>
+                <span class="dot">•</span>
+                <span><i class="fas fa-bolt"></i> Real-time</span>
+                <span class="dot">•</span>
+                <span><i class="fas fa-shield-alt"></i> Secure</span>
+            </div>
+            <div class="footer-right">
+                <span>PromptCraft Pro v2.0</span>
+                <span class="dot">•</span>
+                <span id="themeDisplay">Cyberpunk Theme</span>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Modals -->
+    
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Settings</h3>
+                <button class="modal-close" id="closeSettingsBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Settings content -->
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-palette"></i> Theme</label>
+                    <select id="themeSelect" class="input-text">
+                        <option value="dark">Cyberpunk (Default)</option>
+                        <option value="light">Light</option>
+                        <option value="sunset">Sunset Glow</option>
+                        <option value="aurora">Aurora Magic</option>
+                    </select>
+                    <p class="form-hint"><i class="fas fa-info-circle"></i> Change the visual theme of the application</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-language"></i> Voice Language</label>
+                    <select id="voiceLanguage" class="input-text">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="ko-KR">Korean</option>
+                    </select>
+                    <p class="form-hint"><i class="fas fa-info-circle"></i> Language for voice input and output</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-bolt"></i> Auto-Convert Delay</label>
+                    <select id="autoConvertDelay" class="input-text">
+                        <option value="0">Disabled</option>
+                        <option value="3000">3 seconds</option>
+                        <option value="5000" selected>5 seconds</option>
+                        <option value="10000">10 seconds</option>
+                    </select>
+                    <p class="form-hint"><i class="fas fa-info-circle"></i> Automatically generate prompt after typing stops</p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button id="resetSettingsBtn" class="btn-ghost">
+                        <i class="fas fa-undo"></i>
+                        Reset
+                    </button>
+                    <button id="saveSettingsBtn" class="btn-primary">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
                 </div>
             </div>
         </div>
-    </footer>
-
-    <!-- Main App Script - UPDATED TO FIX DUPLICATE DECLARATION -->
-    <script>
-        // Check if StorageService already exists
-        if (typeof StorageService === 'undefined') {
-            // Simple StorageService if not already loaded
-            class StorageService {
-                constructor() {
-                    this.prefix = 'promptcraft_';
-                }
-
-                save(key, value) {
-                    try {
-                        localStorage.setItem(this.prefix + key, JSON.stringify(value));
-                        return true;
-                    } catch (error) {
-                        console.error('Error saving to localStorage:', error);
-                        return false;
-                    }
-                }
-
-                load(key, defaultValue = null) {
-                    try {
-                        const item = localStorage.getItem(this.prefix + key);
-                        return item ? JSON.parse(item) : defaultValue;
-                    } catch (error) {
-                        console.error('Error loading from localStorage:', error);
-                        return defaultValue;
-                    }
-                }
-            }
-            
-            // Make available globally if not already
-            window.StorageService = StorageService;
-        }
-
-        // AI Platforms Data
-        const AI_PLATFORMS = [
-            {
-                id: 'gemini',
-                name: 'Google Gemini',
-                description: 'Best for creative writing, coding, and general assistance',
-                tags: ['Creative', 'Free Tier', 'Coding'],
-                logo: 'gemini',
-                icon: 'fas fa-google',
-                recommended: true,
-                status: 'online'
-            },
-            {
-                id: 'chatgpt',
-                name: 'OpenAI ChatGPT',
-                description: 'Excellent for structured tasks and detailed analysis',
-                tags: ['Analytical', 'Precise', 'Popular'],
-                logo: 'chatgpt',
-                icon: 'fas fa-comment-alt',
-                recommended: false,
-                status: 'online'
-            },
-            {
-                id: 'claude',
-                name: 'Anthropic Claude',
-                description: 'Great for long-form content and complex reasoning',
-                tags: ['Long-form', 'Reasoning', 'Safe'],
-                logo: 'claude',
-                icon: 'fas fa-brain',
-                recommended: false,
-                status: 'online'
-            },
-            {
-                id: 'perplexity',
-                name: 'Perplexity AI',
-                description: 'Perfect for research and up-to-date information',
-                tags: ['Research', 'Real-time', 'Citations'],
-                logo: 'perplexity',
-                icon: 'fas fa-search',
-                recommended: false,
-                status: 'online'
-            },
-            {
-                id: 'deepseek',
-                name: 'DeepSeek',
-                description: 'Excellent for mathematical and technical tasks',
-                tags: ['Technical', 'Math', 'Free'],
-                logo: 'deepseek',
-                icon: 'fas fa-code',
-                recommended: false,
-                status: 'online'
-            },
-            {
-                id: 'copilot',
-                name: 'Microsoft Copilot',
-                description: 'Integrated with Microsoft ecosystem and productivity tools',
-                tags: ['Productivity', 'Integration', 'Windows'],
-                logo: 'copilot',
-                icon: 'fab fa-microsoft',
-                recommended: false,
-                status: 'online'
-            },
-            {
-                id: 'grok',
-                name: 'Grok AI',
-                description: 'Conversational AI with real-time knowledge and humor',
-                tags: ['Conversational', 'Real-time', 'Engaging'],
-                logo: 'grok',
-                icon: 'fas fa-bolt',
-                recommended: false,
-                status: 'online'
-            }
-        ];
-
-        // Main App Class
-        class PromptCraftApp {
-            constructor() {
-                this.state = {
-                    hasGeneratedPrompt: false,
-                    promptModified: false,
-                    selectedPlatform: null
-                };
-                
-                this.init();
-            }
-            
-            init() {
-                this.setupDOM();
-                this.bindEvents();
-                this.renderAIPlatforms();
-                this.updateUI();
-                console.log('PromptCraft Pro initialized');
-            }
-            
-            setupDOM() {
-                this.elements = {
-                    userInput: document.getElementById('userInput'),
-                    charCounter: document.getElementById('charCounter'),
-                    outputSection: document.getElementById('outputSection'),
-                    outputArea: document.getElementById('outputArea'),
-                    platformsGrid: document.getElementById('platformsGrid'),
-                    platformsEmptyState: document.getElementById('platformsEmptyState'),
-                    stickyPrepareBtn: document.getElementById('stickyPrepareBtn'),
-                    stickyResetBtn: document.getElementById('stickyResetBtn'),
-                    copyBtn: document.getElementById('copyBtn'),
-                    exportBtn: document.getElementById('exportBtn'),
-                    progressFill: document.getElementById('progressFill')
-                };
-            }
-            
-            bindEvents() {
-                // Input handling
-                this.elements.userInput.addEventListener('input', () => this.handleInputChange());
-                
-                // Main buttons
-                this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
-                this.elements.stickyResetBtn.addEventListener('click', () => this.resetApp());
-                this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
-                this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
-                
-                // Output editing
-                this.elements.outputArea.addEventListener('input', () => this.handlePromptEdit());
-            }
-            
-            handleInputChange() {
-                const text = this.elements.userInput.value;
-                const charCount = text.length;
-                
-                this.elements.charCounter.textContent = `${charCount}/5000`;
-                
-                // Update button states
-                this.updateButtonStates();
-            }
-            
-            preparePrompt() {
-                const inputText = this.elements.userInput.value.trim();
-                
-                if (!inputText) {
-                    alert('Please describe your task first');
-                    return;
-                }
-                
-                if (inputText.length < 10) {
-                    alert('Please provide more details for better results');
-                    return;
-                }
-                
-                // Show loading state
-                this.elements.stickyPrepareBtn.disabled = true;
-                this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
-                
-                // Simulate API call
-                setTimeout(() => {
-                    // Generate a sample prompt
-                    const samplePrompt = `You are an expert AI assistant. Please help with the following task:
-
-${inputText}
-
-Please provide a detailed, comprehensive response that includes:
-1. A clear explanation of the approach
-2. Step-by-step implementation
-3. Best practices and considerations
-4. Examples where applicable
-5. Potential challenges and solutions
-
-Respond in a professional, informative tone suitable for enterprise use.`;
-                    
-                    this.elements.outputArea.textContent = samplePrompt;
-                    this.state.hasGeneratedPrompt = true;
-                    this.state.promptModified = false;
-                    
-                    // Show output section
-                    this.elements.outputSection.classList.add('visible');
-                    
-                    // Update progress
-                    this.updateProgress();
-                    
-                    // Update AI platforms
-                    this.renderAIPlatforms(true);
-                    
-                    // Update buttons
-                    this.updateButtonStates();
-                    
-                    // Reset button
-                    this.elements.stickyPrepareBtn.disabled = false;
-                    this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-magic"></i> Prepare Prompt';
-                    
-                }, 1000);
-            }
-            
-            renderAIPlatforms(hasGenerated = false) {
-                const platformsGrid = this.elements.platformsGrid;
-                const emptyState = this.elements.platformsEmptyState;
-                
-                if (!platformsGrid || !emptyState) return;
-                
-                // Clear current content
-                platformsGrid.innerHTML = '';
-                
-                if (!hasGenerated) {
-                    // Show empty state
-                    platformsGrid.appendChild(emptyState);
-                    emptyState.style.display = 'flex';
-                    return;
-                }
-                
-                // Hide empty state
-                emptyState.style.display = 'none';
-                
-                // Render platform cards
-                AI_PLATFORMS.forEach((platform, index) => {
-                    const card = document.createElement('div');
-                    card.className = `platform-card ${platform.recommended ? 'recommended' : ''}`;
-                    card.dataset.platform = platform.id;
-                    
-                    card.innerHTML = `
-                        <div class="platform-logo-container ${platform.logo}">
-                            <i class="${platform.icon}"></i>
-                        </div>
-                        <div class="platform-info">
-                            <div class="platform-name">
-                                ${platform.name}
-                                ${platform.recommended ? '<span class="recommended-badge">Recommended</span>' : ''}
-                            </div>
-                            <div class="platform-desc">${platform.description}</div>
-                            <div class="platform-tags">
-                                ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
-                            </div>
-                        </div>
-                    `;
-                    
-                    card.addEventListener('click', () => this.selectPlatform(platform.id));
-                    
-                    platformsGrid.appendChild(card);
-                });
-            }
-            
-            selectPlatform(platformId) {
-                this.state.selectedPlatform = platformId;
-                
-                // Update all platform cards
-                document.querySelectorAll('.platform-card').forEach(card => {
-                    card.classList.remove('selected');
-                    if (card.dataset.platform === platformId) {
-                        card.classList.add('selected');
-                    }
-                });
-                
-                this.updateProgress();
-                alert(`Selected ${platformId === 'gemini' ? 'Google Gemini' : platformId}`);
-            }
-            
-            updateProgress() {
-                let progress = 33;
-                
-                if (this.state.hasGeneratedPrompt) {
-                    progress = 66;
-                }
-                
-                if (this.state.selectedPlatform) {
-                    progress = 100;
-                }
-                
-                if (this.elements.progressFill) {
-                    this.elements.progressFill.style.width = `${progress}%`;
-                }
-            }
-            
-            updateButtonStates() {
-                const hasInput = this.elements.userInput.value.trim().length > 0;
-                const hasOutput = this.state.hasGeneratedPrompt;
-                
-                // Prepare button
-                this.elements.stickyPrepareBtn.disabled = !hasInput;
-                
-                // Show/hide buttons
-                if (hasOutput) {
-                    this.elements.stickyPrepareBtn.classList.add('hidden');
-                    this.elements.stickyResetBtn.classList.remove('hidden');
-                } else {
-                    this.elements.stickyPrepareBtn.classList.remove('hidden');
-                    this.elements.stickyResetBtn.classList.add('hidden');
-                }
-                
-                // Output buttons
-                this.elements.copyBtn.disabled = !hasOutput;
-                this.elements.exportBtn.disabled = !hasOutput;
-                this.elements.copyBtn.classList.toggle('disabled', !hasOutput);
-                this.elements.exportBtn.classList.toggle('disabled', !hasOutput);
-            }
-            
-            copyPrompt() {
-                const text = this.elements.outputArea.textContent.trim();
-                
-                if (!text) {
-                    alert('No prompt to copy');
-                    return;
-                }
-                
-                navigator.clipboard.writeText(text)
-                    .then(() => {
-                        alert('Prompt copied to clipboard!');
-                        this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                        setTimeout(() => {
-                            this.elements.copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
-                        }, 2000);
-                    })
-                    .catch(err => {
-                        alert('Failed to copy. Please try again.');
-                    });
-            }
-            
-            exportPrompt() {
-                const promptText = this.elements.outputArea.textContent.trim();
-                if (!promptText) {
-                    alert('No prompt to export');
-                    return;
-                }
-                
-                const blob = new Blob([promptText], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `prompt-${Date.now()}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                alert('Prompt exported successfully');
-            }
-            
-            resetApp() {
-                this.elements.userInput.value = '';
-                this.elements.outputArea.textContent = '';
-                this.state.hasGeneratedPrompt = false;
-                this.state.promptModified = false;
-                this.state.selectedPlatform = null;
-                
-                this.elements.outputSection.classList.remove('visible');
-                this.updateProgress();
-                this.updateButtonStates();
-                this.renderAIPlatforms(false);
-                alert('Application reset successfully');
-            }
-            
-            handlePromptEdit() {
-                this.state.promptModified = true;
-                this.updateButtonStates();
-            }
-            
-            updateUI() {
-                this.updateButtonStates();
-                this.updateProgress();
-            }
-        }
-        
-        // Initialize app when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            window.app = new PromptCraftApp();
-        });
-    </script>
+    </div>
+    
+    <!-- Theme Modal -->
+    <div class="modal-backdrop" id="themeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-palette"></i> Choose Theme</h3>
+                <button class="modal-close" id="closeThemeBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Theme grid will be populated by JavaScript -->
+                <div id="themeGrid" class="theme-grid"></div>
+                <div class="theme-hint">
+                    <i class="fas fa-lightbulb"></i>
+                    Theme changes apply immediately
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expand Overlay -->
+    <div class="expand-overlay" id="expandOverlay" style="display: none;"></div>
+    
+    <!-- Notification Container -->
+    <div class="notification" id="notification" style="display: none;">
+        <i class="fas fa-info-circle"></i>
+        <span id="notificationMessage">Notification message</span>
+    </div>
+    
+    <!-- Custom Tooltip -->
+    <div class="custom-tooltip" id="customTooltip" style="display: none;">
+        <div class="tooltip-header">
+            <strong id="tooltipTitle">Tooltip Title</strong>
+            <span class="tooltip-match" id="tooltipMatch">90% match</span>
+        </div>
+        <div class="tooltip-body" id="tooltipBody">
+            Tooltip content goes here...
+        </div>
+        <div class="tooltip-reason" id="tooltipReason">
+            <i class="fas fa-check-circle"></i>
+            <span>Best match for your task type</span>
+        </div>
+        <div class="tooltip-footer">
+            <i class="fas fa-mouse-pointer"></i>
+            Click to copy prompt and launch
+        </div>
+    </div>
+    
+    <!-- JavaScript Files -->
+    <script type="module" src="js/core/app.js"></script>
 </body>
 </html>
