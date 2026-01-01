@@ -15,8 +15,11 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Your CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/ui-components.css">
 </head>
 <body class="dark-theme">
     <!-- Header -->
@@ -448,21 +451,34 @@
         <div class="loading-subtext">This usually takes 2-3 seconds</div>
     </div>
 
-    <!-- JavaScript Files -->
-    <script src="js/state.js"></script>
-    <script src="js/voice-manager.js"></script>
-    <script src="js/theme-manager.js"></script>
-    <script src="js/history-manager.js"></script>
-    <script src="js/notification-service.js"></script>
-    <script src="js/ai-ranker.js"></script>
-    <script src="js/storage-service.js"></script>
-    <script src="js/settings-service.js"></script>
-    <script src="js/api-service.js"></script>
-    <script src="js/prompt-generator.js"></script>
-    <script src="js/template-manager.js"></script>
-    <script src="js/constants.js"></script>
-    <script src="js/helpers.js"></script>
-    <script src="js/debounce.js"></script>
+    <!-- JavaScript Files (Load in correct order) -->
+    
+    <!-- 1. Utilities First -->
+    <script src="js/utils/constants.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/utils/debounce.js"></script>
+    
+    <!-- 2. Services -->
+    <script src="js/services/storage-service.js"></script>
+    <script src="js/services/api-service.js"></script>
+    <script src="js/services/notification-service.js"></script>
+    
+    <!-- 3. Modules -->
+    <script src="js/modules/state.js"></script>
+    <script src="js/modules/theme-manager.js"></script>
+    <script src="js/modules/voice-manager.js"></script>
+    <script src="js/modules/history-manager.js"></script>
+    <script src="js/modules/template-manager.js"></script>
+    <script src="js/modules/prompt-generator.js"></script>
+    <script src="js/modules/ai-ranker.js"></script>
+    <script src="js/modules/intent-detector.js"></script>
+    
+    <!-- 4. Main Application -->
+    <!-- Development version -->
     <script src="js/app.js"></script>
+    
+    <!-- OR Production bundle (comment out app.js and uncomment below) -->
+    <!-- <script src="js/app-bundle.js"></script> -->
+    
 </body>
 </html>
