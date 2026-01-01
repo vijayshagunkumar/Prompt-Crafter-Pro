@@ -14,18 +14,8 @@
         'js/services/notification-service.js',
         'js/services/api-service.js',
         
-        // Modules
-        'js/modules/intent-detector.js',
-        'js/modules/prompt-generator.js',
-        'js/modules/ai-ranker.js',
-        'js/modules/voice-manager.js',
-        'js/modules/template-manager.js',
-        'js/modules/history-manager.js',
-        'js/modules/theme-manager.js',
-        
         // Core
         'js/core/state.js',
-        'js/core/events.js',
         'js/core/app.js'
     ];
     
@@ -50,9 +40,8 @@
             
             // Check if all required classes are available
             const requiredClasses = [
-                'AppState', 'IntentDetector', 'PromptGenerator', 'AIRanker',
-                'VoiceManager', 'ThemeManager', 'HistoryManager', 'TemplateManager',
-                'NotificationService', 'StorageService', 'SettingsService', 'ApiService',
+                'AppState', 'NotificationService', 
+                'StorageService', 'SettingsService', 'ApiService',
                 'PromptCraftApp'
             ];
             
