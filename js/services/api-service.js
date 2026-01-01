@@ -1,4 +1,4 @@
-// api-service.js - UPDATED for Cloudflare Worker with ENABLE_API_KEYS: false
+// api-service.js - UPDATED with model selection support
 (function() {
     'use strict';
     
@@ -13,23 +13,29 @@
             // ✅ Set to FALSE to use real AI API through your Worker
             this.useSimulatedMode = false;
             
+            // ✅ Default model
+            this.selectedModel = 'gemini-3-flash-preview';
+            
             this.isOnline = true;
             
             console.log('[ApiService] Initialized with REAL AI API mode:', {
                 workerUrl: this.baseUrl,
                 mode: 'REAL AI API (no client key needed)',
-                note: 'Worker has ENABLE_API_KEYS: false'
+                defaultModel: this.selectedModel
             });
         }
         
-        async generatePrompt(inputText, style = 'detailed') {
-            console.log(`[ApiService] Generating prompt: "${inputText.substring(0, 50)}..."`);
+        async generatePrompt(inputText, style = 'detailed', model = null) {
+            console.log(`[ApiService] Generating prompt with style: ${style}, model: ${model || this.selectedModel}`);
+            
+            // Use specified model or default
+            const useModel = model || this.selectedModel;
             
             // If we want to use simulated mode for testing, uncomment:
-            // if (this.useSimulatedMode) {
-            //     console.log('[ApiService] Using simulated mode');
-            //     return this.simulateAIProcessing(inputText, style);
-            // }
+            if (this.useSimulatedMode) {
+                console.log('[ApiService] Using simulated mode');
+                return this.simulateAIProcessing(inputText, style);
+            }
             
             try {
                 console.log('[ApiService] Calling Cloudflare Worker (real AI)...');
@@ -43,7 +49,7 @@
                     },
                     body: JSON.stringify({
                         prompt: inputText,
-                        model: 'gemini-3-flash-preview'
+                        model: useModel  // ✅ Use the selected model
                     })
                 });
                 
@@ -59,7 +65,7 @@
                 if (data.success && data.result) {
                     return {
                         content: data.result,
-                        model: data.model || 'gemini-3-flash-preview',
+                        model: data.model || useModel,
                         provider: data.provider || 'cloudflare-worker',
                         success: true,
                         fromAPI: true,
@@ -160,10 +166,19 @@ Use professional tone and formal structure suitable for business communications.
         }
         
         // Helper to set API configuration
-        setApiConfig(baseUrl, apiKey) {
+        setApiConfig(baseUrl, apiKey, model = null) {
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
+            if (model) {
+                this.selectedModel = model;
+            }
             console.log('[ApiService] API configuration updated');
+        }
+        
+        // Set selected model
+        setModel(model) {
+            this.selectedModel = model;
+            console.log(`[ApiService] Model set to: ${model}`);
         }
         
         // Get current API status
@@ -171,6 +186,7 @@ Use professional tone and formal structure suitable for business communications.
             return {
                 hasApiKey: !!this.apiKey,
                 baseUrl: this.baseUrl,
+                selectedModel: this.selectedModel,
                 useSimulatedMode: this.useSimulatedMode,
                 isOnline: this.isOnline,
                 config: 'Using Worker with ENABLE_API_KEYS: false'
