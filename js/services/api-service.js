@@ -1,42 +1,45 @@
-// api-service.js - FIXED VERSION
+// api-service.js - UPDATED for Cloudflare Worker with ENABLE_API_KEYS: false
 (function() {
     'use strict';
     
     class ApiService {
         constructor() {
-            // ✅ Your Worker URL
+            // ✅ Your actual Worker URL
             this.baseUrl = 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
             
-            // ⚠️ Add your API key here when you get it
-            this.apiKey = ''; // Leave empty for now
+            // ⚠️ No API key needed when ENABLE_API_KEYS: false in worker
+            this.apiKey = '';
             
-            // ✅ Simulated mode works without API key
-            this.useSimulatedMode = !this.apiKey;
+            // ✅ Set to FALSE to use real AI API through your Worker
+            this.useSimulatedMode = false;
             
-            console.log('[ApiService] Initialized:', {
-                url: this.baseUrl,
-                hasApiKey: !!this.apiKey,
-                mode: this.useSimulatedMode ? 'SIMULATED' : 'REAL API'
+            this.isOnline = true;
+            
+            console.log('[ApiService] Initialized with REAL AI API mode:', {
+                workerUrl: this.baseUrl,
+                mode: 'REAL AI API (no client key needed)',
+                note: 'Worker has ENABLE_API_KEYS: false'
             });
         }
         
         async generatePrompt(inputText, style = 'detailed') {
-            console.log(`[ApiService] Generating: ${inputText.substring(0, 50)}...`);
+            console.log(`[ApiService] Generating prompt: "${inputText.substring(0, 50)}..."`);
             
-            // If no API key or in simulated mode, use simulated response
-            if (!this.apiKey || this.useSimulatedMode) {
-                console.log('[ApiService] Using simulated mode');
-                return this.simulateAIProcessing(inputText, style);
-            }
+            // If we want to use simulated mode for testing, uncomment:
+            // if (this.useSimulatedMode) {
+            //     console.log('[ApiService] Using simulated mode');
+            //     return this.simulateAIProcessing(inputText, style);
+            // }
             
             try {
-                console.log('[ApiService] Calling your Worker API...');
+                console.log('[ApiService] Calling Cloudflare Worker (real AI)...');
                 
+                // ✅ SIMPLE: No API key needed when worker has ENABLE_API_KEYS: false
                 const response = await fetch(this.baseUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': this.apiKey
+                        'Content-Type': 'application/json'
+                        // No x-api-key needed!
                     },
                     body: JSON.stringify({
                         prompt: inputText,
@@ -46,11 +49,12 @@
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error(`[ApiService] Error ${response.status}:`, errorText);
-                    throw new Error(`API error: ${response.status}`);
+                    console.error(`[ApiService] Worker error ${response.status}:`, errorText);
+                    throw new Error(`Worker error: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                console.log('[ApiService] Worker response received');
                 
                 if (data.success && data.result) {
                     return {
@@ -58,20 +62,22 @@
                         model: data.model || 'gemini-3-flash-preview',
                         provider: data.provider || 'cloudflare-worker',
                         success: true,
-                        fromAPI: true
+                        fromAPI: true,
+                        rawResponse: data
                     };
                 } else {
-                    throw new Error(data.error || 'Failed to generate');
+                    throw new Error(data.error || 'Failed to generate prompt');
                 }
                 
             } catch (error) {
-                console.error('[ApiService] API call failed:', error);
+                console.error('[ApiService] Worker call failed:', error.message);
+                
+                // Fallback to simulated response
                 console.log('[ApiService] Falling back to simulated response');
                 return this.simulateAIProcessing(inputText, style);
             }
         }
         
-        // ✅ ADD THIS METHOD - It was missing!
         simulateAIProcessing(inputText, style = 'detailed') {
             return new Promise((resolve) => {
                 setTimeout(() => {
@@ -126,58 +132,59 @@ Use professional tone and formal structure suitable for business communications.
         }
         
         async checkStatus() {
-            // Always return true for simulated mode
-            if (this.useSimulatedMode) {
-                return true;
-            }
-            
-            if (this.apiKey) {
-                try {
-                    const response = await fetch(`${this.baseUrl}/health`);
-                    return response.ok;
-                } catch (error) {
-                    console.log('[ApiService] Health check failed:', error);
-                    return false;
+            try {
+                // Check worker health endpoint
+                const response = await fetch(`${this.baseUrl}/health`);
+                if (response.ok) {
+                    const health = await response.json();
+                    console.log('[ApiService] Worker health:', health.status);
+                    this.isOnline = true;
+                    return true;
                 }
+            } catch (error) {
+                console.log('[ApiService] Health check failed:', error.message);
+                this.isOnline = false;
             }
-            
-            return true;
+            return false;
         }
         
         async savePrompt(promptData) {
             console.log('[ApiService] Saving prompt locally:', promptData);
+            // In the future, you could save to Cloudflare KV
             return { success: true, id: Date.now() };
         }
         
         async loadPrompts() {
+            // In the future, you could load from Cloudflare KV
             return [];
         }
         
+        // Helper to set API configuration
         setApiConfig(baseUrl, apiKey) {
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
             console.log('[ApiService] API configuration updated');
         }
         
+        // Get current API status
         getApiStatus() {
             return {
                 hasApiKey: !!this.apiKey,
                 baseUrl: this.baseUrl,
                 useSimulatedMode: this.useSimulatedMode,
-                isOnline: true
+                isOnline: this.isOnline,
+                config: 'Using Worker with ENABLE_API_KEYS: false'
             };
+        }
+        
+        // Method to switch between simulated and real mode
+        setMode(useSimulated) {
+            this.useSimulatedMode = useSimulated;
+            console.log(`[ApiService] Mode changed to: ${useSimulated ? 'SIMULATED' : 'REAL API'}`);
         }
     }
     
-    // ✅ EXPORT PROPERLY - This was missing!
-    if (typeof window !== 'undefined') {
-        window.ApiService = ApiService;
-        console.log('[ApiService] Exported to window.ApiService');
-    }
-    
-    // ✅ Also export for ES6 modules
-    if (typeof exports !== 'undefined') {
-        exports.ApiService = ApiService;
-    }
+    // Export to global scope
+    window.ApiService = ApiService;
     
 })();
