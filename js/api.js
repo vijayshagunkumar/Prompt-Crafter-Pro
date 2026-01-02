@@ -4,7 +4,7 @@
  * Matches the worker.js API structure
  */
 
-class APIService {
+class API {
     constructor() {
         // Production API endpoint
         this.apiUrl = 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
@@ -388,7 +388,11 @@ ${userInput}
 }
 
 // Create singleton instance
-const apiService = new APIService();
+const apiService = new API();
 
+// Make globally available
 window.API = API;
+window.apiService = apiService;
+
+// Export for module usage
 export default API;
