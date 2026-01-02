@@ -334,4 +334,6 @@ class Utils {
     }
 }
 
-export default Utils;
+// REMOVE THIS LINE: export default Utils;
+// REPLACE WITH:
+window.Utils = Utils;
