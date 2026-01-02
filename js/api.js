@@ -391,3 +391,4 @@ ${userInput}
 const apiService = new APIService();
 
 window.API = API;
+export default API;
