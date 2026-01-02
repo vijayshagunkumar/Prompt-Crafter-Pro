@@ -118,5 +118,3 @@ document.addEventListener('DOMContentLoaded', () => {
 // Make the function globally available
 window.initializeApp = initializeApp;
 
-// Export for module usage
-export { initializeApp };
