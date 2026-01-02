@@ -521,6 +521,8 @@ const Config = {
     }
 };
 
-// Initialize and export
+// Initialize and make globally available
 window.Config = Config.init();
+
+// Export for module usage
 export default Config.init();
