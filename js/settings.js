@@ -369,7 +369,53 @@ class Settings {
         return display;
     }
 }
+class Settings {
+    constructor() {
+        this.defaultSettings = {
+            theme: 'dark',
+            interfaceLanguage: 'en',
+            uiDensity: 'comfortable',
+            defaultAiModel: 'gemini-3-flash-preview',
+            promptStyle: 'detailed',
+            maxHistoryItems: 50,
+            speechRate: 1,
+            speechPitch: 1,
+            speechVolume: 1,
+            autoSave: true,
+            apiEndpoint: 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
+            apiMode: 'auto',
+            defaultPlatform: 'gemini',
+            voiceInputLanguage: 'en-US',
+            voiceOutputLanguage: 'en-US',
+            autoConvertDelay: 0,
+            notificationDuration: 3000,
+            textareaSize: 'auto',
+            debugMode: 'off'
+        };
+    }
 
+    load() {
+        try {
+            const saved = localStorage.getItem('promptCraftSettings');
+            return saved ? JSON.parse(saved) : this.defaultSettings;
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            return this.defaultSettings;
+        }
+    }
+
+    save(settings) {
+        try {
+            localStorage.setItem('promptCraftSettings', JSON.stringify(settings));
+            return true;
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            return false;
+        }
+    }
+}
+
+window.Settings = Settings;
 // Create singleton instance
 const settings = new Settings();
 
