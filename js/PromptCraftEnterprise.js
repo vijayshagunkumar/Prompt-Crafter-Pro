@@ -51,7 +51,11 @@ if (!checkDependencies()) {
             }
             
             this.utils = new Utils();
-            this.settingsManager = new Settings();
+      this.settingsManager = new Settings();
+// Add missing save() method if it doesn't exist
+if (this.settingsManager && !this.settingsManager.save) {
+    this.settingsManager.save = this.settingsManager.saveSettings.bind(this.settingsManager);
+}
             this.speechManager = new SpeechService();
             this.platformsManager = new Platforms();
             
