@@ -383,7 +383,5 @@ const platforms = new Platforms();
 
 // Make globally available
 window.Platforms = Platforms;
-window.platforms = platforms;
 
-// Export for module usage
-export default Platforms;
+
