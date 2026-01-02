@@ -1,4 +1,3 @@
-cat > js/main.js << 'EOF'
 import PromptCraftEnterprise from './PromptCraftEnterprise.js';
 
 /**
@@ -92,4 +91,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Export for module usage if needed
 export default PromptCraftEnterprise;
-EOF
