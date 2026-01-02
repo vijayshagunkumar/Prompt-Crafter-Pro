@@ -361,4 +361,4 @@ class PlatformsManager {
     }
 }
 
-export default PlatformsManager;
+window.Platforms = Platforms;
