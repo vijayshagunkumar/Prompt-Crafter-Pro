@@ -1,3 +1,4 @@
+cat > js/main.js << 'EOF'
 import PromptCraftEnterprise from './PromptCraftEnterprise.js';
 
 /**
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Add global error handler
         window.addEventListener('error', (event) => {
             console.error('Global error:', event.error);
-            if (window.promptCraft) {
+            if (window.promptCraft && typeof window.promptCraft.showNotification === 'function') {
                 window.promptCraft.showNotification('An unexpected error occurred', 'error');
             }
         });
@@ -23,15 +24,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Add unhandled promise rejection handler
         window.addEventListener('unhandledrejection', (event) => {
             console.error('Unhandled promise rejection:', event.reason);
-            if (window.promptCraft) {
+            if (window.promptCraft && typeof window.promptCraft.showNotification === 'function') {
                 window.promptCraft.showNotification('An unexpected error occurred', 'error');
             }
         });
         
-        // Make services globally available for debugging
-        if (process.env.NODE_ENV === 'development') {
+        // Check for development mode using URL or localStorage
+        const isDevMode = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' ||
+                         localStorage.getItem('debugMode') === 'true';
+        
+        // Make services globally available for debugging in dev mode
+        if (isDevMode) {
             window.PromptCraft = window.promptCraft;
             console.log('📢 PromptCraft available as window.PromptCraft for debugging');
+            console.log('🔧 Development mode enabled');
         }
         
         console.log('✅ PromptCraft Pro initialized successfully');
@@ -85,3 +92,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Export for module usage if needed
 export default PromptCraftEnterprise;
+EOF
