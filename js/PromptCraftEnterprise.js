@@ -1561,6 +1561,7 @@ Format: Academic but accessible, with citations where appropriate.`
             // Reset changed flag
             this.state.settingsChanged = false;
             this.disableSaveSettingsButton();
+            
         }
     }
     
@@ -1572,6 +1573,29 @@ Format: Academic but accessible, with citations where appropriate.`
     }
     
     populateSettingsForm() {
+        // Update range input values display
+const speechRate = document.getElementById('speechRate');
+const speechPitch = document.getElementById('speechPitch');
+const speechVolume = document.getElementById('speechVolume');
+
+[speechRate, speechPitch, speechVolume].forEach(input => {
+    if (input) {
+        const valueId = input.id + 'Value';
+        const valueSpan = document.getElementById(valueId);
+        
+        if (valueSpan) {
+            // Update display
+            valueSpan.textContent = input.value;
+            
+            // Add event listener for real-time updates
+            input.addEventListener('input', () => {
+                valueSpan.textContent = input.value;
+                this.state.settingsChanged = true;
+                this.enableSaveSettingsButton();
+            });
+        }
+    }
+});
         const settings = this.settings;
         
         // Set theme
