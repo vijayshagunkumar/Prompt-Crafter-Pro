@@ -1593,55 +1593,46 @@ Format: Academic but accessible, with citations where appropriate.`
             }
         }
         
-        saveSettings() {
-            try {
-                const settings = {
-                    theme: document.getElementById('themeSelect')?.value || 'dark',
-                    interfaceLanguage: document.getElementById('interfaceLanguage')?.value || 'en',
-                    uiDensity: document.getElementById('uiDensity')?.value || 'comfortable',
-                    defaultAiModel: document.getElementById('defaultAiModel')?.value || 'gemini-3-flash-preview',
-                    promptStyle: document.getElementById('promptStyle')?.value || 'detailed',
-                    maxHistoryItems: parseInt(document.getElementById('maxHistoryItems')?.value) || 50,
-                    speechRate: parseFloat(document.getElementById('speechRate')?.value) || 1,
-                    speechPitch: parseFloat(document.getElementById('speechPitch')?.value) || 1,
-                    speechVolume: parseFloat(document.getElementById('speechVolume')?.value) || 1,
-                    autoSave: document.getElementById('autoSave')?.checked || true,
-                    apiEndpoint: document.getElementById('apiEndpoint')?.value || 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
-                    apiMode: document.getElementById('apiMode')?.value || 'auto',
-                    defaultPlatform: document.getElementById('defaultPlatform')?.value || 'gemini',
-                    voiceInputLanguage: document.getElementById('voiceInputLanguage')?.value || 'en-US',
-                    voiceOutputLanguage: document.getElementById('voiceOutputLanguage')?.value || 'en-US',
-                    autoConvertDelay: parseInt(document.getElementById('autoConvertDelay')?.value) || 0,
-                    notificationDuration: parseInt(document.getElementById('notificationDuration')?.value) || 3000,
-                    textareaSize: document.getElementById('textareaSize')?.value || 'auto',
-                    debugMode: document.getElementById('debugMode')?.value || 'off'
-                };
+    saveSettings() {
+    try {
+        console.log('[PromptCraft] Saving settings...');
+        
+        // Get settings from form
+        const settings = this.getSettingsFromForm();
+        
+        // Use Settings class if available (YOUR EXISTING CLASS)
+        if (typeof Settings !== 'undefined' && window.settings) {
+            const success = window.settings.update(settings);
+            
+            if (success) {
+                console.log('[PromptCraft] Settings saved via Settings class');
+                this.showNotification('Settings saved successfully!', 'success');
                 
-                if (!settings.defaultAiModel) {
-                    throw new Error('Default AI model is required');
+                // Close settings modal
+                if (this.elements.settingsModal) {
+                    this.elements.settingsModal.classList.remove('active');
+                    document.body.style.overflow = '';
                 }
-                
-                this.settingsManager.save(settings);
-                this.settings = settings;
-                this.applyTheme();
-                this.applyUIDensity();
-                this.state.currentModel = settings.defaultAiModel;
-                this.updateCurrentModel();
-                this.updateFooterInfo();
-                
-                if (this.state.recognition) {
-                    this.state.recognition.lang = settings.voiceInputLanguage || 'en-US';
-                }
-                
-                this.closeSettings();
-                this.showNotification('Settings saved successfully', 'success');
-                this.disableSaveSettingsButton();
-                
-            } catch (error) {
-                console.error('Failed to save settings:', error);
-                this.showNotification(`Failed to save settings: ${error.message}`, 'error');
+                return;
             }
         }
+        
+        // Fallback: Save directly to localStorage
+        localStorage.setItem('promptCraftSettings', JSON.stringify(settings));
+        console.log('[PromptCraft] Settings saved to localStorage');
+        this.showNotification('Settings saved successfully!', 'success');
+        
+        // Close settings modal
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+    } catch (error) {
+        console.error('Failed to save settings:', error);
+        this.showNotification('Failed to save settings: ' + error.message, 'error');
+    }
+}
         
         undo() {
             if (this.state.undoStack.length > 0) {
