@@ -1,12 +1,17 @@
-
 /**
  * Main initialization for PromptCraft Pro
  */
 
-// Initialize the application when the DOM is loaded
-document.addEventListener('DOMContentLoaded', async () => {
+// Define the initialization function
+function initializeApp() {
     try {
         console.log('🚀 Initializing PromptCraft Pro...');
+        
+        // Make sure PromptCraftEnterprise exists
+        if (typeof PromptCraftEnterprise === 'undefined') {
+            console.error('❌ PromptCraftEnterprise class not found');
+            throw new Error('PromptCraftEnterprise class not loaded. Check script loading order.');
+        }
         
         // Create and initialize the application
         window.promptCraft = new PromptCraftEnterprise();
@@ -40,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         console.log('✅ PromptCraft Pro initialized successfully');
+        return window.promptCraft;
         
     } catch (error) {
         console.error('❌ Failed to initialize PromptCraft Pro:', error);
@@ -85,9 +91,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
         
         document.body.appendChild(errorDiv);
+        throw error;
     }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
 });
 
-// Export for module usage if needed
-export default PromptCraftEnterprise;
+// ========== IMPORTANT: Add these 2 lines at the VERY END ==========
+// Make the function globally available
 window.initializeApp = initializeApp;
+
+// Export for module usage (if you need it)
+// If you're not using ES6 modules, you can comment this out
+// export { initializeApp };
