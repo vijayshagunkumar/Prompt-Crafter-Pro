@@ -6,7 +6,7 @@
 
 class APIService {
     constructor() {
-        // Production API endpoint - YOUR WORKER URL
+        // Production API endpoint
         this.apiUrl = 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
         
         // Local development endpoint
@@ -18,7 +18,7 @@ class APIService {
         // API Key from your worker environment variable
         this.apiKey = ''; // Will be injected via environment
         
-        // Model mapping - matches worker.js models
+        // Model mapping
         this.availableModels = {
             'gemini-3-flash-preview': {
                 name: 'Gemini 3 Flash',
@@ -71,9 +71,6 @@ class APIService {
 
     /**
      * Generate a prompt using the AI service
-     * @param {string} userInput - User's prompt input
-     * @param {object} options - Generation options
-     * @returns {Promise<object>} - Generated response
      */
     async generatePrompt(userInput, options = {}) {
         const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -81,10 +78,10 @@ class APIService {
         console.log(`[API ${requestId}] Generating prompt with model: ${options.model || 'default'}`);
         
         try {
-            // Prepare request body matching worker.js expected format
+            // Prepare request body
             const requestBody = {
                 prompt: userInput,
-                model: options.model || 'gemini-3-flash-preview', // Default to latest Gemini
+                model: options.model || 'gemini-3-flash-preview',
                 ...options
             };
             
@@ -97,13 +94,14 @@ class APIService {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.retryConfig.timeout);
             
+            // FIXED: Added mode and credentials
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: this.headers,
                 body: JSON.stringify(requestBody),
                 signal: controller.signal,
-                mode: 'cors', // ✅ Add CORS mode
-                credentials: 'omit' // ✅ Don't send credentials
+                mode: 'cors', // Added
+                credentials: 'omit' // Added
             });
             
             clearTimeout(timeoutId);
@@ -135,11 +133,13 @@ class APIService {
             console.error(`[API ${requestId}] Error:`, error.message);
             
             // Retry logic
-            if (options.retryCount < this.retryConfig.maxRetries && 
+            const retryCount = options.retryCount || 0;
+            
+            if (retryCount < this.retryConfig.maxRetries && 
                 !error.message.includes('timeout') &&
                 !error.message.includes('rate limit')) {
                 
-                console.log(`[API ${requestId}] Retrying (${(options.retryCount || 0) + 1}/${this.retryConfig.maxRetries})...`);
+                console.log(`[API ${requestId}] Retrying (${retryCount + 1}/${this.retryConfig.maxRetries})...`);
                 
                 await new Promise(resolve => 
                     setTimeout(resolve, this.retryConfig.retryDelay)
@@ -147,7 +147,7 @@ class APIService {
                 
                 return this.generatePrompt(userInput, {
                     ...options,
-                    retryCount: (options.retryCount || 0) + 1
+                    retryCount: retryCount + 1
                 });
             }
             
@@ -161,58 +161,30 @@ class APIService {
     }
 
     /**
-     * Handle API errors based on status code
+     * Handle API errors
      */
     handleApiError(statusCode, errorData, requestId) {
         const errors = {
-            400: {
-                message: errorData.error || 'Invalid request format',
-                userMessage: 'Please check your prompt format'
-            },
-            401: {
-                message: 'Authentication failed',
-                userMessage: 'API authentication error'
-            },
-            403: {
-                message: 'Access denied',
-                userMessage: 'Access to this resource is denied'
-            },
-            404: {
-                message: 'API endpoint not found',
-                userMessage: 'Service temporarily unavailable'
-            },
-            429: {
-                message: 'Rate limit exceeded',
-                userMessage: 'Too many requests. Please wait a moment.'
-            },
-            500: {
-                message: errorData.error || 'Internal server error',
-                userMessage: 'AI service is experiencing issues'
-            },
-            502: {
-                message: 'Bad gateway',
-                userMessage: 'Service temporarily unavailable'
-            },
-            503: {
-                message: 'Service unavailable',
-                userMessage: 'AI service is currently down'
-            },
-            504: {
-                message: 'Gateway timeout',
-                userMessage: 'Request timed out. Please try again.'
-            }
+            400: { message: errorData.error || 'Invalid request format' },
+            401: { message: 'Authentication failed' },
+            403: { message: 'Access denied' },
+            404: { message: 'API endpoint not found' },
+            429: { message: 'Rate limit exceeded' },
+            500: { message: errorData.error || 'Internal server error' },
+            502: { message: 'Bad gateway' },
+            503: { message: 'Service unavailable' },
+            504: { message: 'Gateway timeout' }
         };
         
         const error = errors[statusCode] || {
-            message: errorData.error || `HTTP ${statusCode}`,
-            userMessage: 'An unexpected error occurred'
+            message: errorData.error || `HTTP ${statusCode}`
         };
         
         return new Error(`${error.message} [${requestId}]`);
     }
 
     /**
-     * Update rate limit information from response headers
+     * Update rate limit information
      */
     updateRateLimitInfo(response) {
         const minuteRemaining = response.headers.get('X-RateLimit-Remaining');
@@ -230,15 +202,14 @@ class APIService {
     }
 
     /**
-     * Test API connectivity - FIXED WITH CORS
-     * @returns {Promise<object>} - Connection status
+     * Test API connectivity
      */
     async testConnection() {
         try {
             const response = await fetch(`${this.apiUrl}/health`, {
                 method: 'GET',
-                mode: 'cors', // ✅ Add CORS mode
-                credentials: 'omit', // ✅ Don't send credentials
+                mode: 'cors',
+                credentials: 'omit',
                 headers: {
                     'Accept': 'application/json'
                 }
@@ -273,7 +244,6 @@ class APIService {
 
     /**
      * Get available models
-     * @returns {object} - Available models
      */
     getAvailableModels() {
         return this.availableModels;
@@ -281,8 +251,6 @@ class APIService {
 
     /**
      * Get model display name
-     * @param {string} modelId - Model identifier
-     * @returns {string} - Display name
      */
     getModelDisplayName(modelId) {
         const model = this.availableModels[modelId];
@@ -291,19 +259,18 @@ class APIService {
 
     /**
      * Get rate limit status
-     * @returns {object} - Rate limit information
      */
     getRateLimitStatus() {
         return {
             ...this.rateLimitInfo,
-            minuteLimit: 20, // From your worker config
-            dailyLimit: 500, // From your worker config
+            minuteLimit: 20,
+            dailyLimit: 500,
             used: 500 - this.rateLimitInfo.dailyRemaining
         };
     }
 
     /**
-     * Fallback prompt generation (when API is unavailable)
+     * Fallback prompt generation
      */
     generateFallbackPrompt(userInput, style = 'detailed') {
         console.log('Using fallback prompt generation');
