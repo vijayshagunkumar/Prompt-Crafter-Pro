@@ -107,7 +107,41 @@ if (!checkDependencies()) {
                 lastInput: ''
             };
             
-            this.settings = this.settingsManager.load();
+  // Try different ways to get settings
+if (typeof this.settingsManager.load === 'function') {
+    this.settings = this.settingsManager.load();
+} else if (this.settingsManager.currentSettings) {
+    this.settings = this.settingsManager.currentSettings;
+} else if (typeof this.settingsManager.get === 'function') {
+    // Get all settings using get() method
+    this.settings = {};
+    Object.keys(this.settingsManager.defaultSettings).forEach(key => {
+        this.settings[key] = this.settingsManager.get(key);
+    });
+} else {
+    console.warn('Could not load settings, using defaults');
+    this.settings = {
+        theme: 'dark',
+        interfaceLanguage: 'en',
+        uiDensity: 'comfortable',
+        defaultAiModel: 'gemini-3-flash-preview',
+        promptStyle: 'detailed',
+        maxHistoryItems: 50,
+        speechRate: 1,
+        speechPitch: 1,
+        speechVolume: 1,
+        autoSave: true,
+        apiEndpoint: 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
+        apiMode: 'auto',
+        defaultPlatform: 'gemini',
+        voiceInputLanguage: 'en-US',
+        voiceOutputLanguage: 'en-US',
+        autoConvertDelay: 0,
+        notificationDuration: 3000,
+        textareaSize: 'auto',
+        debugMode: 'off'
+    };
+}
             this.init();
         }
 
