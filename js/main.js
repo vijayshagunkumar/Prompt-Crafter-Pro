@@ -10,11 +10,23 @@ function initializeApp() {
         // Make sure PromptCraftEnterprise exists
         if (typeof PromptCraftEnterprise === 'undefined') {
             console.error('❌ PromptCraftEnterprise class not found');
-            throw new Error('PromptCraftEnterprise class not loaded. Check script loading order.');
+            
+            // Check if we can load it from the global scope
+            if (window.PromptCraftEnterprise) {
+                console.log('✅ Found PromptCraftEnterprise in window scope');
+            } else {
+                console.error('❌ PromptCraftEnterprise not found anywhere');
+                throw new Error('PromptCraftEnterprise class not loaded. Check script loading order.');
+            }
         }
         
         // Create and initialize the application
         window.promptCraft = new PromptCraftEnterprise();
+        
+        // Initialize the app
+        if (typeof window.promptCraft.initialize === 'function') {
+            window.promptCraft.initialize();
+        }
         
         // Add global error handler
         window.addEventListener('error', (event) => {
@@ -97,13 +109,14 @@ function initializeApp() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
+    // Wait a bit for all scripts to load
+    setTimeout(() => {
+        initializeApp();
+    }, 100);
 });
 
-// ========== IMPORTANT: Add these 2 lines at the VERY END ==========
 // Make the function globally available
 window.initializeApp = initializeApp;
 
-// Export for module usage (if you need it)
-// If you're not using ES6 modules, you can comment this out
-// export { initializeApp };
+// Export for module usage
+export { initializeApp };
