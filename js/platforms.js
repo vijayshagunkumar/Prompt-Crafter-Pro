@@ -1,365 +1,389 @@
 /**
- * AI Platforms data and handlers for PromptCraft Pro
- * FIXED VERSION - Updated with correct URLs for all platforms
+ * AI Platforms Configuration and Management
  */
 
-class PlatformsManager {
+class Platforms {
     constructor() {
-        this.platforms = [
-            {
+        this.platforms = {
+            gemini: {
                 id: 'gemini',
                 name: 'Google Gemini',
+                description: 'Advanced reasoning with Google\'s AI',
                 icon: 'fab fa-google',
-                color: '#8B5CF6',
-                description: 'Advanced reasoning and multimodal capabilities',
-                tags: ['Multimodal', 'Advanced', 'Google'],
-                launchUrl: 'https://gemini.google.com/',
-                params: { prompt: '' },
+                color: '#4285F4',
+                url: 'https://gemini.google.com',
+                apiUrl: 'https://generativelanguage.googleapis.com',
+                params: '&hl=en',
                 recommended: true,
-                logoUrl: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg',
-                provider: 'Google',
-                supportedModels: ['gemini-3-flash-preview', 'gemini-1.5-flash-latest']
+                enabled: true,
+                tags: ['Free', 'Advanced']
             },
-            {
+            chatgpt: {
                 id: 'chatgpt',
-                name: 'ChatGPT',
-                icon: 'fas fa-comment-alt',
+                name: 'OpenAI ChatGPT',
+                description: 'Most popular AI assistant',
+                icon: 'fab fa-openai',
                 color: '#10A37F',
-                description: 'Industry-leading conversational AI',
-                tags: ['Conversational', 'Popular', 'OpenAI'],
-                launchUrl: 'https://chat.openai.com/',
-                params: { text: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/openai-2.svg',
-                provider: 'OpenAI',
-                supportedModels: ['gpt-4o-mini', 'gpt-4', 'gpt-3.5-turbo']
+                url: 'https://chat.openai.com',
+                apiUrl: 'https://api.openai.com',
+                params: '',
+                enabled: true,
+                tags: ['Freemium', 'Versatile']
             },
-            {
+            claude: {
                 id: 'claude',
                 name: 'Anthropic Claude',
+                description: 'Safety-focused, long context',
                 icon: 'fas fa-brain',
-                color: '#D4A574',
-                description: 'Constitutional AI with safety focus',
-                tags: ['Safe', 'Contextual', 'Anthropic'],
-                launchUrl: 'https://claude.ai/',
-                params: { query: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/anthropic-1.svg',
-                provider: 'Anthropic',
-                supportedModels: ['claude-3-haiku', 'claude-3-sonnet']
+                color: '#D3A3F9',
+                url: 'https://claude.ai',
+                apiUrl: 'https://api.anthropic.com',
+                params: '',
+                enabled: true,
+                tags: ['Freemium', 'Safe']
             },
-            {
+            perplexity: {
                 id: 'perplexity',
                 name: 'Perplexity AI',
+                description: 'Real-time web search AI',
                 icon: 'fas fa-search',
-                color: '#6B7280',
-                description: 'Search-enhanced AI with citations',
-                tags: ['Search', 'Citations', 'Real-time'],
-                launchUrl: 'https://www.perplexity.ai/',
-                params: { q: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/perplexity-1.svg',
-                provider: 'Perplexity',
-                supportedModels: ['sonar', 'sonar-pro']
+                color: '#000000',
+                url: 'https://www.perplexity.ai',
+                apiUrl: 'https://api.perplexity.ai',
+                params: '',
+                enabled: true,
+                tags: ['Freemium', 'Web Search']
             },
-            {
+            deepseek: {
                 id: 'deepseek',
                 name: 'DeepSeek',
-                icon: 'fas fa-code',
-                color: '#3B82F6',
-                description: 'Code-focused AI with reasoning',
-                tags: ['Code', 'Developer', 'Reasoning'],
-                launchUrl: 'https://chat.deepseek.com/',
-                params: { message: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/deepseek-1.svg',
-                provider: 'DeepSeek',
-                supportedModels: ['deepseek-coder', 'deepseek-chat']
+                description: 'Free, powerful open model',
+                icon: 'fas fa-rocket',
+                color: '#2D5BFF',
+                url: 'https://chat.deepseek.com',
+                apiUrl: 'https://api.deepseek.com',
+                params: '',
+                enabled: true,
+                tags: ['Free', 'Open Source']
             },
-            {
+            copilot: {
                 id: 'copilot',
                 name: 'Microsoft Copilot',
+                description: 'Integrated with Microsoft 365',
                 icon: 'fab fa-microsoft',
                 color: '#0078D4',
-                description: 'Microsoft-powered AI assistant',
-                tags: ['Microsoft', 'Productivity', 'Office'],
-                launchUrl: 'https://copilot.microsoft.com/',
-                params: { prompt: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/microsoft-copilot.svg',
-                provider: 'Microsoft',
-                supportedModels: ['gpt-4', 'gpt-4-turbo']
+                url: 'https://copilot.microsoft.com',
+                apiUrl: 'https://api.copilot.microsoft.com',
+                params: '',
+                enabled: true,
+                tags: ['Freemium', 'Integrated']
             },
-            {
+            grok: {
                 id: 'grok',
                 name: 'Grok AI',
-                icon: 'fab fa-x-twitter',
+                description: 'X\'s AI with real-time data',
+                icon: 'fas fa-bolt',
                 color: '#FF6B35',
-                description: 'Real-time knowledge AI',
-                tags: ['Real-time', 'X', 'Elon'],
-                launchUrl: 'https://grok.x.ai/',
-                params: { query: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/x-social-media-logo.svg',
-                provider: 'xAI',
-                supportedModels: ['grok-1', 'grok-2']
+                url: 'https://grok.x.ai',
+                apiUrl: 'https://api.x.ai',
+                params: '',
+                enabled: true,
+                tags: ['Premium', 'Real-time']
             }
-        ];
-
-        this.selectedPlatform = null;
-    }
-
-    /* ================= CORE GETTERS ================= */
-
-    getAllPlatforms() {
-        return this.platforms;
-    }
-
-    getPlatform(id) {
-        return this.platforms.find(p => p.id === id);
-    }
-
-    getRecommendedPlatform() {
-        return this.platforms.find(p => p.recommended) || this.platforms[0];
-    }
-
-    selectPlatform(platformId) {
-        const platform = this.getPlatform(platformId);
-        if (platform) {
-            this.selectedPlatform = platform;
-            return platform;
-        }
-        return null;
-    }
-
-    getSelectedPlatform() {
-        return this.selectedPlatform;
-    }
-
-    clearSelectedPlatform() {
-        this.selectedPlatform = null;
-    }
-
-    /* ================= URL HANDLING - FIXED ================= */
-
-    generatePlatformUrl(platformId, prompt) {
-        const platform = this.getPlatform(platformId);
-        if (!platform) {
-            console.error(`Platform not found: ${platformId}`);
-            return null;
-        }
-
-        // Always return the launch URL (no parameters needed for direct opening)
-        return platform.launchUrl;
-    }
-
-    /* ================= UI CARD CREATION - FIXED ================= */
-
-    createPlatformCard(platform) {
-        const card = document.createElement('div');
-        card.className = 'platform-card';
-        card.dataset.platform = platform.id;
-        card.tabIndex = 0;
-        card.style.cursor = 'pointer';
-
-        if (platform.recommended) {
-            card.classList.add('recommended');
-        }
-
-        const logoHtml = platform.logoUrl
-            ? `<img src="${platform.logoUrl}" alt="${platform.name} logo"
-                onerror="this.onerror=null;this.replaceWith(document.createElement('i')).className='${platform.icon}'">`
-            : `<i class="${platform.icon}"></i>`;
-
-        card.innerHTML = `
-            <div class="platform-icon">${logoHtml}</div>
-            <div class="platform-info">
-                <h4>${platform.name}</h4>
-                <p>${platform.description}</p>
-            </div>
-            <div class="platform-actions">
-                <button class="platform-action-btn" data-action="copy" title="Copy prompt for ${platform.name}">
-                    <i class="fas fa-copy"></i>
-                </button>
-                <button class="platform-action-btn" data-action="open" title="Open ${platform.name}">
-                    <i class="fas fa-external-link-alt"></i>
-                </button>
-            </div>
-        `;
-
-        // Store platform reference
-        card._platform = platform;
-
-        // Add click handlers for action buttons
-        const copyBtn = card.querySelector('[data-action="copy"]');
-        const openBtn = card.querySelector('[data-action="open"]');
+        };
         
-        copyBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.handleCopyForPlatform(platform);
-        });
-        
-        openBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.handleOpenPlatform(platform);
-        });
-        
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.platform-action-btn')) {
-                this.handlePlatformClick(platform);
-            }
-        });
-        
-        card.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.handlePlatformClick(platform);
-            }
-        });
-
-        return card;
+        this.selectedPlatform = 'gemini';
+        this.loadSettings();
     }
-
-    /* ================= PLATFORM ACTIONS - FIXED ================= */
-
-    handleCopyForPlatform(platform) {
-        const outputEl = document.getElementById('outputArea');
-        const prompt = outputEl ? outputEl.innerText.trim() : '';
-
-        if (!prompt) {
-            console.warn('No prompt to copy');
-            this.showNotification('No prompt to copy', 'warning');
-            return;
-        }
-
-        navigator.clipboard.writeText(prompt).then(() => {
-            console.log(`Prompt copied for ${platform.name}`);
-            this.showNotification(`Prompt copied for ${platform.name}`, 'success');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            this.showNotification('Failed to copy to clipboard', 'error');
-        });
-    }
-
-    handleOpenPlatform(platform) {
-        console.log(`Opening platform: ${platform.name}`);
-        
-        if (platform.launchUrl) {
-            // Open in new tab
-            window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
-            this.showNotification(`Opening ${platform.name}...`, 'info');
-        } else {
-            console.error(`No URL configured for ${platform.name}`);
-            this.showNotification(`No URL configured for ${platform.name}`, 'error');
-        }
-    }
-
-    handlePlatformClick(platform) {
-        console.log(`Platform clicked: ${platform.name}`);
-        
-        // First copy the prompt
-        const outputEl = document.getElementById('outputArea');
-        const prompt = outputEl ? outputEl.innerText.trim() : '';
-        
-        if (prompt) {
-            navigator.clipboard.writeText(prompt).then(() => {
-                console.log(`Prompt copied for ${platform.name}`);
+    
+    /**
+     * Load platform settings
+     */
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem('promptcraft_platform_settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
                 
-                // Then open the platform
-                if (platform.launchUrl) {
-                    window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
-                    this.showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
-                } else {
-                    this.showNotification(`Prompt copied for ${platform.name}`, 'success');
+                // Update platform enabled states
+                if (settings.enabledPlatforms) {
+                    Object.keys(settings.enabledPlatforms).forEach(platformId => {
+                        if (this.platforms[platformId]) {
+                            this.platforms[platformId].enabled = settings.enabledPlatforms[platformId];
+                        }
+                    });
                 }
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                this.showNotification('Failed to copy prompt', 'error');
-            });
-        } else {
-            console.warn('No prompt to copy');
-            this.showNotification('Generate a prompt first', 'warning');
+                
+                // Update selected platform
+                if (settings.selectedPlatform && this.platforms[settings.selectedPlatform]) {
+                    this.selectedPlatform = settings.selectedPlatform;
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to load platform settings:', error);
         }
     }
-
-    /* ================= HELPER METHODS ================= */
-
-    showNotification(message, type = 'info') {
-        // Create or use existing notification system
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3'};
-            color: white;
-            padding: 12px 20px;
-            border-radius: 4px;
-            z-index: 10000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        `;
+    
+    /**
+     * Save platform settings
+     */
+    saveSettings() {
+        try {
+            const enabledPlatforms = {};
+            Object.keys(this.platforms).forEach(platformId => {
+                enabledPlatforms[platformId] = this.platforms[platformId].enabled;
+            });
+            
+            const settings = {
+                selectedPlatform: this.selectedPlatform,
+                enabledPlatforms: enabledPlatforms
+            };
+            
+            localStorage.setItem('promptcraft_platform_settings', JSON.stringify(settings));
+        } catch (error) {
+            console.warn('Failed to save platform settings:', error);
+        }
+    }
+    
+    /**
+     * Get all platforms
+     */
+    getAllPlatforms() {
+        return Object.values(this.platforms);
+    }
+    
+    /**
+     * Get enabled platforms
+     */
+    getEnabledPlatforms() {
+        return Object.values(this.platforms).filter(platform => platform.enabled);
+    }
+    
+    /**
+     * Get platform by ID
+     */
+    getPlatform(platformId) {
+        return this.platforms[platformId] || null;
+    }
+    
+    /**
+     * Get selected platform
+     */
+    getSelectedPlatform() {
+        return this.platforms[this.selectedPlatform];
+    }
+    
+    /**
+     * Set selected platform
+     */
+    setSelectedPlatform(platformId) {
+        if (this.platforms[platformId]) {
+            this.selectedPlatform = platformId;
+            this.saveSettings();
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Enable/disable platform
+     */
+    setPlatformEnabled(platformId, enabled) {
+        if (this.platforms[platformId]) {
+            this.platforms[platformId].enabled = enabled;
+            
+            // If disabling selected platform, switch to another enabled platform
+            if (platformId === this.selectedPlatform && !enabled) {
+                const enabledPlatform = this.getEnabledPlatforms()[0];
+                if (enabledPlatform) {
+                    this.selectedPlatform = enabledPlatform.id;
+                }
+            }
+            
+            this.saveSettings();
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Get platform URL with prompt
+     */
+    getPlatformUrl(platformId, prompt = '') {
+        const platform = this.platforms[platformId];
+        if (!platform) return null;
         
-        document.body.appendChild(notification);
+        let url = platform.url;
         
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
+        // Add prompt to URL based on platform
+        if (prompt.trim()) {
+            const encodedPrompt = encodeURIComponent(prompt.trim());
+            
+            switch (platformId) {
+                case 'gemini':
+                    url = `https://gemini.google.com/app?prompt=${encodedPrompt}`;
+                    break;
+                case 'chatgpt':
+                    url = `https://chat.openai.com/?q=${encodedPrompt}`;
+                    break;
+                case 'claude':
+                    url = `https://claude.ai/new?prompt=${encodedPrompt}`;
+                    break;
+                case 'perplexity':
+                    url = `https://www.perplexity.ai/search?q=${encodedPrompt}`;
+                    break;
+                case 'deepseek':
+                    url = `https://chat.deepseek.com/?q=${encodedPrompt}`;
+                    break;
+                case 'copilot':
+                    url = `https://copilot.microsoft.com/?q=${encodedPrompt}`;
+                    break;
+                case 'grok':
+                    url = `https://grok.x.ai/?q=${encodedPrompt}`;
+                    break;
+            }
+        }
+        
+        // Add additional params
+        if (platform.params) {
+            url += platform.params;
+        }
+        
+        return url;
     }
-
-    /* ================= FILTERING / SORTING ================= */
-
-    getPlatformsForModel(modelId) {
-        return this.platforms.filter(p =>
-            !p.supportedModels || p.supportedModels.includes(modelId)
-        );
+    
+    /**
+     * Open platform with prompt
+     */
+    openPlatform(platformId, prompt = '') {
+        const url = this.getPlatformUrl(platformId, prompt);
+        if (url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+            return true;
+        }
+        return false;
     }
-
-    filterPlatformsByTag(tag) {
-        return this.platforms.filter(p =>
-            p.tags.some(t => t.toLowerCase().includes(tag.toLowerCase()))
-        );
+    
+    /**
+     * Get recommended platform
+     */
+    getRecommendedPlatform() {
+        const recommended = Object.values(this.platforms).find(p => p.recommended);
+        return recommended || this.platforms.gemini;
     }
-
-    searchPlatforms(query) {
-        const q = query.toLowerCase();
-        return this.platforms.filter(p =>
-            p.name.toLowerCase().includes(q) ||
-            p.description.toLowerCase().includes(q) ||
-            p.tags.some(t => t.toLowerCase().includes(q)) ||
-            p.provider.toLowerCase().includes(q)
-        );
-    }
-
-    sortPlatforms(criteria = 'name', order = 'asc') {
-        const sorted = [...this.platforms];
-        sorted.sort((a, b) => {
-            const av = a[criteria]?.toString().toLowerCase() || '';
-            const bv = b[criteria]?.toString().toLowerCase() || '';
-            return order === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-        });
-        return sorted;
-    }
-
-    /* ================= STATS & EXPORT ================= */
-
+    
+    /**
+     * Get platform stats
+     */
     getPlatformStats() {
+        const allPlatforms = this.getAllPlatforms();
+        const enabledPlatforms = this.getEnabledPlatforms();
+        
         return {
-            total: this.platforms.length,
-            recommended: this.platforms.filter(p => p.recommended).length,
-            providers: [...new Set(this.platforms.map(p => p.provider))]
+            total: allPlatforms.length,
+            enabled: enabledPlatforms.length,
+            disabled: allPlatforms.length - enabledPlatforms.length,
+            recommended: allPlatforms.filter(p => p.recommended).length
         };
     }
-
-    exportPlatformsData(format = 'json') {
-        const data = {
-            timestamp: new Date().toISOString(),
-            platforms: this.platforms
-        };
-        return format === 'json'
-            ? JSON.stringify(data, null, 2)
-            : data;
+    
+    /**
+     * Get platform by feature
+     */
+    getPlatformsByFeature(feature) {
+        return Object.values(this.platforms).filter(platform => {
+            switch (feature) {
+                case 'free':
+                    return platform.tags.includes('Free');
+                case 'realtime':
+                    return platform.tags.includes('Real-time');
+                case 'websearch':
+                    return platform.tags.includes('Web Search');
+                case 'opensource':
+                    return platform.tags.includes('Open Source');
+                default:
+                    return false;
+            }
+        });
     }
-
-    resetToDefault() {
-        this.selectedPlatform = null;
+    
+    /**
+     * Search platforms
+     */
+    searchPlatforms(query) {
+        const searchTerm = query.toLowerCase();
+        return Object.values(this.platforms).filter(platform => {
+            return (
+                platform.name.toLowerCase().includes(searchTerm) ||
+                platform.description.toLowerCase().includes(searchTerm) ||
+                platform.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+        });
+    }
+    
+    /**
+     * Export platforms configuration
+     */
+    exportConfig() {
+        return {
+            platforms: this.platforms,
+            selectedPlatform: this.selectedPlatform,
+            stats: this.getPlatformStats(),
+            timestamp: new Date().toISOString()
+        };
+    }
+    
+    /**
+     * Import platforms configuration
+     */
+    importConfig(config) {
+        try {
+            if (config.platforms) {
+                Object.keys(config.platforms).forEach(platformId => {
+                    if (this.platforms[platformId]) {
+                        this.platforms[platformId] = {
+                            ...this.platforms[platformId],
+                            ...config.platforms[platformId]
+                        };
+                    }
+                });
+            }
+            
+            if (config.selectedPlatform && this.platforms[config.selectedPlatform]) {
+                this.selectedPlatform = config.selectedPlatform;
+            }
+            
+            this.saveSettings();
+            return true;
+        } catch (error) {
+            console.error('Failed to import platform config:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Reset to default configuration
+     */
+    resetToDefaults() {
+        // Reset enabled state for all platforms
+        Object.keys(this.platforms).forEach(platformId => {
+            this.platforms[platformId].enabled = true;
+        });
+        
+        // Reset selected platform
+        this.selectedPlatform = 'gemini';
+        
+        this.saveSettings();
+        return true;
     }
 }
 
+// Create singleton instance
+const platforms = new Platforms();
+
+// Make globally available
 window.Platforms = Platforms;
+window.platforms = platforms;
+
+// Export for module usage
 export default Platforms;
