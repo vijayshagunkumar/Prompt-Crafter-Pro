@@ -362,3 +362,4 @@ class PlatformsManager {
 }
 
 window.Platforms = Platforms;
+export default Platforms;
