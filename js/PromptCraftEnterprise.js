@@ -1,3 +1,7 @@
+if (!window.Settings || !window.settings) {
+    throw new Error('Settings dependency not loaded');
+}
+
 console.log('📦 Loading PromptCraftEnterprise...');
 
 // Check if all dependencies are available
