@@ -485,6 +485,25 @@
         </button>
     </div>
 
+    <!-- Add the missing button right after sticky CTA buttons -->
+    <button id="stickyPrepareBtn" class="sticky-btn" style="
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    ">
+        🚀 Prepare Prompt
+    </button>
+
     <!-- Full Screen Editor -->
     <div id="fullScreenEditor" class="full-screen-editor">
         <div class="editor-header">
@@ -954,17 +973,14 @@
         </div>
     </footer>
 
-    <!-- JavaScript Files -->
-<!-- JavaScript Files - Use regular scripts, NOT modules -->
-<!-- Make sure it's exactly this order: -->
-<script src="js/utils.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/speech.js"></script>
-<script src="js/platforms.js"></script>
-<script src="js/api.js"></script>
-<script src="js/PromptCraftEnterprise.js"></script>
-<script src="js/main.js"></script>
-
+    <!-- JavaScript Files - Load at the VERY END -->
+    <script src="js/utils.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/platforms.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/PromptCraftEnterprise.js"></script>
+    <script src="js/main.js"></script>
     
     <!-- Main Application Script -->
     <script>
