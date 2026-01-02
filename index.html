@@ -1215,312 +1215,354 @@
             }, 1000);
         });
         
-        function initializeEssentialComponents() {
-            // Fix for Settings Save Button enable/disable
-            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-            const settingsInputs = document.querySelectorAll('#settingsModal input, #settingsModal select, #settingsModal textarea');
-            
-            if (saveSettingsBtn) {
-                settingsInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        saveSettingsBtn.disabled = false;
-                        saveSettingsBtn.style.opacity = '1';
-                        saveSettingsBtn.style.cursor = 'pointer';
-                        saveSettingsBtn.style.background = 'var(--primary)';
-                    });
-                });
+  function initializeEssentialComponents() {
+    console.log('Initializing essential components...');
+    
+    // Initialize range input value displays
+    const speechRate = document.getElementById('speechRate');
+    const speechPitch = document.getElementById('speechPitch');
+    const speechVolume = document.getElementById('speechVolume');
+    
+    if (speechRate) {
+        const speechRateValue = document.getElementById('speechRateValue');
+        if (speechRateValue) speechRateValue.textContent = speechRate.value;
+        speechRate.addEventListener('input', function() {
+            if (speechRateValue) speechRateValue.textContent = this.value;
+            markSettingsAsChanged();
+        });
+    }
+    
+    if (speechPitch) {
+        const speechPitchValue = document.getElementById('speechPitchValue');
+        if (speechPitchValue) speechPitchValue.textContent = speechPitch.value;
+        speechPitch.addEventListener('input', function() {
+            if (speechPitchValue) speechPitchValue.textContent = this.value;
+            markSettingsAsChanged();
+        });
+    }
+    
+    if (speechVolume) {
+        const speechVolumeValue = document.getElementById('speechVolumeValue');
+        if (speechVolumeValue) speechVolumeValue.textContent = speechVolume.value;
+        speechVolume.addEventListener('input', function() {
+            if (speechVolumeValue) speechVolumeValue.textContent = this.value;
+            markSettingsAsChanged();
+        });
+    }
+    
+    // Settings change detection
+    const settingsInputs = document.querySelectorAll('#settingsModal .setting-input, #settingsModal .setting-select, #settingsModal .setting-range, #settingsModal .setting-checkbox');
+    settingsInputs.forEach(input => {
+        input.addEventListener('change', markSettingsAsChanged);
+    });
+    
+    // Settings modal functionality
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    
+    if (settingsBtn && settingsModal) {
+        settingsBtn.addEventListener('click', () => {
+            loadCurrentSettings();
+            settingsModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+    
+    if (closeSettingsBtn) {
+        closeSettingsBtn.addEventListener('click', closeSettingsModal);
+    }
+    
+    if (cancelSettingsBtn) {
+        cancelSettingsBtn.addEventListener('click', closeSettingsModal);
+    }
+    
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener('click', saveSettings);
+    }
+    
+    // Close modal on overlay click
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                closeSettingsModal();
+            }
+        });
+    }
+    
+    // Add keyboard shortcuts for settings
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && settingsModal.classList.contains('active')) {
+            closeSettingsModal();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === ',' && !settingsModal.classList.contains('active')) {
+            e.preventDefault();
+            settingsBtn.click();
+        }
+    });
+    
+    // Test connection button
+    const testConnectionBtn = document.getElementById('testConnectionBtn');
+    if (testConnectionBtn) {
+        testConnectionBtn.addEventListener('click', testAPIConnection);
+    }
+    
+    // Clear cache button
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    if (clearCacheBtn) {
+        clearCacheBtn.addEventListener('click', clearApplicationCache);
+    }
+    
+    // Export logs button
+    const exportLogsBtn = document.getElementById('exportLogsBtn');
+    if (exportLogsBtn) {
+        exportLogsBtn.addEventListener('click', exportApplicationLogs);
+    }
+    
+    // Load initial settings
+    loadCurrentSettings();
+    
+    console.log('Essential components initialized successfully');
+}
+
+// Settings helper functions
+function markSettingsAsChanged() {
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.classList.add('settings-changed');
+    }
+}
+
+function closeSettingsModal() {
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal) {
+        settingsModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function loadCurrentSettings() {
+    // Load saved settings from localStorage
+    const settings = JSON.parse(localStorage.getItem('promptCraftSettings') || '{}');
+    
+    // Load each setting into the form
+    const settingsToLoad = {
+        'apiEndpoint': 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
+        'apiMode': 'auto',
+        'defaultAiModel': 'gemini-3-flash-preview',
+        'interfaceLanguage': 'en',
+        'voiceInputLanguage': 'en-US',
+        'voiceOutputLanguage': 'en-US',
+        'themeSelect': 'auto',
+        'uiDensity': 'comfortable',
+        'defaultPlatform': 'gemini',
+        'promptStyle': 'detailed',
+        'speechRate': 1,
+        'speechPitch': 1,
+        'speechVolume': 1,
+        'autoConvertDelay': '0',
+        'notificationDuration': '3000',
+        'textareaSize': 'auto',
+        'maxHistoryItems': 50,
+        'debugMode': 'off',
+        'autoSave': true
+    };
+    
+    // Apply saved settings or defaults
+    Object.keys(settingsToLoad).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.checked = settings[key] !== undefined ? settings[key] : settingsToLoad[key];
+            } else {
+                element.value = settings[key] !== undefined ? settings[key] : settingsToLoad[key];
                 
-                // Save button click handler
-                saveSettingsBtn.addEventListener('click', function() {
-                    if (!this.disabled) {
-                        showNotification('Settings saved successfully!', 'success');
-                        this.disabled = true;
-                        this.style.opacity = '0.5';
-                        this.style.cursor = 'not-allowed';
-                        this.style.background = 'var(--gray-400)';
-                        
-                        // Close settings modal
-                        document.getElementById('settingsModal').classList.remove('active');
+                // Update range value displays
+                if (['speechRate', 'speechPitch', 'speechVolume'].includes(key)) {
+                    const valueDisplay = document.getElementById(`${key}Value`);
+                    if (valueDisplay) {
+                        valueDisplay.textContent = element.value;
                     }
-                });
-            }
-            
-            // Fix for Clear Button
-            const clearBtn = document.getElementById('clearBtn');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    const userInput = document.getElementById('userInput');
-                    const outputArea = document.getElementById('outputArea');
-                    
-                    if (userInput) userInput.value = '';
-                    if (outputArea) outputArea.innerHTML = '';
-                    
-                    // Reset character counter
-                    const charCounter = document.getElementById('charCounter');
-                    if (charCounter) charCounter.textContent = '0/5000';
-                    
-                    // Hide output section
-                    document.getElementById('outputSection').style.display = 'none';
-                    
-                    // Show prepare button, hide reset
-                    document.getElementById('stickyPrepareBtn').classList.remove('hidden');
-                    document.getElementById('stickyResetBtn').classList.add('hidden');
-                    
-                    showNotification('All inputs cleared', 'info');
-                });
-            }
-            
-            // Fix for Prepare Prompt Button
-            const prepareBtn = document.getElementById('stickyPrepareBtn');
-            if (prepareBtn) {
-                prepareBtn.addEventListener('click', function() {
-                    const userInput = document.getElementById('userInput');
-                    if (userInput && userInput.value.trim()) {
-                        // Show loading state
-                        this.innerHTML = '<i class="fas fa-spinner fa-spin cta-icon"></i><span>Preparing...</span>';
-                        this.disabled = true;
-                        
-                        // Simulate API call (replace with actual API call)
-                        setTimeout(() => {
-                            // Show output section
-                            document.getElementById('outputSection').style.display = 'grid';
-                            
-                            // Generate sample prompt
-                            const samplePrompt = generateSamplePrompt(userInput.value);
-                            const outputArea = document.getElementById('outputArea');
-                            if (outputArea) {
-                                outputArea.innerHTML = samplePrompt;
-                            }
-                            
-                            // Load AI platforms
-                            loadAIPlatforms();
-                            
-                            // Update generation info
-                            updateGenerationInfo();
-                            
-                            // Toggle buttons
-                            this.classList.add('hidden');
-                            document.getElementById('stickyResetBtn').classList.remove('hidden');
-                            
-                            // Reset button state
-                            this.innerHTML = '<i class="fas fa-magic cta-icon"></i><span>Prepare Prompt</span>';
-                            this.disabled = false;
-                            
-                            showNotification('Prompt generated successfully!', 'success');
-                        }, 1500);
-                    } else {
-                        showNotification('Please enter a task description first', 'warning');
-                    }
-                });
-            }
-            
-            // Fix for Reset Button
-            const resetBtn = document.getElementById('stickyResetBtn');
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    // Hide output section
-                    document.getElementById('outputSection').style.display = 'none';
-                    
-                    // Clear output area
-                    const outputArea = document.getElementById('outputArea');
-                    if (outputArea) outputArea.innerHTML = '';
-                    
-                    // Toggle buttons
-                    this.classList.add('hidden');
-                    document.getElementById('stickyPrepareBtn').classList.remove('hidden');
-                    
-                    showNotification('Reset to initial state', 'info');
-                });
-            }
-            
-            // Fix for AI Platform Cards
-            function loadAIPlatforms() {
-                const platformsGrid = document.getElementById('platformsGrid');
-                if (!platformsGrid) return;
-                
-                // Clear empty state
-                const emptyState = document.getElementById('platformsEmptyState');
-                if (emptyState) emptyState.style.display = 'none';
-                
-                // AI Platforms configuration
-                const platforms = [
-                    { id: 'gemini', name: 'Google Gemini', icon: 'fa-google', url: 'https://gemini.google.com/' },
-                    { id: 'chatgpt', name: 'OpenAI ChatGPT', icon: 'fa-comment', url: 'https://chat.openai.com/' },
-                    { id: 'claude', name: 'Anthropic Claude', icon: 'fa-brain', url: 'https://claude.ai/' },
-                    { id: 'perplexity', name: 'Perplexity AI', icon: 'fa-search', url: 'https://www.perplexity.ai/' },
-                    { id: 'deepseek', name: 'DeepSeek', icon: 'fa-rocket', url: 'https://chat.deepseek.com/' },
-                    { id: 'copilot', name: 'Microsoft Copilot', icon: 'fa-windows', url: 'https://copilot.microsoft.com/' },
-                    { id: 'grok', name: 'Grok AI', icon: 'fa-bolt', url: 'https://grok.x.ai/' }
-                ];
-                
-                // Clear and add platform cards
-                platformsGrid.innerHTML = '';
-                platforms.forEach(platform => {
-                    const platformCard = document.createElement('div');
-                    platformCard.className = 'platform-card';
-                    platformCard.dataset.platform = platform.id;
-                    platformCard.innerHTML = `
-                        <div class="platform-icon">
-                            <i class="fab ${platform.icon}"></i>
-                        </div>
-                        <div class="platform-info">
-                            <h4 class="platform-name">${platform.name}</h4>
-                            <p class="platform-desc">Click to copy prompt and open ${platform.name}</p>
-                        </div>
-                        <div class="platform-action">
-                            <i class="fas fa-external-link-alt"></i>
-                        </div>
-                    `;
-                    
-                    // Add click event
-                    platformCard.addEventListener('click', function() {
-                        const outputArea = document.getElementById('outputArea');
-                        if (outputArea && outputArea.textContent.trim()) {
-                            navigator.clipboard.writeText(outputArea.textContent.trim()).then(() => {
-                                showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
-                                if (platform.url) {
-                                    window.open(platform.url, '_blank');
-                                }
-                            }).catch(err => {
-                                showNotification('Failed to copy to clipboard', 'error');
-                            });
-                        } else {
-                            showNotification('No prompt to copy', 'warning');
-                        }
-                    });
-                    
-                    platformsGrid.appendChild(platformCard);
-                });
-            }
-            
-            // Fix for Copy Button
-            const copyBtn = document.getElementById('copyBtn');
-            if (copyBtn) {
-                copyBtn.addEventListener('click', function() {
-                    const outputArea = document.getElementById('outputArea');
-                    if (outputArea && outputArea.textContent.trim()) {
-                        navigator.clipboard.writeText(outputArea.textContent.trim()).then(() => {
-                            showNotification('Prompt copied to clipboard!', 'success');
-                        }).catch(err => {
-                            showNotification('Failed to copy to clipboard', 'error');
-                        });
-                    } else {
-                        showNotification('No prompt to copy', 'warning');
-                    }
-                });
-            }
-            
-            // Fix for Character Counter
-            const userInput = document.getElementById('userInput');
-            if (userInput) {
-                userInput.addEventListener('input', function() {
-                    const charCounter = document.getElementById('charCounter');
-                    if (charCounter) {
-                        const count = this.value.length;
-                        charCounter.textContent = `${count}/5000`;
-                        
-                        // Update editor prepare button
-                        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
-                        if (editorPrepareBtn) {
-                            editorPrepareBtn.disabled = count === 0;
-                        }
-                    }
-                });
-            }
-            
-            // Fix for API Status updates
-            function updateApiStatus(connected = true) {
-                const headerStatus = document.getElementById('headerApiStatus');
-                const statusIndicator = headerStatus.querySelector('.status-indicator');
-                const statusText = headerStatus.querySelector('.api-status-text');
-                
-                if (connected) {
-                    statusIndicator.className = 'status-indicator online';
-                    statusText.textContent = 'API Online';
-                    headerStatus.classList.add('online');
-                    headerStatus.classList.remove('offline');
-                } else {
-                    statusIndicator.className = 'status-indicator offline';
-                    statusText.textContent = 'API Offline';
-                    headerStatus.classList.add('offline');
-                    headerStatus.classList.remove('online');
                 }
             }
-            
-            // Simulate API connection check
-            setTimeout(() => {
-                updateApiStatus(true);
-                showNotification('API connected successfully', 'success');
-            }, 2000);
-            
-            // Fix for Settings Modal
-            const settingsBtn = document.getElementById('settingsBtn');
-            const settingsModal = document.getElementById('settingsModal');
-            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-            
-            if (settingsBtn && settingsModal) {
-                settingsBtn.addEventListener('click', () => {
-                    settingsModal.classList.add('active');
-                });
-                
-                closeSettingsBtn.addEventListener('click', () => {
-                    settingsModal.classList.remove('active');
-                });
-                
-                // Close modal when clicking outside
-                settingsModal.addEventListener('click', (e) => {
-                    if (e.target === settingsModal) {
-                        settingsModal.classList.remove('active');
-                    }
-                });
-            }
-            
-            // Fix for Full Screen Editor
-            const maximizeInputBtn = document.getElementById('maximizeInputBtn');
-            const fullScreenEditor = document.getElementById('fullScreenEditor');
-            const closeEditorBtn = document.getElementById('closeEditorBtn');
-            const editorTextarea = document.getElementById('editorTextarea');
-            
-            if (maximizeInputBtn && fullScreenEditor) {
-                maximizeInputBtn.addEventListener('click', () => {
-                    const userInput = document.getElementById('userInput');
-                    if (editorTextarea && userInput) {
-                        editorTextarea.value = userInput.value;
-                    }
-                    fullScreenEditor.classList.add('active');
-                });
-                
-                closeEditorBtn.addEventListener('click', () => {
-                    fullScreenEditor.classList.remove('active');
-                });
-                
-                // ESC key to close editor
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && fullScreenEditor.classList.contains('active')) {
-                        fullScreenEditor.classList.remove('active');
-                    }
-                });
-            }
-            
-            // Fix for Editor Prepare Button
-            const editorPrepareBtn = document.getElementById('editorPrepareBtn');
-            if (editorPrepareBtn && editorTextarea) {
-                editorTextarea.addEventListener('input', function() {
-                    editorPrepareBtn.disabled = this.value.trim().length === 0;
-                });
-                
-                editorPrepareBtn.addEventListener('click', function() {
-                    if (!this.disabled) {
-                        const userInput = document.getElementById('userInput');
-                        if (userInput) {
-                            userInput.value = editorTextarea.value;
-                        }
-                        fullScreenEditor.classList.remove('active');
-                        document.getElementById('stickyPrepareBtn').click();
-                    }
-                });
+        }
+    });
+    
+    // Reset save button
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.classList.remove('settings-changed');
+    }
+}
+
+function saveSettings() {
+    console.log('Saving settings...');
+    
+    const settings = {};
+    const settingsElements = document.querySelectorAll('#settingsModal .setting-input, #settingsModal .setting-select, #settingsModal .setting-range, #settingsModal .setting-checkbox');
+    
+    settingsElements.forEach(element => {
+        const id = element.id;
+        if (id) {
+            if (element.type === 'checkbox') {
+                settings[id] = element.checked;
+            } else if (element.type === 'range') {
+                settings[id] = parseFloat(element.value);
+            } else if (element.type === 'number') {
+                settings[id] = parseInt(element.value);
+            } else {
+                settings[id] = element.value;
             }
         }
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('promptCraftSettings', JSON.stringify(settings));
+    
+    // Apply settings immediately
+    applySettings(settings);
+    
+    // Show success message
+    showNotification('Settings saved successfully!', 'success');
+    
+    // Close modal after a brief delay
+    setTimeout(() => {
+        closeSettingsModal();
+    }, 500);
+    
+    // Reset save button
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.classList.remove('settings-changed');
+    }
+}
+
+function applySettings(settings) {
+    // Apply theme
+    if (settings.themeSelect) {
+        applyTheme(settings.themeSelect);
+    }
+    
+    // Apply UI density
+    if (settings.uiDensity) {
+        document.body.setAttribute('data-ui-density', settings.uiDensity);
+    }
+    
+    // Apply textarea size
+    if (settings.textareaSize) {
+        const textarea = document.getElementById('userInput');
+        if (textarea) {
+            textarea.setAttribute('data-size', settings.textareaSize);
+        }
+    }
+    
+    // Apply auto-save
+    if (typeof settings.autoSave !== 'undefined') {
+        window.autoSaveEnabled = settings.autoSave;
+    }
+    
+    // Apply debug mode
+    if (settings.debugMode) {
+        window.debugMode = settings.debugMode;
+    }
+}
+
+function applyTheme(theme) {
+    const html = document.documentElement;
+    
+    if (theme === 'auto') {
+        // Use system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            html.setAttribute('data-theme', 'dark');
+        } else {
+            html.setAttribute('data-theme', 'light');
+        }
+    } else {
+        html.setAttribute('data-theme', theme);
+    }
+}
+
+// API test function
+async function testAPIConnection() {
+    const apiEndpoint = document.getElementById('apiEndpoint').value;
+    const testBtn = document.getElementById('testConnectionBtn');
+    const statusElement = document.getElementById('systemApiStatus');
+    
+    if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    }
+    
+    if (statusElement) {
+        statusElement.textContent = 'Testing...';
+        statusElement.className = 'stat-value testing';
+    }
+    
+    try {
+        const response = await fetch(apiEndpoint, {
+            method: 'HEAD',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            if (statusElement) {
+                statusElement.textContent = 'Connected ✓';
+                statusElement.className = 'stat-value connected';
+            }
+            showNotification('API connection successful!', 'success');
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
+    } catch (error) {
+        console.error('API connection test failed:', error);
+        if (statusElement) {
+            statusElement.textContent = 'Failed ✗';
+            statusElement.className = 'stat-value failed';
+        }
+        showNotification(`API connection failed: ${error.message}`, 'error');
+    } finally {
+        if (testBtn) {
+            testBtn.disabled = false;
+            testBtn.innerHTML = '<i class="fas fa-plug"></i> Test API Connection';
+        }
+    }
+}
+
+// Cache functions
+function clearApplicationCache() {
+    if (confirm('Are you sure you want to clear all cached data? This will remove saved prompts and history.')) {
+        localStorage.removeItem('promptHistory');
+        localStorage.removeItem('promptCraftSettings');
+        showNotification('Cache cleared successfully!', 'success');
+    }
+}
+
+function exportApplicationLogs() {
+    const logs = {
+        timestamp: new Date().toISOString(),
+        settings: JSON.parse(localStorage.getItem('promptCraftSettings') || '{}'),
+        historyCount: JSON.parse(localStorage.getItem('promptHistory') || '[]').length,
+        userAgent: navigator.userAgent,
+        platform: navigator.platform
+    };
+    
+    const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `promptcraft-logs-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Logs exported successfully!', 'success');
+}
         
         function generateSamplePrompt(userInput) {
             return `**Task:** ${userInput}
