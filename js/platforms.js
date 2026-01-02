@@ -11,9 +11,9 @@ class Platforms {
                 description: 'Advanced reasoning with Google\'s AI',
                 icon: 'fab fa-google',
                 color: '#4285F4',
-                url: 'https://gemini.google.com',
+                url: 'https://gemini.google.com/app',
                 apiUrl: 'https://generativelanguage.googleapis.com',
-                params: '&hl=en',
+                params: '',
                 recommended: true,
                 enabled: true,
                 tags: ['Free', 'Advanced']
@@ -36,7 +36,7 @@ class Platforms {
                 description: 'Safety-focused, long context',
                 icon: 'fas fa-brain',
                 color: '#D3A3F9',
-                url: 'https://claude.ai',
+                url: 'https://claude.ai/new',
                 apiUrl: 'https://api.anthropic.com',
                 params: '',
                 enabled: true,
@@ -48,7 +48,7 @@ class Platforms {
                 description: 'Real-time web search AI',
                 icon: 'fas fa-search',
                 color: '#000000',
-                url: 'https://www.perplexity.ai',
+                url: 'https://www.perplexity.ai/search',
                 apiUrl: 'https://api.perplexity.ai',
                 params: '',
                 enabled: true,
@@ -207,7 +207,7 @@ class Platforms {
     }
     
     /**
-     * Get platform URL with prompt
+     * Get platform URL with prompt - FIXED FOR ISSUE 5
      */
     getPlatformUrl(platformId, prompt = '') {
         const platform = this.platforms[platformId];
@@ -383,5 +383,4 @@ const platforms = new Platforms();
 
 // Make globally available
 window.Platforms = Platforms;
-
-
+window.platforms = platforms;
