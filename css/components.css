@@ -1853,3 +1853,307 @@ select:focus, .language-select:focus, input[type="text"]:focus {
 .dark-theme .rate-limit-display {
     background: var(--gray-800);
 }
+/* ========== FIXES FOR ISSUES ========== */
+
+/* 1. Maximize Button Fix */
+.textarea-top-right-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+    pointer-events: auto !important;
+}
+
+.textarea-top-right-controls .action-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    pointer-events: auto !important;
+}
+
+.textarea-top-right-controls .action-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Clear button specific style */
+.clear-btn i {
+    font-size: 14px;
+}
+
+/* Output actions fix */
+.output-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+    pointer-events: auto !important;
+}
+
+/* 2. Settings Save Button Fix */
+.settings-save-btn {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.settings-save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--gray-400);
+}
+
+.settings-save-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* 3. AI Platform Cards - Color Icons Fix */
+.platform-card {
+    position: relative;
+    cursor: pointer;
+}
+
+.platform-card .platform-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: white;
+    color: #000;
+}
+
+/* Platform specific colors */
+.platform-card[data-platform="gemini"] .platform-icon {
+    background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
+    color: white;
+}
+
+.platform-card[data-platform="chatgpt"] .platform-icon {
+    background: linear-gradient(135deg, #74aa9c, #10a37f);
+    color: white;
+}
+
+.platform-card[data-platform="claude"] .platform-icon {
+    background: linear-gradient(135deg, #D3A3F9, #9B5DE5);
+    color: white;
+}
+
+.platform-card[data-platform="perplexity"] .platform-icon {
+    background: linear-gradient(135deg, #000000, #3B3B3B);
+    color: white;
+}
+
+.platform-card[data-platform="deepseek"] .platform-icon {
+    background: linear-gradient(135deg, #2D5BFF, #00C2FF);
+    color: white;
+}
+
+.platform-card[data-platform="copilot"] .platform-icon {
+    background: linear-gradient(135deg, #0078D4, #00BCF2);
+    color: white;
+}
+
+.platform-card[data-platform="grok"] .platform-icon {
+    background: linear-gradient(135deg, #000000, #FF6B35);
+    color: white;
+}
+
+/* 4. Need Inspiration Button in Header */
+.need-inspiration-header {
+    background: var(--inspiration);
+    color: white !important;
+    border: none !important;
+}
+
+.need-inspiration-header:hover {
+    background: var(--inspiration-light) !important;
+    transform: translateY(-2px);
+}
+
+/* 5. Voice Button States */
+.mic-btn.active, .speak-btn.active {
+    background: var(--danger) !important;
+    color: white !important;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* 6. Prepare Prompt vs Reset Button States */
+.sticky-cta.prepare {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    transition: all 0.3s ease !important;
+}
+
+.sticky-cta.prepare.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    transform: translateY(20px) !important;
+    pointer-events: none !important;
+}
+
+.sticky-cta.reset {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    transition: all 0.3s ease !important;
+}
+
+.sticky-cta.reset.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    transform: translateY(20px) !important;
+    pointer-events: none !important;
+}
+
+/* 7. API Status Indicator Fix */
+#headerApiStatus .status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+#headerApiStatus .status-indicator.online {
+    background: var(--success);
+    animation: none;
+}
+
+#headerApiStatus .status-indicator.checking {
+    background: var(--warning);
+}
+
+#headerApiStatus .status-indicator.offline {
+    background: var(--danger);
+}
+
+/* Hide "checking" when not needed */
+#headerApiStatus:not(.checking) .api-status-text {
+    display: inline;
+}
+
+/* 8. Action Button Tooltip Fix */
+.action-btn-tooltip {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-800);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.action-btn:hover .action-btn-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 9. Full Screen Editor Improvements */
+.full-screen-editor.active {
+    display: flex !important;
+    z-index: 10000 !important;
+}
+
+.editor-textarea {
+    width: 100%;
+    height: calc(100vh - 120px);
+    padding: 20px;
+    border: none;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: var(--font-sans);
+}
+
+/* 10. Responsive Fixes */
+@media (max-width: 768px) {
+    .textarea-top-right-controls {
+        top: 5px;
+        right: 5px;
+        gap: 4px;
+    }
+    
+    .textarea-top-right-controls .action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .output-actions {
+        top: 10px;
+        right: 10px;
+        gap: 4px;
+    }
+    
+    .need-inspiration-header .action-btn-tooltip {
+        display: none;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .api-status-indicator .api-status-text {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .sticky-cta-container {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .sticky-cta.prepare,
+    .sticky-cta.reset {
+        padding: 10px 16px;
+        font-size: 14px;
+        min-width: auto;
+    }
+}
