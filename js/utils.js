@@ -334,7 +334,8 @@ class Utils {
     }
 }
 
-// REMOVE THIS LINE: export default Utils;
-// REPLACE WITH:
+// Make globally available
 window.Utils = Utils;
+
+// Export for module usage
 export default Utils;
