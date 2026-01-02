@@ -266,4 +266,6 @@ class Settings {
    Singleton Export
 ------------------------------------------------------------------ */
 
+
+window.Settings = Settings;
 window.settings = new Settings();
