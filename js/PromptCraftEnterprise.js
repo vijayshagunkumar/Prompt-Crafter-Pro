@@ -42,7 +42,13 @@ class PromptCraftEnterprise {
             recognition: null,
             // Editor state
             originalInputContent: '',
-            originalOutputContent: ''
+            originalOutputContent: '',
+            // Store original maximize buttons state
+            originalMaximizeButtons: {},
+            // Settings changed flag
+            settingsChanged: false,
+            // Last input for undo
+            lastInput: ''
         };
         
         this.settings = this.settingsManager.load();
@@ -163,6 +169,18 @@ class PromptCraftEnterprise {
         
         // Initialize voice recognition if available
         this.initVoiceRecognition();
+        
+        // Store original maximize button HTML
+        this.storeOriginalMaximizeButtons();
+    }
+
+    storeOriginalMaximizeButtons() {
+        if (this.elements.maximizeInputBtn) {
+            this.state.originalMaximizeButtons.maximizeInputBtn = this.elements.maximizeInputBtn.innerHTML;
+        }
+        if (this.elements.maximizeOutputBtn) {
+            this.state.originalMaximizeButtons.maximizeOutputBtn = this.elements.maximizeOutputBtn.innerHTML;
+        }
     }
 
     bindEvents() {
@@ -183,12 +201,17 @@ class PromptCraftEnterprise {
             this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
         }
         
+        // Export button
+        if (this.elements.exportBtn) {
+            this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
+        }
+        
         // Settings button
         if (this.elements.settingsBtn) {
             this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
         }
         
-        // Save Settings button
+        // Save Settings button - FIXED
         if (this.elements.saveSettingsBtn) {
             this.elements.saveSettingsBtn.addEventListener('click', () => this.saveSettings());
         }
@@ -203,7 +226,7 @@ class PromptCraftEnterprise {
             this.elements.cancelSettingsBtn.addEventListener('click', () => this.closeSettings());
         }
         
-        // Maximize buttons
+        // ========== FIX #1: Maximize buttons - Fixed ==========
         if (this.elements.maximizeInputBtn) {
             this.elements.maximizeInputBtn.addEventListener('click', () => this.maximizeSection('input'));
         }
@@ -217,13 +240,28 @@ class PromptCraftEnterprise {
             this.elements.clearBtn.addEventListener('click', () => this.clearInput());
         }
         
-        // Need Inspiration button
+        // Need Inspiration button - FIXED to remove text, show tooltip only
         if (this.elements.needInspirationBtn) {
+            // Clear any existing text, keep only icon
+            const icon = this.elements.needInspirationBtn.querySelector('i');
+            const tooltip = this.elements.needInspirationBtn.querySelector('.action-btn-tooltip');
+            if (icon && !tooltip) {
+                this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i><span class="action-btn-tooltip">Need Inspiration?</span>';
+            }
             this.elements.needInspirationBtn.addEventListener('click', () => this.toggleInspirationPanel());
         }
         
         if (this.elements.closeInspirationBtn) {
             this.elements.closeInspirationBtn.addEventListener('click', () => this.closeInspirationPanel());
+        }
+        
+        // ========== FIX #4: Undo button - Fixed ==========
+        if (this.elements.undoBtn) {
+            this.elements.undoBtn.addEventListener('click', () => this.undo());
+        }
+        
+        if (this.elements.editorUndoBtn) {
+            this.elements.editorUndoBtn.addEventListener('click', () => this.undo());
         }
         
         // Voice buttons
@@ -250,6 +288,11 @@ class PromptCraftEnterprise {
             });
         }
         
+        // Save prompt button
+        if (this.elements.savePromptBtn) {
+            this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
+        }
+        
         // Text input events
         if (this.elements.userInput) {
             this.elements.userInput.addEventListener('input', () => this.handleInputChange());
@@ -264,55 +307,38 @@ class PromptCraftEnterprise {
         // Settings change detection
         this.bindSettingsEvents();
         
+        // Platform card events (delegated)
+        if (this.elements.platformsGrid) {
+            this.elements.platformsGrid.addEventListener('click', (e) => {
+                const platformCard = e.target.closest('.platform-card');
+                if (platformCard) {
+                    const platformId = platformCard.dataset.platform;
+                    this.handlePlatformClick(platformId);
+                }
+            });
+        }
+        
         console.log('✅ Event listeners set up');
     }
     
     bindSettingsEvents() {
-        // Theme selector
-        const themeSelect = document.getElementById('theme');
-        if (themeSelect) {
-            themeSelect.addEventListener('change', (e) => {
-                this.settings.theme = e.target.value;
-                this.applyTheme();
-            });
-        }
+        // Listen to all settings inputs for changes
+        const settingsInputs = [
+            'theme', 'interfaceLanguage', 'uiDensity', 'defaultModel', 
+            'promptStyle', 'maxHistoryItems', 'speechRate', 'speechPitch', 
+            'speechVolume', 'autoConvertDelay', 'notificationDuration',
+            'textareaSize', 'debugMode', 'autoSave'
+        ];
         
-        // Language selector
-        const languageSelect = document.getElementById('interfaceLanguage');
-        if (languageSelect) {
-            languageSelect.addEventListener('change', (e) => {
-                this.settings.interfaceLanguage = e.target.value;
-                this.updateFooterInfo();
-            });
-        }
-        
-        // UI Density selector
-        const densitySelect = document.getElementById('uiDensity');
-        if (densitySelect) {
-            densitySelect.addEventListener('change', (e) => {
-                this.settings.uiDensity = e.target.value;
-                this.applyUIDensity();
-            });
-        }
-        
-        // Model selector
-        const modelSelect = document.getElementById('defaultModel');
-        if (modelSelect) {
-            modelSelect.addEventListener('change', (e) => {
-                this.settings.defaultModel = e.target.value;
-                this.state.currentModel = e.target.value;
-                this.updateCurrentModel();
-            });
-        }
-        
-        // History size input
-        const historySizeInput = document.getElementById('maxHistoryItems');
-        if (historySizeInput) {
-            historySizeInput.addEventListener('change', (e) => {
-                const value = parseInt(e.target.value);
-                this.settings.maxHistoryItems = isNaN(value) || value < 0 ? 50 : value;
-            });
-        }
+        settingsInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', () => {
+                    this.state.settingsChanged = true;
+                    this.enableSaveSettingsButton();
+                });
+            }
+        });
     }
     
     // ========== CORE METHODS ==========
@@ -350,15 +376,21 @@ class PromptCraftEnterprise {
                 this.savePrompt();
             }
             
+            // Ctrl/Cmd + Z to undo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                this.undo();
+            }
+            
             // Escape to close modals
             if (e.key === 'Escape') {
                 if (this.state.isMaximized) {
                     this.closeEditor();
                 }
-                if (this.elements.settingsModal && this.elements.settingsModal.style.display !== 'none') {
+                if (this.elements.settingsModal && this.elements.settingsModal.style.display === 'block') {
                     this.closeSettings();
                 }
-                if (this.elements.inspirationPanel.classList.contains('expanded')) {
+                if (this.elements.inspirationPanel && this.elements.inspirationPanel.style.display === 'block') {
                     this.closeInspirationPanel();
                 }
             }
@@ -448,65 +480,62 @@ class PromptCraftEnterprise {
     updateAPIStatusIndicator() {
         const statusIndicator = document.getElementById('apiStatusIndicator');
         const statusText = document.getElementById('statusText');
+        const headerApiStatus = document.getElementById('headerApiStatus');
         
-        if (!statusIndicator || !statusText) return;
-        
-        const statusConfig = {
-            checking: { 
-                class: 'checking', 
-                text: 'Checking...',
-                color: 'var(--warning)'
-            },
-            online: { 
-                class: 'online', 
-                text: 'Online',
-                color: 'var(--success)'
-            },
-            offline: { 
-                class: 'offline', 
-                text: 'Offline',
-                color: 'var(--danger)'
-            },
-            degraded: { 
-                class: 'degraded', 
-                text: 'Degraded',
-                color: 'var(--warning)'
-            }
-        };
-        
-        const config = statusConfig[this.state.apiStatus] || statusConfig.checking;
-        
-        statusIndicator.className = `status-indicator ${config.class}`;
-        statusIndicator.style.backgroundColor = config.color;
-        statusText.textContent = config.text;
-        
-        // Update rate limit display if available
-        if (this.state.apiStatus === 'online') {
-            const rateLimit = this.api.getRateLimitStatus();
-            this.updateRateLimitDisplay(rateLimit);
+        if (statusIndicator && statusText) {
+            const statusConfig = {
+                checking: { 
+                    class: 'checking', 
+                    text: 'Checking...',
+                    color: '#f59e0b'
+                },
+                online: { 
+                    class: 'online', 
+                    text: 'Online',
+                    color: '#10b981'
+                },
+                offline: { 
+                    class: 'offline', 
+                    text: 'Offline',
+                    color: '#ef4444'
+                }
+            };
+            
+            const config = statusConfig[this.state.apiStatus] || statusConfig.checking;
+            
+            statusIndicator.className = `status-indicator ${config.class}`;
+            statusIndicator.style.backgroundColor = config.color;
+            statusText.textContent = config.text;
         }
-    }
-
-    updateRateLimitDisplay(rateLimit) {
-        const rateElement = document.getElementById('rateLimitDisplay');
-        if (rateElement) {
-            rateElement.innerHTML = `
-                <small>
-                    Rate: ${rateLimit.minuteRemaining}/${rateLimit.minuteLimit} min, 
-                    ${rateLimit.used}/${rateLimit.dailyLimit} daily
-                </small>
-            `;
+        
+        // Update header API status
+        if (headerApiStatus) {
+            const statusIndicator = headerApiStatus.querySelector('.status-indicator');
+            const statusText = headerApiStatus.querySelector('.api-status-text');
+            
+            if (statusIndicator && statusText) {
+                const config = {
+                    checking: { class: 'checking', text: 'Checking API...', color: '#f59e0b' },
+                    online: { class: 'online', text: 'API Online', color: '#10b981' },
+                    offline: { class: 'offline', text: 'API Offline', color: '#ef4444' }
+                };
+                
+                const currentConfig = config[this.state.apiStatus] || config.checking;
+                
+                statusIndicator.className = `status-indicator ${currentConfig.class}`;
+                statusIndicator.style.backgroundColor = currentConfig.color;
+                statusText.textContent = currentConfig.text;
+                headerApiStatus.className = `api-status-indicator ${currentConfig.class}`;
+            }
         }
     }
 
     updateAvailableModels(availableModels) {
-        const modelSelect = document.getElementById('defaultModel');
+        const modelSelect = document.getElementById('defaultAiModel');
         if (!modelSelect) return;
         
-        // Clear existing options except the first
-        while (modelSelect.options.length > 0) {
-            modelSelect.remove(0);
-        }
+        // Clear existing options
+        modelSelect.innerHTML = '';
         
         // Add available models
         availableModels.forEach(modelId => {
@@ -515,7 +544,6 @@ class PromptCraftEnterprise {
             option.value = modelId;
             option.textContent = displayName;
             
-            // Mark Gemini 3 as default/recommended
             if (modelId === 'gemini-3-flash-preview') {
                 option.selected = true;
                 this.state.currentModel = modelId;
@@ -526,7 +554,7 @@ class PromptCraftEnterprise {
     }
 
     updateCurrentModel() {
-        const modelSelect = document.getElementById('defaultModel');
+        const modelSelect = document.getElementById('defaultAiModel');
         if (modelSelect) {
             this.state.currentModel = modelSelect.value;
         }
@@ -566,22 +594,13 @@ class PromptCraftEnterprise {
                 // Use real API
                 result = await this.api.generatePrompt(inputText, {
                     model: modelToUse,
-                    style: this.settings.promptStyle,
+                    style: this.settings.promptStyle || 'detailed',
                     temperature: 0.4,
-                    max_tokens: 700,
-                    retryCount: 0
+                    max_tokens: 700
                 });
                 
                 if (result.success) {
                     this.state.generationStats.successfulRequests++;
-                    
-                    // Update rate limit info
-                    if (result.rateLimit) {
-                        this.api.rateLimitInfo = {
-                            ...this.api.rateLimitInfo,
-                            ...result.rateLimit
-                        };
-                    }
                 } else {
                     this.state.generationStats.failedRequests++;
                     throw new Error(result.error || 'API request failed');
@@ -591,7 +610,7 @@ class PromptCraftEnterprise {
                 // Use fallback
                 result = {
                     success: true,
-                    content: this.api.generateFallbackPrompt(inputText, this.settings.promptStyle),
+                    content: this.api.generateFallbackPrompt(inputText, this.settings.promptStyle || 'detailed'),
                     model: 'fallback',
                     provider: 'local',
                     fallbackUsed: true
@@ -603,6 +622,20 @@ class PromptCraftEnterprise {
             const responseTime = Date.now() - startTime;
             this.updateAverageResponseTime(responseTime);
             
+            // ========== FIX #5: Generated prompt not complete - Fixed ==========
+            // Ensure output area has proper styling for complete text
+            this.elements.outputArea.style.cssText = `
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                max-height: none;
+                min-height: 300px;
+                overflow-y: auto;
+                padding: 20px;
+                font-size: 16px;
+                line-height: 1.6;
+            `;
+            
             // Update output
             this.elements.outputArea.textContent = result.content;
             this.state.originalPrompt = result.content;
@@ -610,11 +643,11 @@ class PromptCraftEnterprise {
             this.state.hasGeneratedPrompt = true;
             
             // Show output section
-            this.elements.outputSection.hidden = false;
-            this.elements.outputSection.classList.add('visible');
+            this.elements.outputSection.style.display = 'grid';
             
             // Update UI
             this.updatePlatformCards();
+            this.state.currentStep = 2;
             this.updateProgress();
             this.updateButtonStates();
             this.generateSuggestions();
@@ -642,7 +675,7 @@ class PromptCraftEnterprise {
             setTimeout(() => {
                 this.elements.outputSection.scrollIntoView({ 
                     behavior: 'smooth', 
-                    block: 'nearest' 
+                    block: 'start' 
                 });
             }, 300);
             
@@ -652,11 +685,11 @@ class PromptCraftEnterprise {
             
             // Try fallback
             try {
-                const fallbackPrompt = this.api.generateFallbackPrompt(inputText, this.settings.promptStyle);
+                const fallbackPrompt = this.api.generateFallbackPrompt(inputText, this.settings.promptStyle || 'detailed');
                 this.elements.outputArea.textContent = fallbackPrompt;
                 this.state.originalPrompt = fallbackPrompt;
                 this.state.hasGeneratedPrompt = true;
-                this.elements.outputSection.classList.add('visible');
+                this.elements.outputSection.style.display = 'grid';
                 this.updatePlatformCards();
                 this.updateButtonStates();
                 
@@ -670,18 +703,14 @@ class PromptCraftEnterprise {
     }
 
     getModelForGeneration() {
-        // Map frontend model selection to backend model IDs
+        // Map settings model to actual API model
         const modelMap = {
-            'gemini': 'gemini-3-flash-preview',
-            'chatgpt': 'gpt-4o-mini',
-            'claude': 'gemini-3-flash-preview', // Map to Gemini as fallback
-            'perplexity': 'gemini-3-flash-preview',
-            'deepseek': 'gemini-3-flash-preview',
-            'copilot': 'gpt-4o-mini',
-            'grok': 'gemini-3-flash-preview'
+            'gemini-3-flash-preview': 'gemini-3-flash-preview',
+            'gpt-4o-mini': 'gpt-4o-mini',
+            'llama-3.1-8b-instant': 'llama-3.1-8b-instant'
         };
         
-        return modelMap[this.settings.defaultModel] || 'gemini-3-flash-preview';
+        return modelMap[this.state.currentModel] || 'gemini-3-flash-preview';
     }
 
     updateAverageResponseTime(newTime) {
@@ -739,7 +768,7 @@ class PromptCraftEnterprise {
     updatePlatformCards() {
         if (!this.elements.platformsGrid) return;
         
-        // Clear existing content except empty state
+        // Clear existing content
         this.elements.platformsGrid.innerHTML = '';
         
         // Show platforms only if we have a generated prompt
@@ -751,6 +780,7 @@ class PromptCraftEnterprise {
             });
         } else {
             // Show empty state
+            this.elements.platformsEmptyState.style.display = 'block';
             this.elements.platformsGrid.appendChild(this.elements.platformsEmptyState.cloneNode(true));
         }
     }
@@ -791,7 +821,13 @@ class PromptCraftEnterprise {
             this.openPlatform(platform);
         });
         
-        card.addEventListener('click', () => this.handlePlatformClick(platform));
+        // Main card click
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.platform-action-btn')) {
+                this.handlePlatformClick(platform);
+            }
+        });
+        
         return card;
     }
 
@@ -805,23 +841,34 @@ class PromptCraftEnterprise {
         navigator.clipboard.writeText(formattedPrompt).then(() => {
             this.showNotification(`Prompt copied for ${platform.name}`, 'success');
         }).catch(err => {
+            console.error('Copy failed:', err);
             this.showNotification('Failed to copy to clipboard', 'error');
         });
     }
 
     openPlatform(platform) {
-        if (platform.url) {
-            window.open(platform.url, '_blank');
+        if (platform.launchUrl) {
+            window.open(platform.launchUrl, '_blank');
+            this.showNotification(`Opening ${platform.name}...`, 'info');
         } else {
             this.showNotification(`No URL configured for ${platform.name}`, 'warning');
         }
     }
 
     handlePlatformClick(platform) {
+        // Copy prompt first
         const prompt = this.elements.outputArea.textContent;
         if (!prompt) return;
         
-        this.showNotification(`${platform.name} prompt ready`, 'info');
+        navigator.clipboard.writeText(prompt).then(() => {
+            this.showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
+            if (platform.launchUrl) {
+                window.open(platform.launchUrl, '_blank');
+            }
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            this.showNotification('Failed to copy prompt', 'error');
+        });
     }
 
     formatPromptForPlatform(prompt, platform) {
@@ -874,6 +921,9 @@ class PromptCraftEnterprise {
             
             this.elements.suggestionsList.appendChild(li);
         });
+        
+        // Show suggestions panel
+        this.elements.suggestionsPanel.style.display = 'block';
     }
 
     applySuggestion(action) {
@@ -927,6 +977,7 @@ class PromptCraftEnterprise {
         navigator.clipboard.writeText(prompt).then(() => {
             this.showNotification('Prompt copied to clipboard', 'success');
         }).catch(err => {
+            console.error('Copy failed:', err);
             this.showNotification('Failed to copy to clipboard', 'error');
         });
     }
@@ -945,8 +996,7 @@ class PromptCraftEnterprise {
         
         // Hide output section
         if (this.elements.outputSection) {
-            this.elements.outputSection.hidden = true;
-            this.elements.outputSection.classList.remove('visible');
+            this.elements.outputSection.style.display = 'none';
         }
         
         // Close inspiration panel if open
@@ -968,6 +1018,7 @@ class PromptCraftEnterprise {
         // Clear suggestions
         if (this.elements.suggestionsList) {
             this.elements.suggestionsList.innerHTML = '';
+            this.elements.suggestionsPanel.style.display = 'none';
         }
         
         this.showNotification('Application reset', 'info');
@@ -992,6 +1043,7 @@ class PromptCraftEnterprise {
     }
 
     showNotification(message, type = 'info') {
+        // Don't duplicate messages
         console.log(`[${type.toUpperCase()}] ${message}`);
         
         // Create notification container if it doesn't exist
@@ -1010,6 +1062,14 @@ class PromptCraftEnterprise {
                 max-width: 400px;
             `;
             document.body.appendChild(container);
+        }
+        
+        // Check for duplicate notifications
+        const existingNotifications = container.querySelectorAll('.notification');
+        for (let notif of existingNotifications) {
+            if (notif.textContent.includes(message)) {
+                return; // Skip duplicate
+            }
         }
         
         const notification = document.createElement('div');
@@ -1077,13 +1137,26 @@ class PromptCraftEnterprise {
             this.elements.clearBtn.classList.toggle('disabled', !hasInput);
         }
         
-        // Update undo/redo buttons
+        // Update undo buttons
         if (this.elements.undoBtn) {
             this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
+            this.elements.undoBtn.classList.toggle('disabled', this.state.undoStack.length === 0);
         }
         
         if (this.elements.editorUndoBtn) {
             this.elements.editorUndoBtn.disabled = this.state.undoStack.length === 0;
+            this.elements.editorUndoBtn.classList.toggle('disabled', this.state.undoStack.length === 0);
+        }
+        
+        // Toggle prepare/reset buttons
+        if (this.elements.stickyPrepareBtn && this.elements.stickyResetBtn) {
+            if (hasOutput) {
+                this.elements.stickyPrepareBtn.classList.add('hidden');
+                this.elements.stickyResetBtn.classList.remove('hidden');
+            } else {
+                this.elements.stickyPrepareBtn.classList.remove('hidden');
+                this.elements.stickyResetBtn.classList.add('hidden');
+            }
         }
     }
 
@@ -1092,17 +1165,20 @@ class PromptCraftEnterprise {
         
         // Update character counter
         if (this.elements.charCounter) {
-            this.elements.charCounter.textContent = `${text.length} characters`;
-            this.elements.charCounter.classList.toggle('warning', text.length > 4000);
-            this.elements.charCounter.classList.toggle('danger', text.length > 5000);
+            const charCount = text.length;
+            this.elements.charCounter.textContent = `${charCount} characters`;
+            this.elements.charCounter.style.color = charCount > 4000 ? '#f59e0b' : charCount > 5000 ? '#ef4444' : 'inherit';
         }
         
         // Update button states
         this.updateButtonStates();
         
-        // Push to undo stack if not already tracking
-        if (this.state.undoStack.length === 0 || this.state.undoStack[this.state.undoStack.length - 1] !== text) {
-            this.state.undoStack.push(text);
+        // Store for undo
+        if (text !== this.state.lastInput) {
+            if (this.state.lastInput !== '') {
+                this.state.undoStack.push(this.state.lastInput);
+            }
+            this.state.lastInput = text;
             this.state.redoStack = [];
         }
     }
@@ -1110,10 +1186,9 @@ class PromptCraftEnterprise {
     handleEditorInputChange() {
         const text = this.elements.editorTextarea.value;
         
-        // Push to undo stack if not already tracking
-        if (this.state.undoStack.length === 0 || this.state.undoStack[this.state.undoStack.length - 1] !== text) {
-            this.state.undoStack.push(text);
-            this.state.redoStack = [];
+        // Update editor prepare button
+        if (this.elements.editorPrepareBtn) {
+            this.elements.editorPrepareBtn.disabled = text.trim().length === 0;
         }
     }
 
@@ -1127,14 +1202,16 @@ class PromptCraftEnterprise {
     // ========== MAXIMIZE/EDITOR FUNCTIONALITY ==========
     
     maximizeSection(section) {
+        console.log(`Maximize section: ${section}, Currently maximized: ${this.state.isMaximized}`);
+        
         if (this.state.isMaximized && this.state.maximizedSection === section) {
-            this.restoreNormalView();
+            this.closeEditor();
         } else {
-            this.enterMaximizeMode(section);
+            this.openEditor(section);
         }
     }
     
-    enterMaximizeMode(section) {
+    openEditor(section) {
         this.state.isMaximized = true;
         this.state.maximizedSection = section;
         
@@ -1155,58 +1232,59 @@ class PromptCraftEnterprise {
         // Show full screen editor
         this.elements.fullScreenEditor.style.display = 'flex';
         this.elements.fullScreenEditor.classList.add('active');
-        this.elements.editorTextarea.focus();
         
-        // Update button states
-        this.updateMaximizeButtons();
+        // Focus and select all text
+        setTimeout(() => {
+            this.elements.editorTextarea.focus();
+            this.elements.editorTextarea.select();
+        }, 100);
         
-        // Update undo stack
-        this.state.undoStack = [this.elements.editorTextarea.value];
-        this.state.redoStack = [];
+        // Update maximize button text
+        this.updateMaximizeButtons(true);
     }
     
-    restoreNormalView() {
-        if (!this.state.isMaximized) return;
-        
+    closeEditor() {
         // Restore content if modified
         if (this.state.maximizedSection === 'input') {
             this.elements.userInput.value = this.elements.editorTextarea.value;
+            this.handleInputChange();
         } else if (this.state.maximizedSection === 'output') {
             this.elements.outputArea.textContent = this.elements.editorTextarea.value;
         }
         
-        // Close editor
-        this.closeEditor();
-    }
-    
-    closeEditor() {
+        // Hide editor
         this.elements.fullScreenEditor.style.display = 'none';
         this.elements.fullScreenEditor.classList.remove('active');
+        
+        // Reset state
         this.state.isMaximized = false;
         this.state.maximizedSection = null;
-        this.updateMaximizeButtons();
         
-        // Clear editor content
+        // Clear editor
         this.elements.editorTextarea.value = '';
+        
+        // Restore maximize buttons
+        this.updateMaximizeButtons(false);
         
         // Update button states
         this.updateButtonStates();
     }
     
-    updateMaximizeButtons() {
-        const isInputMaximized = this.state.isMaximized && this.state.maximizedSection === 'input';
-        const isOutputMaximized = this.state.isMaximized && this.state.maximizedSection === 'output';
-        
+    updateMaximizeButtons(isMaximized) {
         if (this.elements.maximizeInputBtn) {
-            this.elements.maximizeInputBtn.innerHTML = isInputMaximized ? 
-                '<i class="fas fa-compress"></i><span class="action-btn-tooltip">Minimize</span>' :
-                '<i class="fas fa-expand"></i><span class="action-btn-tooltip">Maximize</span>';
+            if (isMaximized && this.state.maximizedSection === 'input') {
+                this.elements.maximizeInputBtn.innerHTML = '<i class="fas fa-compress"></i><span class="action-btn-tooltip">Minimize</span>';
+            } else {
+                this.elements.maximizeInputBtn.innerHTML = '<i class="fas fa-expand"></i><span class="action-btn-tooltip">Maximize</span>';
+            }
         }
         
         if (this.elements.maximizeOutputBtn) {
-            this.elements.maximizeOutputBtn.innerHTML = isOutputMaximized ? 
-                '<i class="fas fa-compress"></i><span class="action-btn-tooltip">Minimize</span>' :
-                '<i class="fas fa-expand"></i><span class="action-btn-tooltip">Maximize</span>';
+            if (isMaximized && this.state.maximizedSection === 'output') {
+                this.elements.maximizeOutputBtn.innerHTML = '<i class="fas fa-compress"></i><span class="action-btn-tooltip">Minimize</span>';
+            } else {
+                this.elements.maximizeOutputBtn.innerHTML = '<i class="fas fa-expand"></i><span class="action-btn-tooltip">Maximize</span>';
+            }
         }
     }
     
@@ -1225,8 +1303,7 @@ class PromptCraftEnterprise {
         
         // Hide output section
         if (this.elements.outputSection) {
-            this.elements.outputSection.hidden = true;
-            this.elements.outputSection.classList.remove('visible');
+            this.elements.outputSection.style.display = 'none';
         }
         
         // Close inspiration panel
@@ -1238,6 +1315,7 @@ class PromptCraftEnterprise {
         this.state.originalPrompt = null;
         this.state.undoStack = [];
         this.state.redoStack = [];
+        this.state.lastInput = '';
         
         // Update UI
         this.updateButtonStates();
@@ -1246,6 +1324,7 @@ class PromptCraftEnterprise {
         // Clear suggestions
         if (this.elements.suggestionsList) {
             this.elements.suggestionsList.innerHTML = '';
+            this.elements.suggestionsPanel.style.display = 'none';
         }
         
         this.showNotification('Cleared input', 'info');
@@ -1255,30 +1334,32 @@ class PromptCraftEnterprise {
     
     toggleInspirationPanel() {
         const panel = this.elements.inspirationPanel;
-        const isExpanded = panel.classList.contains('expanded');
+        const isExpanded = panel.style.display === 'block';
         
         if (isExpanded) {
             this.closeInspirationPanel();
         } else {
-            panel.classList.add('expanded');
-            this.elements.needInspirationBtn.setAttribute('aria-expanded', 'true');
-            this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-times"></i><span class="inspiration-btn-text">Close Inspiration</span>';
-            
-            // Add click handlers for inspiration items
-            const inspirationItems = panel.querySelectorAll('.inspiration-item');
-            inspirationItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.applyInspirationTemplate(item.dataset.type);
-                });
-            });
+            this.openInspirationPanel();
         }
     }
     
+    openInspirationPanel() {
+        this.elements.inspirationPanel.style.display = 'block';
+        this.elements.needInspirationBtn.setAttribute('aria-expanded', 'true');
+        
+        // Add click handlers for inspiration items
+        const inspirationItems = this.elements.inspirationPanel.querySelectorAll('.inspiration-item');
+        inspirationItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.applyInspirationTemplate(item.dataset.type);
+            });
+        });
+    }
+    
     closeInspirationPanel() {
-        this.elements.inspirationPanel.classList.remove('expanded');
+        this.elements.inspirationPanel.style.display = 'none';
         this.elements.needInspirationBtn.setAttribute('aria-expanded', 'false');
-        this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i><span class="inspiration-btn-text">Need Inspiration?</span>';
     }
     
     applyInspirationTemplate(type) {
@@ -1476,6 +1557,10 @@ Format: Academic but accessible, with citations where appropriate.`
             this.populateSettingsForm();
             this.elements.settingsModal.style.display = 'block';
             this.elements.settingsModal.classList.add('active');
+            
+            // Reset changed flag
+            this.state.settingsChanged = false;
+            this.disableSaveSettingsButton();
         }
     }
     
@@ -1490,7 +1575,7 @@ Format: Academic but accessible, with citations where appropriate.`
         const settings = this.settings;
         
         // Set theme
-        const themeSelect = document.getElementById('theme');
+        const themeSelect = document.getElementById('themeSelect');
         if (themeSelect) themeSelect.value = settings.theme || 'dark';
         
         // Set language
@@ -1501,13 +1586,13 @@ Format: Academic but accessible, with citations where appropriate.`
         const densitySelect = document.getElementById('uiDensity');
         if (densitySelect) densitySelect.value = settings.uiDensity || 'comfortable';
         
-        // Set default model
-        const modelSelect = document.getElementById('defaultModel');
-        if (modelSelect) modelSelect.value = settings.defaultModel || 'gemini';
+        // Set default model - FIXED: using correct element ID
+        const modelSelect = document.getElementById('defaultAiModel');
+        if (modelSelect) modelSelect.value = settings.defaultAiModel || 'gemini-3-flash-preview';
         
         // Set prompt style
         const promptStyleSelect = document.getElementById('promptStyle');
-        if (promptStyleSelect) promptStyleSelect.value = settings.promptStyle || 'balanced';
+        if (promptStyleSelect) promptStyleSelect.value = settings.promptStyle || 'detailed';
         
         // Set history items
         const historyItemsInput = document.getElementById('maxHistoryItems');
@@ -1526,23 +1611,88 @@ Format: Academic but accessible, with citations where appropriate.`
         // Set auto-save
         const autoSave = document.getElementById('autoSave');
         if (autoSave) autoSave.checked = settings.autoSave || true;
+        
+        // Set API endpoint
+        const apiEndpoint = document.getElementById('apiEndpoint');
+        if (apiEndpoint) apiEndpoint.value = settings.apiEndpoint || 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
+        
+        // Set API mode
+        const apiMode = document.getElementById('apiMode');
+        if (apiMode) apiMode.value = settings.apiMode || 'auto';
+        
+        // Set default platform
+        const defaultPlatform = document.getElementById('defaultPlatform');
+        if (defaultPlatform) defaultPlatform.value = settings.defaultPlatform || 'gemini';
+        
+        // Set voice input language
+        const voiceInputLanguage = document.getElementById('voiceInputLanguage');
+        if (voiceInputLanguage) voiceInputLanguage.value = settings.voiceInputLanguage || 'en-US';
+        
+        // Set voice output language
+        const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
+        if (voiceOutputLanguage) voiceOutputLanguage.value = settings.voiceOutputLanguage || 'en-US';
+        
+        // Set auto-convert delay
+        const autoConvertDelay = document.getElementById('autoConvertDelay');
+        if (autoConvertDelay) autoConvertDelay.value = settings.autoConvertDelay || 0;
+        
+        // Set notification duration
+        const notificationDuration = document.getElementById('notificationDuration');
+        if (notificationDuration) notificationDuration.value = settings.notificationDuration || 3000;
+        
+        // Set textarea size
+        const textareaSize = document.getElementById('textareaSize');
+        if (textareaSize) textareaSize.value = settings.textareaSize || 'auto';
+        
+        // Set debug mode
+        const debugMode = document.getElementById('debugMode');
+        if (debugMode) debugMode.value = settings.debugMode || 'off';
     }
     
+    enableSaveSettingsButton() {
+        if (this.elements.saveSettingsBtn) {
+            this.elements.saveSettingsBtn.disabled = false;
+            this.elements.saveSettingsBtn.classList.remove('disabled');
+        }
+    }
+    
+    disableSaveSettingsButton() {
+        if (this.elements.saveSettingsBtn) {
+            this.elements.saveSettingsBtn.disabled = true;
+            this.elements.saveSettingsBtn.classList.add('disabled');
+        }
+    }
+    
+    // ========== FIX #3: Settings Save Error - Fixed ==========
     saveSettings() {
         try {
-            // Collect settings from form
+            // Collect settings from form - FIXED: using correct element IDs
             const settings = {
-                theme: document.getElementById('theme').value,
-                interfaceLanguage: document.getElementById('interfaceLanguage').value,
-                uiDensity: document.getElementById('uiDensity').value,
-                defaultModel: document.getElementById('defaultModel').value,
-                promptStyle: document.getElementById('promptStyle').value,
-                maxHistoryItems: parseInt(document.getElementById('maxHistoryItems').value) || 50,
-                speechRate: parseFloat(document.getElementById('speechRate').value) || 1,
-                speechPitch: parseFloat(document.getElementById('speechPitch').value) || 1,
-                speechVolume: parseFloat(document.getElementById('speechVolume').value) || 1,
-                autoSave: document.getElementById('autoSave').checked
+                theme: document.getElementById('themeSelect')?.value || 'dark',
+                interfaceLanguage: document.getElementById('interfaceLanguage')?.value || 'en',
+                uiDensity: document.getElementById('uiDensity')?.value || 'comfortable',
+                defaultAiModel: document.getElementById('defaultAiModel')?.value || 'gemini-3-flash-preview',
+                promptStyle: document.getElementById('promptStyle')?.value || 'detailed',
+                maxHistoryItems: parseInt(document.getElementById('maxHistoryItems')?.value) || 50,
+                speechRate: parseFloat(document.getElementById('speechRate')?.value) || 1,
+                speechPitch: parseFloat(document.getElementById('speechPitch')?.value) || 1,
+                speechVolume: parseFloat(document.getElementById('speechVolume')?.value) || 1,
+                autoSave: document.getElementById('autoSave')?.checked || true,
+                apiEndpoint: document.getElementById('apiEndpoint')?.value || 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
+                apiMode: document.getElementById('apiMode')?.value || 'auto',
+                defaultPlatform: document.getElementById('defaultPlatform')?.value || 'gemini',
+                voiceInputLanguage: document.getElementById('voiceInputLanguage')?.value || 'en-US',
+                voiceOutputLanguage: document.getElementById('voiceOutputLanguage')?.value || 'en-US',
+                autoConvertDelay: parseInt(document.getElementById('autoConvertDelay')?.value) || 0,
+                notificationDuration: parseInt(document.getElementById('notificationDuration')?.value) || 3000,
+                textareaSize: document.getElementById('textareaSize')?.value || 'auto',
+                debugMode: document.getElementById('debugMode')?.value || 'off'
             };
+            
+            // Validate critical settings
+            if (!settings.defaultAiModel) {
+                throw new Error('Default AI model is required');
+            }
             
             // Save settings
             this.settingsManager.save(settings);
@@ -1551,30 +1701,40 @@ Format: Academic but accessible, with citations where appropriate.`
             // Apply settings
             this.applyTheme();
             this.applyUIDensity();
+            this.state.currentModel = settings.defaultAiModel;
             this.updateCurrentModel();
             this.updateFooterInfo();
             
             // Update voice recognition language
             if (this.state.recognition) {
-                this.state.recognition.lang = settings.interfaceLanguage || 'en-US';
+                this.state.recognition.lang = settings.voiceInputLanguage || 'en-US';
             }
             
             this.closeSettings();
             this.showNotification('Settings saved successfully', 'success');
+            
+            // Update button state
+            this.disableSaveSettingsButton();
+            
         } catch (error) {
             console.error('Failed to save settings:', error);
-            this.showNotification('Failed to save settings', 'error');
+            this.showNotification(`Failed to save settings: ${error.message}`, 'error');
         }
     }
     
     // ========== UNDO/REDO FUNCTIONALITY ==========
     
     undo() {
-        if (this.state.undoStack.length > 1) {
-            const current = this.state.undoStack.pop();
+        if (this.state.undoStack.length > 0) {
+            const current = this.state.isMaximized ? 
+                this.elements.editorTextarea.value : 
+                this.elements.userInput.value;
+            
+            // Save current to redo stack
             this.state.redoStack.push(current);
             
-            const previous = this.state.undoStack[this.state.undoStack.length - 1];
+            // Get previous state
+            const previous = this.state.undoStack.pop();
             
             if (this.state.isMaximized) {
                 this.elements.editorTextarea.value = previous;
@@ -1584,13 +1744,21 @@ Format: Academic but accessible, with citations where appropriate.`
             }
             
             this.updateButtonStates();
+            this.showNotification('Undo applied', 'info');
         }
     }
     
     redo() {
         if (this.state.redoStack.length > 0) {
+            const current = this.state.isMaximized ? 
+                this.elements.editorTextarea.value : 
+                this.elements.userInput.value;
+            
+            // Save current to undo stack
+            this.state.undoStack.push(current);
+            
+            // Get next state
             const next = this.state.redoStack.pop();
-            this.state.undoStack.push(next);
             
             if (this.state.isMaximized) {
                 this.elements.editorTextarea.value = next;
@@ -1600,6 +1768,7 @@ Format: Academic but accessible, with citations where appropriate.`
             }
             
             this.updateButtonStates();
+            this.showNotification('Redo applied', 'info');
         }
     }
     
@@ -1633,98 +1802,14 @@ Format: Academic but accessible, with citations where appropriate.`
     
     // ========== EXPORT FUNCTIONALITY ==========
     
-    exportPrompt(format = 'text') {
+    exportPrompt() {
         const prompt = this.elements.outputArea.textContent;
         if (!prompt) {
             this.showNotification('No prompt to export', 'warning');
             return;
         }
         
-        switch (format) {
-            case 'json':
-                this.exportAsJSON(prompt);
-                break;
-            case 'html':
-                this.exportAsHTML(prompt);
-                break;
-            case 'markdown':
-                this.exportAsMarkdown(prompt);
-                break;
-            default:
-                this.savePrompt(); // Default to text
-        }
-    }
-    
-    exportAsJSON(prompt) {
-        const data = {
-            prompt: prompt,
-            metadata: {
-                generatedAt: new Date().toISOString(),
-                model: this.state.currentModel,
-                apiStatus: this.state.apiStatus,
-                modified: this.state.promptModified
-            }
-        };
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        this.downloadBlob(blob, `prompt-${Date.now()}.json`);
-        this.showNotification('Prompt exported as JSON', 'success');
-    }
-    
-    exportAsHTML(prompt) {
-        const html = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>AI Prompt - ${new Date().toLocaleDateString()}</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
-        .prompt { background: #f5f5f5; padding: 20px; border-radius: 5px; white-space: pre-wrap; }
-        .metadata { color: #666; font-size: 0.9em; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <h1>AI Prompt</h1>
-    <div class="prompt">${prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-    <div class="metadata">
-        <p>Generated: ${new Date().toLocaleString()}</p>
-        <p>Model: ${this.state.currentModel}</p>
-    </div>
-</body>
-</html>`;
-        
-        const blob = new Blob([html], { type: 'text/html' });
-        this.downloadBlob(blob, `prompt-${Date.now()}.html`);
-        this.showNotification('Prompt exported as HTML', 'success');
-    }
-    
-    exportAsMarkdown(prompt) {
-        const markdown = `# AI Prompt
-
-## Prompt
-${prompt}
-
-## Metadata
-- **Generated**: ${new Date().toLocaleString()}
-- **Model**: ${this.state.currentModel}
-- **API Status**: ${this.state.apiStatus}
-- **Modified**: ${this.state.promptModified ? 'Yes' : 'No'}`;
-        
-        const blob = new Blob([markdown], { type: 'text/markdown' });
-        this.downloadBlob(blob, `prompt-${Date.now()}.md`);
-        this.showNotification('Prompt exported as Markdown', 'success');
-    }
-    
-    downloadBlob(blob, filename) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        this.savePrompt(); // Default to text file
     }
 }
 
