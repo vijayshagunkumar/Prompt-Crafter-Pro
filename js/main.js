@@ -1,4 +1,3 @@
-import PromptCraftEnterprise from './PromptCraftEnterprise.js';
 
 /**
  * Main initialization for PromptCraft Pro
@@ -91,3 +90,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Export for module usage if needed
 export default PromptCraftEnterprise;
+window.initializeApp = initializeApp;
