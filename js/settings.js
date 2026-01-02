@@ -2,6 +2,7 @@ import Config from './config.js';
 
 /**
  * Settings management for PromptCraft Pro
+ * FIXED VERSION - Updated to match settings keys used in PromptCraftEnterprise.js
  */
 
 class SettingsManager {
@@ -10,7 +11,6 @@ class SettingsManager {
             // Appearance
             theme: 'dark',
             uiDensity: 'comfortable',
-            animations: true,
             
             // Language
             interfaceLanguage: 'en',
@@ -18,13 +18,13 @@ class SettingsManager {
             voiceOutputLanguage: 'en-US',
             
             // AI Preferences
-            defaultModel: Config.API.DEFAULT_MODEL,
+            defaultAiModel: 'gemini-3-flash-preview', // Changed from defaultModel to defaultAiModel
             defaultPlatform: 'gemini',
             promptStyle: 'detailed',
             
             // API Settings
             apiMode: 'auto',
-            apiEndpoint: Config.getApiUrl(),
+            apiEndpoint: 'https://promptcraft-api.vijay-shagunkumar.workers.dev', // Fixed URL
             enableRealApi: true,
             
             // Editor
@@ -33,13 +33,18 @@ class SettingsManager {
             enableSpellCheck: true,
             
             // History
-            maxHistoryItems: 25,
+            maxHistoryItems: 50, // Increased from 25 to 50
             enableHistory: true,
             autoSaveHistory: true,
             
             // Notifications
             notificationDuration: 3000,
             enableSounds: false,
+            
+            // Speech
+            speechRate: 1,
+            speechPitch: 1,
+            speechVolume: 1,
             
             // Advanced
             debugMode: 'off',
@@ -49,7 +54,10 @@ class SettingsManager {
             // User preferences
             autoCopyToClipboard: false,
             autoOpenPlatform: false,
-            enableKeyboardShortcuts: true
+            enableKeyboardShortcuts: true,
+            
+            // Auto-save
+            autoSave: true
         };
         
         this.currentSettings = { ...this.defaultSettings };
@@ -66,21 +74,27 @@ class SettingsManager {
                 const parsed = JSON.parse(saved);
                 this.currentSettings = { ...this.defaultSettings, ...parsed };
                 this.migrateSettings();
+                console.log('✅ Settings loaded from localStorage');
                 return true;
             }
         } catch (error) {
             console.error('Failed to load settings:', error);
         }
         
+        console.log('⚙️ Using default settings');
         return false;
     }
 
     /**
      * Save settings to localStorage
      */
-    save() {
+    save(settings = null) {
         try {
+            if (settings) {
+                this.currentSettings = { ...this.currentSettings, ...settings };
+            }
             localStorage.setItem('promptcraft_settings', JSON.stringify(this.currentSettings));
+            console.log('💾 Settings saved to localStorage');
             return true;
         } catch (error) {
             console.error('Failed to save settings:', error);
@@ -89,17 +103,29 @@ class SettingsManager {
     }
 
     /**
+     * Save specific settings object
+     */
+    saveSettings(settings) {
+        return this.save(settings);
+    }
+
+    /**
      * Migrate settings from older versions
      */
     migrateSettings() {
-        // Migration for v1 to v2
+        // Migration for v1 to v2 - key name changes
+        if (this.currentSettings.defaultModel && !this.currentSettings.defaultAiModel) {
+            this.currentSettings.defaultAiModel = this.currentSettings.defaultModel;
+            delete this.currentSettings.defaultModel;
+        }
+        
         if (this.currentSettings.theme === 'system') {
             this.currentSettings.theme = 'auto';
         }
         
         // Migration for model names
-        if (this.currentSettings.defaultModel === 'gemini-flash') {
-            this.currentSettings.defaultModel = 'gemini-3-flash-preview';
+        if (this.currentSettings.defaultAiModel === 'gemini-flash') {
+            this.currentSettings.defaultAiModel = 'gemini-3-flash-preview';
         }
         
         // Ensure all default settings exist
@@ -175,7 +201,7 @@ class SettingsManager {
      */
     exportSettings() {
         const data = {
-            version: Config.FRONTEND.VERSION,
+            version: '4.3',
             exportDate: new Date().toISOString(),
             settings: this.currentSettings
         };
@@ -237,8 +263,10 @@ class SettingsManager {
         if (theme === 'auto') {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.body.classList.toggle('dark-theme', prefersDark);
+            document.body.classList.toggle('light-theme', !prefersDark);
         } else {
             document.body.classList.toggle('dark-theme', theme === 'dark');
+            document.body.classList.toggle('light-theme', theme === 'light');
         }
     }
 
@@ -307,13 +335,6 @@ class SettingsManager {
     }
 
     /**
-     * Get model display name
-     */
-    getModelDisplayName(modelId) {
-        return Config.getModelDisplayName(modelId);
-    }
-
-    /**
      * Get available themes
      */
     getAvailableThemes() {
@@ -363,12 +384,31 @@ class SettingsManager {
      * Get available models
      */
     getAvailableModels() {
-        const models = Config.API.MODELS;
-        return Object.keys(models).map(id => ({
-            id,
-            name: models[id].name,
-            provider: models[id].provider
-        }));
+        return [
+            { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash Preview', provider: 'Google' },
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
+            { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', provider: 'Groq' }
+        ];
+    }
+
+    /**
+     * Get model display name
+     */
+    getModelDisplayName(modelId) {
+        const models = {
+            'gemini-3-flash-preview': 'Gemini 3 Flash',
+            'gpt-4o-mini': 'GPT-4o Mini',
+            'llama-3.1-8b-instant': 'Llama 3.1',
+            'gpt-4': 'GPT-4',
+            'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+            'claude-3-haiku': 'Claude 3 Haiku',
+            'claude-3-sonnet': 'Claude 3 Sonnet',
+            'gemini-1.5-flash-latest': 'Gemini 1.5 Flash',
+            'deepseek-coder': 'DeepSeek Coder',
+            'deepseek-chat': 'DeepSeek Chat',
+            'fallback': 'Offline Mode'
+        };
+        return models[modelId] || modelId;
     }
 
     /**
@@ -397,6 +437,23 @@ class SettingsManager {
             errors.push('Notification duration must be a positive number');
         }
         
+        // Validate speech settings
+        const speechRate = this.get('speechRate');
+        const speechPitch = this.get('speechPitch');
+        const speechVolume = this.get('speechVolume');
+        
+        if (typeof speechRate !== 'number' || speechRate < 0.5 || speechRate > 2) {
+            errors.push('Speech rate must be between 0.5 and 2');
+        }
+        
+        if (typeof speechPitch !== 'number' || speechPitch < 0.5 || speechPitch > 2) {
+            errors.push('Speech pitch must be between 0.5 and 2');
+        }
+        
+        if (typeof speechVolume !== 'number' || speechVolume < 0 || speechVolume > 1) {
+            errors.push('Speech volume must be between 0 and 1');
+        }
+        
         return {
             isValid: errors.length === 0,
             errors: errors
@@ -407,11 +464,17 @@ class SettingsManager {
      * Clear all settings (reset to defaults and clear storage)
      */
     clear() {
-        localStorage.removeItem('promptcraft_settings');
-        localStorage.removeItem('promptcraft_history');
-        localStorage.removeItem('promptcraft_cache');
-        this.currentSettings = { ...this.defaultSettings };
-        return true;
+        try {
+            localStorage.removeItem('promptcraft_settings');
+            localStorage.removeItem('promptcraft_history');
+            localStorage.removeItem('promptcraft_cache');
+            this.currentSettings = { ...this.defaultSettings };
+            console.log('🧹 Settings cleared');
+            return true;
+        } catch (error) {
+            console.error('Failed to clear settings:', error);
+            return false;
+        }
     }
 
     /**
@@ -420,16 +483,68 @@ class SettingsManager {
     getStorageUsage() {
         let total = 0;
         
-        for (let key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
-                total += localStorage.getItem(key).length * 2; // UTF-16 uses 2 bytes per char
+        try {
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    total += (localStorage.getItem(key).length + key.length) * 2; // UTF-16 uses 2 bytes per char
+                }
             }
+        } catch (error) {
+            console.error('Failed to calculate storage usage:', error);
         }
         
         return {
             bytes: total,
             kilobytes: (total / 1024).toFixed(2),
-            megabytes: (total / (1024 * 1024)).toFixed(4)
+            megabytes: (total / (1024 * 1024)).toFixed(4),
+            readable: total < 1024 ? `${total} bytes` : 
+                     total < 1024 * 1024 ? `${(total / 1024).toFixed(2)} KB` : 
+                     `${(total / (1024 * 1024)).toFixed(2)} MB`
+        };
+    }
+
+    /**
+     * Test API connection
+     */
+    async testApiConnection() {
+        const endpoint = this.get('apiEndpoint');
+        
+        try {
+            const response = await fetch(`${endpoint}/health`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            return {
+                success: response.ok,
+                status: response.status,
+                online: response.ok
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                online: false
+            };
+        }
+    }
+
+    /**
+     * Get system information
+     */
+    getSystemInfo() {
+        return {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            cookiesEnabled: navigator.cookieEnabled,
+            online: navigator.onLine,
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            colorDepth: window.screen.colorDepth,
+            localStorageAvailable: typeof localStorage !== 'undefined',
+            sessionStorageAvailable: typeof sessionStorage !== 'undefined'
         };
     }
 }
