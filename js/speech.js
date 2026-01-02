@@ -433,3 +433,4 @@ class SpeechManager {
 }
 
 window.SpeechService = SpeechService;
+export { SpeechService };
