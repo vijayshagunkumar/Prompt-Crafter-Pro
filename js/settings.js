@@ -1,4 +1,3 @@
-import Config from './config.js';
 
 /**
  * Settings management for PromptCraft Pro
@@ -549,4 +548,4 @@ class SettingsManager {
     }
 }
 
-export default SettingsManager;
+window.Settings = Settings;
