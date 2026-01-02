@@ -2,7 +2,7 @@ console.log('📦 Loading PromptCraftEnterprise...');
 
 // Check if all dependencies are available
 function checkDependencies() {
-    const deps = ['Utils', 'Settings', 'SpeechService', 'Platforms']; // CHANGED
+    const deps = ['Utils', 'Settings', 'SpeechService', 'Platforms'];
     const missing = [];
     
     for (const dep of deps) {
@@ -33,27 +33,27 @@ if (!checkDependencies()) {
             if (typeof Utils === 'undefined') {
                 throw new Error('Utils not loaded');
             }
-            if (typeof Settings === 'undefined') { // CHANGED
+            if (typeof Settings === 'undefined') {
                 throw new Error('Settings not loaded');
             }
-            if (typeof SpeechService === 'undefined') { // CHANGED
+            if (typeof SpeechService === 'undefined') {
                 throw new Error('SpeechService not loaded');
             }
-            if (typeof Platforms === 'undefined') { // CHANGED
+            if (typeof Platforms === 'undefined') {
                 throw new Error('Platforms not loaded');
             }
-            if (typeof API === 'undefined' && typeof apiService === 'undefined') { // CHANGED
+            if (typeof API === 'undefined' && typeof apiService === 'undefined') {
                 console.warn('API service not loaded, using fallback');
             }
             
             this.utils = new Utils();
-            this.settingsManager = new Settings(); // CHANGED
-            this.speechManager = new SpeechService(); // CHANGED
-            this.platformsManager = new Platforms(); // CHANGED
+            this.settingsManager = new Settings();
+            this.speechManager = new SpeechService();
+            this.platformsManager = new Platforms();
             
             // Handle API or apiService
-            if (typeof API !== 'undefined') { // CHANGED
-                this.api = new API(); // CHANGED
+            if (typeof API !== 'undefined') {
+                this.api = new API();
             } else if (typeof apiService !== 'undefined') {
                 this.api = apiService;
             } else {
@@ -69,14 +69,6 @@ if (!checkDependencies()) {
                     generateFallbackPrompt: (input, style) => `Fallback prompt for: ${input}`
                 };
             }
-            
-            // ... rest of constructor remains the same
-        }
-        // ... rest of class remains the same
-    }
-
-
-}
             
             this.state = {
                 currentStep: 1,
