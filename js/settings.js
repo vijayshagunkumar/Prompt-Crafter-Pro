@@ -1,270 +1,232 @@
 /**
  * Settings Management for PromptCraft Pro
+ * --------------------------------------
+ * Enterprise-ready singleton settings manager
+ * - Typed defaults
+ * - LocalStorage persistence
+ * - Validation
+ * - UI application hooks
+ * - Event-driven updates
  */
 
 class Settings {
     constructor() {
         this.defaultSettings = {
-            // API Settings
+            // API
             apiEndpoint: 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
-            apiMode: 'auto',
+            apiMode: 'auto', // auto | manual
             defaultAiModel: 'gemini-3-flash-preview',
-            
-            // Language Settings
+
+            // Language
             interfaceLanguage: 'en',
             voiceInputLanguage: 'en-US',
             voiceOutputLanguage: 'en-US',
-            
+
             // Appearance
-            themeSelect: 'auto',
-            uiDensity: 'comfortable',
-            
+            themeSelect: 'auto', // auto | light | dark
+            uiDensity: 'comfortable', // compact | comfortable | spacious
+            textareaSize: 'auto', // auto | small | medium | large
+
             // AI Preferences
-            defaultPlatform: 'gemini',
-            promptStyle: 'detailed',
-            
-            // Speech Settings
-            speechRate: 1,
-            speechPitch: 1,
-            speechVolume: 1,
-            
-            // Advanced Settings
-            autoConvertDelay: '0',
-            notificationDuration: '3000',
-            textareaSize: 'auto',
+            defaultPlatform: 'gemini', // gemini | chatgpt | claude | etc
+            promptStyle: 'detailed', // brief | detailed | structured
+
+            // Speech
+            speechRate: 1,    // 0.5 – 2
+            speechPitch: 1,   // 0.5 – 2
+            speechVolume: 1,  // 0 – 1
+
+            // Advanced
+            autoConvertDelay: 0,        // ms
+            notificationDuration: 3000, // ms
             maxHistoryItems: 50,
-            debugMode: 'off',
-            autoSave: true
+            autoSave: true,
+            debugMode: 'off' // off | on
         };
-        
+
         this.currentSettings = { ...this.defaultSettings };
         this.loadSettings();
+        this.applySettings();
     }
-    
-    /**
-     * Load settings from localStorage
-     */
+
+    /* ------------------------------------------------------------------
+       Storage
+    ------------------------------------------------------------------ */
+
     loadSettings() {
         try {
             const saved = localStorage.getItem('promptCraftSettings');
             if (saved) {
-                const loadedSettings = JSON.parse(saved);
-                this.currentSettings = { ...this.defaultSettings, ...loadedSettings };
+                const parsed = JSON.parse(saved);
+                this.currentSettings = { ...this.defaultSettings, ...parsed };
             }
-        } catch (error) {
-            console.warn('Failed to load settings:', error);
+        } catch (err) {
+            console.warn('[Settings] Failed to load settings:', err);
+            this.currentSettings = { ...this.defaultSettings };
         }
     }
-    
-    /**
-     * Save settings to localStorage
-     */
+
     saveSettings() {
         try {
-            localStorage.setItem('promptCraftSettings', JSON.stringify(this.currentSettings));
-            this.dispatchEvent('settingssaved', { settings: this.currentSettings });
+            localStorage.setItem(
+                'promptCraftSettings',
+                JSON.stringify(this.currentSettings)
+            );
+            this.dispatchEvent('saved', { settings: this.currentSettings });
             return true;
-        } catch (error) {
-            console.error('Failed to save settings:', error);
+        } catch (err) {
+            console.error('[Settings] Failed to save settings:', err);
             return false;
         }
     }
-    
-    /**
-     * Get a setting value
-     */
+
+    /* ------------------------------------------------------------------
+       Getters / Setters
+    ------------------------------------------------------------------ */
+
     get(key) {
-        return this.currentSettings[key] !== undefined 
-            ? this.currentSettings[key] 
+        return key in this.currentSettings
+            ? this.currentSettings[key]
             : this.defaultSettings[key];
     }
-    
-    /**
-     * Set a setting value
-     */
+
     set(key, value) {
-        if (key in this.defaultSettings) {
-            this.currentSettings[key] = value;
-            return true;
-        }
-        return false;
+        if (!(key in this.defaultSettings)) return false;
+
+        this.currentSettings[key] = value;
+        return true;
     }
-    
-    /**
-     * Get all current settings
-     */
-    getAll() {
-        return { ...this.currentSettings };
-    }
-    
-    /**
-     * Get default settings
-     */
-    getDefaults() {
-        return { ...this.defaultSettings };
-    }
-    
-    /**
-     * Update multiple settings
-     */
-    update(settings) {
+
+    update(settings = {}) {
         let changed = false;
-        
+
         Object.keys(settings).forEach(key => {
-            if (key in this.defaultSettings && this.currentSettings[key] !== settings[key]) {
+            if (
+                key in this.defaultSettings &&
+                this.currentSettings[key] !== settings[key]
+            ) {
                 this.currentSettings[key] = settings[key];
                 changed = true;
             }
         });
-        
+
         if (changed) {
             this.saveSettings();
+            this.applySettings();
         }
-        
+
         return changed;
     }
-    
-    /**
-     * Reset to default settings
-     */
+
     reset() {
         this.currentSettings = { ...this.defaultSettings };
         this.saveSettings();
+        this.applySettings();
         return true;
     }
-    
-    /**
-     * Reset specific setting to default
-     */
+
     resetSetting(key) {
-        if (key in this.defaultSettings) {
-            this.currentSettings[key] = this.defaultSettings[key];
-            this.saveSettings();
-            return true;
-        }
-        return false;
+        if (!(key in this.defaultSettings)) return false;
+
+        this.currentSettings[key] = this.defaultSettings[key];
+        this.saveSettings();
+        this.applySettings();
+        return true;
     }
-    
-    /**
-     * Apply settings to the application
-     */
+
+    /* ------------------------------------------------------------------
+       UI Application
+    ------------------------------------------------------------------ */
+
     applySettings() {
-        // Apply theme
         this.applyTheme();
-        
-        // Apply UI density
         this.applyUIDensity();
-        
-        // Apply textarea size
         this.applyTextareaSize();
-        
-        // Apply other settings as needed
-        this.dispatchEvent('settingsapplied', { settings: this.currentSettings });
+
+        this.dispatchEvent('applied', { settings: this.currentSettings });
     }
-    
-    /**
-     * Apply theme setting
-     */
+
     applyTheme() {
         const theme = this.get('themeSelect');
         const html = document.documentElement;
-        
+
         if (theme === 'auto') {
-            // Use system preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            html.classList.toggle('dark-theme', prefersDark);
-            html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            const prefersDark = window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            ).matches;
+            html.dataset.theme = prefersDark ? 'dark' : 'light';
         } else {
-            html.classList.toggle('dark-theme', theme === 'dark');
-            html.setAttribute('data-theme', theme);
+            html.dataset.theme = theme;
         }
     }
-    
-    /**
-     * Apply UI density
-     */
+
     applyUIDensity() {
-        const density = this.get('uiDensity');
-        document.body.setAttribute('data-ui-density', density);
+        document.body.dataset.uiDensity = this.get('uiDensity');
     }
-    
-    /**
-     * Apply textarea size
-     */
+
     applyTextareaSize() {
         const size = this.get('textareaSize');
-        const textarea = document.getElementById('userInput');
-        if (textarea) {
-            textarea.setAttribute('data-size', size);
-        }
+        document
+            .querySelectorAll('[data-textarea]')
+            .forEach(el => el.dataset.size = size);
     }
-    
-    /**
-     * Get settings for a specific category
-     */
-    getCategorySettings(category) {
-        const categories = {
-            api: ['apiEndpoint', 'apiMode', 'defaultAiModel'],
-            language: ['interfaceLanguage', 'voiceInputLanguage', 'voiceOutputLanguage'],
-            appearance: ['themeSelect', 'uiDensity'],
-            ai: ['defaultPlatform', 'promptStyle'],
-            speech: ['speechRate', 'speechPitch', 'speechVolume'],
-            advanced: ['autoConvertDelay', 'notificationDuration', 'textareaSize', 'maxHistoryItems', 'debugMode', 'autoSave']
-        };
-        
-        if (!categories[category]) return {};
-        
-        const result = {};
-        categories[category].forEach(key => {
-            result[key] = this.get(key);
-        });
-        
-        return result;
-    }
-    
-    /**
-     * Validate settings
-     */
+
+    /* ------------------------------------------------------------------
+       Validation
+    ------------------------------------------------------------------ */
+
     validate() {
         const errors = [];
-        
-        // Validate API endpoint
-        const apiEndpoint = this.get('apiEndpoint');
-        if (!apiEndpoint || !apiEndpoint.startsWith('http')) {
+
+        if (!this.get('apiEndpoint')?.startsWith('http')) {
             errors.push('API endpoint must be a valid URL');
         }
-        
-        // Validate max history items
+
         const maxHistory = this.get('maxHistoryItems');
-        if (typeof maxHistory !== 'number' || maxHistory < 0 || maxHistory > 1000) {
+        if (!Number.isInteger(maxHistory) || maxHistory < 0 || maxHistory > 1000) {
             errors.push('Max history items must be between 0 and 1000');
         }
-        
-        // Validate speech settings
-        const speechRate = this.get('speechRate');
-        if (speechRate < 0.5 || speechRate > 2) {
-            errors.push('Speech rate must be between 0.5 and 2');
-        }
-        
-        const speechPitch = this.get('speechPitch');
-        if (speechPitch < 0.5 || speechPitch > 2) {
-            errors.push('Speech pitch must be between 0.5 and 2');
-        }
-        
-        const speechVolume = this.get('speechVolume');
-        if (speechVolume < 0 || speechVolume > 1) {
+
+        ['speechRate', 'speechPitch'].forEach(key => {
+            const val = this.get(key);
+            if (val < 0.5 || val > 2) {
+                errors.push(`${key} must be between 0.5 and 2`);
+            }
+        });
+
+        const volume = this.get('speechVolume');
+        if (volume < 0 || volume > 1) {
             errors.push('Speech volume must be between 0 and 1');
         }
-        
+
         return {
             valid: errors.length === 0,
-            errors: errors
+            errors
         };
     }
-    
-    /**
-     * Export settings to JSON
-     */
+
+    /* ------------------------------------------------------------------
+       Utilities
+    ------------------------------------------------------------------ */
+
+    isChanged(key) {
+        return key in this.defaultSettings &&
+               this.currentSettings[key] !== this.defaultSettings[key];
+    }
+
+    getChangedSettings() {
+        const diff = {};
+        Object.keys(this.defaultSettings).forEach(key => {
+            if (this.isChanged(key)) {
+                diff[key] = {
+                    current: this.currentSettings[key],
+                    default: this.defaultSettings[key]
+                };
+            }
+        });
+        return diff;
+    }
+
     exportToJSON() {
         return {
             settings: this.currentSettings,
@@ -273,151 +235,35 @@ class Settings {
             version: '1.0'
         };
     }
-    
-    /**
-     * Import settings from JSON
-     */
-    importFromJSON(json) {
-        try {
-            const data = typeof json === 'string' ? JSON.parse(json) : json;
-            
-            if (data.settings) {
-                this.update(data.settings);
-                return {
-                    success: true,
-                    message: 'Settings imported successfully',
-                    imported: Object.keys(data.settings).length
-                };
-            }
-            
-            return {
-                success: false,
-                message: 'No settings found in import data'
-            };
-        } catch (error) {
-            return {
-                success: false,
-                message: `Failed to import settings: ${error.message}`
-            };
-        }
-    }
-    
-    /**
-     * Get settings as form data
-     */
-    getFormData() {
-        const formData = new FormData();
-        Object.keys(this.currentSettings).forEach(key => {
-            formData.append(key, this.currentSettings[key]);
-        });
-        return formData;
-    }
-    
-    /**
-     * Check if setting has been changed from default
-     */
-    isChanged(key) {
-        if (!(key in this.defaultSettings)) return false;
-        return this.currentSettings[key] !== this.defaultSettings[key];
-    }
-    
-    /**
-     * Get changed settings
-     */
-    getChangedSettings() {
-        const changed = {};
-        Object.keys(this.defaultSettings).forEach(key => {
-            if (this.isChanged(key)) {
-                changed[key] = {
-                    current: this.currentSettings[key],
-                    default: this.defaultSettings[key]
-                };
-            }
-        });
-        return changed;
-    }
-    
-    /**
-     * Dispatch custom events
-     */
-    dispatchEvent(eventName, detail = {}) {
-        const event = new CustomEvent(`settings:${eventName}`, { 
-            detail: { ...detail, timestamp: Date.now() }
-        });
-        window.dispatchEvent(event);
-    }
-    
-    /**
-     * Get settings for display in UI
-     */
-    getDisplaySettings() {
-        const display = { ...this.currentSettings };
-        
-        // Format values for display
-        if (display.speechRate) {
-            display.speechRateDisplay = display.speechRate.toFixed(1);
-        }
-        
-        if (display.speechPitch) {
-            display.speechPitchDisplay = display.speechPitch.toFixed(1);
-        }
-        
-        if (display.speechVolume) {
-            display.speechVolumeDisplay = display.speechVolume.toFixed(1);
-        }
-        
-        return display;
-    }
-}
-class Settings {
-    constructor() {
-        this.defaultSettings = {
-            theme: 'dark',
-            interfaceLanguage: 'en',
-            uiDensity: 'comfortable',
-            defaultAiModel: 'gemini-3-flash-preview',
-            promptStyle: 'detailed',
-            maxHistoryItems: 50,
-            speechRate: 1,
-            speechPitch: 1,
-            speechVolume: 1,
-            autoSave: true,
-            apiEndpoint: 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
-            apiMode: 'auto',
-            defaultPlatform: 'gemini',
-            voiceInputLanguage: 'en-US',
-            voiceOutputLanguage: 'en-US',
-            autoConvertDelay: 0,
-            notificationDuration: 3000,
-            textareaSize: 'auto',
-            debugMode: 'off'
-        };
-    }
 
-    load() {
+    importFromJSON(data) {
         try {
-            const saved = localStorage.getItem('promptCraftSettings');
-            return saved ? JSON.parse(saved) : this.defaultSettings;
-        } catch (error) {
-            console.error('Error loading settings:', error);
-            return this.defaultSettings;
+            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+            if (!parsed.settings) {
+                return { success: false, message: 'No settings found' };
+            }
+
+            this.update(parsed.settings);
+            return {
+                success: true,
+                imported: Object.keys(parsed.settings).length
+            };
+        } catch (err) {
+            return { success: false, message: err.message };
         }
     }
 
-    save(settings) {
-        try {
-            localStorage.setItem('promptCraftSettings', JSON.stringify(settings));
-            return true;
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            return false;
-        }
+    dispatchEvent(name, detail = {}) {
+        window.dispatchEvent(
+            new CustomEvent(`settings:${name}`, {
+                detail: { ...detail, timestamp: Date.now() }
+            })
+        );
     }
 }
 
-window.Settings = Settings;
-// Create singleton instance
-const settings = new Settings();
+/* ------------------------------------------------------------------
+   Singleton Export
+------------------------------------------------------------------ */
 
-// Make globally available
-window.Settings = Settings;
+window.settings = new Settings();
