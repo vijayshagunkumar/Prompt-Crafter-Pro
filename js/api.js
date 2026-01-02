@@ -394,5 +394,3 @@ const apiService = new API();
 window.API = API;
 window.apiService = apiService;
 
-// Export for module usage
-export default API;
