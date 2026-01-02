@@ -337,5 +337,4 @@ class Utils {
 // Make globally available
 window.Utils = Utils;
 
-// Export for module usage
-export default Utils;
+
