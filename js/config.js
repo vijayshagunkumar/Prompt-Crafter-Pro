@@ -523,3 +523,4 @@ const Config = {
 
 // Initialize and export
 window.Config = Config.init();
+export default Config.init();
