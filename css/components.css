@@ -1385,10 +1385,15 @@
     justify-content: center;
     z-index: var(--z-modal);
     padding: var(--spacing-xl);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .modal-overlay.active {
     display: flex;
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal-content {
@@ -1401,8 +1406,13 @@
     box-shadow: var(--shadow-xl);
     animation: modalSlideIn var(--transition-base);
     border: 1px solid var(--border-color);
+    transform: translateY(-20px) scale(0.95);
+    transition: transform 0.3s ease;
 }
 
+.modal-overlay.active .modal-content {
+    transform: translateY(0) scale(1);
+}
 .modal-header {
     padding: var(--spacing-xl);
     border-bottom: 1px solid var(--border-color);
