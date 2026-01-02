@@ -522,4 +522,4 @@ const Config = {
 };
 
 // Initialize and export
-export default Config.init();
+window.Config = Config.init();
