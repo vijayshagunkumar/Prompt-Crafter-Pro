@@ -1596,7 +1596,35 @@ Format: Academic but accessible, with citations where appropriate.`
                 this.elements.saveSettingsBtn.classList.add('disabled');
             }
         }
-        
+     // Add this method somewhere in your PromptCraftEnterprise class
+// Good place: after the populateSettingsForm() method or before saveSettings()
+
+getSettingsFromForm() {
+    const settings = {};
+    const elements = document.querySelectorAll('#settingsModal [id]');
+    
+    elements.forEach(element => {
+        const key = element.id;
+        // Skip button elements and other non-setting elements
+        if (key && key !== 'saveSettingsBtn' && key !== 'cancelSettingsBtn' && 
+            key !== 'testConnectionBtn' && key !== 'clearCacheBtn' && 
+            key !== 'exportLogsBtn' && key !== 'settingsTitle' &&
+            !key.includes('Value') && !key.includes('Help')) {
+            
+            if (element.type === 'checkbox') {
+                settings[key] = element.checked;
+            } else if (element.type === 'range') {
+                settings[key] = parseFloat(element.value);
+            } else if (element.type === 'number') {
+                settings[key] = parseInt(element.value);
+            } else {
+                settings[key] = element.value;
+            }
+        }
+    });
+    
+    return settings;
+}   
     saveSettings() {
     try {
         console.log('[PromptCraft] Saving settings...');
