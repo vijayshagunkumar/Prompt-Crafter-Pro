@@ -1,6 +1,6 @@
 /**
  * AI Platforms data and handlers for PromptCraft Pro
- * FIXED VERSION – FULL FILE
+ * FIXED VERSION - Updated with correct URLs for all platforms
  */
 
 class PlatformsManager {
@@ -134,20 +134,20 @@ class PlatformsManager {
         this.selectedPlatform = null;
     }
 
-    /* ================= URL HANDLING ================= */
+    /* ================= URL HANDLING - FIXED ================= */
 
     generatePlatformUrl(platformId, prompt) {
         const platform = this.getPlatform(platformId);
-        if (!platform) return null;
-
-        try {
-            return platform.launchUrl;
-        } catch {
-            return platform.launchUrl;
+        if (!platform) {
+            console.error(`Platform not found: ${platformId}`);
+            return null;
         }
+
+        // Always return the launch URL (no parameters needed for direct opening)
+        return platform.launchUrl;
     }
 
-    /* ================= UI CARD CREATION ================= */
+    /* ================= UI CARD CREATION - FIXED ================= */
 
     createPlatformCard(platform) {
         const card = document.createElement('div');
@@ -171,28 +171,135 @@ class PlatformsManager {
                 <h4>${platform.name}</h4>
                 <p>${platform.description}</p>
             </div>
+            <div class="platform-actions">
+                <button class="platform-action-btn" data-action="copy" title="Copy prompt for ${platform.name}">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="platform-action-btn" data-action="open" title="Open ${platform.name}">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+            </div>
         `;
 
-        const handleLaunch = () => {
-            const outputEl = document.getElementById('outputArea');
-            const prompt = outputEl ? outputEl.innerText.trim() : '';
+        // Store platform reference
+        card._platform = platform;
 
-            if (!prompt) return;
-
-            navigator.clipboard.writeText(prompt).catch(() => {});
-            const url = this.generatePlatformUrl(platform.id, prompt);
-            window.open(url, '_blank', 'noopener,noreferrer');
-        };
-
-        card.addEventListener('click', handleLaunch);
+        // Add click handlers for action buttons
+        const copyBtn = card.querySelector('[data-action="copy"]');
+        const openBtn = card.querySelector('[data-action="open"]');
+        
+        copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleCopyForPlatform(platform);
+        });
+        
+        openBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleOpenPlatform(platform);
+        });
+        
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.platform-action-btn')) {
+                this.handlePlatformClick(platform);
+            }
+        });
+        
         card.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                handleLaunch();
+                this.handlePlatformClick(platform);
             }
         });
 
         return card;
+    }
+
+    /* ================= PLATFORM ACTIONS - FIXED ================= */
+
+    handleCopyForPlatform(platform) {
+        const outputEl = document.getElementById('outputArea');
+        const prompt = outputEl ? outputEl.innerText.trim() : '';
+
+        if (!prompt) {
+            console.warn('No prompt to copy');
+            this.showNotification('No prompt to copy', 'warning');
+            return;
+        }
+
+        navigator.clipboard.writeText(prompt).then(() => {
+            console.log(`Prompt copied for ${platform.name}`);
+            this.showNotification(`Prompt copied for ${platform.name}`, 'success');
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            this.showNotification('Failed to copy to clipboard', 'error');
+        });
+    }
+
+    handleOpenPlatform(platform) {
+        console.log(`Opening platform: ${platform.name}`);
+        
+        if (platform.launchUrl) {
+            // Open in new tab
+            window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
+            this.showNotification(`Opening ${platform.name}...`, 'info');
+        } else {
+            console.error(`No URL configured for ${platform.name}`);
+            this.showNotification(`No URL configured for ${platform.name}`, 'error');
+        }
+    }
+
+    handlePlatformClick(platform) {
+        console.log(`Platform clicked: ${platform.name}`);
+        
+        // First copy the prompt
+        const outputEl = document.getElementById('outputArea');
+        const prompt = outputEl ? outputEl.innerText.trim() : '';
+        
+        if (prompt) {
+            navigator.clipboard.writeText(prompt).then(() => {
+                console.log(`Prompt copied for ${platform.name}`);
+                
+                // Then open the platform
+                if (platform.launchUrl) {
+                    window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
+                    this.showNotification(`Prompt copied! Opening ${platform.name}...`, 'success');
+                } else {
+                    this.showNotification(`Prompt copied for ${platform.name}`, 'success');
+                }
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                this.showNotification('Failed to copy prompt', 'error');
+            });
+        } else {
+            console.warn('No prompt to copy');
+            this.showNotification('Generate a prompt first', 'warning');
+        }
+    }
+
+    /* ================= HELPER METHODS ================= */
+
+    showNotification(message, type = 'info') {
+        // Create or use existing notification system
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     /* ================= FILTERING / SORTING ================= */
