@@ -605,7 +605,8 @@ class PromptCraftEnterprise {
         
         // Show platforms only if we have a generated prompt
         if (this.state.hasGeneratedPrompt) {
-            const platforms = this.platformsManager.getPlatforms();
+            // ✅ FIXED: Changed from getPlatforms() to getAllPlatforms()
+            const platforms = this.platformsManager.getAllPlatforms();
             platforms.forEach(platform => {
                 const platformCard = this.createPlatformCard(platform);
                 this.elements.platformsGrid.appendChild(platformCard);
