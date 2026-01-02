@@ -1,52 +1,90 @@
-import Config from './config.js';
-
 /**
  * API Service for PromptCraft Pro
  * Communicates with Cloudflare Worker backend
+ * Matches the worker.js API structure
  */
 
 class APIService {
     constructor() {
-        this.apiUrl = Config.getApiUrl();
-        this.apiKey = ''; // Not needed for public API
+        // Production API endpoint - YOUR WORKER URL
+        this.apiUrl = 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
         
+        // Local development endpoint
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1') {
+            this.apiUrl = 'http://127.0.0.1:8787';
+        }
+        
+        // API Key from your worker environment variable
+        this.apiKey = ''; // Will be injected via environment
+        
+        // Model mapping - matches worker.js models
+        this.availableModels = {
+            'gemini-3-flash-preview': {
+                name: 'Gemini 3 Flash',
+                provider: 'Google',
+                description: 'Latest Gemini 3 model'
+            },
+            'gemini-1.5-flash-latest': {
+                name: 'Gemini 1.5 Flash',
+                provider: 'Google',
+                description: 'Fast and capable model'
+            },
+            'gpt-4o-mini': {
+                name: 'GPT-4o Mini',
+                provider: 'OpenAI',
+                description: 'Cost-effective GPT-4 variant'
+            },
+            'llama-3.1-8b-instant': {
+                name: 'Llama 3.1 8B',
+                provider: 'Groq',
+                description: 'Fast Llama model via Groq'
+            }
+        };
+        
+        // Default headers
         this.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'User-Agent': `PromptCraft-Pro/${Config.FRONTEND.VERSION}`
+            'User-Agent': 'PromptCraft-Pro-Frontend/1.0'
         };
         
+        // Add API key to headers if available
+        if (this.apiKey) {
+            this.headers['X-API-Key'] = this.apiKey;
+        }
+        
+        // Rate limiting state
         this.rateLimitInfo = {
-            minuteRemaining: Config.API.RATE_LIMITS.MINUTE,
-            dailyRemaining: Config.API.RATE_LIMITS.DAILY,
+            minuteRemaining: 20,
+            dailyRemaining: 500,
             lastReset: Date.now()
         };
         
-        this.stats = {
-            totalRequests: 0,
-            successfulRequests: 0,
-            failedRequests: 0,
-            totalResponseTime: 0,
-            lastRequestTime: null
+        // Retry configuration
+        this.retryConfig = {
+            maxRetries: 2,
+            retryDelay: 1000,
+            timeout: 30000
         };
     }
 
     /**
-     * Generate a prompt using AI
+     * Generate a prompt using the AI service
+     * @param {string} userInput - User's prompt input
+     * @param {object} options - Generation options
+     * @returns {Promise<object>} - Generated response
      */
     async generatePrompt(userInput, options = {}) {
         const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const startTime = Date.now();
         
-        this.stats.totalRequests++;
-        
-        console.log(`[API ${requestId}] Generating with model: ${options.model || Config.getDefaultModel()}`);
+        console.log(`[API ${requestId}] Generating prompt with model: ${options.model || 'default'}`);
         
         try {
-            // Prepare request body
+            // Prepare request body matching worker.js expected format
             const requestBody = {
                 prompt: userInput,
-                model: options.model || Config.getDefaultModel(),
+                model: options.model || 'gemini-3-flash-preview', // Default to latest Gemini
                 ...options
             };
             
@@ -57,10 +95,7 @@ class APIService {
             
             // Create AbortController for timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(
-                () => controller.abort(), 
-                Config.API.REQUEST_CONFIG.timeout
-            );
+            const timeoutId = setTimeout(() => controller.abort(), this.retryConfig.timeout);
             
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
@@ -72,19 +107,16 @@ class APIService {
             clearTimeout(timeoutId);
             
             if (!response.ok) {
-                throw this.handleApiError(response, requestId);
+                const errorData = await response.json().catch(() => ({}));
+                throw this.handleApiError(response.status, errorData, requestId);
             }
             
             const data = await response.json();
             
-            // Update rate limit info
+            // Update rate limit info from response headers
             this.updateRateLimitInfo(response);
             
-            // Update stats
-            const responseTime = Date.now() - startTime;
-            this.updateStats(responseTime, true);
-            
-            console.log(`[API ${requestId}] Success in ${responseTime}ms`);
+            console.log(`[API ${requestId}] Success: ${data.model} via ${data.provider}`);
             
             return {
                 success: true,
@@ -93,85 +125,88 @@ class APIService {
                 provider: data.provider,
                 usage: data.usage,
                 requestId: data.requestId || requestId,
-                rateLimit: data.rateLimit || this.rateLimitInfo,
-                responseTime: responseTime,
-                timestamp: data.timestamp || new Date().toISOString()
+                rateLimit: data.rateLimit,
+                timestamp: data.timestamp
             };
             
         } catch (error) {
             console.error(`[API ${requestId}] Error:`, error.message);
             
-            // Update stats
-            this.updateStats(Date.now() - startTime, false);
-            
             // Retry logic
-            const retryCount = options.retryCount || 0;
-            if (retryCount < Config.API.REQUEST_CONFIG.maxRetries) {
-                console.log(`[API ${requestId}] Retrying (${retryCount + 1}/${Config.API.REQUEST_CONFIG.maxRetries})...`);
+            if (options.retryCount < this.retryConfig.maxRetries && 
+                !error.message.includes('timeout') &&
+                !error.message.includes('rate limit')) {
+                
+                console.log(`[API ${requestId}] Retrying (${(options.retryCount || 0) + 1}/${this.retryConfig.maxRetries})...`);
                 
                 await new Promise(resolve => 
-                    setTimeout(resolve, Config.API.REQUEST_CONFIG.retryDelay)
+                    setTimeout(resolve, this.retryConfig.retryDelay)
                 );
                 
                 return this.generatePrompt(userInput, {
                     ...options,
-                    retryCount: retryCount + 1
+                    retryCount: (options.retryCount || 0) + 1
                 });
             }
             
             return {
                 success: false,
                 error: error.message,
-                requestId: requestId,
+                requestId,
                 fallbackUsed: true
             };
         }
     }
 
     /**
-     * Handle API errors
+     * Handle API errors based on status code
      */
-    handleApiError(response, requestId) {
-        const status = response.status;
-        let message = `HTTP ${status}`;
-        let userMessage = 'An error occurred';
+    handleApiError(statusCode, errorData, requestId) {
+        const errors = {
+            400: {
+                message: errorData.error || 'Invalid request format',
+                userMessage: 'Please check your prompt format'
+            },
+            401: {
+                message: 'Authentication failed',
+                userMessage: 'API authentication error'
+            },
+            403: {
+                message: 'Access denied',
+                userMessage: 'Access to this resource is denied'
+            },
+            404: {
+                message: 'API endpoint not found',
+                userMessage: 'Service temporarily unavailable'
+            },
+            429: {
+                message: 'Rate limit exceeded',
+                userMessage: 'Too many requests. Please wait a moment.'
+            },
+            500: {
+                message: errorData.error || 'Internal server error',
+                userMessage: 'AI service is experiencing issues'
+            },
+            502: {
+                message: 'Bad gateway',
+                userMessage: 'Service temporarily unavailable'
+            },
+            503: {
+                message: 'Service unavailable',
+                userMessage: 'AI service is currently down'
+            },
+            504: {
+                message: 'Gateway timeout',
+                userMessage: 'Request timed out. Please try again.'
+            }
+        };
         
-        switch (status) {
-            case 400:
-                message = 'Invalid request';
-                userMessage = 'Please check your input format';
-                break;
-            case 401:
-                message = 'Authentication failed';
-                userMessage = 'API authentication error';
-                break;
-            case 403:
-                message = 'Access denied';
-                userMessage = 'You do not have access to this resource';
-                break;
-            case 429:
-                message = 'Rate limit exceeded';
-                userMessage = 'Too many requests. Please wait a moment.';
-                break;
-            case 500:
-                message = 'Internal server error';
-                userMessage = 'AI service is experiencing issues';
-                break;
-            case 502:
-                message = 'Bad gateway';
-                userMessage = 'Service temporarily unavailable';
-                break;
-            case 503:
-                message = 'Service unavailable';
-                userMessage = 'AI service is currently down';
-                break;
-            case 504:
-                message = 'Gateway timeout';
-                userMessage = 'Request timed out. Please try again.';
-                break;
-        }
+        const error = errors[statusCode] || {
+            message: errorData.error || `HTTP ${statusCode}`,
+            userMessage: 'An unexpected error occurred'
+        };
         
-        return new Error(`${userMessage} (${message}) [${requestId}]`);
+        return new Error(`${error.message} [${requestId}]`);
     }
 
     /**
@@ -193,47 +228,16 @@ class APIService {
     }
 
     /**
-     * Update statistics
-     */
-    updateStats(responseTime, success) {
-        if (success) {
-            this.stats.successfulRequests++;
-            this.stats.totalResponseTime += responseTime;
-        } else {
-            this.stats.failedRequests++;
-        }
-        
-        this.stats.lastRequestTime = new Date().toISOString();
-    }
-
-    /**
-     * Get API statistics
-     */
-    getStats() {
-        const successRate = this.stats.totalRequests > 0 
-            ? (this.stats.successfulRequests / this.stats.totalRequests) * 100 
-            : 100;
-        
-        const avgResponseTime = this.stats.successfulRequests > 0
-            ? Math.round(this.stats.totalResponseTime / this.stats.successfulRequests)
-            : 0;
-        
-        return {
-            ...this.stats,
-            successRate: Math.round(successRate),
-            averageResponseTime: avgResponseTime,
-            rateLimit: this.rateLimitInfo
-        };
-    }
-
-    /**
-     * Test API connection
+     * Test API connectivity
+     * @returns {Promise<object>} - Connection status
      */
     async testConnection() {
         try {
             const response = await fetch(`${this.apiUrl}/health`, {
                 method: 'GET',
-                headers: { 'Accept': 'application/json' }
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
             
             if (response.ok) {
@@ -254,6 +258,7 @@ class APIService {
             };
             
         } catch (error) {
+            console.warn('API connection test failed:', error.message);
             return {
                 online: false,
                 status: 'offline',
@@ -264,41 +269,41 @@ class APIService {
 
     /**
      * Get available models
+     * @returns {object} - Available models
      */
     getAvailableModels() {
-        return Config.API.MODELS;
+        return this.availableModels;
     }
 
     /**
      * Get model display name
+     * @param {string} modelId - Model identifier
+     * @returns {string} - Display name
      */
     getModelDisplayName(modelId) {
-        return Config.getModelDisplayName(modelId);
-    }
-
-    /**
-     * Get model provider
-     */
-    getModelProvider(modelId) {
-        return Config.getModelProvider(modelId);
+        const model = this.availableModels[modelId];
+        return model ? model.name : modelId;
     }
 
     /**
      * Get rate limit status
+     * @returns {object} - Rate limit information
      */
     getRateLimitStatus() {
         return {
             ...this.rateLimitInfo,
-            minuteLimit: Config.API.RATE_LIMITS.MINUTE,
-            dailyLimit: Config.API.RATE_LIMITS.DAILY,
-            used: Config.API.RATE_LIMITS.DAILY - this.rateLimitInfo.dailyRemaining
+            minuteLimit: 20, // From your worker config
+            dailyLimit: 500, // From your worker config
+            used: 500 - this.rateLimitInfo.dailyRemaining
         };
     }
 
     /**
-     * Fallback prompt generation
+     * Fallback prompt generation (when API is unavailable)
      */
     generateFallbackPrompt(userInput, style = 'detailed') {
+        console.log('Using fallback prompt generation');
+        
         const promptStyles = {
             detailed: `# Expert AI Assistant Prompt
 ## Role Specification
@@ -327,7 +332,7 @@ ${userInput}
 - Depth: Provide thorough analysis without unnecessary verbosity
 - Practicality: Focus on actionable, real-world applications
 - Professionalism: Maintain appropriate tone for business/technical contexts`,
-
+            
             concise: `# Task Specification
 ${userInput}
 
@@ -337,7 +342,7 @@ ${userInput}
 - Use clear, simple language
 - Avoid elaboration unless necessary
 - Structure with bullet points where helpful`,
-
+            
             creative: `# Creative Task
 ${userInput}
 
@@ -353,7 +358,7 @@ ${userInput}
 - Rich sensory descriptions
 - Metaphorical language where effective
 - Emotional resonance without sentimentality`,
-
+            
             analytical: `# Analytical Task
 ${userInput}
 
@@ -370,7 +375,7 @@ ${userInput}
 - Clear distinction between facts and interpretations
 - Visual representation suggestions (charts, graphs)
 - Executive summary of findings`,
-
+            
             professional: `# Professional Business Request
 ${userInput}
 
@@ -411,6 +416,7 @@ ${userInput}
     }
 }
 
-// Export singleton instance
+// Create singleton instance
 const apiService = new APIService();
+
 export default apiService;
