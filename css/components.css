@@ -1700,11 +1700,7 @@ select:focus, .language-select:focus, input[type="text"]:focus {
 }
 
 /* Settings button states */
-.settings-save-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: var(--gray-500) !important;
-}
+
 
 .settings-save-btn.settings-changed {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
