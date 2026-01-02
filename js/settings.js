@@ -549,3 +549,4 @@ class SettingsManager {
 }
 
 window.Settings = Settings;
+export default Settings;
