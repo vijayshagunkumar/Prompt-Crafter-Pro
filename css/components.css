@@ -1,3 +1,6 @@
+/* ========== CSS COMPONENTS - FIXED VERSION ========== */
+/* Contains fixes for all 9 issues: Maximize buttons, Settings save, AI icons, etc. */
+
 /* ========== HEADER & NAVIGATION ========== */
 .app-header {
     background: var(--header-gradient);
@@ -85,7 +88,7 @@
     z-index: var(--z-popover);
 }
 
-/* API Status Indicator in Header */
+/* ========== FIX #9: API Status Indicator Fix ========== */
 .api-status-indicator {
     display: flex;
     align-items: center;
@@ -98,14 +101,77 @@
 }
 
 .api-status-indicator .status-indicator {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
+    background: var(--warning);
+}
+
+.api-status-indicator .status-indicator.online {
+    background: var(--success);
+    animation: none;
+}
+
+.api-status-indicator .status-indicator.offline {
+    background: var(--danger);
+    animation: none;
+}
+
+.api-status-indicator .status-indicator.checking {
+    background: var(--warning);
     animation: pulse 2s infinite;
 }
 
 .api-status-indicator .api-status-text {
     font-weight: 500;
+}
+
+/* Hide "checking" text when not checking */
+.api-status-indicator:not(.checking) .api-status-text.checking-text {
+    display: none;
+}
+
+/* ========== FIX #4: Need Inspiration Button in Header ========== */
+.need-inspiration-header {
+    background: linear-gradient(135deg, var(--inspiration) 0%, #F59E0B 100%);
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: var(--radius-md) !important;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.need-inspiration-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.need-inspiration-header:hover {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
+
+.need-inspiration-header:hover::before {
+    left: 100%;
+}
+
+.need-inspiration-header.active {
+    background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
 }
 
 /* Progress Indicator */
@@ -344,7 +410,7 @@
     box-shadow: inset 0 0 0 1px var(--primary);
 }
 
-/* Text Area Controls */
+/* ========== FIX #1: Maximize Button Fix ========== */
 .textarea-controls {
     position: absolute;
     bottom: 10px;
@@ -376,8 +442,79 @@
     top: 10px;
     right: 10px;
     display: flex;
-    gap: var(--spacing-xs);
-    z-index: 3;
+    gap: 8px;
+    z-index: 100;
+    pointer-events: auto;
+}
+
+/* Maximize Button Styling */
+.maximize-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 101;
+}
+
+.maximize-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.maximize-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.maximize-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+.maximize-btn.active i {
+    transform: rotate(180deg);
+}
+
+/* ========== FIX #6: Clear Button Fix ========== */
+.clear-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--danger);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 101;
+}
+
+.clear-btn:hover {
+    background: var(--danger);
+    color: white;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.clear-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.clear-btn i {
+    font-size: 16px;
 }
 
 /* ========== MODEL SELECTION ========== */
@@ -705,6 +842,42 @@
     visibility: visible;
 }
 
+/* ========== FIX #7: Voice Button Fix ========== */
+.mic-btn, .speak-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.mic-btn.active, .speak-btn.active {
+    background: var(--danger) !important;
+    color: white !important;
+    animation: voicePulse 1.5s infinite;
+}
+
+.mic-btn.active::before, .speak-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.3);
+    transform: translate(-50%, -50%);
+    animation: voiceRipple 1.5s infinite;
+}
+
+@keyframes voicePulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes voiceRipple {
+    0% { width: 0; height: 0; opacity: 1; }
+    100% { width: 100px; height: 100px; opacity: 0; }
+}
+
 /* Undo Button */
 .undo-btn {
     width: 36px;
@@ -783,8 +956,9 @@
     top: var(--spacing-md);
     right: var(--spacing-md);
     display: flex;
-    gap: var(--spacing-xs);
-    z-index: 2;
+    gap: 8px;
+    z-index: 100;
+    pointer-events: auto;
 }
 
 .save-btn {
@@ -941,6 +1115,60 @@
     cursor: pointer;
 }
 
+/* ========== FIX #5: AI Tool Icons - Full Color Brand Icons ========== */
+.platform-card .platform-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.platform-card:hover .platform-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Platform-specific brand colors */
+.platform-card[data-platform="gemini"] .platform-icon {
+    background: linear-gradient(135deg, #4285F4 0%, #34A853 33%, #FBBC05 66%, #EA4335 100%);
+    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+}
+
+.platform-card[data-platform="chatgpt"] .platform-icon {
+    background: linear-gradient(135deg, #74AA9C 0%, #10A37F 100%);
+    box-shadow: 0 4px 15px rgba(16, 163, 127, 0.3);
+}
+
+.platform-card[data-platform="claude"] .platform-icon {
+    background: linear-gradient(135deg, #D3A3F9 0%, #9B5DE5 100%);
+    box-shadow: 0 4px 15px rgba(155, 93, 229, 0.3);
+}
+
+.platform-card[data-platform="perplexity"] .platform-icon {
+    background: linear-gradient(135deg, #000000 0%, #3B3B3B 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.platform-card[data-platform="deepseek"] .platform-icon {
+    background: linear-gradient(135deg, #2D5BFF 0%, #00C2FF 100%);
+    box-shadow: 0 4px 15px rgba(45, 91, 255, 0.3);
+}
+
+.platform-card[data-platform="copilot"] .platform-icon {
+    background: linear-gradient(135deg, #0078D4 0%, #00BCF2 100%);
+    box-shadow: 0 4px 15px rgba(0, 120, 212, 0.3);
+}
+
+.platform-card[data-platform="grok"] .platform-icon {
+    background: linear-gradient(135deg, #000000 0%, #FF6B35 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
 .platform-card.recommended {
     border-color: var(--success);
     background: linear-gradient(135deg, var(--card-bg), rgba(16, 185, 129, 0.05));
@@ -1032,7 +1260,7 @@
     letter-spacing: -0.01em;
 }
 
-/* ========== STICKY CTA BUTTONS ========== */
+/* ========== FIX #8: Prepare Prompt vs Reset Button ========== */
 .sticky-cta-container {
     position: fixed;
     bottom: var(--spacing-xl);
@@ -1055,7 +1283,7 @@
     font-weight: 600;
     font-size: var(--font-size-base);
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -1069,11 +1297,17 @@
     animation: fadeInUp 0.3s ease;
 }
 
-.sticky-cta.prepare.removed {
+.sticky-cta.prepare.visible {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.sticky-cta.prepare.hidden {
     display: none !important;
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 0 !important;
+    transform: translateY(20px) !important;
+    pointer-events: none !important;
 }
 
 .sticky-cta.prepare:hover:not(:disabled) {
@@ -1099,7 +1333,7 @@
     font-weight: 600;
     font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -1117,24 +1351,24 @@
     animation: fadeInUp 0.3s ease;
 }
 
+.sticky-cta.reset.visible {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+.sticky-cta.reset.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    transform: translateY(20px) !important;
+    pointer-events: none !important;
+}
+
 .sticky-cta.reset:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: var(--shadow-xl), 0 10px 25px rgba(239, 68, 68, 0.4);
     background: linear-gradient(135deg, var(--danger-light) 0%, var(--danger) 100%);
-}
-
-.sticky-cta.reset.hidden {
-    transform: translateY(100px);
-    opacity: 0;
-    pointer-events: none;
-    display: none;
-}
-
-.sticky-cta.reset.visible {
-    display: flex;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
 }
 
 /* ========== SETTINGS MODAL ========== */
@@ -1307,7 +1541,7 @@ select:focus, .language-select:focus, input[type="text"]:focus {
     font-style: italic;
 }
 
-/* Settings Action Buttons */
+/* ========== FIX #2: Settings Save Button Fix ========== */
 .settings-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -1320,23 +1554,52 @@ select:focus, .language-select:focus, input[type="text"]:focus {
     background: var(--primary-gradient);
     color: white;
     border: none;
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: 12px 28px;
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--font-size-base);
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-md);
+    gap: 10px;
     min-height: 44px;
     letter-spacing: -0.01em;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-save-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.settings-save-btn:not(:disabled):hover::before {
+    left: 100%;
 }
 
 .settings-save-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: var(--gray-500);
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.settings-save-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+}
+
+.settings-save-btn:not(:disabled):active {
+    transform: translateY(0);
 }
 
 .settings-cancel-btn {
@@ -1499,7 +1762,7 @@ select:focus, .language-select:focus, input[type="text"]:focus {
     right: 0;
     bottom: 0;
     background: var(--bg-color);
-    z-index: var(--z-modal);
+    z-index: 10000;
     display: none;
     flex-direction: column;
 }
@@ -1568,19 +1831,16 @@ select:focus, .language-select:focus, input[type="text"]:focus {
 
 .editor-textarea {
     width: 100%;
-    height: 100%;
-    padding: var(--spacing-xl);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    height: calc(100vh - 120px);
+    padding: 20px;
+    border: none;
     background: var(--card-bg);
     color: var(--text-primary);
-    font-family: var(--font-sans);
-    font-size: var(--font-size-base);
-    line-height: 1.8;
+    font-size: 16px;
+    line-height: 1.6;
     resize: none;
     outline: none;
-    transition: all var(--transition-base);
-    font-weight: 400;
+    font-family: var(--font-sans);
 }
 
 .editor-textarea:focus {
@@ -1853,264 +2113,68 @@ select:focus, .language-select:focus, input[type="text"]:focus {
 .dark-theme .rate-limit-display {
     background: var(--gray-800);
 }
-/* ========== FIXES FOR ISSUES ========== */
 
-/* 1. Maximize Button Fix */
-.textarea-top-right-controls {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-    pointer-events: auto !important;
-}
-
-.textarea-top-right-controls .action-btn {
-    width: 36px;
-    height: 36px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    pointer-events: auto !important;
-}
-
-.textarea-top-right-controls .action-btn:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Clear button specific style */
-.clear-btn i {
-    font-size: 14px;
-}
-
-/* Output actions fix */
-.output-actions {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-    pointer-events: auto !important;
-}
-
-/* 2. Settings Save Button Fix */
-.settings-save-btn {
-    background: var(--primary-gradient);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 140px;
-    justify-content: center;
-}
-
-.settings-save-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: var(--gray-400);
-}
-
-.settings-save-btn:not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-}
-
-/* 3. AI Platform Cards - Color Icons Fix */
-.platform-card {
-    position: relative;
-    cursor: pointer;
-}
-
-.platform-card .platform-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    background: white;
-    color: #000;
-}
-
-/* Platform specific colors */
-.platform-card[data-platform="gemini"] .platform-icon {
-    background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
-    color: white;
-}
-
-.platform-card[data-platform="chatgpt"] .platform-icon {
-    background: linear-gradient(135deg, #74aa9c, #10a37f);
-    color: white;
-}
-
-.platform-card[data-platform="claude"] .platform-icon {
-    background: linear-gradient(135deg, #D3A3F9, #9B5DE5);
-    color: white;
-}
-
-.platform-card[data-platform="perplexity"] .platform-icon {
-    background: linear-gradient(135deg, #000000, #3B3B3B);
-    color: white;
-}
-
-.platform-card[data-platform="deepseek"] .platform-icon {
-    background: linear-gradient(135deg, #2D5BFF, #00C2FF);
-    color: white;
-}
-
-.platform-card[data-platform="copilot"] .platform-icon {
-    background: linear-gradient(135deg, #0078D4, #00BCF2);
-    color: white;
-}
-
-.platform-card[data-platform="grok"] .platform-icon {
-    background: linear-gradient(135deg, #000000, #FF6B35);
-    color: white;
-}
-
-/* 4. Need Inspiration Button in Header */
-.need-inspiration-header {
-    background: var(--inspiration);
-    color: white !important;
-    border: none !important;
-}
-
-.need-inspiration-header:hover {
-    background: var(--inspiration-light) !important;
-    transform: translateY(-2px);
-}
-
-/* 5. Voice Button States */
-.mic-btn.active, .speak-btn.active {
-    background: var(--danger) !important;
-    color: white !important;
-    animation: pulse 1.5s infinite;
-}
-
+/* ========== ANIMATIONS ========== */
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
-/* 6. Prepare Prompt vs Reset Button States */
-.sticky-cta.prepare {
-    display: flex !important;
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-    transition: all 0.3s ease !important;
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
-.sticky-cta.prepare.hidden {
-    display: none !important;
-    opacity: 0 !important;
-    transform: translateY(20px) !important;
-    pointer-events: none !important;
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-.sticky-cta.reset {
-    display: flex !important;
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-    transition: all 0.3s ease !important;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.sticky-cta.reset.hidden {
-    display: none !important;
-    opacity: 0 !important;
-    transform: translateY(20px) !important;
-    pointer-events: none !important;
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* 7. API Status Indicator Fix */
-#headerApiStatus .status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-#headerApiStatus .status-indicator.online {
-    background: var(--success);
-    animation: none;
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
-#headerApiStatus .status-indicator.checking {
-    background: var(--warning);
-}
-
-#headerApiStatus .status-indicator.offline {
-    background: var(--danger);
-}
-
-/* Hide "checking" when not needed */
-#headerApiStatus:not(.checking) .api-status-text {
-    display: inline;
-}
-
-/* 8. Action Button Tooltip Fix */
-.action-btn-tooltip {
-    position: absolute;
-    bottom: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--gray-800);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-.action-btn:hover .action-btn-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* 9. Full Screen Editor Improvements */
-.full-screen-editor.active {
-    display: flex !important;
-    z-index: 10000 !important;
-}
-
-.editor-textarea {
-    width: 100%;
-    height: calc(100vh - 120px);
-    padding: 20px;
-    border: none;
-    background: var(--card-bg);
-    color: var(--text-primary);
-    font-size: 16px;
-    line-height: 1.6;
-    resize: none;
-    outline: none;
-    font-family: var(--font-sans);
-}
-
-/* 10. Responsive Fixes */
+/* ========== RESPONSIVE FIXES ========== */
 @media (max-width: 768px) {
     .textarea-top-right-controls {
         top: 5px;
@@ -2118,7 +2182,9 @@ select:focus, .language-select:focus, input[type="text"]:focus {
         gap: 4px;
     }
     
-    .textarea-top-right-controls .action-btn {
+    .textarea-top-right-controls .action-btn,
+    .maximize-btn,
+    .clear-btn {
         width: 32px;
         height: 32px;
         font-size: 12px;
@@ -2141,6 +2207,19 @@ select:focus, .language-select:focus, input[type="text"]:focus {
     .api-status-indicator .api-status-text {
         display: none;
     }
+    
+    .platform-card .platform-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .sticky-cta.prepare,
+    .sticky-cta.reset {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 140px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2155,5 +2234,13 @@ select:focus, .language-select:focus, input[type="text"]:focus {
         padding: 10px 16px;
         font-size: 14px;
         min-width: auto;
+    }
+    
+    .output-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .platforms-sidebar {
+        margin-top: var(--spacing-xl);
     }
 }
