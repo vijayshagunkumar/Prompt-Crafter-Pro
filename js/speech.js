@@ -407,7 +407,3 @@ const speechService = new SpeechService();
 
 // Make globally available
 window.SpeechService = SpeechService;
-window.speechService = speechService;
-
-// Export for module usage
-export { SpeechService };
