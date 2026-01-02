@@ -432,4 +432,4 @@ class SpeechManager {
     }
 }
 
-export default SpeechManager;
+window.SpeechService = SpeechService;
