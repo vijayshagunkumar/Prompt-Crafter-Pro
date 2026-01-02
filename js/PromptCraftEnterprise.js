@@ -2,7 +2,7 @@ console.log('📦 Loading PromptCraftEnterprise...');
 
 // Check if all dependencies are available
 function checkDependencies() {
-    const deps = ['Utils', 'SettingsManager', 'SpeechManager', 'PlatformsManager'];
+    const deps = ['Utils', 'Settings', 'SpeechService', 'Platforms']; // CHANGED
     const missing = [];
     
     for (const dep of deps) {
@@ -33,29 +33,29 @@ if (!checkDependencies()) {
             if (typeof Utils === 'undefined') {
                 throw new Error('Utils not loaded');
             }
-            if (typeof SettingsManager === 'undefined') {
-                throw new Error('SettingsManager not loaded');
+            if (typeof Settings === 'undefined') { // CHANGED
+                throw new Error('Settings not loaded');
             }
-            if (typeof SpeechManager === 'undefined') {
-                throw new Error('SpeechManager not loaded');
+            if (typeof SpeechService === 'undefined') { // CHANGED
+                throw new Error('SpeechService not loaded');
             }
-            if (typeof PlatformsManager === 'undefined') {
-                throw new Error('PlatformsManager not loaded');
+            if (typeof Platforms === 'undefined') { // CHANGED
+                throw new Error('Platforms not loaded');
             }
-            if (typeof apiService === 'undefined' && typeof ApiService === 'undefined') {
-                throw new Error('API service not loaded');
+            if (typeof API === 'undefined' && typeof apiService === 'undefined') { // CHANGED
+                console.warn('API service not loaded, using fallback');
             }
             
             this.utils = new Utils();
-            this.settingsManager = new SettingsManager();
-            this.speechManager = new SpeechManager();
-            this.platformsManager = new PlatformsManager();
+            this.settingsManager = new Settings(); // CHANGED
+            this.speechManager = new SpeechService(); // CHANGED
+            this.platformsManager = new Platforms(); // CHANGED
             
-            // Handle apiService or ApiService
-            if (typeof apiService !== 'undefined') {
+            // Handle API or apiService
+            if (typeof API !== 'undefined') { // CHANGED
+                this.api = new API(); // CHANGED
+            } else if (typeof apiService !== 'undefined') {
                 this.api = apiService;
-            } else if (typeof ApiService !== 'undefined') {
-                this.api = new ApiService();
             } else {
                 console.warn('No API service found, using fallback');
                 this.api = { 
@@ -69,6 +69,14 @@ if (!checkDependencies()) {
                     generateFallbackPrompt: (input, style) => `Fallback prompt for: ${input}`
                 };
             }
+            
+            // ... rest of constructor remains the same
+        }
+        // ... rest of class remains the same
+    }
+
+
+}
             
             this.state = {
                 currentStep: 1,
