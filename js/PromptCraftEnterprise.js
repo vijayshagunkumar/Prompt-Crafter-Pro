@@ -1618,7 +1618,7 @@ const speechVolume = document.getElementById('speechVolume');
         if (historyItemsInput) historyItemsInput.value = settings.maxHistoryItems || 50;
         
         // Set speech settings
-        const speechRate = document.getElementById('speechRate');
+        
         if (speechRate) speechRate.value = settings.speechRate || 1;
         
         const speechPitch = document.getElementById('speechPitch');
