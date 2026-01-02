@@ -375,7 +375,3 @@ const settings = new Settings();
 
 // Make globally available
 window.Settings = Settings;
-window.settings = settings;
-
-// Export for module usage
-export default Settings;
