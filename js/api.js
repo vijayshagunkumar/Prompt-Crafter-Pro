@@ -101,7 +101,9 @@ class APIService {
                 method: 'POST',
                 headers: this.headers,
                 body: JSON.stringify(requestBody),
-                signal: controller.signal
+                signal: controller.signal,
+                mode: 'cors', // ✅ Add CORS mode
+                credentials: 'omit' // ✅ Don't send credentials
             });
             
             clearTimeout(timeoutId);
@@ -228,13 +230,15 @@ class APIService {
     }
 
     /**
-     * Test API connectivity
+     * Test API connectivity - FIXED WITH CORS
      * @returns {Promise<object>} - Connection status
      */
     async testConnection() {
         try {
             const response = await fetch(`${this.apiUrl}/health`, {
                 method: 'GET',
+                mode: 'cors', // ✅ Add CORS mode
+                credentials: 'omit', // ✅ Don't send credentials
                 headers: {
                     'Accept': 'application/json'
                 }
