@@ -1,4 +1,38 @@
+console.log('📦 Loading PromptCraftEnterprise...');
 
+// Check if all dependencies are available
+function checkDependencies() {
+    const deps = ['Utils', 'SettingsManager', 'SpeechManager', 'PlatformsManager'];
+    const missing = [];
+    
+    for (const dep of deps) {
+        if (typeof window[dep] === 'undefined') {
+            missing.push(dep);
+        }
+    }
+    
+    if (missing.length > 0) {
+        console.error('❌ Missing dependencies:', missing);
+        console.log('Available window objects:', Object.keys(window).filter(k => /^[A-Z]/.test(k)));
+        return false;
+    }
+    
+    console.log('✅ All dependencies loaded');
+    return true;
+}
+
+// Run check before defining class
+if (!checkDependencies()) {
+    console.error('Cannot load PromptCraftEnterprise - missing dependencies');
+} else {
+    // Your class definition here...
+    class PromptCraftEnterprise {
+        // ... your existing class code
+    }
+    
+    window.PromptCraftEnterprise = PromptCraftEnterprise;
+    console.log('✅ PromptCraftEnterprise loaded successfully');
+}
 class PromptCraftEnterprise {
     constructor() {
         this.utils = new Utils();
