@@ -40,6 +40,97 @@ class PromptCraftEnterprise {
         this.init();
     }
 
+    // Bind all UI elements
+    bindElements() {
+        console.log('🔗 Binding UI elements...');
+        
+        this.elements = {
+            // Input Section
+            userInput: document.getElementById('userInput'),
+            micBtn: document.getElementById('micBtn'),
+            undoBtn: document.getElementById('undoBtn'),
+            maximizeInputBtn: document.getElementById('maximizeInputBtn'),
+            charCounter: document.getElementById('charCounter'),
+            needInspirationBtn: document.getElementById('needInspirationBtn'),
+            closeInspirationBtn: document.getElementById('closeInspirationBtn'),
+            inspirationPanel: document.getElementById('inspirationPanel'),
+            
+            // Output Section
+            outputSection: document.getElementById('outputSection'),
+            outputArea: document.getElementById('outputArea'),
+            outputCard: document.getElementById('outputCard'),
+            speakBtn: document.getElementById('speakBtn'),
+            copyBtn: document.getElementById('copyBtn'),
+            exportBtn: document.getElementById('exportBtn'),
+            maximizeOutputBtn: document.getElementById('maximizeOutputBtn'),
+            savePromptBtn: document.getElementById('savePromptBtn'),
+            suggestionsPanel: document.getElementById('suggestionsPanel'),
+            suggestionsList: document.getElementById('suggestionsList'),
+            
+            // Platforms
+            platformsGrid: document.getElementById('platformsGrid'),
+            platformsEmptyState: document.getElementById('platformsEmptyState'),
+            
+            // History
+            historySection: document.getElementById('historySection'),
+            historyList: document.getElementById('historyList'),
+            historyBtn: document.getElementById('historyBtn'),
+            closeHistoryBtn: document.getElementById('closeHistoryBtn'),
+            
+            // Settings
+            settingsBtn: document.getElementById('settingsBtn'),
+            settingsModal: document.getElementById('settingsModal'),
+            closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+            cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
+            saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+            
+            // Editor
+            fullScreenEditor: document.getElementById('fullScreenEditor'),
+            editorTextarea: document.getElementById('editorTextarea'),
+            editorMicBtn: document.getElementById('editorMicBtn'),
+            editorUndoBtn: document.getElementById('editorUndoBtn'),
+            closeEditorBtn: document.getElementById('closeEditorBtn'),
+            editorPrepareBtn: document.getElementById('editorPrepareBtn'),
+            
+            // API Status
+            apiStatusIndicator: document.getElementById('apiStatusIndicator'),
+            headerApiStatus: document.getElementById('headerApiStatus'),
+            apiInfoPanel: document.getElementById('apiInfoPanel'),
+            apiStatusMessage: document.getElementById('apiStatusMessage'),
+            apiDetails: document.getElementById('apiDetails'),
+            
+            // CTA Buttons
+            stickyPrepareBtn: document.getElementById('stickyPrepareBtn'),
+            stickyResetBtn: document.getElementById('stickyResetBtn'),
+            
+            // Generation Info
+            generationInfo: document.getElementById('generationInfo'),
+            generatedModel: document.getElementById('generatedModel'),
+            generationTime: document.getElementById('generationTime'),
+            tokenCount: document.getElementById('tokenCount'),
+            generationMode: document.getElementById('generationMode'),
+            
+            // Footer
+            currentModel: document.getElementById('currentModel'),
+            currentTheme: document.getElementById('currentTheme'),
+            currentLanguage: document.getElementById('currentLanguage'),
+            statusText: document.getElementById('statusText'),
+            rateLimitDisplay: document.getElementById('rateLimitDisplay'),
+            rateLimitText: document.getElementById('rateLimitText')
+        };
+        
+        // Verify critical elements exist
+        const criticalElements = ['userInput', 'outputArea', 'stickyPrepareBtn'];
+        for (const elementId of criticalElements) {
+            if (!this.elements[elementId]) {
+                console.warn(`⚠️ Critical element not found: ${elementId}`);
+            }
+        }
+        
+        console.log(`✅ Bound ${Object.keys(this.elements).length} UI elements`);
+        return this.elements;
+    }
+
     async init() {
         this.bindElements();
         this.bindEvents();
@@ -57,9 +148,137 @@ class PromptCraftEnterprise {
         this.updateCurrentModel();
     }
 
-    /**
-     * Check API status and update UI
-     */
+    bindEvents() {
+        console.log('🔗 Setting up event listeners...');
+        
+        // Prepare Prompt button
+        if (this.elements.stickyPrepareBtn) {
+            this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
+        }
+        
+        // Reset button
+        if (this.elements.stickyResetBtn) {
+            this.elements.stickyResetBtn.addEventListener('click', () => this.resetApp());
+        }
+        
+        // Copy button
+        if (this.elements.copyBtn) {
+            this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
+        }
+        
+        // Settings button
+        if (this.elements.settingsBtn) {
+            this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
+        }
+        
+        // Close settings button
+        if (this.elements.closeSettingsBtn) {
+            this.elements.closeSettingsBtn.addEventListener('click', () => this.closeSettings());
+        }
+        
+        // Text input events
+        if (this.elements.userInput) {
+            this.elements.userInput.addEventListener('input', () => this.handleInputChange());
+            this.elements.userInput.addEventListener('keydown', (e) => this.handleInputKeydown(e));
+        }
+        
+        console.log('✅ Event listeners set up');
+    }
+
+    applyTheme() {
+        const theme = this.settings.theme || 'dark';
+        document.body.classList.remove('light-theme', 'dark-theme', 'auto-theme');
+        document.body.classList.add(theme === 'auto' ? 'dark-theme' : `${theme}-theme`);
+    }
+
+    applyUIDensity() {
+        const density = this.settings.uiDensity || 'comfortable';
+        document.body.setAttribute('data-ui-density', density);
+    }
+
+    updateProgress() {
+        const progressFill = document.getElementById('progressFill');
+        if (!progressFill) return;
+        
+        const progress = (this.state.currentStep / 3) * 100;
+        progressFill.style.width = `${progress}%`;
+    }
+
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter to generate prompt
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                this.preparePrompt();
+            }
+            
+            // Ctrl/Cmd + S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                this.savePrompt();
+            }
+            
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                if (this.state.isEditorOpen) {
+                    this.closeEditor();
+                }
+                if (this.elements.settingsModal && this.elements.settingsModal.style.display !== 'none') {
+                    this.closeSettings();
+                }
+            }
+        });
+    }
+
+    loadHistory() {
+        try {
+            const savedHistory = localStorage.getItem('promptcraft_history');
+            if (savedHistory) {
+                this.state.promptHistory = JSON.parse(savedHistory);
+                console.log(`📚 Loaded ${this.state.promptHistory.length} history items`);
+            }
+        } catch (error) {
+            console.warn('Failed to load history:', error);
+            this.state.promptHistory = [];
+        }
+    }
+
+    updateFooterInfo() {
+        // Update model display
+        if (this.elements.currentModel) {
+            this.elements.currentModel.textContent = this.state.currentModel;
+        }
+        
+        // Update theme display
+        if (this.elements.currentTheme) {
+            const theme = this.settings.theme || 'dark';
+            this.elements.currentTheme.textContent = theme === 'auto' ? 'Auto' : theme.charAt(0).toUpperCase() + theme.slice(1);
+        }
+        
+        // Update language display
+        if (this.elements.currentLanguage) {
+            const lang = this.settings.interfaceLanguage || 'en';
+            this.elements.currentLanguage.textContent = this.getLanguageName(lang);
+        }
+    }
+
+    getLanguageName(code) {
+        const languages = {
+            'en': 'English',
+            'hi': 'Hindi',
+            'te': 'Telugu',
+            'kn': 'Kannada',
+            'ru': 'Russian',
+            'es': 'Spanish',
+            'fr': 'French',
+            'de': 'German',
+            'ja': 'Japanese',
+            'ko': 'Korean',
+            'zh': 'Chinese'
+        };
+        return languages[code] || 'English';
+    }
+
     async checkAPIStatus() {
         try {
             this.showNotification('Checking API connection...', 'info');
@@ -91,9 +310,6 @@ class PromptCraftEnterprise {
         }
     }
 
-    /**
-     * Update API status indicator in UI
-     */
     updateAPIStatusIndicator() {
         const statusIndicator = document.getElementById('apiStatusIndicator');
         const statusText = document.getElementById('statusText');
@@ -136,11 +352,7 @@ class PromptCraftEnterprise {
         }
     }
 
-    /**
-     * Update rate limit display
-     */
     updateRateLimitDisplay(rateLimit) {
-        // You can add a rate limit display in the footer or settings
         const rateElement = document.getElementById('rateLimitDisplay');
         if (rateElement) {
             rateElement.innerHTML = `
@@ -152,9 +364,6 @@ class PromptCraftEnterprise {
         }
     }
 
-    /**
-     * Update available models in settings dropdown
-     */
     updateAvailableModels(availableModels) {
         const modelSelect = document.getElementById('defaultModel');
         if (!modelSelect) return;
@@ -181,9 +390,6 @@ class PromptCraftEnterprise {
         });
     }
 
-    /**
-     * Update current model based on settings
-     */
     updateCurrentModel() {
         const modelSelect = document.getElementById('defaultModel');
         if (modelSelect) {
@@ -326,9 +532,6 @@ class PromptCraftEnterprise {
         }
     }
 
-    /**
-     * Determine which model to use for generation
-     */
     getModelForGeneration() {
         // Map frontend model selection to backend model IDs
         const modelMap = {
@@ -344,9 +547,6 @@ class PromptCraftEnterprise {
         return modelMap[this.settings.defaultModel] || 'gemini-3-flash-preview';
     }
 
-    /**
-     * Update average response time
-     */
     updateAverageResponseTime(newTime) {
         const { averageResponseTime, successfulRequests } = this.state.generationStats;
         
@@ -358,11 +558,8 @@ class PromptCraftEnterprise {
         }
     }
 
-    /**
-     * Enhanced save to history with API metadata
-     */
     saveToHistory(input, output, metadata = {}) {
-        const maxItems = this.settings.maxHistoryItems;
+        const maxItems = this.settings.maxHistoryItems || 50;
         if (maxItems <= 0) return;
         
         const historyItem = {
@@ -392,7 +589,297 @@ class PromptCraftEnterprise {
         this.saveHistoryToStorage();
     }
 
-    // ... rest of the methods remain similar with minor updates
+    saveHistoryToStorage() {
+        try {
+            localStorage.setItem('promptcraft_history', JSON.stringify(this.state.promptHistory));
+        } catch (error) {
+            console.warn('Failed to save history:', error);
+        }
+    }
+
+    updatePlatformCards() {
+        if (!this.elements.platformsGrid) return;
+        
+        // Clear existing content except empty state
+        this.elements.platformsGrid.innerHTML = '';
+        
+        // Show platforms only if we have a generated prompt
+        if (this.state.hasGeneratedPrompt) {
+            const platforms = this.platformsManager.getPlatforms();
+            platforms.forEach(platform => {
+                const platformCard = this.createPlatformCard(platform);
+                this.elements.platformsGrid.appendChild(platformCard);
+            });
+        } else {
+            // Show empty state
+            this.elements.platformsGrid.appendChild(this.elements.platformsEmptyState.cloneNode(true));
+        }
+    }
+
+    createPlatformCard(platform) {
+        const card = document.createElement('div');
+        card.className = 'platform-card';
+        card.innerHTML = `
+            <div class="platform-icon">
+                <i class="${platform.icon}"></i>
+            </div>
+            <div class="platform-info">
+                <h4 class="platform-name">${platform.name}</h4>
+                <p class="platform-desc">${platform.description}</p>
+            </div>
+            <div class="platform-actions">
+                <button class="platform-action-btn" data-action="copy" title="Copy prompt for ${platform.name}">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="platform-action-btn" data-action="open" title="Open ${platform.name}">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+            </div>
+        `;
+        
+        card.addEventListener('click', () => this.handlePlatformClick(platform));
+        return card;
+    }
+
+    handlePlatformClick(platform) {
+        const prompt = this.elements.outputArea.textContent;
+        if (!prompt) return;
+        
+        // Copy prompt to clipboard
+        navigator.clipboard.writeText(prompt).then(() => {
+            this.showNotification(`Prompt copied for ${platform.name}`, 'success');
+            
+            // Open platform URL in new tab
+            if (platform.url) {
+                window.open(platform.url, '_blank');
+            }
+        }).catch(err => {
+            this.showNotification('Failed to copy to clipboard', 'error');
+        });
+    }
+
+    updateButtonStates() {
+        // Update reset button visibility
+        if (this.elements.stickyResetBtn) {
+            if (this.state.hasGeneratedPrompt) {
+                this.elements.stickyResetBtn.classList.remove('hidden');
+            } else {
+                this.elements.stickyResetBtn.classList.add('hidden');
+            }
+        }
+    }
+
+    generateSuggestions() {
+        if (!this.elements.suggestionsList) return;
+        
+        // Clear existing suggestions
+        this.elements.suggestionsList.innerHTML = '';
+        
+        const prompt = this.elements.outputArea.textContent;
+        if (!prompt) return;
+        
+        // Simple suggestion logic (you can enhance this)
+        const suggestions = [
+            { text: 'Make it more concise', action: 'concise' },
+            { text: 'Add more technical details', action: 'technical' },
+            { text: 'Make it more conversational', action: 'conversational' },
+            { text: 'Add examples', action: 'examples' }
+        ];
+        
+        suggestions.forEach(suggestion => {
+            const li = document.createElement('li');
+            li.className = 'suggestion-item';
+            li.innerHTML = `
+                <span>${suggestion.text}</span>
+                <button class="suggestion-apply-btn" data-action="${suggestion.action}">Apply</button>
+            `;
+            
+            li.querySelector('.suggestion-apply-btn').addEventListener('click', () => {
+                this.applySuggestion(suggestion.action);
+            });
+            
+            this.elements.suggestionsList.appendChild(li);
+        });
+    }
+
+    applySuggestion(action) {
+        const currentPrompt = this.elements.outputArea.textContent;
+        let modifiedPrompt = currentPrompt;
+        
+        switch (action) {
+            case 'concise':
+                modifiedPrompt = currentPrompt.replace(/\s+/g, ' ').trim();
+                break;
+            case 'technical':
+                modifiedPrompt = currentPrompt + "\n\n[Include specific technical details and requirements]";
+                break;
+            case 'conversational':
+                modifiedPrompt = currentPrompt.replace(/\./g, '...').replace(/Please/g, 'Could you please');
+                break;
+            case 'examples':
+                modifiedPrompt = currentPrompt + "\n\n[Add 2-3 concrete examples]";
+                break;
+        }
+        
+        this.elements.outputArea.textContent = modifiedPrompt;
+        this.state.promptModified = true;
+        this.showNotification('Suggestion applied', 'success');
+    }
+
+    copyPrompt() {
+        const prompt = this.elements.outputArea.textContent;
+        if (!prompt) {
+            this.showNotification('No prompt to copy', 'warning');
+            return;
+        }
+        
+        navigator.clipboard.writeText(prompt).then(() => {
+            this.showNotification('Prompt copied to clipboard', 'success');
+        }).catch(err => {
+            this.showNotification('Failed to copy to clipboard', 'error');
+        });
+    }
+
+    resetApp() {
+        // Clear input
+        if (this.elements.userInput) {
+            this.elements.userInput.value = '';
+        }
+        
+        // Clear output
+        if (this.elements.outputArea) {
+            this.elements.outputArea.textContent = '';
+        }
+        
+        // Hide output section
+        if (this.elements.outputSection) {
+            this.elements.outputSection.hidden = true;
+            this.elements.outputSection.classList.remove('visible');
+        }
+        
+        // Reset state
+        this.state.currentStep = 1;
+        this.state.hasGeneratedPrompt = false;
+        this.state.promptModified = false;
+        this.state.originalPrompt = null;
+        
+        // Update UI
+        this.updateProgress();
+        this.updateButtonStates();
+        this.updatePlatformCards();
+        
+        this.showNotification('Application reset', 'info');
+    }
+
+    openSettings() {
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.style.display = 'block';
+        }
+    }
+
+    closeSettings() {
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.style.display = 'none';
+        }
+    }
+
+    handleInputChange() {
+        const text = this.elements.userInput.value;
+        const charCount = text.length;
+        
+        // Update character counter
+        if (this.elements.charCounter) {
+            this.elements.charCounter.textContent = `${charCount}/5000`;
+            
+            // Change color based on length
+            if (charCount > 4500) {
+                this.elements.charCounter.style.color = 'var(--danger)';
+            } else if (charCount > 3000) {
+                this.elements.charCounter.style.color = 'var(--warning)';
+            } else {
+                this.elements.charCounter.style.color = 'var(--text-secondary)';
+            }
+        }
+    }
+
+    handleInputKeydown(e) {
+        // Save for undo (simple implementation)
+        if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            // Basic undo functionality
+            if (this.state.undoStack.length > 0) {
+                const previous = this.state.undoStack.pop();
+                this.state.redoStack.push(this.elements.userInput.value);
+                this.elements.userInput.value = previous;
+            }
+        }
+        
+        // Redo
+        if (e.key === 'y' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            if (this.state.redoStack.length > 0) {
+                const next = this.state.redoStack.pop();
+                this.state.undoStack.push(this.elements.userInput.value);
+                this.elements.userInput.value = next;
+            }
+        }
+    }
+
+    showLoading(show) {
+        const loadingScreen = document.getElementById('loading-screen');
+        const app = document.getElementById('app');
+        
+        if (loadingScreen && app) {
+            if (show) {
+                loadingScreen.style.display = 'flex';
+                app.style.display = 'none';
+            } else {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    app.style.display = 'block';
+                }, 500);
+            }
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+        
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3'};
+            color: white;
+            border-radius: 4px;
+            z-index: 10000;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease;
+        `;
+        notification.textContent = message;
+        
+        // Add to notification container or body
+        const container = document.getElementById('notificationContainer') || document.body;
+        container.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 3000);
+    }
 }
 
 export default PromptCraftEnterprise;
