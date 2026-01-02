@@ -390,4 +390,4 @@ ${userInput}
 // Create singleton instance
 const apiService = new APIService();
 
-export default apiService;
+window.API = API;
