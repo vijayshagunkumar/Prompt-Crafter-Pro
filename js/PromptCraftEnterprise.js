@@ -1,8 +1,3 @@
-import Utils from './utils.js';
-import SettingsManager from './settings.js';
-import SpeechManager from './speech.js';
-import PlatformsManager from './platforms.js';
-import apiService from './api.js';
 
 class PromptCraftEnterprise {
     constructor() {
@@ -1837,5 +1832,4 @@ const speechVolume = document.getElementById('speechVolume');
     }
 }
 
-// Export the class
-export default PromptCraftEnterprise;
+window.PromptCraftEnterprise = PromptCraftEnterprise;
