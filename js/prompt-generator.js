@@ -1,4 +1,4 @@
-// Prompt Generator with Cloudflare Worker Integration
+// Prompt Generator with Cloudflare Worker Integration - COMPLETE FIXED VERSION
 class PromptGenerator {
     constructor(config = {}) {
         // Default configuration - USING YOUR WORKER URL
@@ -43,7 +43,7 @@ class PromptGenerator {
                 return {
                     success: true,
                     prompt: response.result, // Worker returns "result" field
-                    suggestions: response.suggestions || [],
+                    suggestions: response.suggestions || this.generateSuggestions(input),
                     metadata: {
                         model: response.model,
                         provider: response.provider,
@@ -73,134 +73,189 @@ class PromptGenerator {
         }
     }
 
-    // Call Cloudflare Worker API
-async callWorkerAPI(input, options) {
-    const { workerUrl, timeout } = this.config;
-    const signal = this.abortController.signal;
+    // Call Cloudflare Worker API - FIXED VERSION WITH SAFE PARSING
+    async callWorkerAPI(input, options) {
+        const { workerUrl, timeout } = this.config;
+        const signal = this.abortController.signal;
 
-    const requestData = {
-        prompt: input,
-        model: options.model,
-        temperature: options.temperature,
-        maxTokens: options.maxTokens,
-        timestamp: Date.now()
-    };
+        const requestData = {
+            prompt: input,
+            model: options.model,
+            temperature: options.temperature,
+            maxTokens: options.maxTokens,
+            style: options.style,
+            timestamp: Date.now()
+        };
 
-    const headers = {
-        'Content-Type': 'application/json',
-        'User-Agent': 'PromptCraftPro/2.0'
-    };
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'PromptCraftPro/2.0'
+        };
 
-    try {
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => {
-                if (this.abortController) {
-                    this.abortController.abort();
+        try {
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => {
+                    if (this.abortController) {
+                        this.abortController.abort();
+                    }
+                    reject(new Error('Request timeout after ' + timeout + 'ms'));
+                }, timeout);
+            });
+
+            console.log('Sending request to:', workerUrl);
+            console.log('Request data:', { 
+                model: requestData.model,
+                promptLength: input.length,
+                style: requestData.style
+            });
+
+            const fetchPromise = fetch(workerUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requestData),
+                signal: signal,
+                mode: 'cors'
+            });
+
+            const response = await Promise.race([fetchPromise, timeoutPromise]);
+            
+            // SAFE RESPONSE PARSING - CRITICAL FIX
+            console.log('Response status:', response.status, response.statusText);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            // Get raw response text first
+            const rawResponseText = await response.text();
+            console.log('Raw response length:', rawResponseText.length);
+            console.log('Raw response (first 500 chars):', rawResponseText.substring(0, 500));
+            
+            // Check if response is HTML/error page
+            if (rawResponseText.includes('<!DOCTYPE') || 
+                rawResponseText.includes('<html') || 
+                rawResponseText.includes('Error') ||
+                rawResponseText.includes('error')) {
+                
+                console.error('Worker returned HTML/error response');
+                
+                // Try to extract error message
+                let errorMessage = 'Server error';
+                if (rawResponseText.includes('<title>')) {
+                    const titleMatch = rawResponseText.match(/<title>(.*?)<\/title>/i);
+                    if (titleMatch) errorMessage = titleMatch[1];
+                } else if (rawResponseText.includes('<h1>')) {
+                    const h1Match = rawResponseText.match(/<h1>(.*?)<\/h1>/i);
+                    if (h1Match) errorMessage = h1Match[1];
                 }
-                reject(new Error('Request timeout after ' + timeout + 'ms'));
-            }, timeout);
-        });
-
-        console.log('Sending request to:', workerUrl);
-        console.log('Request data:', { 
-            model: requestData.model,
-            promptLength: input.length 
-        });
-
-        const fetchPromise = fetch(workerUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(requestData),
-            signal: signal,
-            mode: 'cors'
-        });
-
-        const response = await Promise.race([fetchPromise, timeoutPromise]);
-        
-        // Check response status
-        if (!response.ok) {
-            let errorText = 'No error text available';
-            try {
-                errorText = await response.text();
-            } catch (e) {
-                // Ignore text extraction error
+                
+                throw new Error(`Worker returned error: ${errorMessage}`);
             }
             
-            console.error('Worker API error:', {
-                status: response.status,
-                statusText: response.statusText,
-                url: workerUrl
-            });
+            // Check response status
+            if (!response.ok) {
+                console.error('Worker API error response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: workerUrl,
+                    responseType: response.headers.get('content-type')
+                });
+                
+                throw new Error(`Worker API error (${response.status}): ${response.statusText}`);
+            }
             
-            throw new Error(`Worker API error (${response.status}): ${response.statusText}`);
-        }
-
-        // Parse response carefully
-        let data;
-        try {
-            const responseText = await response.text();
-            
-            // Clean response text (remove any invalid characters)
-            const cleanedText = responseText.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-            
-            data = JSON.parse(cleanedText);
+            // Try to parse JSON - with proper error handling
+            let data;
+            try {
+                // Clean response text (remove any invalid characters)
+                const cleanedText = rawResponseText
+                    .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+                    .replace(/^\s+|\s+$/g, '');
+                
+                if (!cleanedText || cleanedText.trim() === '') {
+                    throw new Error('Empty response from worker');
+                }
+                
+                data = JSON.parse(cleanedText);
+                
+            } catch (parseError) {
+                console.error('Failed to parse worker response as JSON:', parseError);
+                console.error('Response that failed to parse:', rawResponseText.substring(0, 1000));
+                
+                // Try to see if it's JSON with extra text
+                try {
+                    // Look for JSON in the response
+                    const jsonMatch = rawResponseText.match(/\{.*\}/s);
+                    if (jsonMatch) {
+                        data = JSON.parse(jsonMatch[0]);
+                        console.log('Extracted JSON from response');
+                    } else {
+                        throw new Error('No JSON found in response');
+                    }
+                } catch (extractError) {
+                    throw new Error(`Invalid JSON response: ${parseError.message}. Raw: ${rawResponseText.substring(0, 200)}`);
+                }
+            }
             
             // Log response for debugging
             console.log('Worker response parsed:', {
                 success: data.success,
                 model: data.model,
                 hasResult: !!data.result,
-                resultLength: data.result?.length || 0
+                resultLength: data.result?.length || 0,
+                keys: Object.keys(data)
             });
             
-        } catch (parseError) {
-            console.error('Failed to parse worker response:', parseError);
-            console.error('Raw response (first 500 chars):', 
-                (await response.text()).substring(0, 500));
-            throw new Error('Invalid response from worker');
-        }
-        
-        // Check if worker returned success
-        if (!data.success) {
-            console.error('Worker returned unsuccessful response:', data);
-            throw new Error(data.error || 'Worker returned unsuccessful response');
-        }
-        
-        // Check for required fields
-        if (!data.result) {
-            console.error('Worker response missing result field:', data);
-            throw new Error('No result in worker response');
-        }
-        
-        return data;
+            // Check if worker returned success
+            if (!data.success) {
+                console.error('Worker returned unsuccessful response:', data);
+                throw new Error(data.error || data.message || 'Worker returned unsuccessful response');
+            }
+            
+            // Check for required fields
+            if (!data.result && !data.prompt) {
+                console.error('Worker response missing result/prompt field:', data);
+                throw new Error('No result in worker response');
+            }
+            
+            // Normalize response format
+            if (data.prompt && !data.result) {
+                data.result = data.prompt;
+            }
+            
+            return data;
 
-    } catch (error) {
-        if (error.name === 'AbortError') {
-            throw new Error('Request was aborted due to timeout');
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('Request was aborted due to timeout');
+            }
+            throw error;
         }
-        throw error;
     }
-}
 
     // Fallback local prompt generation
     generatePromptLocally(input, options = {}) {
         const style = options.style || 'detailed';
         
         const promptStyles = {
-            detailed: `You are an expert AI assistant with specialized knowledge in this domain. Your task is to:
+            detailed: `# Optimized AI Prompt
 
-Context:
+## Task Description:
 ${input}
 
-Requirements:
-1. Provide comprehensive, detailed analysis
-2. Include specific examples and actionable insights
-3. Structure the response with clear sections
-4. Use professional terminology appropriately
-5. Consider potential edge cases and limitations
-6. Offer practical recommendations
+## Enhanced Instructions:
 
-Please deliver a thorough, well-structured response that addresses all aspects of the task. Begin with an executive summary, then proceed with detailed analysis, and conclude with clear next steps.`,
+1. **Context & Objective**: ${this.extractObjective(input)}
+2. **Key Requirements**: ${this.extractRequirements(input)}
+3. **Expected Output Format**: Clear, structured, and actionable
+4. **Quality Criteria**: Professional, detailed, and comprehensive
+5. **Additional Considerations**: Include examples where relevant
+
+## Final Prompt to AI:
+Please provide a comprehensive response to the above task, ensuring it is:
+- Well-structured and organized
+- Includes practical examples
+- Addresses all specified requirements
+- Maintains professional tone and clarity
+- Delivers actionable insights and recommendations`,
 
             concise: `Task: ${input}
 
@@ -253,6 +308,30 @@ Use professional tone and formal structure suitable for business communications.
                 timestamp: new Date().toISOString()
             }
         };
+    }
+
+    // Helper methods for local generation
+    extractObjective(text) {
+        if (text.includes('create') || text.includes('generate')) {
+            return 'Generate content based on specifications';
+        } else if (text.includes('analyze') || text.includes('review')) {
+            return 'Analyze and provide insights';
+        } else if (text.includes('write') || text.includes('compose')) {
+            return 'Create written content';
+        } else if (text.includes('design') || text.includes('develop')) {
+            return 'Design or develop a solution';
+        }
+        return 'Complete the specified task with excellence';
+    }
+
+    extractRequirements(text) {
+        const requirements = [];
+        if (text.length > 100) requirements.push('Detailed response');
+        if (text.includes('example')) requirements.push('Include examples');
+        if (text.includes('format') || text.includes('structure')) requirements.push('Proper formatting');
+        if (text.includes('specific') || text.includes('concrete')) requirements.push('Specific details');
+        if (text.includes('professional') || text.includes('business')) requirements.push('Professional tone');
+        return requirements.join(', ') || 'Clear, comprehensive, and actionable';
     }
 
     // Generate optimization suggestions
@@ -324,15 +403,15 @@ Use professional tone and formal structure suitable for business communications.
 
     // Cancel ongoing generation
     cancelGeneration() {
-    if (this.abortController && this.abortController.abort) {
-        this.abortController.abort();
-        this.isGenerating = false;
-        return true;
+        if (this.abortController && this.abortController.abort) {
+            this.abortController.abort();
+            this.isGenerating = false;
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
-    // Test worker connection
+    // Test worker connection - FIXED VERSION
     async testConnection() {
         try {
             // Test health endpoint
@@ -343,26 +422,51 @@ Use professional tone and formal structure suitable for business communications.
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'User-Agent': 'PromptCraftPro/2.0'
                 },
-                mode: 'cors'
+                mode: 'cors',
+                signal: AbortSignal.timeout(10000)
             });
 
+            // Get raw response first
+            const responseText = await response.text();
+            console.log('Health response raw:', responseText.substring(0, 200));
+            
             if (!response.ok) {
-                console.error('Health check failed:', response.status, response.statusText);
+                console.error('Health check failed:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    response: responseText.substring(0, 200)
+                });
                 return {
                     connected: false,
                     status: response.status,
                     statusText: response.statusText,
-                    error: 'Health check failed'
+                    error: 'Health check failed',
+                    rawResponse: responseText.substring(0, 500)
                 };
             }
 
-            const data = await response.json();
+            // Parse JSON safely
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse health response as JSON:', parseError);
+                return {
+                    connected: false,
+                    status: response.status,
+                    error: 'Invalid JSON response from health endpoint',
+                    rawResponse: responseText.substring(0, 500)
+                };
+            }
+            
             console.log('Health check successful:', data);
             
             return {
                 connected: true,
+                success: true,
                 status: response.status,
                 health: data,
                 models: data.models || []
@@ -372,6 +476,7 @@ Use professional tone and formal structure suitable for business communications.
             console.error('Worker connection test failed:', error);
             return {
                 connected: false,
+                success: false,
                 error: error.message
             };
         }
