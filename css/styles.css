@@ -2441,3 +2441,23 @@ select:focus, .language-select:focus {
     left: auto;
     transform: none;
 }
+
+/* === MOVE CLEAR BUTTON TO BOTTOM-RIGHT (UNDO POSITION) === */
+
+.textarea-container {
+    position: relative;
+}
+
+/* Move clear button to bottom-right */
+#clearInputBtn {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 4;
+}
+
+/* Keep mic button bottom-left */
+#micBtn {
+    position: relative;
+    z-index: 3;
+}
