@@ -2448,16 +2448,22 @@ select:focus, .language-select:focus {
     position: relative;
 }
 
-/* Move clear button to bottom-right */
+/* === PIXEL-PERFECT ALIGNMENT FOR CLEAR BUTTON === */
+
+.textarea-container {
+    position: relative;
+}
+
+/* Clear button aligned with mic button baseline */
 #clearInputBtn {
     position: absolute;
     right: 12px;
-    bottom: 12px;
+    bottom: 10px;          /* ⬅ matches mic baseline */
     z-index: 4;
 }
 
-/* Keep mic button bottom-left */
-#micBtn {
-    position: relative;
-    z-index: 3;
+/* Compensate for textarea scrollbar */
+.textarea {
+    padding-right: calc(var(--spacing-xl) + 28px); /* scrollbar + button space */
 }
+
