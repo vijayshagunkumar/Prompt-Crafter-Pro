@@ -4,30 +4,24 @@ class PromptCraftApp {
         // Add global error handler to catch HTML syntax errors
 // Global error handler (filtered – production safe)
 window.addEventListener('error', (event) => {
-    // Ignore errors NOT coming from our JS files
+    // Ignore errors not coming from our JS files
     if (
         !event.filename ||
-        (
-            !event.filename.includes('app.js') &&
-            !event.filename.includes('prompt-generator.js')
-        ) ||
-        event.lineno === 1
+        event.filename === window.location.href ||   // index.html noise
+        event.lineno === 1 ||                          // inline / injected scripts
+        !event.filename.includes('/js/')               // not our code
     ) {
-        return; // Ignore Cloudflare Pages, inline HTML, extensions
+        return;
     }
 
-    console.error('App runtime error:', {
+    console.error('App error:', {
         message: event.message,
         file: event.filename,
         line: event.lineno,
         column: event.colno
     });
-
-    this.showNotification(
-        'An internal error occurred. Please retry.',
-        'error'
-    );
 });
+
 
         
         // Also catch unhandled promise rejections
