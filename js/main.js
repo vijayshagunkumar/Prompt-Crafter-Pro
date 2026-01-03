@@ -1,146 +1,311 @@
 /**
- * Main initialization script
+ * Main entry point for PromptCraft Pro
+ * Initializes all services and starts the application
  */
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 PromptCraft Pro Initializing...');
-    
-    // Check for required APIs
-    if (!window.fetch) {
-        alert('Your browser does not support fetch API. Please use a modern browser.');
-        return;
-    }
-    
-    try {
-        // Initialize notification system first
-        if (!window.notifications) {
-            console.error('Notification system not loaded');
-        }
-        
-        // Check for dependencies
-        const requiredDeps = ['Config', 'Utils', 'apiService', 'speechService', 'platforms', 'themeManager'];
-        const missingDeps = requiredDeps.filter(dep => !window[dep]);
-        
-        if (missingDeps.length > 0) {
-            console.error('Missing dependencies:', missingDeps);
-            showNotification('Failed to load required components. Please refresh.', 'error');
-            return;
-        }
-        
-        // Initialize theme
-        themeManager.applyTheme();
-        
-        // Setup speech service error handling
-        if (!speechService.isRecognitionAvailable()) {
-            console.warn('Speech recognition not available');
-            const voiceBtn = document.getElementById('voiceInputBtn');
-            if (voiceBtn) {
-                voiceBtn.disabled = true;
-                voiceBtn.title = 'Voice input not supported';
-            }
-        }
-        
-        if (!speechService.isSynthesisAvailable()) {
-            console.warn('Speech synthesis not available');
-            const speakBtns = document.querySelectorAll('.speak-btn');
-            speakBtns.forEach(btn => {
-                btn.disabled = true;
-                btn.title = 'Text-to-speech not supported';
-            });
-        }
-        
-        // Initialize app
-        if (window.PromptCraftApp) {
-            window.app = new PromptCraftApp();
-            console.log('✅ PromptCraft Pro initialized successfully');
-            
-            // Show welcome notification
-            setTimeout(() => {
-                showNotification('Welcome to PromptCraft Pro! Enter your task and click Generate.', 'info', 5000);
-            }, 1000);
-            
-        } else {
-            throw new Error('PromptCraftApp class not found');
-        }
-        
-    } catch (error) {
-        console.error('❌ Failed to initialize PromptCraft Pro:', error);
-        
-        // Show error to user
-        const errorHtml = `
-            <div style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(135deg, #ef4444, #7f1d1d);
-                color: white;
-                padding: 16px;
-                text-align: center;
-                z-index: 10000;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            ">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 20px;"></i>
-                    <div>
-                        <strong>Initialization Error:</strong> ${error.message}
-                        <br><small>Check browser console for details</small>
-                    </div>
-                    <button onclick="location.reload()" style="
-                        background: rgba(255,255,255,0.2);
-                        border: 1px solid rgba(255,255,255,0.3);
-                        color: white;
-                        padding: 6px 16px;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        margin-left: 16px;
-                        font-size: 14px;
-                    ">
-                        Reload Page
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.innerHTML = errorHtml;
-        document.body.prepend(errorDiv.firstElementChild);
-    }
-});
+console.log('=== PromptCraft Pro Main ===');
 
 // Global error handler
-window.addEventListener('error', function(event) {
-    console.error('Global error:', event.error);
+window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
+    console.error('At:', e.filename, 'Line:', e.lineno);
+    
+    // Show user-friendly error message
     if (window.showNotification) {
-        showNotification('An unexpected error occurred', 'error');
+        showNotification(
+            'Application error occurred. Please refresh the page.',
+            'error',
+            5000
+        );
     }
 });
 
 // Unhandled promise rejection handler
-window.addEventListener('unhandledrejection', function(event) {
-    console.error('Unhandled promise rejection:', event.reason);
-    if (window.showNotification) {
-        showNotification('An unexpected error occurred', 'error');
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+});
+
+// Initialize services when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing services...');
+    
+    try {
+        // Initialize API Service
+        if (window.APIService) {
+            console.log('Creating APIService instance...');
+            window.apiService = new APIService();
+            console.log('✓ APIService initialized');
+        } else {
+            console.error('✗ APIService class not found!');
+            // Create fallback
+            window.apiService = {
+                generatePrompt: async function() {
+                    throw new Error('API service not available');
+                },
+                checkHealth: async function() {
+                    return { online: false, message: 'Service unavailable' };
+                }
+            };
+        }
+        
+        // Initialize Speech Service
+        if (window.SpeechService) {
+            console.log('Creating SpeechService instance...');
+            window.speechService = new SpeechService();
+            console.log('✓ SpeechService initialized');
+        } else if (window.speechService) {
+            console.log('✓ SpeechService already exists');
+        } else {
+            console.warn('⚠ SpeechService not found, creating fallback');
+            window.speechService = {
+                startListening: function() {
+                    console.log('Speech input not available');
+                    return false;
+                },
+                stopListening: function() {
+                    console.log('Speech input stopped');
+                },
+                speak: function(text) {
+                    console.log('Speech output:', text.substring(0, 50) + '...');
+                    return false;
+                },
+                isAvailable: function() {
+                    return false;
+                }
+            };
+        }
+        
+        // Initialize Platforms
+        if (window.Platforms) {
+            console.log('Creating Platforms instance...');
+            window.platforms = new Platforms();
+            console.log('✓ Platforms initialized');
+        } else if (window.platforms) {
+            console.log('✓ Platforms already exists');
+        } else {
+            console.warn('⚠ Platforms not found, creating fallback');
+            window.platforms = {
+                openPlatform: function(platformId, prompt) {
+                    console.log(`Opening ${platformId} with prompt`);
+                    
+                    // Create platform URLs
+                    const platformUrls = {
+                        gemini: 'https://gemini.google.com/',
+                        chatgpt: 'https://chat.openai.com/',
+                        claude: 'https://claude.ai/',
+                        perplexity: 'https://www.perplexity.ai/',
+                        deepseek: 'https://chat.deepseek.com/',
+                        copilot: 'https://copilot.microsoft.com/',
+                        grok: 'https://grok.x.ai/'
+                    };
+                    
+                    if (platformUrls[platformId]) {
+                        window.open(platformUrls[platformId], '_blank');
+                        return true;
+                    }
+                    
+                    return false;
+                },
+                getPlatformInfo: function(platformId) {
+                    return {
+                        name: platformId,
+                        url: '#',
+                        supported: false
+                    };
+                }
+            };
+        }
+        
+        // Initialize Theme Manager
+        if (window.themeManager) {
+            console.log('✓ ThemeManager already exists');
+        } else {
+            console.warn('⚠ ThemeManager not found, creating fallback');
+            window.themeManager = {
+                themes: ['light', 'dark', 'auto'],
+                currentTheme: 'auto',
+                
+                init: function() {
+                    try {
+                        const saved = localStorage.getItem('promptcraft_theme');
+                        if (saved && this.themes.includes(saved)) {
+                            this.currentTheme = saved;
+                        }
+                    } catch (error) {
+                        console.warn('Failed to load theme:', error);
+                    }
+                    this.applyTheme();
+                },
+                
+                applyTheme: function() {
+                    let themeToApply = this.currentTheme;
+                    
+                    if (themeToApply === 'auto') {
+                        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                            themeToApply = 'dark';
+                        } else {
+                            themeToApply = 'light';
+                        }
+                    }
+                    
+                    document.documentElement.setAttribute('data-theme', themeToApply);
+                },
+                
+                setTheme: function(theme) {
+                    if (this.themes.includes(theme)) {
+                        this.currentTheme = theme;
+                        try {
+                            localStorage.setItem('promptcraft_theme', theme);
+                        } catch (error) {
+                            console.warn('Failed to save theme:', error);
+                        }
+                        this.applyTheme();
+                        return true;
+                    }
+                    return false;
+                },
+                
+                getTheme: function() {
+                    return this.currentTheme;
+                },
+                
+                toggleTheme: function() {
+                    if (this.currentTheme === 'auto') {
+                        const systemPrefersDark = window.matchMedia && 
+                            window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        this.setTheme(systemPrefersDark ? 'light' : 'dark');
+                    } else {
+                        this.setTheme(this.currentTheme === 'dark' ? 'light' : 'dark');
+                    }
+                }
+            };
+        }
+        
+        // Initialize Theme
+        window.themeManager.init();
+        console.log('✓ Theme initialized');
+        
+        // Check if all required services are available
+        const servicesReady = window.apiService && window.speechService && window.platforms;
+        
+        if (!servicesReady) {
+            console.error('⚠ Some services failed to initialize');
+            if (window.showNotification) {
+                showNotification(
+                    'Some features may not work properly. Please refresh.',
+                    'warning',
+                    5000
+                );
+            }
+        }
+        
+        console.log('All services initialized, starting app...');
+        
+        // Start the main application
+        setTimeout(function() {
+            if (window.PromptCraftApp) {
+                try {
+                    window.app = new PromptCraftApp();
+                    console.log('🎉 PromptCraft Pro started successfully!');
+                    
+                    // Show welcome message
+                    if (window.showNotification) {
+                        showNotification(
+                            'Welcome to PromptCraft Pro! Ready to generate prompts.',
+                            'success',
+                            3000
+                        );
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to start app:', error);
+                    
+                    if (window.showNotification) {
+                        showNotification(
+                            'Failed to start application: ' + error.message,
+                            'error',
+                            8000
+                        );
+                    }
+                    
+                    // Try fallback mode
+                    startFallbackMode();
+                }
+            } else {
+                console.error('PromptCraftApp class not found!');
+                startFallbackMode();
+            }
+        }, 500);
+        
+    } catch (error) {
+        console.error('Failed to initialize services:', error);
+        
+        if (window.showNotification) {
+            showNotification(
+                'Failed to initialize: ' + error.message,
+                'error',
+                8000
+            );
+        }
+        
+        startFallbackMode();
     }
 });
 
-// Make showNotification globally available if notifications failed
-if (!window.showNotification) {
-    window.showNotification = function(message, type = 'info', duration = 3000) {
-        console.log(`[${type.toUpperCase()}] ${message}`);
-        // Simple fallback using console
-    };
+// Fallback mode for when initialization fails
+function startFallbackMode() {
+    console.log('Starting in fallback mode...');
+    
+    // Basic UI initialization
+    const generateBtn = document.getElementById('generateBtn');
+    const userInput = document.getElementById('userInput');
+    const outputArea = document.getElementById('outputArea');
+    
+    if (generateBtn && userInput && outputArea) {
+        generateBtn.addEventListener('click', function() {
+            const input = userInput.value.trim();
+            if (!input) {
+                alert('Please enter a task description');
+                return;
+            }
+            
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            // Simple fallback prompt generation
+            setTimeout(function() {
+                const fallbackPrompt = `Fallback Prompt (API unavailable):
+
+Role: AI Assistant
+Objective: ${input}
+Context: Generating this prompt offline due to API unavailability
+Instructions:
+1. Analyze the user's request
+2. Break it down into clear steps
+3. Provide detailed guidance
+4. Include examples if applicable
+
+Notes: This is a fallback prompt. For better results, ensure API is connected.`;
+                
+                outputArea.textContent = fallbackPrompt;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
+                
+                // Show step 2
+                document.querySelector('.step-2').style.display = 'block';
+                document.querySelector('.step-3').style.display = 'block';
+                
+                alert('Generated with fallback (API offline)');
+            }, 1000);
+        });
+        
+        console.log('✓ Fallback mode activated');
+    }
 }
 
-// Export to global scope for debugging
-window.PromptCraft = {
-    version: Config.FRONTEND.VERSION,
-    api: apiService,
-    speech: speechService,
-    platforms: platforms,
-    theme: themeManager,
-    utils: Utils,
-    config: Config
-};
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {};
+}
+
+console.log('=== Main script loaded ===');
