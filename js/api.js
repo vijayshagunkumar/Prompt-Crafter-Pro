@@ -8,13 +8,12 @@ class APIService {
         console.log("[API] Initialized with endpoint:", this.baseURL);
     }
 
-    // ✅ FIXED: Removed x-request-id header that was causing CORS errors
     async makeRequest(endpoint, data, method = 'POST') {
         const url = `${this.baseURL}${endpoint}`;
         const startTime = Date.now();
-        const requestId = Utils.String.generateId?.() || Date.now().toString(36);
+        const requestId = Date.now().toString(36);
         
-        console.log(`[API ${requestId}] ${method} ${url}`, data ? "with data" : "no data");
+        console.log(`[API ${requestId}] ${method} ${url}`);
         
         // Track request for cancellation
         const controller = new AbortController();
@@ -25,9 +24,7 @@ class APIService {
             const response = await fetch(url, {
                 method,
                 headers: {
-                    'Content-Type': 'application/json',
-                    // ⚠️ REMOVED: 'x-request-id': requestId,  // This was causing CORS errors
-                    ...(Config.API.KEY ? { 'Authorization': `Bearer ${Config.API.KEY}` } : {})
+                    'Content-Type': 'application/json'
                 },
                 body: method !== 'GET' ? JSON.stringify(data) : undefined,
                 signal: controller.signal
@@ -44,13 +41,13 @@ class APIService {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorData.message || errorMessage;
                 } catch (e) {
-                    // Ignore JSON parse errors for error responses
+                    // Ignore JSON parse errors
                 }
                 throw new Error(errorMessage);
             }
             
             const responseData = await response.json();
-            console.log(`[API ${requestId}] Success:`, responseData.success !== false);
+            console.log(`[API ${requestId}] Success`);
             
             return responseData;
             
@@ -58,15 +55,13 @@ class APIService {
             clearTimeout(timeoutId);
             console.error(`[API ${requestId}] Request failed:`, error.message);
             
-            // Enhanced error messages
-            let userMessage = "Network error. Please check your connection.";
-            
+            let userMessage = "Network error";
             if (error.name === 'AbortError') {
-                userMessage = "Request timeout. Please try again.";
+                userMessage = "Request timeout";
             } else if (error.message.includes('Failed to fetch')) {
-                userMessage = "Cannot connect to server. Please check if the API is running.";
+                userMessage = "Cannot connect to server";
             } else if (error.message.includes('CORS')) {
-                userMessage = "Cross-origin request blocked. Please contact administrator.";
+                userMessage = "Connection blocked by CORS";
             }
             
             throw new Error(userMessage);
@@ -84,13 +79,7 @@ class APIService {
             throw new Error("Please enter a task description first.");
         }
         
-        if (prompt.length > Config.APP.MAX_INPUT_LENGTH) {
-            throw new Error(`Task description too long (max ${Config.APP.MAX_INPUT_LENGTH} characters)`);
-        }
-        
         try {
-            showNotification("Generating optimized prompt...", "info", 2000);
-            
             const data = {
                 prompt: prompt.trim(),
                 model: model
@@ -102,10 +91,7 @@ class APIService {
                 throw new Error(response.error || "Failed to generate prompt");
             }
             
-            console.log("[API] Prompt generated successfully:", {
-                model: response.model,
-                length: response.result?.length || 0
-            });
+            console.log("[API] Prompt generated successfully");
             
             return {
                 prompt: response.result,
@@ -161,39 +147,10 @@ class APIService {
         }
     }
 
-    async checkStatus() {
-        console.log("[API] Checking status...");
-        
-        try {
-            // Simple HEAD request to check connectivity
-            const startTime = Date.now();
-            await fetch(this.baseURL, {
-                method: 'HEAD',
-                mode: 'no-cors' // This doesn't require CORS
-            });
-            const latency = Date.now() - startTime;
-            
-            return {
-                online: true,
-                latency: latency,
-                message: `Connected (${latency}ms)`
-            };
-            
-        } catch (error) {
-            console.warn("[API] Status check failed:", error.message);
-            return {
-                online: false,
-                latency: null,
-                message: error.message
-            };
-        }
-    }
-
     cancelAllRequests() {
         console.log("[API] Cancelling all active requests");
         for (const [id, controller] of this.activeRequests) {
             controller.abort();
-            console.log(`[API] Cancelled request ${id}`);
         }
         this.activeRequests.clear();
     }
