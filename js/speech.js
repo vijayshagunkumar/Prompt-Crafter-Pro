@@ -1,6 +1,5 @@
 /**
  * Speech Recognition and Synthesis Service
- * Handles voice input and output for PromptCraft Pro
  */
 
 class SpeechService {
@@ -12,7 +11,7 @@ class SpeechService {
         this.speechQueue = [];
         this.currentUtterance = null;
         
-        // Default settings
+        // Settings
         this.settings = {
             language: 'en-US',
             rate: 1.0,
@@ -21,13 +20,11 @@ class SpeechService {
             voice: null
         };
         
-        // Load settings from localStorage
+        // Load saved settings
         this.loadSettings();
         
-        // Initialize speech recognition
+        // Initialize
         this.initRecognition();
-        
-        // Initialize speech synthesis
         this.initSynthesis();
     }
     
@@ -36,42 +33,38 @@ class SpeechService {
      */
     initRecognition() {
         if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-            console.warn('Speech recognition not supported in this browser');
+            Config.warn('Speech recognition not supported');
             return false;
         }
         
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = new SpeechRecognition();
         
-        // Configuration
+        // Configure
         this.recognition.continuous = false;
-        this.recognition.interimResults = true;
+        this.recognition.interimResults = false;
         this.recognition.lang = this.settings.language;
         this.recognition.maxAlternatives = 1;
         
         // Event handlers
         this.recognition.onstart = () => {
             this.isListening = true;
-            this.dispatchEvent('speechstart');
+            this.dispatchEvent('listeningstart');
         };
         
         this.recognition.onresult = (event) => {
-            const transcript = Array.from(event.results)
-                .map(result => result[0].transcript)
-                .join('');
-            
-            this.dispatchEvent('speechresult', { transcript, isFinal: event.results[0].isFinal });
+            const transcript = event.results[0][0].transcript;
+            this.dispatchEvent('listeningresult', { transcript });
         };
         
         this.recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
             this.isListening = false;
-            this.dispatchEvent('speecherror', { error: event.error });
+            this.dispatchEvent('listeningerror', { error: event.error });
         };
         
         this.recognition.onend = () => {
             this.isListening = false;
-            this.dispatchEvent('speechend');
+            this.dispatchEvent('listeningend');
         };
         
         return true;
@@ -82,11 +75,11 @@ class SpeechService {
      */
     initSynthesis() {
         if (!this.synthesis) {
-            console.warn('Speech synthesis not supported in this browser');
+            Config.warn('Speech synthesis not supported');
             return false;
         }
         
-        // Load available voices
+        // Load voices
         this.loadVoices();
         
         // Voice changed event
@@ -103,27 +96,26 @@ class SpeechService {
     loadVoices() {
         if (!this.synthesis) return;
         
-        const voices = this.synthesis.getVoices();
-        this.voices = voices;
+        this.voices = this.synthesis.getVoices();
         
-        // Try to find a voice matching the current language
-        if (voices.length > 0 && !this.settings.voice) {
-            const preferredVoice = voices.find(voice => 
+        // Try to find preferred voice
+        if (this.voices.length > 0 && !this.settings.voice) {
+            const preferredVoice = this.voices.find(voice => 
                 voice.lang === this.settings.language
-            ) || voices[0];
+            ) || this.voices[0];
             
             this.settings.voice = preferredVoice;
         }
         
-        this.dispatchEvent('voiceschanged', { voices });
+        this.dispatchEvent('voiceschanged', { voices: this.voices });
     }
     
     /**
-     * Start speech recognition
+     * Start voice input
      */
     startListening() {
         if (!this.recognition) {
-            this.dispatchEvent('speecherror', { error: 'Speech recognition not available' });
+            Config.error('Speech recognition not available');
             return false;
         }
         
@@ -136,26 +128,25 @@ class SpeechService {
             this.recognition.start();
             return true;
         } catch (error) {
-            console.error('Failed to start speech recognition:', error);
-            this.dispatchEvent('speecherror', { error: error.message });
+            Config.error('Failed to start listening:', error);
             return false;
         }
     }
     
     /**
-     * Stop speech recognition
+     * Stop voice input
      */
     stopListening() {
         if (this.recognition && this.isListening) {
             try {
                 this.recognition.stop();
             } catch (error) {
-                console.error('Error stopping speech recognition:', error);
+                Config.error('Error stopping recognition:', error);
             }
         }
         
         this.isListening = false;
-        this.dispatchEvent('speechend');
+        this.dispatchEvent('listeningend');
     }
     
     /**
@@ -166,7 +157,7 @@ class SpeechService {
             return false;
         }
         
-        // If already speaking, add to queue
+        // Add to queue if already speaking
         if (this.isSpeaking) {
             this.speechQueue.push({ text, options });
             return true;
@@ -185,34 +176,28 @@ class SpeechService {
         utterance.onstart = () => {
             this.isSpeaking = true;
             this.currentUtterance = utterance;
-            this.dispatchEvent('speakstart', { text, options });
+            this.dispatchEvent('speakingstart', { text, options });
         };
         
         utterance.onend = () => {
             this.isSpeaking = false;
             this.currentUtterance = null;
-            this.dispatchEvent('speakend', { text, options });
-            
-            // Process next in queue
-            this.processSpeechQueue();
+            this.dispatchEvent('speakingend', { text, options });
+            this.processQueue();
         };
         
         utterance.onerror = (event) => {
-            console.error('Speech synthesis error:', event.error);
             this.isSpeaking = false;
             this.currentUtterance = null;
-            this.dispatchEvent('speakerror', { error: event.error, text, options });
-            
-            // Process next in queue
-            this.processSpeechQueue();
+            this.dispatchEvent('speakingerror', { error: event.error, text, options });
+            this.processQueue();
         };
         
         try {
             this.synthesis.speak(utterance);
             return true;
         } catch (error) {
-            console.error('Failed to speak:', error);
-            this.dispatchEvent('speakerror', { error: error.message, text, options });
+            Config.error('Failed to speak:', error);
             return false;
         }
     }
@@ -226,14 +211,14 @@ class SpeechService {
             this.isSpeaking = false;
             this.currentUtterance = null;
             this.speechQueue = [];
-            this.dispatchEvent('speakend', { text: 'Cancelled', options: {} });
+            this.dispatchEvent('speakingend', { text: 'Cancelled' });
         }
     }
     
     /**
      * Process speech queue
      */
-    processSpeechQueue() {
+    processQueue() {
         if (this.speechQueue.length > 0 && !this.isSpeaking) {
             const next = this.speechQueue.shift();
             this.speak(next.text, next.options);
@@ -241,28 +226,30 @@ class SpeechService {
     }
     
     /**
-     * Load settings from localStorage
+     * Load settings from storage
      */
     loadSettings() {
         try {
-            const saved = localStorage.getItem('promptcraft_speech_settings');
+            const saved = localStorage.getItem(Config.getStorageKey('speech_settings'));
             if (saved) {
-                const settings = JSON.parse(saved);
-                Object.assign(this.settings, settings);
+                Object.assign(this.settings, JSON.parse(saved));
             }
         } catch (error) {
-            console.warn('Failed to load speech settings:', error);
+            Config.warn('Failed to load speech settings:', error);
         }
     }
     
     /**
-     * Save settings to localStorage
+     * Save settings to storage
      */
     saveSettings() {
         try {
-            localStorage.setItem('promptcraft_speech_settings', JSON.stringify(this.settings));
+            localStorage.setItem(
+                Config.getStorageKey('speech_settings'),
+                JSON.stringify(this.settings)
+            );
         } catch (error) {
-            console.warn('Failed to save speech settings:', error);
+            Config.warn('Failed to save speech settings:', error);
         }
     }
     
@@ -272,40 +259,13 @@ class SpeechService {
     updateSettings(newSettings) {
         Object.assign(this.settings, newSettings);
         
-        // Update recognition language if changed
+        // Update recognition if language changed
         if (this.recognition && newSettings.language) {
             this.recognition.lang = newSettings.language;
         }
         
         this.saveSettings();
         this.dispatchEvent('settingschanged', { settings: this.settings });
-    }
-    
-    /**
-     * Get current settings
-     */
-    getSettings() {
-        return { ...this.settings };
-    }
-    
-    /**
-     * Get available languages for speech recognition
-     */
-    getRecognitionLanguages() {
-        return [
-            { code: 'en-US', name: 'English (US)' },
-            { code: 'en-GB', name: 'English (UK)' },
-            { code: 'es-ES', name: 'Spanish (Spain)' },
-            { code: 'fr-FR', name: 'French (France)' },
-            { code: 'de-DE', name: 'German' },
-            { code: 'it-IT', name: 'Italian' },
-            { code: 'pt-BR', name: 'Portuguese (Brazil)' },
-            { code: 'ru-RU', name: 'Russian' },
-            { code: 'ja-JP', name: 'Japanese' },
-            { code: 'ko-KR', name: 'Korean' },
-            { code: 'zh-CN', name: 'Chinese (Simplified)' },
-            { code: 'hi-IN', name: 'Hindi (India)' }
-        ];
     }
     
     /**
@@ -316,89 +276,34 @@ class SpeechService {
     }
     
     /**
-     * Set voice by name or language
+     * Get current settings
      */
-    setVoice(voiceNameOrLang) {
-        if (!this.voices || this.voices.length === 0) {
-            return false;
-        }
-        
-        const voice = this.voices.find(v => 
-            v.name === voiceNameOrLang || v.lang === voiceNameOrLang
-        );
-        
-        if (voice) {
-            this.settings.voice = voice;
-            this.saveSettings();
-            return true;
-        }
-        
-        return false;
+    getSettings() {
+        return { ...this.settings };
     }
     
     /**
-     * Check if speech recognition is supported
+     * Dispatch custom event
      */
-    isRecognitionSupported() {
-        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-    }
-    
-    /**
-     * Check if speech synthesis is supported
-     */
-    isSynthesisSupported() {
-        return !!window.speechSynthesis;
-    }
-    
-    /**
-     * Check if currently listening
-     */
-    getIsListening() {
-        return this.isListening;
-    }
-    
-    /**
-     * Check if currently speaking
-     */
-    getIsSpeaking() {
-        return this.isSpeaking;
-    }
-    
-    /**
-     * Dispatch custom events
-     */
-    dispatchEvent(eventName, detail = {}) {
-        const event = new CustomEvent(`speech:${eventName}`, { 
+    dispatchEvent(name, detail = {}) {
+        const event = new CustomEvent(`speech:${name}`, { 
             detail: { ...detail, timestamp: Date.now() }
         });
         window.dispatchEvent(event);
     }
     
     /**
-     * Pause speaking
+     * Check if speech recognition is available
      */
-    pauseSpeaking() {
-        if (this.synthesis && this.isSpeaking) {
-            this.synthesis.pause();
-            this.dispatchEvent('speakpause');
-        }
+    isRecognitionAvailable() {
+        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
     }
     
     /**
-     * Resume speaking
+     * Check if speech synthesis is available
      */
-    resumeSpeaking() {
-        if (this.synthesis && this.isSpeaking) {
-            this.synthesis.resume();
-            this.dispatchEvent('speakresume');
-        }
-    }
-    
-    /**
-     * Clear speech queue
-     */
-    clearQueue() {
-        this.speechQueue = [];
+    isSynthesisAvailable() {
+        return !!window.speechSynthesis;
     }
 }
 
@@ -407,3 +312,4 @@ const speechService = new SpeechService();
 
 // Make globally available
 window.SpeechService = SpeechService;
+window.speechService = speechService;
