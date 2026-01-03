@@ -2400,14 +2400,6 @@ select:focus, .language-select:focus {
    STEP 3 – AI PLATFORM GRID (FIXED)
    =============================== */
 
-/* Grid container */
-.platforms-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md);
-    overflow: visible;
-}
 
 /* Platform card */
 .platform-card {
