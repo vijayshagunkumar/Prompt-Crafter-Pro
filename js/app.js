@@ -12,8 +12,9 @@ class PromptCraftApp {
             });
             
             // Check if it's a syntax error from our output
-            if (event.message.includes('Invalid or unexpected token') && 
-                event.filename.includes('index.html')) {
+     if (event.error instanceof SyntaxError ||
+    event.message.includes('Invalid or unexpected token')) {
+
                 console.error('⚠️ HTML Syntax Error detected - likely from output injection');
                 
                 // Try to recover by clearing output
@@ -210,6 +211,12 @@ class PromptCraftApp {
         this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
         this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
         this.elements.stickyResetBtn.addEventListener('click', () => this.resetApplication());
+        this.elements.outputArea.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+});
+
         
         // Voice button
         this.elements.micBtn.addEventListener('click', () => this.toggleVoiceInput());
@@ -525,34 +532,23 @@ class PromptCraftApp {
 
     // ✅ NEW: Ultra-safe text cleaning
   
-     cleanTextForDOM(text) {
+cleanTextForDOM(text) {
     if (!text || typeof text !== 'string') return '';
 
     return text
         // Normalize line endings
         .replace(/\r\n/g, '\n')
 
-        // Remove dangerous control chars ONLY
+        // Remove ONLY dangerous control characters
+        // (DO NOT remove \n or \t)
         .replace(/[\u0000\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B\uFEFF]/g, '')
 
-        // Limit excessive blank lines
+        // Collapse excessive blank lines (keep markdown readable)
         .replace(/\n{3,}/g, '\n\n')
 
         .trim();
 }
-   
-        // Ensure it ends with proper punctuation
-        const lastChar = clean.slice(-1);
-        if (!['.', '!', '?', ')', ']', '}'].includes(lastChar)) {
-            clean = clean + '.';
-        }
         
-        console.log('Cleaned text length:', clean.length);
-        console.log('Cleaned preview (first 200):', clean.substring(0, 200));
-        
-        return clean;
-    }
-
     // ✅ UPDATED: Try fallback models
     async tryFallbackModels(inputText) {
         const fallbackModels = ['gpt-4o-mini', 'llama-3.1-8b-instant'];
