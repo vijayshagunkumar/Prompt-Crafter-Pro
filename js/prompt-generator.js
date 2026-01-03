@@ -42,7 +42,7 @@ class PromptGenerator {
             model: options.model || this.config.defaultModel,
             style: options.style || 'detailed',
             temperature: options.temperature || 0.4,
-            maxTokens: options.maxTokens || 1000,
+            maxTokens: options.maxTokens || 2048,
             signal: options.signal,
             timeout: options.timeout || this.config.timeout,
             retryAttempts: options.retryAttempts || this.config.retryAttempts,
@@ -79,15 +79,28 @@ class PromptGenerator {
         });
         
         // Prepare request data
-        const requestData = {
-            prompt: prompt,
-            model: opts.model,
-            style: opts.style,
-            temperature: opts.temperature,
-            maxTokens: opts.maxTokens,
-            requestId: requestId,
-            timestamp: new Date().toISOString()
-        };
+       const requestData = {
+    prompt: prompt,
+    model: opts.model,
+    style: opts.style,
+    temperature: opts.temperature,
+
+    // 🔥 REQUIRED FOR GEMINI (THIS FIXES TRUNCATION)
+    generationConfig: {
+        maxOutputTokens: opts.maxTokens || 2048,
+        temperature: opts.temperature || 0.4,
+        topP: 0.95,
+        topK: 40,
+        stopSequences: []
+    },
+
+    // Keep for non-Gemini models
+    maxTokens: opts.maxTokens || 2048,
+
+    requestId: requestId,
+    timestamp: new Date().toISOString()
+};
+
         
         // Try worker API with retries
         let lastError = null;
