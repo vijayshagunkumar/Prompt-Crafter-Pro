@@ -67,6 +67,7 @@ class PromptCraftApp {
             redoStack: [],
             promptHistory: [],
             currentModel: 'gemini-3-flash-preview',
+            generatedFromInput: null,  // ✅ ADDED: tracks which input generated current prompt
             settings: this.loadDefaultSettings()
         };
 
@@ -399,31 +400,33 @@ class PromptCraftApp {
     }
 
     // Handle input changes
-handleInputChange() {
-    const text = this.elements.userInput.value;
-    const charCount = text.length;
-    const maxLength = 5000;
+    handleInputChange() {
+        const text = this.elements.userInput.value;
+        const charCount = text.length;
+        const maxLength = 5000;
 
-    this.elements.charCounter.textContent = `${charCount}/${maxLength}`;
-    this.elements.charCounter.style.color =
-        charCount > maxLength * 0.9 ? 'var(--danger)' : 'var(--text-tertiary)';
+        this.elements.charCounter.textContent = `${charCount}/${maxLength}`;
+        this.elements.charCounter.style.color =
+            charCount > maxLength * 0.9 ? 'var(--danger)' : 'var(--text-tertiary)';
 
-    // 🔥 CORE FIX: input changed AFTER generation → revert state
-    if (this.state.hasGeneratedPrompt) {
-        this.state.hasGeneratedPrompt = false;
-        this.state.promptModified = false;
+        // ✅ CORE FIX — input changed AFTER generation
+        if (
+            this.state.hasGeneratedPrompt &&
+            text.trim() !== this.state.generatedFromInput
+        ) {
+            this.state.hasGeneratedPrompt = false;
 
-        // Swap buttons
-        this.elements.stickyResetBtn.style.display = 'none';
-        this.elements.stickyPrepareBtn.style.display = 'flex';
+            // swap buttons back
+            this.elements.stickyResetBtn.style.display = 'none';
+            this.elements.stickyPrepareBtn.style.display = 'flex';
 
-        // Hide generated output
-        this.elements.outputSection.classList.remove('visible');
+            // optional but correct UX
+            this.elements.outputSection.classList.remove('visible');
+            this.state.selectedPlatform = null;
+        }
+
+        this.updateButtonStates();
     }
-
-    this.updateButtonStates();
-}
-
 
     // Handle prompt editing
     handlePromptEdit() {
@@ -490,6 +493,7 @@ handleInputChange() {
                 this.state.originalPrompt = result.prompt;
                 this.state.promptModified = false;
                 this.state.hasGeneratedPrompt = true;
+                this.state.generatedFromInput = inputText;  // ✅ STORE THE INPUT
                 
                 // ✅ FIX: Hide Prepare button, show Reset button
                 this.elements.stickyPrepareBtn.style.display = 'none';
@@ -592,6 +596,7 @@ handleInputChange() {
                     
                     this.state.originalPrompt = fallbackResult.prompt;
                     this.state.hasGeneratedPrompt = true;
+                    this.state.generatedFromInput = inputText;  // ✅ STORE THE INPUT
                     
                     // ✅ FIX: Hide Prepare button, show Reset button
                     this.elements.stickyPrepareBtn.style.display = 'none';
@@ -652,6 +657,7 @@ This structured approach ensures you get detailed, actionable responses tailored
             
             this.state.originalPrompt = localPrompt;
             this.state.hasGeneratedPrompt = true;
+            this.state.generatedFromInput = inputText;  // ✅ STORE THE INPUT
             
             // ✅ FIX: Hide Prepare button, show Reset button
             this.elements.stickyPrepareBtn.style.display = 'none';
@@ -806,6 +812,7 @@ This structured approach ensures you get detailed, actionable responses tailored
         
         this.state.undoStack = [];
         this.state.redoStack = [];
+        this.state.generatedFromInput = null;  // ✅ CLEAR STORED INPUT
         
         this.elements.userInput.value = '';
         this.clearGeneratedPrompt();
@@ -835,6 +842,7 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.state.originalPrompt = null;
         this.state.promptModified = false;
         this.state.hasGeneratedPrompt = false;
+        this.state.generatedFromInput = null;  // ✅ CLEAR STORED INPUT
         this.state.selectedPlatform = null;
         this.elements.outputSection.classList.remove('visible');
         this.updateProgress();
