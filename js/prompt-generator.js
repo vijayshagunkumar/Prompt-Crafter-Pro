@@ -73,7 +73,7 @@ class PromptGenerator {
         }
     }
 
-    // Call Cloudflare Worker API - FIXED VERSION WITH SAFE PARSING
+    // Call Cloudflare Worker API - COMPLETE FIX WITH EXTRA CHARACTERS HANDLING
     async callWorkerAPI(input, options) {
         const { workerUrl, timeout } = this.config;
         const signal = this.abortController.signal;
@@ -120,89 +120,84 @@ class PromptGenerator {
 
             const response = await Promise.race([fetchPromise, timeoutPromise]);
             
-            // SAFE RESPONSE PARSING - CRITICAL FIX
+            // SAFE RESPONSE PARSING - HANDLE EXTRA CHARACTERS
             console.log('Response status:', response.status, response.statusText);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
             
             // Get raw response text first
             const rawResponseText = await response.text();
             console.log('Raw response length:', rawResponseText.length);
-            console.log('Raw response (first 500 chars):', rawResponseText.substring(0, 500));
+            console.log('Full raw response:', rawResponseText); // CRITICAL - SEE FULL RESPONSE
             
-            // Check if response is HTML/error page
-            if (rawResponseText.includes('<!DOCTYPE') || 
-                rawResponseText.includes('<html') || 
-                rawResponseText.includes('Error') ||
-                rawResponseText.includes('error')) {
-                
-                console.error('Worker returned HTML/error response');
-                
-                // Try to extract error message
-                let errorMessage = 'Server error';
-                if (rawResponseText.includes('<title>')) {
-                    const titleMatch = rawResponseText.match(/<title>(.*?)<\/title>/i);
-                    if (titleMatch) errorMessage = titleMatch[1];
-                } else if (rawResponseText.includes('<h1>')) {
-                    const h1Match = rawResponseText.match(/<h1>(.*?)<\/h1>/i);
-                    if (h1Match) errorMessage = h1Match[1];
-                }
-                
-                throw new Error(`Worker returned error: ${errorMessage}`);
+            // Check if response is completely empty
+            if (!rawResponseText || rawResponseText.trim() === '') {
+                throw new Error('Empty response from worker');
             }
             
-            // Check response status
-            if (!response.ok) {
-                console.error('Worker API error response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    url: workerUrl,
-                    responseType: response.headers.get('content-type')
-                });
-                
-                throw new Error(`Worker API error (${response.status}): ${response.statusText}`);
-            }
-            
-            // Try to parse JSON - with proper error handling
+            // FIX: Handle extra characters after JSON
             let data;
+            let cleanedResponse = rawResponseText;
+            
+            // Try 1: Parse as-is first
             try {
-                // Clean response text (remove any invalid characters)
-                const cleanedText = rawResponseText
-                    .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
-                    .replace(/^\s+|\s+$/g, '');
+                data = JSON.parse(rawResponseText);
+                console.log('✅ Parsed response successfully as-is');
+            } catch (firstParseError) {
+                console.log('First parse failed, trying to clean response...');
                 
-                if (!cleanedText || cleanedText.trim() === '') {
-                    throw new Error('Empty response from worker');
-                }
-                
-                data = JSON.parse(cleanedText);
-                
-            } catch (parseError) {
-                console.error('Failed to parse worker response as JSON:', parseError);
-                console.error('Response that failed to parse:', rawResponseText.substring(0, 1000));
-                
-                // Try to see if it's JSON with extra text
-                try {
-                    // Look for JSON in the response
-                    const jsonMatch = rawResponseText.match(/\{.*\}/s);
-                    if (jsonMatch) {
-                        data = JSON.parse(jsonMatch[0]);
-                        console.log('Extracted JSON from response');
-                    } else {
-                        throw new Error('No JSON found in response');
+                // Try 2: Remove everything after the last closing brace
+                const lastBraceIndex = rawResponseText.lastIndexOf('}');
+                if (lastBraceIndex > 0) {
+                    cleanedResponse = rawResponseText.substring(0, lastBraceIndex + 1);
+                    console.log('Extracted JSON portion:', cleanedResponse);
+                    
+                    try {
+                        data = JSON.parse(cleanedResponse);
+                        console.log('✅ Parsed cleaned response successfully');
+                    } catch (secondParseError) {
+                        console.error('Second parse failed:', secondParseError.message);
+                        
+                        // Try 3: Find JSON object with regex
+                        const jsonMatch = rawResponseText.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            cleanedResponse = jsonMatch[0];
+                            console.log('Found JSON with regex:', cleanedResponse.substring(0, 200) + '...');
+                            
+                            try {
+                                data = JSON.parse(cleanedResponse);
+                                console.log('✅ Parsed regex-extracted JSON successfully');
+                            } catch (thirdParseError) {
+                                console.error('All JSON parsing attempts failed');
+                                throw new Error(`Invalid response format: ${thirdParseError.message}`);
+                            }
+                        } else {
+                            throw new Error('No valid JSON found in response');
+                        }
                     }
-                } catch (extractError) {
-                    throw new Error(`Invalid JSON response: ${parseError.message}. Raw: ${rawResponseText.substring(0, 200)}`);
+                } else {
+                    throw new Error('No closing brace found in response');
                 }
             }
             
-            // Log response for debugging
+            // Log what we successfully parsed
             console.log('Worker response parsed:', {
                 success: data.success,
                 model: data.model,
-                hasResult: !!data.result,
-                resultLength: data.result?.length || 0,
+                hasResult: !!(data.result || data.prompt),
+                resultLength: (data.result || data.prompt || '').length,
                 keys: Object.keys(data)
             });
+            
+            // Debug: Show the actual result content
+            if (data.result || data.prompt) {
+                const result = data.result || data.prompt;
+                console.log('Result preview (first 500 chars):', result.substring(0, 500));
+                console.log('Result length:', result.length);
+                
+                // Check if result is cut off
+                if (result.length < 100 && input.length > 100) {
+                    console.warn('⚠️ Result seems too short compared to input');
+                }
+            }
             
             // Check if worker returned success
             if (!data.success) {
