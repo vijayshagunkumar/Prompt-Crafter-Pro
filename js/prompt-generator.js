@@ -1,13 +1,14 @@
 // Prompt Generator with Cloudflare Worker Integration
 class PromptGenerator {
     constructor(config = {}) {
-        // Default configuration
+        // Default configuration - UPDATE WITH YOUR WORKER URL
         this.config = {
-            workerUrl: config.workerUrl || 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
+            workerUrl: config.workerUrl || 'https://promptcraft-api.vijay-shagunkumar.workers.dev/',
             apiKey: config.apiKey || '',
-            defaultModel: config.defaultModel || 'gemini',
+            defaultModel: config.defaultModel || 'gemini-3-flash-preview',
             timeout: config.timeout || 30000,
             retries: config.retries || 3,
+            fallbackToLocal: config.fallbackToLocal !== false,
             ...config
         };
 
@@ -29,7 +30,7 @@ class PromptGenerator {
             const mergedOptions = {
                 model: options.model || this.config.defaultModel,
                 style: options.style || 'detailed',
-                temperature: options.temperature || 0.7,
+                temperature: options.temperature || 0.4,
                 maxTokens: options.maxTokens || 1000,
                 ...options
             };
@@ -39,9 +40,15 @@ class PromptGenerator {
             if (response.success) {
                 return {
                     success: true,
-                    prompt: response.prompt,
+                    prompt: response.result, // Updated: worker returns "result" field
                     suggestions: response.suggestions || [],
-                    metadata: response.metadata || {}
+                    metadata: {
+                        model: response.model,
+                        provider: response.provider,
+                        usage: response.usage,
+                        requestId: response.requestId,
+                        ...response.metadata
+                    }
                 };
             } else {
                 throw new Error(response.error || 'Failed to generate prompt');
@@ -52,6 +59,7 @@ class PromptGenerator {
             
             // Fallback to local generation if worker fails
             if (this.config.fallbackToLocal) {
+                console.warn('Falling back to local generation');
                 return this.generatePromptLocally(input, options);
             }
             
@@ -69,7 +77,7 @@ class PromptGenerator {
         const signal = this.abortController.signal;
 
         const requestData = {
-            input: input,
+            prompt: input, // Worker expects "prompt" field
             model: options.model,
             style: options.style,
             temperature: options.temperature,
@@ -77,14 +85,15 @@ class PromptGenerator {
             timestamp: Date.now()
         };
 
-        // Add API key if provided
+        // Headers for your worker
         const headers = {
             'Content-Type': 'application/json',
-            'X-PromptCraft-Version': '2.0'
+            'User-Agent': 'PromptCraftPro/2.0'
         };
 
-        if (apiKey) {
-            headers['Authorization'] = `Bearer ${apiKey}`;
+        // Add API key if required (but based on worker config, it's disabled)
+        if (apiKey && this.config.enableApiKey) {
+            headers['X-API-Key'] = apiKey;
         }
 
         try {
@@ -99,16 +108,37 @@ class PromptGenerator {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(requestData),
-                signal: signal
+                signal: signal,
+                mode: 'cors'
             });
 
             const response = await Promise.race([fetchPromise, timeoutPromise]);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const errorText = await response.text();
+                console.error('Worker API error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: errorText
+                });
+                
+                // Try to parse JSON error
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                } catch (e) {
+                    throw new Error(`Worker API error (${response.status}): ${errorText.substring(0, 100)}`);
+                }
             }
 
-            return await response.json();
+            const data = await response.json();
+            
+            // Check if worker returned success
+            if (!data.success) {
+                throw new Error(data.error || 'Worker returned unsuccessful response');
+            }
+            
+            return data;
 
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -118,7 +148,7 @@ class PromptGenerator {
         }
     }
 
-    // Fallback local prompt generation
+    // Fallback local prompt generation (unchanged)
     generatePromptLocally(input, options = {}) {
         const style = options.style || 'detailed';
         
@@ -191,7 +221,7 @@ Use professional tone and formal structure suitable for business communications.
         };
     }
 
-    // Generate optimization suggestions
+    // Generate optimization suggestions (unchanged)
     generateSuggestions(prompt) {
         const suggestions = [];
         
@@ -258,30 +288,38 @@ Use professional tone and formal structure suitable for business communications.
     // Test worker connection
     async testConnection() {
         try {
-            const testData = {
-                input: 'Test connection',
-                model: 'gemini',
-                style: 'concise',
-                temperature: 0.7,
-                maxTokens: 100,
-                test: true
-            };
-
-            const response = await fetch(this.config.workerUrl, {
-                method: 'POST',
+            // Test health endpoint
+            const healthUrl = this.config.workerUrl.replace(/\/$/, '') + '/health';
+            
+            const response = await fetch(healthUrl, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-PromptCraft-Version': '2.0'
+                    'User-Agent': 'PromptCraftPro/2.0'
                 },
-                body: JSON.stringify(testData)
+                mode: 'cors'
             });
 
+            if (!response.ok) {
+                return {
+                    connected: false,
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: 'Health check failed'
+                };
+            }
+
+            const data = await response.json();
+            
             return {
-                connected: response.ok,
+                connected: true,
                 status: response.status,
-                statusText: response.statusText
+                health: data,
+                models: data.models || []
             };
+            
         } catch (error) {
+            console.error('Worker connection test failed:', error);
             return {
                 connected: false,
                 error: error.message
