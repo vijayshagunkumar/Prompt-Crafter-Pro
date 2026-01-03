@@ -2375,3 +2375,23 @@ select:focus, .language-select:focus {
         justify-content: space-between;
     }
 }
+/* =====================================================
+   FINAL SAFETY FIX – OUTPUT RENDERING & FLEX OVERFLOW
+   ===================================================== */
+
+/* Prevent flex/grid containers from clipping long text */
+.output-section {
+    min-height: 0;
+}
+
+/* Ensure output card can grow with content */
+#outputCard {
+    min-height: 0;
+}
+
+/* Hard guarantee that generated prompts never collapse */
+.output-area {
+    white-space: pre-wrap;      /* Preserve \n and formatting */
+    word-break: break-word;     /* Prevent horizontal overflow */
+    overflow-y: auto;           /* Enable scrolling for long prompts */
+}
