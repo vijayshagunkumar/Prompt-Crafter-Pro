@@ -2416,4 +2416,21 @@ select:focus, .language-select:focus {
     width: 100%;
     max-width: 100%;
 }
+/* 🔒 HARD LOCK – STEP 3 AI TOOLS SINGLE COLUMN */
+.platforms-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    align-items: stretch !important;
+}
+
+.platform-card {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Kill any grid inheritance */
+.platforms-grid > * {
+    grid-column: unset !important;
+}
 
