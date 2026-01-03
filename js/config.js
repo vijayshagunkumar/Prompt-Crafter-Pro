@@ -3,12 +3,22 @@
  */
 
 const Config = {
+    // ==============================
     // API Configuration
+    // ==============================
     API: {
         ENDPOINT: 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
         LOCAL_ENDPOINT: 'http://localhost:8787',
-        
-        // Available models
+
+        // ⏱️ CRITICAL: timeouts (ms)
+        TIMEOUTS: {
+            HEALTH: 3000,
+            STATUS: 3000,
+            GENERATE: 30000,
+            DEFAULT: 10000
+        },
+
+        // Available models (SINGLE SOURCE OF TRUTH)
         MODELS: {
             'gemini-3-flash-preview': {
                 name: 'Gemini 3 Flash',
@@ -33,26 +43,28 @@ const Config = {
                 color: '#3B82F6'
             }
         },
-        
+
         DEFAULT_MODEL: 'gemini-3-flash-preview',
-        
-        // Rate limits (matching your Cloudflare Worker)
+
+        // Rate limits (Cloudflare Worker)
         RATE_LIMITS: {
-            MINUTE: 20,
-            DAILY: 500,
+            PER_MINUTE: 20,
+            PER_DAY: 500,
             WINDOW_MS: 60000,
             BLOCK_DURATION_MS: 900000
         }
     },
-    
+
+    // ==============================
     // Frontend Configuration
+    // ==============================
     FRONTEND: {
-        VERSION: '2.0',
-        BUILD_DATE: '2024-01-15',
+        VERSION: '2.0.1',
+        BUILD_DATE: '2026-01-03',
+
         GITHUB_REPO: 'https://github.com/vijay-shagunkumar/promptcraft',
         GITHUB_PAGES_URL: 'https://vijay-shagunkumar.github.io/promptcraft',
-        
-        // Feature flags
+
         FEATURES: {
             REAL_API: true,
             OFFLINE_FALLBACK: true,
@@ -60,8 +72,7 @@ const Config = {
             HISTORY: true,
             EXPORT: true
         },
-        
-        // UI Configuration
+
         UI: {
             DEFAULT_THEME: 'dark',
             ANIMATIONS: true,
@@ -69,121 +80,104 @@ const Config = {
             REDUCED_MOTION: false
         }
     },
-    
-    // Storage Configuration
+
+    // ==============================
+    // Storage
+    // ==============================
     STORAGE: {
         PREFIX: 'promptcraft_',
         VERSION: '1.0'
     },
-    
-    // Helper Methods
+
+    // ==============================
+    // Helpers
+    // ==============================
     getApiUrl() {
-        const hostname = window.location.hostname;
-        return (hostname === 'localhost' || hostname === '127.0.0.1') 
-            ? this.API.LOCAL_ENDPOINT 
+        const host = window.location.hostname;
+        return (host === 'localhost' || host === '127.0.0.1')
+            ? this.API.LOCAL_ENDPOINT
             : this.API.ENDPOINT;
     },
-    
+
     getDefaultModel() {
         return this.API.DEFAULT_MODEL;
     },
-    
-    getModelDisplayName(modelId) {
-        const model = this.API.MODELS[modelId];
-        return model ? model.name : modelId;
+
+    getModel(modelId) {
+        return this.API.MODELS[modelId] || null;
     },
-    
-    getModelProvider(modelId) {
-        const model = this.API.MODELS[modelId];
-        return model ? model.provider : 'Unknown';
-    },
-    
-    isValidModel(modelId) {
-        return Object.keys(this.API.MODELS).includes(modelId);
-    },
-    
+
     getAvailableModels() {
-        return Object.keys(this.API.MODELS).map(id => ({
+        return Object.entries(this.API.MODELS).map(([id, cfg]) => ({
             id,
-            ...this.API.MODELS[id]
+            ...cfg
         }));
     },
-    
+
+    isValidModel(modelId) {
+        return Boolean(this.API.MODELS[modelId]);
+    },
+
     getStorageKey(key) {
         return `${this.STORAGE.PREFIX}${key}_v${this.STORAGE.VERSION}`;
     },
-    
+
     sanitizeInput(text) {
         if (!text) return '';
-        
-        let sanitized = text.toString();
-        
-        // Remove potentially harmful content
+
+        let sanitized = String(text);
+
         const blockedPatterns = [
             /<script.*?>.*?<\/script>/gi,
             /javascript:/gi,
             /on\w+\s*=/gi
         ];
-        
-        blockedPatterns.forEach(pattern => {
-            sanitized = sanitized.replace(pattern, '');
+
+        blockedPatterns.forEach(p => {
+            sanitized = sanitized.replace(p, '');
         });
-        
-        // Limit length
-        if (sanitized.length > 5000) {
-            sanitized = sanitized.substring(0, 5000);
-        }
-        
-        return sanitized.trim();
+
+        return sanitized.substring(0, 5000).trim();
     },
-    
+
     validatePrompt(prompt) {
-        if (!prompt || typeof prompt !== 'string') {
-            return { valid: false, error: 'Prompt is required' };
+        if (typeof prompt !== 'string') {
+            return { valid: false, error: 'Prompt must be text' };
         }
-        
+
         const trimmed = prompt.trim();
-        
-        if (trimmed.length === 0) {
+
+        if (!trimmed) {
             return { valid: false, error: 'Prompt cannot be empty' };
         }
-        
+
         if (trimmed.length < 3) {
             return { valid: false, error: 'Prompt is too short' };
         }
-        
+
         if (trimmed.length > 5000) {
-            return { 
-                valid: false, 
-                error: `Prompt too long (max 5000 characters)` 
-            };
+            return { valid: false, error: 'Prompt too long (max 5000 chars)' };
         }
-        
-        return { 
-            valid: true, 
-            length: trimmed.length,
-            trimmed: trimmed
-        };
+
+        return { valid: true, trimmed, length: trimmed.length };
     },
-    
+
+    // ==============================
+    // Logging helpers
+    // ==============================
     debug(...args) {
-        if (window.debugMode) {
-            console.log('[PromptCraft]', ...args);
-        }
+        if (window.debugMode) console.log('[PromptCraft]', ...args);
     },
-    
-    error(...args) {
-        console.error('[PromptCraft]', ...args);
+    info(...args) {
+        console.info('[PromptCraft]', ...args);
     },
-    
     warn(...args) {
         console.warn('[PromptCraft]', ...args);
     },
-    
-    info(...args) {
-        console.info('[PromptCraft]', ...args);
+    error(...args) {
+        console.error('[PromptCraft]', ...args);
     }
 };
 
-// Make globally available
+// Global export
 window.Config = Config;
