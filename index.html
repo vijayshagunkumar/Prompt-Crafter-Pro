@@ -22,256 +22,360 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     
     <style>
-        /* Loading state */
-        .loading {
-            position: relative;
-            opacity: 0.7;
-            pointer-events: none;
+        /* Fix for API status */
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #F3F4F6;
+            border-radius: 20px;
+            font-size: 14px;
         }
         
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #4F46E5;
-            border-top-color: transparent;
+        .status-indicator {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        .status-indicator.online {
+            background: #10B981;
+        }
+        
+        .status-indicator.offline {
+            background: #EF4444;
+        }
+        
+        .status-indicator.checking {
+            background: #F59E0B;
+        }
+        
+        /* Fix button states */
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-icon.active {
+            background: #4F46E5;
+            color: white;
+        }
+        
+        /* Fix settings modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .settings-group {
+            margin-bottom: 24px;
+        }
+        
+        .settings-group h3 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .setting-item {
+            margin-bottom: 16px;
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .settings-input, .settings-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+        
+        .settings-input:focus, .settings-select:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #D1D5DB;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4F46E5;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .setting-item small {
+            display: block;
+            margin-top: 4px;
+            color: #6B7280;
+            font-size: 12px;
+        }
+        
+        /* Fix inspiration panel */
+        .inspiration-panel {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            margin-top: 10px;
+            padding: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            display: none;
+        }
+        
+        .inspiration-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .inspiration-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .inspiration-item {
+            padding: 12px;
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .inspiration-item:hover {
+            background: #F3F4F6;
+            border-color: #D1D5DB;
+        }
+        
+        .inspiration-item i {
+            font-size: 20px;
+            color: #4F46E5;
+        }
+        
+        /* Fix fullscreen editor */
+        .fullscreen-editor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .editor-header {
+            padding: 16px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .editor-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        /* Notification styles */
-        #notificationContainer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 400px;
+        /* Fix character counter */
+        .char-counter {
+            font-size: 12px;
+            color: #6B7280;
         }
         
+        /* Notification fix */
         .notification {
-            background: white;
-            border-radius: 8px;
-            padding: 12px 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateX(120%);
-            transition: transform 0.3s ease;
-            border-left: 4px solid #4F46E5;
+            position: relative;
+            animation: slideIn 0.3s ease;
         }
         
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            border-left-color: #10B981;
-        }
-        
-        .notification.error {
-            border-left-color: #EF4444;
-        }
-        
-        .notification.warning {
-            border-left-color: #F59E0B;
-        }
-        
-        .notification-icon {
-            font-size: 18px;
-        }
-        
-        .notification.success .notification-icon {
-            color: #10B981;
-        }
-        
-        .notification.error .notification-icon {
-            color: #EF4444;
-        }
-        
-        .notification.warning .notification-icon {
-            color: #F59E0B;
-        }
-        
-        .notification-close {
-            margin-left: auto;
-            background: none;
-            border: none;
-            color: #6B7280;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Accessibility */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-        
-        /* Fallback styles */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: #4F46E5;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #3730A3;
-        }
-        
-        .btn-secondary {
-            background: #F3F4F6;
-            color: #374151;
-            border: 1px solid #D1D5DB;
-        }
-        
-        .btn-secondary:hover {
-            background: #E5E7EB;
-        }
-        
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 8px;
-            background: #F3F4F6;
-            color: #6B7280;
-            border: 1px solid #D1D5DB;
-        }
-        
-        .btn-icon:hover {
-            background: #E5E7EB;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
     
-    <!-- Inline theme manager as backup -->
+    <!-- Fix for element IDs -->
     <script>
-        // Inline theme manager to prevent errors
-        console.log('Loading inline theme manager backup...');
-        
-        if (!window.themeManager) {
-            window.themeManager = {
-                themes: ['light', 'dark', 'auto'],
-                currentTheme: 'auto',
-                
-                init: function() {
-                    this.loadTheme();
-                    this.applyTheme();
-                },
-                
-                loadTheme: function() {
-                    try {
-                        const saved = localStorage.getItem('promptcraft_theme');
-                        if (saved && this.themes.includes(saved)) {
-                            this.currentTheme = saved;
-                        }
-                    } catch (error) {
-                        console.warn('Failed to load theme:', error);
-                    }
-                },
-                
-                saveTheme: function() {
-                    try {
-                        localStorage.setItem('promptcraft_theme', this.currentTheme);
-                    } catch (error) {
-                        console.warn('Failed to save theme:', error);
-                    }
-                },
-                
-                applyTheme: function() {
-                    let themeToApply = this.currentTheme;
-                    
-                    if (themeToApply === 'auto') {
-                        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                            themeToApply = 'dark';
-                        } else {
-                            themeToApply = 'light';
-                        }
-                    }
-                    
-                    document.documentElement.setAttribute('data-theme', themeToApply);
-                },
-                
-                setTheme: function(theme) {
-                    if (this.themes.includes(theme)) {
-                        this.currentTheme = theme;
-                        this.saveTheme();
-                        this.applyTheme();
-                        return true;
-                    }
-                    return false;
-                },
-                
-                getTheme: function() {
-                    return this.currentTheme;
-                },
-                
-                toggleTheme: function() {
-                    if (this.currentTheme === 'auto') {
-                        const systemPrefersDark = window.matchMedia && 
-                            window.matchMedia('(prefers-color-scheme: dark)').matches;
-                        this.setTheme(systemPrefersDark ? 'light' : 'dark');
-                    } else {
-                        this.setTheme(this.currentTheme === 'dark' ? 'light' : 'dark');
-                    }
+        // Fix element IDs before app loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Fixing element IDs...');
+            
+            // Create missing elements
+            const createMissingElement = (id, tagName) => {
+                if (!document.getElementById(id)) {
+                    const el = document.createElement(tagName);
+                    el.id = id;
+                    el.style.display = 'none';
+                    document.body.appendChild(el);
+                    console.log(`Created missing element: ${id}`);
+                    return el;
                 }
+                return document.getElementById(id);
             };
             
-            // Apply theme immediately
-            themeManager.init();
-        }
-    </script>
-    
-    <!-- Debug script loading -->
-    <script>
-        console.log('PromptCraft Pro starting...');
-        
-        // Track script loading
-        window.scriptErrors = [];
-        window.addEventListener('error', function(e) {
-            if (e.target.tagName === 'SCRIPT') {
-                console.error('Script error:', e.target.src, e.message);
-                window.scriptErrors.push({
-                    src: e.target.src,
-                    message: e.message
+            // Create all missing elements
+            createMissingElement('goalInput', 'input');
+            createMissingElement('platformSelect', 'select');
+            createMissingElement('detailsInput', 'textarea');
+            
+            // Link userInput to goalInput
+            const userInput = document.getElementById('userInput');
+            const goalInput = document.getElementById('goalInput');
+            if (userInput && goalInput) {
+                // Sync values
+                userInput.addEventListener('input', function() {
+                    goalInput.value = this.value;
                 });
+                
+                goalInput.addEventListener('input', function() {
+                    userInput.value = this.value;
+                });
+                
+                console.log('Linked userInput with goalInput');
             }
+            
+            // Set up platform select options
+            const platformSelect = document.getElementById('platformSelect');
+            if (platformSelect) {
+                platformSelect.innerHTML = `
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="midjourney">Midjourney</option>
+                    <option value="dalle">DALL-E</option>
+                    <option value="claude">Claude</option>
+                    <option value="gemini">Gemini</option>
+                `;
+                platformSelect.value = 'chatgpt';
+            }
+            
+            console.log('Element fix completed');
         });
     </script>
 </head>
@@ -296,8 +400,8 @@
                 <div class="header-actions">
                     <!-- API Status -->
                     <div class="api-status">
-                        <span class="status-indicator" id="apiStatusIndicator"></span>
-                        <span id="apiStatusText">Checking...</span>
+                        <span class="status-indicator checking" id="apiStatusIndicator"></span>
+                        <span id="apiStatusText">Checking API...</span>
                     </div>
                     
                     <!-- Inspiration Button -->
@@ -341,16 +445,6 @@
             </div>
             
             <div class="input-container">
-                <!-- SIMPLE FIX: Add a hidden platform select for app.js -->
-                <select id="platformSelect" style="display: none;">
-                    <option value="chatgpt">ChatGPT</option>
-                    <option value="midjourney">Midjourney</option>
-                    <option value="dalle">DALL-E</option>
-                    <option value="claude">Claude</option>
-                    <option value="gemini">Gemini</option>
-                </select>
-                
-                <!-- SIMPLE FIX: Rename userInput to goalInput for app.js -->
                 <div class="textarea-wrapper">
                     <div class="textarea-header">
                         <label for="userInput" class="textarea-label">Your Task Description</label>
@@ -360,7 +454,7 @@
                     </div>
                     
                     <div class="textarea-controls-top">
-                        <button id="clearInputBtn" class="btn btn-icon btn-danger" title="Clear">
+                        <button id="clearInputBtn" class="btn btn-icon" title="Clear">
                             <i class="fas fa-times"></i>
                         </button>
                         <button id="maximizeInputBtn" class="btn btn-icon" title="Maximize">
@@ -368,20 +462,11 @@
                         </button>
                     </div>
                     
-                    <!-- THIS IS THE KEY FIX: Keep id="userInput" but app.js needs "goalInput" -->
-                    <!-- So we'll use both IDs with JavaScript -->
                     <textarea 
                         id="userInput" 
-                        class="textarea goalInput"
+                        class="textarea"
                         placeholder="Example: Write a Python function to scrape data from a website with error handling, rate limiting, and save results to CSV..."
                         rows="6"
-                    ></textarea>
-                    
-                    <!-- SIMPLE FIX: Add hidden details input for app.js -->
-                    <textarea 
-                        id="detailsInput" 
-                        style="display: none;"
-                        placeholder="Additional details..."
                     ></textarea>
                     
                     <div class="textarea-controls-bottom">
@@ -402,7 +487,7 @@
                 </div>
                 
                 <!-- Inspiration Panel -->
-                <div id="inspirationPanel" class="inspiration-panel" style="display: none;">
+                <div id="inspirationPanel" class="inspiration-panel">
                     <div class="inspiration-header">
                         <h3><i class="fas fa-lightbulb"></i> Quick Start Templates</h3>
                         <button id="closeInspirationBtn" class="btn btn-icon btn-sm">
@@ -487,25 +572,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Suggestions -->
-                <div class="suggestions" id="suggestionsPanel" style="display: none;">
-                    <h4>Improve this prompt:</h4>
-                    <div class="suggestion-buttons">
-                        <button class="btn btn-suggestion" data-action="shorter">
-                            <i class="fas fa-compress"></i> Make shorter
-                        </button>
-                        <button class="btn btn-suggestion" data-action="detailed">
-                            <i class="fas fa-expand"></i> More details
-                        </button>
-                        <button class="btn btn-suggestion" data-action="formal">
-                            <i class="fas fa-user-tie"></i> Make formal
-                        </button>
-                        <button class="btn btn-suggestion" data-action="casual">
-                            <i class="fas fa-comments"></i> Make casual
-                        </button>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -578,51 +644,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- DeepSeek -->
-                    <div class="platform-card" data-platform="deepseek">
-                        <div class="platform-icon deepseek">
-                            <i class="fas fa-rocket"></i>
-                        </div>
-                        <div class="platform-info">
-                            <h3>DeepSeek</h3>
-                            <p class="platform-desc">Free, powerful open model</p>
-                            <div class="platform-tags">
-                                <span class="tag">Free</span>
-                                <span class="tag">Open Source</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Copilot -->
-                    <div class="platform-card" data-platform="copilot">
-                        <div class="platform-icon copilot">
-                            <i class="fab fa-microsoft"></i>
-                        </div>
-                        <div class="platform-info">
-                            <h3>Microsoft Copilot</h3>
-                            <p class="platform-desc">Integrated with Microsoft 365</p>
-                            <div class="platform-tags">
-                                <span class="tag">Freemium</span>
-                                <span class="tag">Integrated</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Grok -->
-                    <div class="platform-card" data-platform="grok">
-                        <div class="platform-icon grok">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div class="platform-info">
-                            <h3>Grok AI</h3>
-                            <p class="platform-desc">X's AI with real-time data</p>
-                            <div class="platform-tags">
-                                <span class="tag">Premium</span>
-                                <span class="tag">Real-time</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -655,7 +676,7 @@
                     </div>
                     <div class="footer-item">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Rate Limit: <span id="rateLimit">∞</span></span>
+                        <span>API: <span id="apiStatusDetail">Checking...</span></span>
                     </div>
                 </div>
                 <div class="footer-copyright">
@@ -666,7 +687,7 @@
     </footer>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="modal" style="display: none;">
+    <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-cog"></i> Settings</h2>
@@ -675,7 +696,48 @@
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Settings content will be injected here -->
+                <div class="settings-group">
+                    <h3><i class="fas fa-plug"></i> API Settings</h3>
+                    <div class="setting-item">
+                        <label>API Endpoint</label>
+                        <input type="text" class="settings-input" value="https://promptcraft-api.vijay-shagunkumar.workers.dev" readonly>
+                        <small>Cloudflare Worker endpoint</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>Default AI Model</label>
+                        <select id="settingsModel" class="settings-select">
+                            <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+                            <option value="gemini-3-flash-preview" selected>Gemini 3 Flash</option>
+                            <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        </select>
+                        <small>Select which AI model to use</small>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3><i class="fas fa-palette"></i> Appearance</h3>
+                    <div class="setting-item">
+                        <label>Theme</label>
+                        <select id="settingsTheme" class="settings-select">
+                            <option value="auto">Auto (System)</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                        <small>Choose light, dark, or auto</small>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3><i class="fas fa-bell"></i> Notifications</h3>
+                    <div class="setting-item">
+                        <label>Show Notifications</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="settingsNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <small>Show success/error notifications</small>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button id="saveSettingsBtn" class="btn btn-primary">Save Changes</button>
@@ -685,7 +747,7 @@
     </div>
 
     <!-- Full Screen Editor -->
-    <div id="fullScreenEditor" class="fullscreen-editor" style="display: none;">
+    <div id="fullScreenEditor" class="fullscreen-editor">
         <div class="editor-header">
             <h3><i class="fas fa-edit"></i> Full Screen Editor</h3>
             <div class="editor-actions">
@@ -700,59 +762,72 @@
         <textarea id="editorTextarea" class="editor-textarea"></textarea>
     </div>
 
-    <!-- Fix for app.js compatibility -->
-    <script>
-        // Fix for app.js compatibility - Add missing elements dynamically
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Setting up compatibility fix...');
-            
-            // Create missing elements if they don't exist
-            setTimeout(function() {
-                // Create goalInput element (alias for userInput)
-                const userInput = document.getElementById('userInput');
-                if (userInput && !document.getElementById('goalInput')) {
-                    // Make userInput also accessible as goalInput
-                    userInput.id = 'userInput goalInput';
-                    console.log('✓ Made userInput also accessible as goalInput');
-                }
-                
-                // Create platformSelect if it doesn't exist
-                if (!document.getElementById('platformSelect')) {
-                    const platformSelect = document.createElement('select');
-                    platformSelect.id = 'platformSelect';
-                    platformSelect.style.display = 'none';
-                    platformSelect.innerHTML = `
-                        <option value="chatgpt">ChatGPT</option>
-                        <option value="midjourney">Midjourney</option>
-                        <option value="dalle">DALL-E</option>
-                        <option value="claude">Claude</option>
-                        <option value="gemini">Gemini</option>
-                    `;
-                    document.querySelector('.input-container').appendChild(platformSelect);
-                    console.log('✓ Created hidden platformSelect');
-                }
-                
-                // Create detailsInput if it doesn't exist
-                if (!document.getElementById('detailsInput')) {
-                    const detailsInput = document.createElement('textarea');
-                    detailsInput.id = 'detailsInput';
-                    detailsInput.style.display = 'none';
-                    detailsInput.placeholder = 'Additional details...';
-                    document.querySelector('.input-container').appendChild(detailsInput);
-                    console.log('✓ Created hidden detailsInput');
-                }
-                
-                console.log('Compatibility fix applied');
-            }, 100);
-        });
-    </script>
-
     <!-- SIMPLE JavaScript Loading -->
     <script>
-        // Simple script loading without complex template literals
         console.log('Loading PromptCraft Pro...');
         
-        // Define scripts to load
+        // Simple fix for missing elements
+        function fixMissingElements() {
+            // Create missing elements if they don't exist
+            const elements = [
+                {id: 'goalInput', tag: 'input'},
+                {id: 'platformSelect', tag: 'select'},
+                {id: 'detailsInput', tag: 'textarea'}
+            ];
+            
+            elements.forEach(item => {
+                if (!document.getElementById(item.id)) {
+                    const el = document.createElement(item.tag);
+                    el.id = item.id;
+                    el.style.display = 'none';
+                    document.body.appendChild(el);
+                    console.log('Created missing element:', item.id);
+                }
+            });
+            
+            // Set up platform select
+            const platformSelect = document.getElementById('platformSelect');
+            if (platformSelect) {
+                platformSelect.innerHTML = `
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="midjourney">Midjourney</option>
+                    <option value="dalle">DALL-E</option>
+                    <option value="claude">Claude</option>
+                    <option value="gemini">Gemini</option>
+                `;
+                platformSelect.value = 'chatgpt';
+            }
+            
+            // Link userInput to goalInput
+            const userInput = document.getElementById('userInput');
+            const goalInput = document.getElementById('goalInput');
+            if (userInput && goalInput) {
+                userInput.addEventListener('input', function() {
+                    goalInput.value = this.value;
+                });
+            }
+        }
+        
+        // Fix API status display
+        function updateAPIStatus(online) {
+            const indicator = document.getElementById('apiStatusIndicator');
+            const text = document.getElementById('apiStatusText');
+            const detail = document.getElementById('apiStatusDetail');
+            
+            if (indicator && text && detail) {
+                if (online) {
+                    indicator.className = 'status-indicator online';
+                    text.textContent = 'API Online';
+                    detail.textContent = 'Online';
+                } else {
+                    indicator.className = 'status-indicator offline';
+                    text.textContent = 'API Offline';
+                    detail.textContent = 'Offline';
+                }
+            }
+        }
+        
+        // Load scripts
         var scripts = [
             'js/config.js',
             'js/utils.js',
@@ -764,14 +839,37 @@
             'js/main.js'
         ];
         
-        // Load scripts one by one
         function loadScripts() {
             var index = 0;
             
             function loadNext() {
                 if (index >= scripts.length) {
-                    console.log('All scripts loaded, initializing app...');
-                    initializeApp();
+                    console.log('All scripts loaded');
+                    
+                    // Fix elements before app loads
+                    fixMissingElements();
+                    
+                    // Initialize app
+                    setTimeout(function() {
+                        if (window.PromptCraftApp) {
+                            try {
+                                window.app = new PromptCraftApp();
+                                console.log('PromptCraft Pro initialized');
+                                
+                                // Check API status
+                                if (window.apiService) {
+                                    window.apiService.checkHealth().then(health => {
+                                        updateAPIStatus(health.online);
+                                    }).catch(() => {
+                                        updateAPIStatus(false);
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('App init error:', error);
+                                updateAPIStatus(false);
+                            }
+                        }
+                    }, 100);
                     return;
                 }
                 
@@ -785,35 +883,7 @@
                 };
                 
                 script.onerror = function() {
-                    console.warn('Failed to load: ' + scripts[index]);
-                    
-                    // Create fallback for critical files
-                    if (scripts[index] === 'js/theme.js') {
-                        console.log('Creating themeManager fallback');
-                        window.themeManager = window.themeManager || {
-                            init: function() {
-                                var theme = localStorage.getItem('promptcraft_theme') || 'auto';
-                                var finalTheme = theme;
-                                if (theme === 'auto') {
-                                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                                        finalTheme = 'dark';
-                                    } else {
-                                        finalTheme = 'light';
-                                    }
-                                }
-                                document.documentElement.setAttribute('data-theme', finalTheme);
-                            },
-                            setTheme: function(theme) {
-                                localStorage.setItem('promptcraft_theme', theme);
-                                this.init();
-                                return true;
-                            },
-                            getTheme: function() {
-                                return localStorage.getItem('promptcraft_theme') || 'auto';
-                            }
-                        };
-                    }
-                    
+                    console.warn('Failed: ' + scripts[index]);
                     index++;
                     loadNext();
                 };
@@ -824,47 +894,7 @@
             loadNext();
         }
         
-        // Initialize the app
-        function initializeApp() {
-            console.log('Initializing app...');
-            
-            // Check for essential dependencies
-            if (!window.Config || !window.Utils) {
-                console.error('Missing essential dependencies');
-                alert('Failed to load essential components. Please refresh.');
-                return;
-            }
-            
-            // Initialize theme
-            if (window.themeManager) {
-                window.themeManager.init();
-            }
-            
-            // Initialize the main app
-            setTimeout(function() {
-                if (window.PromptCraftApp) {
-                    try {
-                        window.app = new PromptCraftApp();
-                        console.log('PromptCraft Pro initialized successfully');
-                        
-                        // Show welcome message
-                        if (window.showNotification) {
-                            showNotification('Welcome to PromptCraft Pro!', 'success', 5000);
-                        } else {
-                            console.log('Welcome to PromptCraft Pro!');
-                        }
-                    } catch (error) {
-                        console.error('Failed to initialize app:', error);
-                        alert('App initialization failed: ' + error.message);
-                    }
-                } else {
-                    console.error('PromptCraftApp not found');
-                    alert('Application core not loaded. Check console for errors.');
-                }
-            }, 500);
-        }
-        
-        // Start loading when DOM is ready
+        // Start loading
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', loadScripts);
         } else {
@@ -872,50 +902,44 @@
         }
     </script>
     
-    <!-- Simple notification fallback -->
+    <!-- Simple fallback notifications -->
     <script>
-        // Simple notification fallback
         if (!window.showNotification) {
             window.showNotification = function(message, type, duration) {
                 console.log('[' + (type || 'info').toUpperCase() + '] ' + message);
                 
-                // Create a simple notification element
-                var container = document.getElementById('notificationContainer');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'notificationContainer';
-                    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;';
-                    document.body.appendChild(container);
-                }
+                const container = document.getElementById('notificationContainer') || 
+                    (function() {
+                        const c = document.createElement('div');
+                        c.id = 'notificationContainer';
+                        c.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;';
+                        document.body.appendChild(c);
+                        return c;
+                    })();
                 
-                var notification = document.createElement('div');
-                notification.style.cssText = 'background:white;border-radius:8px;padding:12px 16px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-left:4px solid;';
-                
-                // Set border color based on type
-                var color = '#4F46E5'; // default
-                if (type === 'success') color = '#10B981';
-                else if (type === 'error') color = '#EF4444';
-                else if (type === 'warning') color = '#F59E0B';
-                
-                notification.style.borderLeftColor = color;
-                
-                // Set icon based on type
-                var icon = 'info-circle';
-                if (type === 'success') icon = 'check-circle';
-                else if (type === 'error') icon = 'exclamation-circle';
-                else if (type === 'warning') icon = 'exclamation-triangle';
-                
-                notification.innerHTML = '<i class="fas fa-' + icon + '" style="color:' + color + ';margin-right:8px;"></i>' + message;
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                       type === 'error' ? 'exclamation-circle' : 
+                                       type === 'warning' ? 'exclamation-triangle' : 'info-circle'}" 
+                       style="color: ${type === 'success' ? '#10B981' : 
+                                     type === 'error' ? '#EF4444' : 
+                                     type === 'warning' ? '#F59E0B' : '#4F46E5'}; margin-right:8px;"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;color:#6B7280;cursor:pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
                 
                 container.appendChild(notification);
                 
-                // Auto-remove
-                if (duration && duration > 0) {
-                    setTimeout(function() {
+                if (duration) {
+                    setTimeout(() => {
                         if (notification.parentNode) {
                             notification.parentNode.removeChild(notification);
                         }
-                    }, duration || 3000);
+                    }, duration);
                 }
             };
         }
