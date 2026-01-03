@@ -93,7 +93,7 @@ class PromptCraftApp {
             enableDebug: true
         });
 
-        // Bind elements
+        // Bind elements (with null safety)
         this.elements = {};
         this.bindElements();
         
@@ -117,13 +117,13 @@ class PromptCraftApp {
         };
     }
 
-    // Bind DOM elements
+    // Bind DOM elements with null safety
     bindElements() {
         this.elements = {
             // Input
             userInput: document.getElementById('userInput'),
             charCounter: document.getElementById('charCounter'),
-            undoBtn: document.getElementById('undoBtn'),
+            // ❌ undoBtn REMOVED (button doesn't exist in HTML)
             clearInputBtn: document.getElementById('clearInputBtn'),
             micBtn: document.getElementById('micBtn'),
             maximizeInputBtn: document.getElementById('maximizeInputBtn'),
@@ -142,7 +142,7 @@ class PromptCraftApp {
             platformsGrid: document.getElementById('platformsGrid'),
             platformsEmptyState: document.getElementById('platformsEmptyState'),
             
-            // Buttons
+            // Buttons (with null safety)
             stickyPrepareBtn: document.getElementById('stickyPrepareBtn'),
             stickyResetBtn: document.getElementById('stickyResetBtn'),
             
@@ -171,11 +171,19 @@ class PromptCraftApp {
             // App container
             appContainer: document.querySelector('.app-container'),
             
+            // Editor elements (with null safety - these might be removed from HTML)
+            editorPrepareBtn: document.getElementById('editorPrepareBtn'),
+            editorMicBtn: document.getElementById('editorMicBtn'),
+            editorUndoBtn: document.getElementById('editorUndoBtn'),
+            
+            // Settings elements
+            settingsBtn: document.getElementById('settingsBtn'),
+            
             // Notification container (create if doesn't exist)
             notificationContainer: document.getElementById('notificationContainer') || this.createNotificationContainer()
         };
         
-        // Add tooltip to inspiration button
+        // Add tooltip to inspiration button if it exists
         if (this.elements.needInspirationBtn) {
             this.elements.needInspirationBtn.title = 'Click to insert ready-made prompt samples';
         }
@@ -225,65 +233,107 @@ class PromptCraftApp {
         }
     }
 
-    // Set up event listeners
+    // Set up event listeners with null safety
     setupEventListeners() {
         // Input handling
-        this.elements.userInput.addEventListener('input', () => this.handleInputChange());
+        if (this.elements.userInput) {
+            this.elements.userInput.addEventListener('input', () => this.handleInputChange());
+        }
         
-   // Clear input button
-if (this.elements.clearInputBtn) {
-    this.elements.clearInputBtn.addEventListener('click', () => {
-        this.elements.userInput.value = '';
-        this.handleInputChange();   // 🔥 important
-    });
-}
-
+        // Clear input button (optional)
+        if (this.elements.clearInputBtn) {
+            this.elements.clearInputBtn.addEventListener('click', () => {
+                if (this.elements.userInput) {
+                    this.elements.userInput.value = '';
+                    this.clearGeneratedPrompt();
+                    this.updateButtonStates();
+                }
+            });
+        }
         
-        // Button events
-        this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
-        this.elements.undoBtn.addEventListener('click', () => this.undo());
-        this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
-        this.elements.speakBtn.addEventListener('click', () => this.toggleSpeech());
-        this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
-        this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
-        this.elements.stickyResetBtn.addEventListener('click', () => this.resetApplication());
-        this.elements.outputArea.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const text = e.clipboardData.getData('text/plain');
-            const outputArea = this.elements.outputArea;
-            const selection = window.getSelection();
-            
-            if (selection.rangeCount) {
-                selection.deleteFromDocument();
-                selection.getRangeAt(0).insertNode(document.createTextNode(text));
-            }
-        });
+        // Button events (with null safety)
+        if (this.elements.stickyPrepareBtn) {
+            this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
+        }
+        
+        // ❌ undoBtn event listener REMOVED (button doesn't exist in HTML)
+        
+        if (this.elements.copyBtn) {
+            this.elements.copyBtn.addEventListener('click', () => this.copyPrompt());
+        }
+        
+        if (this.elements.speakBtn) {
+            this.elements.speakBtn.addEventListener('click', () => this.toggleSpeech());
+        }
+        
+        if (this.elements.exportBtn) {
+            this.elements.exportBtn.addEventListener('click', () => this.exportPrompt());
+        }
+        
+        if (this.elements.savePromptBtn) {
+            this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
+        }
+        
+        if (this.elements.stickyResetBtn) {
+            this.elements.stickyResetBtn.addEventListener('click', () => this.resetApplication());
+        }
         
         // Voice button
-        this.elements.micBtn.addEventListener('click', () => this.toggleVoiceInput());
+        if (this.elements.micBtn) {
+            this.elements.micBtn.addEventListener('click', () => this.toggleVoiceInput());
+        }
         
         // Maximize buttons
-        this.elements.maximizeInputBtn.addEventListener('click', () => this.openFullScreenEditor('input'));
-        this.elements.maximizeOutputBtn.addEventListener('click', () => this.openFullScreenEditor('output'));
+        if (this.elements.maximizeInputBtn) {
+            this.elements.maximizeInputBtn.addEventListener('click', () => this.openFullScreenEditor('input'));
+        }
+        
+        if (this.elements.maximizeOutputBtn) {
+            this.elements.maximizeOutputBtn.addEventListener('click', () => this.openFullScreenEditor('output'));
+        }
         
         // Inspiration
-        this.elements.needInspirationBtn.addEventListener('click', () => this.toggleInspirationPanel());
-        this.elements.closeInspirationBtn.addEventListener('click', () => this.closeInspirationPanel());
+        if (this.elements.needInspirationBtn) {
+            this.elements.needInspirationBtn.addEventListener('click', () => this.toggleInspirationPanel());
+        }
+        
+        if (this.elements.closeInspirationBtn) {
+            this.elements.closeInspirationBtn.addEventListener('click', () => this.closeInspirationPanel());
+        }
         
         // History
-        this.elements.historyBtn.addEventListener('click', () => this.toggleHistory());
-        this.elements.closeHistoryBtn.addEventListener('click', () => this.closeHistory());
+        if (this.elements.historyBtn) {
+            this.elements.historyBtn.addEventListener('click', () => this.toggleHistory());
+        }
         
-        // ✅ FIXED: Platform clicks - uses SAFE launch logic
-        this.elements.platformsGrid.addEventListener('click', (e) => {
-            const platformCard = e.target.closest('.platform-card');
-            if (platformCard) {
-                this.handlePlatformClick(platformCard.dataset.platform);
-            }
-        });
+        if (this.elements.closeHistoryBtn) {
+            this.elements.closeHistoryBtn.addEventListener('click', () => this.closeHistory());
+        }
+        
+        // Platform clicks
+        if (this.elements.platformsGrid) {
+            this.elements.platformsGrid.addEventListener('click', (e) => {
+                const platformCard = e.target.closest('.platform-card');
+                if (platformCard) {
+                    this.handlePlatformClick(platformCard.dataset.platform);
+                }
+            });
+        }
         
         // Output editing
-        this.elements.outputArea.addEventListener('input', () => this.handlePromptEdit());
+        if (this.elements.outputArea) {
+            this.elements.outputArea.addEventListener('input', () => this.handlePromptEdit());
+            this.elements.outputArea.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const text = e.clipboardData.getData('text/plain');
+                const selection = window.getSelection();
+                
+                if (selection.rangeCount) {
+                    selection.deleteFromDocument();
+                    selection.getRangeAt(0).insertNode(document.createTextNode(text));
+                }
+            });
+        }
         
         // Inspiration items
         document.querySelectorAll('.inspiration-item').forEach(item => {
@@ -295,12 +345,11 @@ if (this.elements.clearInputBtn) {
         });
         
         // Settings button
-        this.elements.settingsBtn = document.getElementById('settingsBtn');
         if (this.elements.settingsBtn) {
             this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
         }
         
-        // Settings modal buttons
+        // Settings modal buttons (these might be in a different file)
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
         const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
@@ -356,7 +405,7 @@ if (this.elements.clearInputBtn) {
                         editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
                         editor.selectionStart = editor.selectionEnd = start + text.length;
                     }
-                } else {
+                } else if (this.elements.userInput) {
                     const start = this.elements.userInput.selectionStart;
                     const end = this.elements.userInput.selectionEnd;
                     this.elements.userInput.value = 
@@ -382,25 +431,29 @@ if (this.elements.clearInputBtn) {
     // Set up auto-generation
     setupAutoGeneration() {
         let debounceTimer;
-        this.elements.userInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            
-            const delay = this.state.settings.autoConvertDelay;
-            if (delay > 0 && this.elements.userInput.value.trim().length > 10) {
-                this.elements.userInput.classList.add('auto-generating');
+        if (this.elements.userInput) {
+            this.elements.userInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
                 
-                debounceTimer = setTimeout(() => {
-                    if (this.elements.userInput.value.trim().length > 10) {
-                        this.preparePrompt();
-                    }
-                    this.elements.userInput.classList.remove('auto-generating');
-                }, delay);
-            }
-        });
+                const delay = this.state.settings.autoConvertDelay;
+                if (delay > 0 && this.elements.userInput.value.trim().length > 10) {
+                    this.elements.userInput.classList.add('auto-generating');
+                    
+                    debounceTimer = setTimeout(() => {
+                        if (this.elements.userInput.value.trim().length > 10) {
+                            this.preparePrompt();
+                        }
+                        this.elements.userInput.classList.remove('auto-generating');
+                    }, delay);
+                }
+            });
+        }
     }
 
     // Handle input changes
     handleInputChange() {
+        if (!this.elements.userInput || !this.elements.charCounter) return;
+        
         const text = this.elements.userInput.value;
         const charCount = text.length;
         const maxLength = 5000;
@@ -417,11 +470,17 @@ if (this.elements.clearInputBtn) {
             this.state.hasGeneratedPrompt = false;
 
             // swap buttons back
-            this.elements.stickyResetBtn.style.display = 'none';
-            this.elements.stickyPrepareBtn.style.display = 'flex';
+            if (this.elements.stickyResetBtn) {
+                this.elements.stickyResetBtn.style.display = 'none';
+            }
+            if (this.elements.stickyPrepareBtn) {
+                this.elements.stickyPrepareBtn.style.display = 'flex';
+            }
 
             // optional but correct UX
-            this.elements.outputSection.classList.remove('visible');
+            if (this.elements.outputSection) {
+                this.elements.outputSection.classList.remove('visible');
+            }
             this.state.selectedPlatform = null;
         }
 
@@ -430,6 +489,8 @@ if (this.elements.clearInputBtn) {
 
     // Handle prompt editing
     handlePromptEdit() {
+        if (!this.elements.outputArea) return;
+        
         const currentContent = this.elements.outputArea.textContent.trim();
         this.state.promptModified = currentContent !== this.state.originalPrompt;
         this.updateButtonStates();
@@ -440,6 +501,8 @@ if (this.elements.clearInputBtn) {
     // ======================
 
     async preparePrompt() {
+        if (!this.elements.userInput) return;
+        
         const inputText = this.elements.userInput.value.trim();
         
         if (!inputText) {
@@ -496,11 +559,21 @@ if (this.elements.clearInputBtn) {
                 this.state.generatedFromInput = inputText;  // ✅ STORE THE INPUT
                 
                 // ✅ FIX: Hide Prepare button, show Reset button
-                this.elements.stickyPrepareBtn.style.display = 'none';
-                this.elements.stickyResetBtn.style.display = 'flex';
+                if (this.elements.stickyPrepareBtn) {
+                    this.elements.stickyPrepareBtn.style.display = 'none';
+                }
+                if (this.elements.stickyResetBtn) {
+                    this.elements.stickyResetBtn.style.display = 'flex';
+                }
                 
-                this.elements.outputSection.classList.add('visible');
-                this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+                if (this.elements.outputSection) {
+                    this.elements.outputSection.classList.add('visible');
+                }
+                
+                if (this.elements.platformsGrid && this.elements.platformsEmptyState) {
+                    this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+                }
+                
                 this.updateProgress();
                 this.updateButtonStates();
                 
@@ -555,7 +628,9 @@ if (this.elements.clearInputBtn) {
             return true;
         } catch (e) {
             console.error('Display failed:', e);
-            this.elements.outputArea.textContent = text.slice(0, 500);
+            if (this.elements.outputArea) {
+                this.elements.outputArea.textContent = text.slice(0, 500);
+            }
             return false;
         }
     }
@@ -599,11 +674,21 @@ if (this.elements.clearInputBtn) {
                     this.state.generatedFromInput = inputText;  // ✅ STORE THE INPUT
                     
                     // ✅ FIX: Hide Prepare button, show Reset button
-                    this.elements.stickyPrepareBtn.style.display = 'none';
-                    this.elements.stickyResetBtn.style.display = 'flex';
+                    if (this.elements.stickyPrepareBtn) {
+                        this.elements.stickyPrepareBtn.style.display = 'none';
+                    }
+                    if (this.elements.stickyResetBtn) {
+                        this.elements.stickyResetBtn.style.display = 'flex';
+                    }
                     
-                    this.elements.outputSection.classList.add('visible');
-                    this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+                    if (this.elements.outputSection) {
+                        this.elements.outputSection.classList.add('visible');
+                    }
+                    
+                    if (this.elements.platformsGrid && this.elements.platformsEmptyState) {
+                        this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+                    }
+                    
                     this.updateProgress();
                     this.updateButtonStates();
                     
@@ -660,11 +745,21 @@ This structured approach ensures you get detailed, actionable responses tailored
             this.state.generatedFromInput = inputText;  // ✅ STORE THE INPUT
             
             // ✅ FIX: Hide Prepare button, show Reset button
-            this.elements.stickyPrepareBtn.style.display = 'none';
-            this.elements.stickyResetBtn.style.display = 'flex';
+            if (this.elements.stickyPrepareBtn) {
+                this.elements.stickyPrepareBtn.style.display = 'none';
+            }
+            if (this.elements.stickyResetBtn) {
+                this.elements.stickyResetBtn.style.display = 'flex';
+            }
             
-            this.elements.outputSection.classList.add('visible');
-            this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+            if (this.elements.outputSection) {
+                this.elements.outputSection.classList.add('visible');
+            }
+            
+            if (this.elements.platformsGrid && this.elements.platformsEmptyState) {
+                this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+            }
+            
             this.updateProgress();
             this.updateButtonStates();
             this.saveToHistory(inputText, localPrompt, 'local');
@@ -694,6 +789,8 @@ This structured approach ensures you get detailed, actionable responses tailored
     // ======================
 
     async handlePlatformClick(platformId) {
+        if (!this.elements.outputArea) return;
+        
         const prompt = this.elements.outputArea.textContent.trim();
         
         if (!prompt || prompt === this.elements.outputArea.dataset.placeholder) {
@@ -733,6 +830,8 @@ This structured approach ensures you get detailed, actionable responses tailored
     // ======================
 
     async copyPrompt() {
+        if (!this.elements.outputArea) return;
+        
         const text = this.elements.outputArea.textContent.trim();
         
         if (!text || text === this.elements.outputArea.dataset.placeholder) {
@@ -744,10 +843,14 @@ This structured approach ensures you get detailed, actionable responses tailored
             await navigator.clipboard.writeText(text);
             this.showNotification('Prompt copied to clipboard!', 'success');
             
-            this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-            setTimeout(() => {
-                this.elements.copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
-            }, 2000);
+            if (this.elements.copyBtn) {
+                this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    if (this.elements.copyBtn) {
+                        this.elements.copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    }
+                }, 2000);
+            }
             
         } catch (err) {
             console.error('Copy failed:', err);
@@ -756,6 +859,8 @@ This structured approach ensures you get detailed, actionable responses tailored
     }
 
     toggleSpeech() {
+        if (!this.elements.outputArea) return;
+        
         const text = this.elements.outputArea.textContent.trim();
         
         if (!text || text === this.elements.outputArea.dataset.placeholder) {
@@ -773,6 +878,8 @@ This structured approach ensures you get detailed, actionable responses tailored
     }
 
     exportPrompt() {
+        if (!this.elements.outputArea) return;
+        
         const prompt = this.elements.outputArea.textContent.trim();
         
         if (!prompt || prompt === this.elements.outputArea.dataset.placeholder) {
@@ -795,6 +902,8 @@ This structured approach ensures you get detailed, actionable responses tailored
     }
 
     savePrompt() {
+        if (!this.elements.outputArea) return;
+        
         this.state.originalPrompt = this.elements.outputArea.textContent.trim();
         this.state.promptModified = false;
         this.updateButtonStates();
@@ -807,14 +916,21 @@ This structured approach ensures you get detailed, actionable responses tailored
 
     resetApplication() {
         // ✅ FIX: Reset button visibility
-        this.elements.stickyPrepareBtn.style.display = 'flex';
-        this.elements.stickyResetBtn.style.display = 'none';
+        if (this.elements.stickyPrepareBtn) {
+            this.elements.stickyPrepareBtn.style.display = 'flex';
+        }
+        if (this.elements.stickyResetBtn) {
+            this.elements.stickyResetBtn.style.display = 'none';
+        }
         
         this.state.undoStack = [];
         this.state.redoStack = [];
         this.state.generatedFromInput = null;  // ✅ CLEAR STORED INPUT
         
-        this.elements.userInput.value = '';
+        if (this.elements.userInput) {
+            this.elements.userInput.value = '';
+        }
+        
         this.clearGeneratedPrompt();
         this.closeHistory();
         
@@ -838,36 +954,25 @@ This structured approach ensures you get detailed, actionable responses tailored
     }
 
     clearGeneratedPrompt() {
-        this.elements.outputArea.textContent = '';
+        if (this.elements.outputArea) {
+            this.elements.outputArea.textContent = '';
+        }
+        
         this.state.originalPrompt = null;
         this.state.promptModified = false;
         this.state.hasGeneratedPrompt = false;
         this.state.generatedFromInput = null;  // ✅ CLEAR STORED INPUT
         this.state.selectedPlatform = null;
-        this.elements.outputSection.classList.remove('visible');
+        
+        if (this.elements.outputSection) {
+            this.elements.outputSection.classList.remove('visible');
+        }
+        
         this.updateProgress();
         this.updateButtonStates();
     }
 
-    undo() {
-        if (this.state.undoStack.length === 0) {
-            this.showNotification('Nothing to undo', 'info');
-            return;
-        }
-        
-        const lastAction = this.state.undoStack.pop();
-        this.state.redoStack.push(lastAction);
-        
-        if (lastAction.type === 'input') {
-            this.elements.userInput.value = lastAction.value;
-            this.handleInputChange();
-        } else if (lastAction.type === 'output') {
-            this.elements.outputArea.textContent = lastAction.value;
-            this.handlePromptEdit();
-        }
-        
-        this.showNotification('Undo completed', 'info');
-    }
+    // ❌ undo() method REMOVED (functionality doesn't exist in UI)
 
     // ======================
     // SETTINGS MODAL
@@ -1021,9 +1126,9 @@ This structured approach ensures you get detailed, actionable responses tailored
         const editor = document.getElementById('fullScreenEditor');
         const editorTextarea = document.getElementById('editorTextarea');
         const editorTitle = document.getElementById('editorTitle');
-        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
+        const closeEditorBtn = document.getElementById('closeEditorBtn');
         
-        if (!editor || !editorTextarea) {
+        if (!editor || !editorTextarea || !closeEditorBtn) {
             console.error('Full screen editor elements not found!');
             this.showNotification('Editor not available. Please refresh the page.', 'error');
             return;
@@ -1031,18 +1136,11 @@ This structured approach ensures you get detailed, actionable responses tailored
         
         let text = '';
         if (type === 'input') {
-            text = this.elements.userInput.value;
-            editorTitle.textContent = 'Edit Input';
-            if (editorPrepareBtn) {
-                editorPrepareBtn.style.display = 'flex';
-                editorPrepareBtn.disabled = !text.trim();
-            }
+            text = this.elements.userInput ? this.elements.userInput.value : '';
+            if (editorTitle) editorTitle.textContent = 'Edit Input';
         } else {
-            text = this.elements.outputArea.textContent;
-            editorTitle.textContent = 'Edit Output';
-            if (editorPrepareBtn) {
-                editorPrepareBtn.style.display = 'none';
-            }
+            text = this.elements.outputArea ? this.elements.outputArea.textContent : '';
+            if (editorTitle) editorTitle.textContent = 'Edit Output';
         }
         
         editorTextarea.value = text;
@@ -1059,26 +1157,24 @@ This structured approach ensures you get detailed, actionable responses tailored
 
     setupEditorEvents() {
         const editorTextarea = document.getElementById('editorTextarea');
-        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
         const closeEditorBtn = document.getElementById('closeEditorBtn');
+        
+        if (!editorTextarea || !closeEditorBtn) return;
+        
+        // Optional editor buttons (check if they exist)
+        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
         const editorMicBtn = document.getElementById('editorMicBtn');
         const editorUndoBtn = document.getElementById('editorUndoBtn');
         
-        if (!editorTextarea) return;
-        
-        editorTextarea.addEventListener('input', () => {
-            if (editorPrepareBtn) {
-                editorPrepareBtn.disabled = !editorTextarea.value.trim();
-            }
-        });
-        
+        // Only set up events for buttons that exist
         if (editorPrepareBtn) {
             editorPrepareBtn.onclick = () => this.prepareFromEditor();
+            editorTextarea.addEventListener('input', () => {
+                editorPrepareBtn.disabled = !editorTextarea.value.trim();
+            });
         }
         
-        if (closeEditorBtn) {
-            closeEditorBtn.onclick = () => this.closeFullScreenEditor();
-        }
+        closeEditorBtn.onclick = () => this.closeFullScreenEditor();
         
         if (editorMicBtn) {
             editorMicBtn.onclick = () => {
@@ -1118,8 +1214,10 @@ This structured approach ensures you get detailed, actionable responses tailored
             return;
         }
         
-        this.elements.userInput.value = inputText;
-        this.handleInputChange();
+        if (this.elements.userInput) {
+            this.elements.userInput.value = inputText;
+            this.handleInputChange();
+        }
         
         this.closeFullScreenEditor();
         await this.preparePrompt();
@@ -1130,7 +1228,7 @@ This structured approach ensures you get detailed, actionable responses tailored
         const editorTextarea = document.getElementById('editorTextarea');
         
         if (editor && editorTextarea) {
-            if (this.state.currentEditor === 'output') {
+            if (this.state.currentEditor === 'output' && this.elements.outputArea) {
                 const newText = editorTextarea.value;
                 this.elements.outputArea.textContent = newText;
                 this.handlePromptEdit();
@@ -1157,14 +1255,22 @@ This structured approach ensures you get detailed, actionable responses tailored
 
     openInspirationPanel() {
         this.state.inspirationPanelOpen = true;
-        this.elements.inspirationPanel.classList.add('expanded');
-        this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i> ';
+        if (this.elements.inspirationPanel) {
+            this.elements.inspirationPanel.classList.add('expanded');
+        }
+        if (this.elements.needInspirationBtn) {
+            this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i> ';
+        }
     }
 
     closeInspirationPanel() {
         this.state.inspirationPanelOpen = false;
-        this.elements.inspirationPanel.classList.remove('expanded');
-        this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i>';
+        if (this.elements.inspirationPanel) {
+            this.elements.inspirationPanel.classList.remove('expanded');
+        }
+        if (this.elements.needInspirationBtn) {
+            this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i>';
+        }
     }
 
     insertExample(type) {
@@ -1198,7 +1304,6 @@ This structured approach ensures you get detailed, actionable responses tailored
 - Be under 250 words
 - Include a call-to-action for comments and shares`,
             
-            // ✅ FIX: Added missing examples
             analysis: `Analyze the given dataset and provide insights by:
 1. Identifying key trends and patterns
 2. Detecting anomalies or outliers
@@ -1219,7 +1324,7 @@ Keep the summary concise yet comprehensive.`
         };
         
         const example = examples[type] || '';
-        if (example) {
+        if (example && this.elements.userInput) {
             this.elements.userInput.value = example;
             this.handleInputChange();
             this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} example inserted!`, 'success');
@@ -1229,7 +1334,8 @@ Keep the summary concise yet comprehensive.`
     }
 
     toggleHistory() {
-        // ✅ FIX: Proper toggle logic
+        if (!this.elements.historySection) return;
+        
         if (this.elements.historySection.classList.contains('active')) {
             this.closeHistory();
         } else {
@@ -1238,14 +1344,22 @@ Keep the summary concise yet comprehensive.`
     }
 
     openHistory() {
-        this.elements.historySection.classList.add('active');
-        this.elements.historyBtn.innerHTML = '<i class="fas fa-history"></i> ';
+        if (this.elements.historySection) {
+            this.elements.historySection.classList.add('active');
+        }
+        if (this.elements.historyBtn) {
+            this.elements.historyBtn.innerHTML = '<i class="fas fa-history"></i> ';
+        }
         this.loadHistory();
     }
 
     closeHistory() {
-        this.elements.historySection.classList.remove('active');
-        this.elements.historyBtn.innerHTML = '<i class="fas fa-history"></i>';
+        if (this.elements.historySection) {
+            this.elements.historySection.classList.remove('active');
+        }
+        if (this.elements.historyBtn) {
+            this.elements.historyBtn.innerHTML = '<i class="fas fa-history"></i>';
+        }
     }
 
     // ======================
@@ -1253,49 +1367,80 @@ Keep the summary concise yet comprehensive.`
     // ======================
 
     showLoading(isLoading) {
-        const btn = this.elements.stickyPrepareBtn;
+        if (!this.elements.stickyPrepareBtn) return;
+        
         if (isLoading) {
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
-            btn.disabled = true;
+            this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+            this.elements.stickyPrepareBtn.disabled = true;
         } else {
-            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Prepare Prompt';
-            btn.disabled = !this.elements.userInput.value.trim();
+            this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Prepare Prompt';
+            this.elements.stickyPrepareBtn.disabled = !this.elements.userInput || !this.elements.userInput.value.trim();
         }
     }
 
     updateButtonStates() {
-        const hasInput = this.elements.userInput.value.trim().length > 0;
-        const hasPrompt = this.elements.outputArea.textContent.trim().length > 0;
+        const hasInput = this.elements.userInput && this.elements.userInput.value.trim().length > 0;
+        const hasPrompt = this.elements.outputArea && this.elements.outputArea.textContent.trim().length > 0;
         const isModified = this.state.promptModified;
         
-        this.elements.stickyPrepareBtn.disabled = !hasInput;
-        this.elements.savePromptBtn.disabled = !hasPrompt || !isModified;
-        
-        const canUsePrompt = hasPrompt && this.state.hasGeneratedPrompt;
-        this.elements.copyBtn.disabled = !canUsePrompt;
-        this.elements.speakBtn.disabled = !canUsePrompt;
-        this.elements.exportBtn.disabled = !canUsePrompt;
-        
-        if (canUsePrompt) {
-            this.elements.platformsGrid.style.display = 'grid';
-            this.elements.platformsEmptyState.style.display = 'none';
-        } else {
-            this.elements.platformsGrid.style.display = 'none';
-            this.elements.platformsEmptyState.style.display = 'flex';
+        // Sticky prepare button
+        if (this.elements.stickyPrepareBtn) {
+            this.elements.stickyPrepareBtn.disabled = !hasInput;
         }
         
-        this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
+        // Save prompt button
+        if (this.elements.savePromptBtn) {
+            this.elements.savePromptBtn.disabled = !hasPrompt || !isModified;
+        }
+        
+        const canUsePrompt = hasPrompt && this.state.hasGeneratedPrompt;
+        
+        // Copy, speak, export buttons
+        if (this.elements.copyBtn) {
+            this.elements.copyBtn.disabled = !canUsePrompt;
+        }
+        
+        if (this.elements.speakBtn) {
+            this.elements.speakBtn.disabled = !canUsePrompt;
+        }
+        
+        if (this.elements.exportBtn) {
+            this.elements.exportBtn.disabled = !canUsePrompt;
+        }
+        
+        // Platforms visibility
+        if (this.elements.platformsGrid && this.elements.platformsEmptyState) {
+            if (canUsePrompt) {
+                this.elements.platformsGrid.style.display = 'grid';
+                this.elements.platformsEmptyState.style.display = 'none';
+            } else {
+                this.elements.platformsGrid.style.display = 'none';
+                this.elements.platformsEmptyState.style.display = 'flex';
+            }
+        }
+        
+        // ❌ undoBtn state update REMOVED (button doesn't exist in HTML)
         
         // Show/hide clear button
         if (this.elements.clearInputBtn) {
             this.elements.clearInputBtn.style.display = hasInput ? 'flex' : 'none';
         }
+        
+        // Editor prepare button (if exists)
+        if (this.elements.editorPrepareBtn) {
+            const editorTextarea = document.getElementById('editorTextarea');
+            if (editorTextarea) {
+                this.elements.editorPrepareBtn.disabled = !editorTextarea.value.trim();
+            }
+        }
     }
 
     updateProgress() {
+        if (!this.elements.progressFill) return;
+        
         let progress = 0;
         
-        if (this.elements.userInput.value.trim().length > 0) {
+        if (this.elements.userInput && this.elements.userInput.value.trim().length > 0) {
             progress += 25;
         }
         
@@ -1397,7 +1542,7 @@ Keep the summary concise yet comprehensive.`
 
     restoreHistoryItem(id) {
         const item = this.state.promptHistory.find(h => h.id === id);
-        if (item) {
+        if (item && this.elements.userInput) {
             this.elements.userInput.value = item.fullInput;
             this.handleInputChange();
             this.showNotification('Input restored from history', 'success');
@@ -1407,12 +1552,11 @@ Keep the summary concise yet comprehensive.`
 
     viewHistoryItem(id) {
         const item = this.state.promptHistory.find(h => h.id === id);
-        if (item) {
+        if (item && this.elements.userInput) {
             this.elements.userInput.value = item.fullInput;
             this.handleInputChange();
             this.openFullScreenEditor('input');
-            this.closeHistory();   // 🔥 ADD THIS
-
+            
             const editorTextarea = document.getElementById('editorTextarea');
             if (editorTextarea && item.fullPrompt) {
                 setTimeout(() => {
@@ -1471,6 +1615,8 @@ Keep the summary concise yet comprehensive.`
     // ======================
 
     showNotification(message, type = 'info') {
+        if (!this.elements.notificationContainer) return;
+        
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
@@ -1513,10 +1659,9 @@ Keep the summary concise yet comprehensive.`
     // ======================
 
     showSuggestions(suggestions) {
-        const suggestionsList = this.elements.suggestionsList;
-        if (!suggestionsList) return;
+        if (!this.elements.suggestionsList || !this.elements.suggestionsPanel) return;
         
-        suggestionsList.innerHTML = '';
+        this.elements.suggestionsList.innerHTML = '';
         
         if (!suggestions || suggestions.length === 0) {
             this.elements.suggestionsPanel.style.display = 'none';
@@ -1530,13 +1675,15 @@ Keep the summary concise yet comprehensive.`
             li.addEventListener('click', () => {
                 this.applySuggestion(suggestion);
             });
-            suggestionsList.appendChild(li);
+            this.elements.suggestionsList.appendChild(li);
         });
         
         this.elements.suggestionsPanel.style.display = 'block';
     }
 
     applySuggestion(suggestion) {
+        if (!this.elements.userInput) return;
+        
         const currentInput = this.elements.userInput.value;
         this.elements.userInput.value = currentInput + ' ' + suggestion;
         this.handleInputChange();
@@ -1574,7 +1721,7 @@ Keep the summary concise yet comprehensive.`
     handleKeyboardShortcuts(e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
-            if (!this.elements.stickyPrepareBtn.disabled) {
+            if (this.elements.stickyPrepareBtn && !this.elements.stickyPrepareBtn.disabled) {
                 this.preparePrompt();
             }
         }
@@ -1588,7 +1735,7 @@ Keep the summary concise yet comprehensive.`
                 this.closeInspirationPanel();
             }
             
-            if (this.elements.historySection.classList.contains('active')) {
+            if (this.elements.historySection && this.elements.historySection.classList.contains('active')) {
                 this.closeHistory();
             }
         }
