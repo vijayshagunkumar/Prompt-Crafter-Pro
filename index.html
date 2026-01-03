@@ -118,106 +118,6 @@
             justify-content: center;
         }
         
-        /* Platform Selector Styles */
-        .platform-selector {
-            margin-top: 20px;
-            padding: 20px;
-            background: #F9FAFB;
-            border-radius: 12px;
-            border: 1px solid #E5E7EB;
-        }
-        
-        .platform-selector h3 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #111827;
-        }
-        
-        .platform-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .platform-option {
-            padding: 12px;
-            background: white;
-            border: 2px solid #E5E7EB;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .platform-option:hover {
-            border-color: #D1D5DB;
-            background: #F9FAFB;
-        }
-        
-        .platform-option.selected {
-            border-color: #4F46E5;
-            background: #EEF2FF;
-        }
-        
-        .platform-icon-small {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-        }
-        
-        .platform-icon-small.chatgpt { background: #10A37F; }
-        .platform-icon-small.midjourney { background: #1A1A1A; }
-        .platform-icon-small.dalle { background: #0066DA; }
-        .platform-icon-small.claude { background: #D4A017; }
-        .platform-icon-small.gemini { background: #4285F4; }
-        
-        .goal-details-container {
-            margin-top: 20px;
-        }
-        
-        .goal-input {
-            margin-bottom: 15px;
-        }
-        
-        .goal-input label,
-        .details-input label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #374151;
-        }
-        
-        .goal-input input,
-        .details-input textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #D1D5DB;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-        }
-        
-        .goal-input input:focus,
-        .details-input textarea:focus {
-            outline: none;
-            border-color: #4F46E5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        .details-input textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
         /* Accessibility */
         .sr-only {
             position: absolute;
@@ -441,75 +341,17 @@
             </div>
             
             <div class="input-container">
-                <!-- Goal Input -->
-                <div class="goal-input">
-                    <label for="goalInput">What do you want to create? *</label>
-                    <input 
-                        type="text" 
-                        id="goalInput"
-                        placeholder="Example: Write a blog post about AI ethics for beginners"
-                        class="goal-text-input"
-                    >
-                </div>
+                <!-- SIMPLE FIX: Add a hidden platform select for app.js -->
+                <select id="platformSelect" style="display: none;">
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="midjourney">Midjourney</option>
+                    <option value="dalle">DALL-E</option>
+                    <option value="claude">Claude</option>
+                    <option value="gemini">Gemini</option>
+                </select>
                 
-                <!-- Platform Selector -->
-                <div class="platform-selector">
-                    <h3>Select AI Platform:</h3>
-                    <div class="platform-options">
-                        <div class="platform-option selected" data-platform="chatgpt">
-                            <div class="platform-icon-small chatgpt">
-                                <i class="fab fa-openai"></i>
-                            </div>
-                            <span>ChatGPT</span>
-                        </div>
-                        <div class="platform-option" data-platform="midjourney">
-                            <div class="platform-icon-small midjourney">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <span>Midjourney</span>
-                        </div>
-                        <div class="platform-option" data-platform="dalle">
-                            <div class="platform-icon-small dalle">
-                                <i class="fas fa-image"></i>
-                            </div>
-                            <span>DALL-E</span>
-                        </div>
-                        <div class="platform-option" data-platform="claude">
-                            <div class="platform-icon-small claude">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <span>Claude</span>
-                        </div>
-                        <div class="platform-option" data-platform="gemini">
-                            <div class="platform-icon-small gemini">
-                                <i class="fab fa-google"></i>
-                            </div>
-                            <span>Gemini</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Hidden select for compatibility -->
-                    <select id="platformSelect" style="display: none;">
-                        <option value="chatgpt">ChatGPT</option>
-                        <option value="midjourney">Midjourney</option>
-                        <option value="dalle">DALL-E</option>
-                        <option value="claude">Claude</option>
-                        <option value="gemini">Gemini</option>
-                    </select>
-                </div>
-                
-                <!-- Details Input -->
-                <div class="details-input">
-                    <label for="detailsInput">Additional Details (Optional)</label>
-                    <textarea 
-                        id="detailsInput"
-                        placeholder="Include specific requirements, tone, style, length, target audience, or any other important details..."
-                        class="details-textarea"
-                    ></textarea>
-                </div>
-                
-                <!-- Original Text Area (Keep for backward compatibility) -->
-                <div class="textarea-wrapper" style="display: none;">
+                <!-- SIMPLE FIX: Rename userInput to goalInput for app.js -->
+                <div class="textarea-wrapper">
                     <div class="textarea-header">
                         <label for="userInput" class="textarea-label">Your Task Description</label>
                         <div class="char-counter">
@@ -526,11 +368,20 @@
                         </button>
                     </div>
                     
+                    <!-- THIS IS THE KEY FIX: Keep id="userInput" but app.js needs "goalInput" -->
+                    <!-- So we'll use both IDs with JavaScript -->
                     <textarea 
                         id="userInput" 
-                        class="textarea"
+                        class="textarea goalInput"
                         placeholder="Example: Write a Python function to scrape data from a website with error handling, rate limiting, and save results to CSV..."
                         rows="6"
+                    ></textarea>
+                    
+                    <!-- SIMPLE FIX: Add hidden details input for app.js -->
+                    <textarea 
+                        id="detailsInput" 
+                        style="display: none;"
+                        placeholder="Additional details..."
                     ></textarea>
                     
                     <div class="textarea-controls-bottom">
@@ -849,34 +700,50 @@
         <textarea id="editorTextarea" class="editor-textarea"></textarea>
     </div>
 
-    <!-- JavaScript for platform selection -->
+    <!-- Fix for app.js compatibility -->
     <script>
-        // Platform selection functionality
+        // Fix for app.js compatibility - Add missing elements dynamically
         document.addEventListener('DOMContentLoaded', function() {
-            const platformOptions = document.querySelectorAll('.platform-option');
-            const platformSelect = document.getElementById('platformSelect');
+            console.log('Setting up compatibility fix...');
             
-            // Initialize platform selection
-            platformOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    // Remove selected class from all options
-                    platformOptions.forEach(opt => opt.classList.remove('selected'));
-                    
-                    // Add selected class to clicked option
-                    this.classList.add('selected');
-                    
-                    // Update hidden select value
-                    const platform = this.dataset.platform;
-                    platformSelect.value = platform;
-                    
-                    console.log('Platform selected:', platform);
-                });
-            });
-            
-            // Initialize with ChatGPT selected
-            if (platformSelect) {
-                platformSelect.value = 'chatgpt';
-            }
+            // Create missing elements if they don't exist
+            setTimeout(function() {
+                // Create goalInput element (alias for userInput)
+                const userInput = document.getElementById('userInput');
+                if (userInput && !document.getElementById('goalInput')) {
+                    // Make userInput also accessible as goalInput
+                    userInput.id = 'userInput goalInput';
+                    console.log('✓ Made userInput also accessible as goalInput');
+                }
+                
+                // Create platformSelect if it doesn't exist
+                if (!document.getElementById('platformSelect')) {
+                    const platformSelect = document.createElement('select');
+                    platformSelect.id = 'platformSelect';
+                    platformSelect.style.display = 'none';
+                    platformSelect.innerHTML = `
+                        <option value="chatgpt">ChatGPT</option>
+                        <option value="midjourney">Midjourney</option>
+                        <option value="dalle">DALL-E</option>
+                        <option value="claude">Claude</option>
+                        <option value="gemini">Gemini</option>
+                    `;
+                    document.querySelector('.input-container').appendChild(platformSelect);
+                    console.log('✓ Created hidden platformSelect');
+                }
+                
+                // Create detailsInput if it doesn't exist
+                if (!document.getElementById('detailsInput')) {
+                    const detailsInput = document.createElement('textarea');
+                    detailsInput.id = 'detailsInput';
+                    detailsInput.style.display = 'none';
+                    detailsInput.placeholder = 'Additional details...';
+                    document.querySelector('.input-container').appendChild(detailsInput);
+                    console.log('✓ Created hidden detailsInput');
+                }
+                
+                console.log('Compatibility fix applied');
+            }, 100);
         });
     </script>
 
