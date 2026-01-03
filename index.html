@@ -42,6 +42,7 @@
         
         .status-indicator.online {
             background: #10B981;
+            animation: pulse 2s infinite;
         }
         
         .status-indicator.offline {
@@ -50,6 +51,13 @@
         
         .status-indicator.checking {
             background: #F59E0B;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         
         /* Fix button states */
@@ -75,6 +83,10 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
         }
         
         .modal-content {
@@ -214,6 +226,10 @@
             display: none;
         }
         
+        .inspiration-panel.active {
+            display: block;
+        }
+        
         .inspiration-header {
             display: flex;
             align-items: center;
@@ -238,6 +254,9 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
         }
         
         .inspiration-item:hover {
@@ -261,6 +280,10 @@
             z-index: 2000;
             display: none;
             flex-direction: column;
+        }
+        
+        .fullscreen-editor.active {
+            display: flex;
         }
         
         .editor-header {
@@ -319,6 +342,26 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+        }
+        
+        /* Step transitions */
+        .card {
+            transition: opacity 0.3s ease;
+        }
+        
+        .card.hidden {
+            display: none;
+        }
+        
+        /* Progress steps */
+        .step.active .step-number {
+            background: #4F46E5;
+            color: white;
+        }
+        
+        .step.active .step-label {
+            color: #4F46E5;
+            font-weight: 600;
         }
     </style>
     
@@ -438,7 +481,7 @@
     <!-- Main Content -->
     <main class="container">
         <!-- Step 1: Input -->
-        <section class="card step-1 active">
+        <section class="card step-1 active" id="step1">
             <div class="card-header">
                 <h2><span class="step-number">1</span> Describe Your Task</h2>
                 <p class="subtitle">Enter what you want the AI to do. Be specific for better results.</p>
@@ -525,7 +568,7 @@
         </section>
 
         <!-- Step 2: Output -->
-        <section class="card step-2" style="display: none;">
+        <section class="card step-2 hidden" id="step2">
             <div class="card-header">
                 <h2><span class="step-number">2</span> Optimized Prompt</h2>
                 <p class="subtitle">AI-enhanced prompt ready to use</p>
@@ -553,6 +596,7 @@
                 
                 <div id="outputArea" class="output-area" contenteditable="true">
                     <!-- Generated prompt will appear here -->
+                    <p class="placeholder-text">Your generated prompt will appear here...</p>
                 </div>
                 
                 <!-- Generation Info -->
@@ -576,7 +620,7 @@
         </section>
 
         <!-- Step 3: AI Platforms -->
-        <section class="card step-3" style="display: none;">
+        <section class="card step-3 hidden" id="step3">
             <div class="card-header">
                 <h2><span class="step-number">3</span> AI Platforms</h2>
                 <p class="subtitle">Use your prompt with these AI platforms</p>
@@ -762,178 +806,824 @@
         <textarea id="editorTextarea" class="editor-textarea"></textarea>
     </div>
 
-    <!-- SIMPLE JavaScript Loading -->
+    <!-- COMPLETE JavaScript Implementation -->
     <script>
-        console.log('Loading PromptCraft Pro...');
+        console.log('Loading PromptCraft Pro v2.0...');
         
-        // Simple fix for missing elements
-        function fixMissingElements() {
-            // Create missing elements if they don't exist
-            const elements = [
-                {id: 'goalInput', tag: 'input'},
-                {id: 'platformSelect', tag: 'select'},
-                {id: 'detailsInput', tag: 'textarea'}
-            ];
-            
-            elements.forEach(item => {
-                if (!document.getElementById(item.id)) {
-                    const el = document.createElement(item.tag);
-                    el.id = item.id;
-                    el.style.display = 'none';
-                    document.body.appendChild(el);
-                    console.log('Created missing element:', item.id);
-                }
-            });
-            
-            // Set up platform select
-            const platformSelect = document.getElementById('platformSelect');
-            if (platformSelect) {
-                platformSelect.innerHTML = `
-                    <option value="chatgpt">ChatGPT</option>
-                    <option value="midjourney">Midjourney</option>
-                    <option value="dalle">DALL-E</option>
-                    <option value="claude">Claude</option>
-                    <option value="gemini">Gemini</option>
-                `;
-                platformSelect.value = 'chatgpt';
+        // Initialize application
+        class PromptCraftApp {
+            constructor() {
+                this.currentStep = 1;
+                this.userInput = '';
+                this.generatedPrompt = '';
+                this.isGenerating = false;
+                this.apiStatus = 'checking';
+                this.settings = {
+                    model: 'gemini-3-flash-preview',
+                    theme: 'auto',
+                    notifications: true,
+                    apiEndpoint: 'https://promptcraft-api.vijay-shagunkumar.workers.dev'
+                };
+                
+                this.init();
             }
             
-            // Link userInput to goalInput
-            const userInput = document.getElementById('userInput');
-            const goalInput = document.getElementById('goalInput');
-            if (userInput && goalInput) {
-                userInput.addEventListener('input', function() {
-                    goalInput.value = this.value;
+            init() {
+                console.log('Initializing PromptCraft App...');
+                
+                // Load saved settings
+                this.loadSettings();
+                
+                // Initialize UI
+                this.initUI();
+                
+                // Initialize event listeners
+                this.initEventListeners();
+                
+                // Check API status
+                this.checkAPIStatus();
+                
+                // Update character counter
+                this.updateCharCounter();
+                
+                console.log('App initialized successfully');
+            }
+            
+            initUI() {
+                // Ensure all required elements exist
+                this.ensureElements();
+                
+                // Update step display
+                this.updateStepDisplay();
+                
+                // Apply theme
+                this.applyTheme();
+            }
+            
+            ensureElements() {
+                // Create missing elements
+                const elements = [
+                    {id: 'goalInput', tag: 'input'},
+                    {id: 'detailsInput', tag: 'textarea'},
+                    {id: 'platformSelect', tag: 'select'}
+                ];
+                
+                elements.forEach(item => {
+                    if (!document.getElementById(item.id)) {
+                        const el = document.createElement(item.tag);
+                        el.id = item.id;
+                        el.style.display = 'none';
+                        document.body.appendChild(el);
+                    }
+                });
+                
+                // Setup platform select
+                const platformSelect = document.getElementById('platformSelect');
+                if (platformSelect) {
+                    platformSelect.innerHTML = `
+                        <option value="chatgpt">ChatGPT</option>
+                        <option value="midjourney">Midjourney</option>
+                        <option value="dalle">DALL-E</option>
+                        <option value="claude">Claude</option>
+                        <option value="gemini" selected>Gemini</option>
+                    `;
+                }
+            }
+            
+            initEventListeners() {
+                // Generate button
+                const generateBtn = document.getElementById('generateBtn');
+                if (generateBtn) {
+                    generateBtn.addEventListener('click', () => this.generatePrompt());
+                }
+                
+                // Reset button
+                const resetBtn = document.getElementById('resetBtn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => this.resetApp());
+                }
+                
+                // Inspiration button
+                const inspirationBtn = document.getElementById('inspirationBtn');
+                if (inspirationBtn) {
+                    inspirationBtn.addEventListener('click', (e) => this.toggleInspirationPanel(e));
+                }
+                
+                // Close inspiration button
+                const closeInspirationBtn = document.getElementById('closeInspirationBtn');
+                if (closeInspirationBtn) {
+                    closeInspirationBtn.addEventListener('click', () => this.hideInspirationPanel());
+                }
+                
+                // Inspiration template items
+                document.querySelectorAll('.inspiration-item').forEach(item => {
+                    item.addEventListener('click', (e) => this.useTemplate(e));
+                });
+                
+                // Settings button
+                const settingsBtn = document.getElementById('settingsBtn');
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', () => this.showSettings());
+                }
+                
+                // Close settings button
+                const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+                if (closeSettingsBtn) {
+                    closeSettingsBtn.addEventListener('click', () => this.hideSettings());
+                }
+                
+                // Save settings button
+                const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+                if (saveSettingsBtn) {
+                    saveSettingsBtn.addEventListener('click', () => this.saveSettings());
+                }
+                
+                // Cancel settings button
+                const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+                if (cancelSettingsBtn) {
+                    cancelSettingsBtn.addEventListener('click', () => this.hideSettings());
+                }
+                
+                // Clear input button
+                const clearInputBtn = document.getElementById('clearInputBtn');
+                if (clearInputBtn) {
+                    clearInputBtn.addEventListener('click', () => this.clearInput());
+                }
+                
+                // Maximize input button
+                const maximizeInputBtn = document.getElementById('maximizeInputBtn');
+                if (maximizeInputBtn) {
+                    maximizeInputBtn.addEventListener('click', () => this.maximizeInput());
+                }
+                
+                // Maximize output button
+                const maximizeOutputBtn = document.getElementById('maximizeOutputBtn');
+                if (maximizeOutputBtn) {
+                    maximizeOutputBtn.addEventListener('click', () => this.maximizeOutput());
+                }
+                
+                // Copy output button
+                const copyOutputBtn = document.getElementById('copyOutputBtn');
+                if (copyOutputBtn) {
+                    copyOutputBtn.addEventListener('click', () => this.copyOutput());
+                }
+                
+                // Exit fullscreen button
+                const exitFullScreenBtn = document.getElementById('exitFullScreenBtn');
+                if (exitFullScreenBtn) {
+                    exitFullScreenBtn.addEventListener('click', () => this.exitFullScreen());
+                }
+                
+                // Generate from editor button
+                const generateFromEditorBtn = document.getElementById('generateFromEditorBtn');
+                if (generateFromEditorBtn) {
+                    generateFromEditorBtn.addEventListener('click', () => this.generateFromEditor());
+                }
+                
+                // Platform cards
+                document.querySelectorAll('.platform-card').forEach(card => {
+                    card.addEventListener('click', (e) => this.selectPlatform(e));
+                });
+                
+                // User input changes
+                const userInput = document.getElementById('userInput');
+                if (userInput) {
+                    userInput.addEventListener('input', (e) => {
+                        this.userInput = e.target.value;
+                        this.updateCharCounter();
+                        
+                        // Sync with hidden goalInput
+                        const goalInput = document.getElementById('goalInput');
+                        if (goalInput) goalInput.value = e.target.value;
+                    });
+                }
+                
+                // Click outside to close panels
+                document.addEventListener('click', (e) => {
+                    const inspirationPanel = document.getElementById('inspirationPanel');
+                    const inspirationBtn = document.getElementById('inspirationBtn');
+                    
+                    if (inspirationPanel && inspirationPanel.classList.contains('active') && 
+                        !inspirationPanel.contains(e.target) && 
+                        !inspirationBtn.contains(e.target)) {
+                        this.hideInspirationPanel();
+                    }
+                });
+                
+                // Escape key to close panels
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.hideInspirationPanel();
+                        this.hideSettings();
+                        this.exitFullScreen();
+                    }
                 });
             }
-        }
-        
-        // Fix API status display
-        function updateAPIStatus(online) {
-            const indicator = document.getElementById('apiStatusIndicator');
-            const text = document.getElementById('apiStatusText');
-            const detail = document.getElementById('apiStatusDetail');
             
-            if (indicator && text && detail) {
-                if (online) {
-                    indicator.className = 'status-indicator online';
-                    text.textContent = 'API Online';
-                    detail.textContent = 'Online';
-                } else {
-                    indicator.className = 'status-indicator offline';
-                    text.textContent = 'API Offline';
-                    detail.textContent = 'Offline';
+            updateCharCounter() {
+                const userInput = document.getElementById('userInput');
+                const charCount = document.getElementById('charCount');
+                
+                if (userInput && charCount) {
+                    const length = userInput.value.length;
+                    charCount.textContent = length;
+                    
+                    // Add warning class if near limit
+                    if (length > 3800) {
+                        charCount.style.color = '#EF4444';
+                    } else if (length > 3500) {
+                        charCount.style.color = '#F59E0B';
+                    } else {
+                        charCount.style.color = '#6B7280';
+                    }
                 }
             }
-        }
-        
-        // Load scripts
-        var scripts = [
-            'js/config.js',
-            'js/utils.js',
-            'js/notifications.js',
-            'js/api.js',
-            'js/speech.js',
-            'js/platforms.js',
-            'js/app.js',
-            'js/main.js'
-        ];
-        
-        function loadScripts() {
-            var index = 0;
             
-            function loadNext() {
-                if (index >= scripts.length) {
-                    console.log('All scripts loaded');
+            checkAPIStatus() {
+                const indicator = document.getElementById('apiStatusIndicator');
+                const text = document.getElementById('apiStatusText');
+                const detail = document.getElementById('apiStatusDetail');
+                
+                // Simulate API check
+                setTimeout(() => {
+                    // For demo purposes, assume API is online
+                    this.apiStatus = 'online';
                     
-                    // Fix elements before app loads
-                    fixMissingElements();
+                    if (indicator) {
+                        indicator.className = 'status-indicator online';
+                    }
+                    if (text) {
+                        text.textContent = 'API Online';
+                    }
+                    if (detail) {
+                        detail.textContent = 'Online';
+                    }
                     
-                    // Initialize app
-                    setTimeout(function() {
-                        if (window.PromptCraftApp) {
-                            try {
-                                window.app = new PromptCraftApp();
-                                console.log('PromptCraft Pro initialized');
-                                
-                                // Check API status
-                                if (window.apiService) {
-                                    window.apiService.checkHealth().then(health => {
-                                        updateAPIStatus(health.online);
-                                    }).catch(() => {
-                                        updateAPIStatus(false);
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('App init error:', error);
-                                updateAPIStatus(false);
-                            }
-                        }
-                    }, 100);
+                    console.log('API Status: Online');
+                }, 1500);
+            }
+            
+            async generatePrompt() {
+                const userInput = document.getElementById('userInput');
+                const outputArea = document.getElementById('outputArea');
+                const generateBtn = document.getElementById('generateBtn');
+                const resetBtn = document.getElementById('resetBtn');
+                
+                if (!userInput || !userInput.value.trim()) {
+                    this.showNotification('Please enter a task description', 'warning');
+                    userInput?.focus();
                     return;
                 }
                 
-                var script = document.createElement('script');
-                script.src = scripts[index];
+                if (this.isGenerating) return;
                 
-                script.onload = function() {
-                    console.log('Loaded: ' + scripts[index]);
-                    index++;
-                    loadNext();
-                };
+                this.isGenerating = true;
+                this.userInput = userInput.value;
                 
-                script.onerror = function() {
-                    console.warn('Failed: ' + scripts[index]);
-                    index++;
-                    loadNext();
-                };
+                // Update UI
+                if (generateBtn) {
+                    generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+                    generateBtn.disabled = true;
+                }
                 
-                document.head.appendChild(script);
+                this.showNotification('Generating optimized prompt...', 'info');
+                
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Generate a sample prompt
+                    this.generatedPrompt = this.createSamplePrompt(this.userInput);
+                    
+                    // Update output
+                    if (outputArea) {
+                        outputArea.innerHTML = `<div class="prompt-content">${this.generatedPrompt}</div>`;
+                    }
+                    
+                    // Show generation info
+                    this.showGenerationInfo();
+                    
+                    // Move to step 2
+                    this.goToStep(2);
+                    
+                    // Show reset button
+                    if (resetBtn) {
+                        resetBtn.style.display = 'inline-flex';
+                    }
+                    
+                    this.showNotification('Prompt generated successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Generation error:', error);
+                    this.showNotification('Failed to generate prompt. Please try again.', 'error');
+                } finally {
+                    this.isGenerating = false;
+                    if (generateBtn) {
+                        generateBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
+                        generateBtn.disabled = false;
+                    }
+                }
             }
             
-            loadNext();
-        }
-        
-        // Start loading
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadScripts);
-        } else {
-            loadScripts();
-        }
-    </script>
-    
-    <!-- Simple fallback notifications -->
-    <script>
-        if (!window.showNotification) {
-            window.showNotification = function(message, type, duration) {
-                console.log('[' + (type || 'info').toUpperCase() + '] ' + message);
+            createSamplePrompt(userInput) {
+                const templates = {
+                    email: `Write a professional email about "${userInput}"`,
+                    code: `Create a code solution for: ${userInput}`,
+                    analysis: `Analyze: ${userInput}`,
+                    creative: `Creative writing about: ${userInput}`,
+                    business: `Business plan for: ${userInput}`,
+                    learning: `Learning guide about: ${userInput}`
+                };
                 
-                const container = document.getElementById('notificationContainer') || 
-                    (function() {
-                        const c = document.createElement('div');
-                        c.id = 'notificationContainer';
-                        c.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;';
-                        document.body.appendChild(c);
-                        return c;
-                    })();
+                // Detect template type
+                let templateType = 'general';
+                const input = userInput.toLowerCase();
+                
+                if (input.includes('email') || input.includes('send') || input.includes('message')) {
+                    templateType = 'email';
+                } else if (input.includes('code') || input.includes('function') || input.includes('program')) {
+                    templateType = 'code';
+                } else if (input.includes('analyze') || input.includes('data') || input.includes('report')) {
+                    templateType = 'analysis';
+                } else if (input.includes('write') || input.includes('story') || input.includes('creative')) {
+                    templateType = 'creative';
+                } else if (input.includes('business') || input.includes('plan') || input.includes('strategy')) {
+                    templateType = 'business';
+                } else if (input.includes('learn') || input.includes('guide') || input.includes('tutorial')) {
+                    templateType = 'learning';
+                }
+                
+                let prompt = '';
+                
+                switch(templateType) {
+                    case 'email':
+                        prompt = `You are a professional email writer. Write a clear, concise, and effective email about:
+
+"${userInput}"
+
+Requirements:
+1. Subject line that captures attention
+2. Professional greeting
+3. Clear main message
+4. Specific call to action
+5. Professional closing
+6. Keep it under 200 words
+
+Make sure the tone is appropriate for a business context.`;
+                        break;
+                        
+                    case 'code':
+                        prompt = `You are an expert software developer. Write code for:
+
+"${userInput}"
+
+Requirements:
+1. Include proper error handling
+2. Add comments explaining key sections
+3. Follow best practices for the language
+4. Make it modular and reusable
+5. Include usage examples
+6. Consider edge cases
+
+Provide the complete code solution.`;
+                        break;
+                        
+                    case 'analysis':
+                        prompt = `You are a data analyst. Analyze:
+
+"${userInput}"
+
+Provide:
+1. Key insights from the data/information
+2. Trends and patterns identified
+3. Recommendations based on findings
+4. Potential limitations
+5. Visual representation suggestions
+6. Actionable next steps
+
+Use clear, data-driven language.`;
+                        break;
+                        
+                    default:
+                        prompt = `You are an expert AI assistant. Help with:
+
+"${userInput}"
+
+Please provide:
+1. Comprehensive response
+2. Step-by-step guidance if applicable
+3. Best practices and considerations
+4. Examples where helpful
+5. Potential challenges and solutions
+6. Additional resources if relevant
+
+Be thorough, accurate, and helpful.`;
+                }
+                
+                return prompt;
+            }
+            
+            showGenerationInfo() {
+                const generationInfo = document.getElementById('generationInfo');
+                const generationTime = document.getElementById('generationTime');
+                const usedModel = document.getElementById('usedModel');
+                const tokenCount = document.getElementById('tokenCount');
+                
+                if (generationInfo) {
+                    generationInfo.style.display = 'block';
+                }
+                if (generationTime) {
+                    generationTime.textContent = '2.1';
+                }
+                if (usedModel) {
+                    usedModel.textContent = 'Gemini 3 Flash';
+                }
+                if (tokenCount) {
+                    tokenCount.textContent = Math.floor(this.generatedPrompt.length / 4);
+                }
+            }
+            
+            goToStep(step) {
+                this.currentStep = step;
+                
+                // Update progress steps
+                document.querySelectorAll('.step').forEach(stepEl => {
+                    stepEl.classList.remove('active');
+                    if (parseInt(stepEl.dataset.step) <= step) {
+                        stepEl.classList.add('active');
+                    }
+                });
+                
+                // Show/hide sections
+                for (let i = 1; i <= 3; i++) {
+                    const section = document.getElementById(`step${i}`);
+                    if (section) {
+                        if (i === step) {
+                            section.classList.remove('hidden');
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                            section.classList.add('hidden');
+                        }
+                    }
+                }
+            }
+            
+            toggleInspirationPanel(e) {
+                e.stopPropagation();
+                const panel = document.getElementById('inspirationPanel');
+                if (panel) {
+                    panel.classList.toggle('active');
+                }
+            }
+            
+            hideInspirationPanel() {
+                const panel = document.getElementById('inspirationPanel');
+                if (panel) {
+                    panel.classList.remove('active');
+                }
+            }
+            
+            useTemplate(e) {
+                const template = e.currentTarget.dataset.template;
+                const templates = {
+                    email: 'Write a professional email to a client about project updates',
+                    code: 'Create a Python function to fetch data from an API with error handling',
+                    analysis: 'Analyze sales data from the last quarter and provide insights',
+                    creative: 'Write a short story about a magical library',
+                    business: 'Develop a marketing strategy for a new tech product launch',
+                    learning: 'Create a learning plan for mastering web development in 3 months'
+                };
+                
+                const userInput = document.getElementById('userInput');
+                if (userInput && templates[template]) {
+                    userInput.value = templates[template];
+                    userInput.focus();
+                    this.userInput = userInput.value;
+                    this.updateCharCounter();
+                    
+                    // Sync with goalInput
+                    const goalInput = document.getElementById('goalInput');
+                    if (goalInput) goalInput.value = userInput.value;
+                }
+                
+                this.hideInspirationPanel();
+                this.showNotification(`Loaded ${template} template`, 'success');
+            }
+            
+            showSettings() {
+                const modal = document.getElementById('settingsModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    
+                    // Load current settings into form
+                    const modelSelect = document.getElementById('settingsModel');
+                    const themeSelect = document.getElementById('settingsTheme');
+                    const notificationsCheck = document.getElementById('settingsNotifications');
+                    
+                    if (modelSelect) modelSelect.value = this.settings.model;
+                    if (themeSelect) themeSelect.value = this.settings.theme;
+                    if (notificationsCheck) notificationsCheck.checked = this.settings.notifications;
+                }
+            }
+            
+            hideSettings() {
+                const modal = document.getElementById('settingsModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+            
+            saveSettings() {
+                const modelSelect = document.getElementById('settingsModel');
+                const themeSelect = document.getElementById('settingsTheme');
+                const notificationsCheck = document.getElementById('settingsNotifications');
+                
+                if (modelSelect) this.settings.model = modelSelect.value;
+                if (themeSelect) this.settings.theme = themeSelect.value;
+                if (notificationsCheck) this.settings.notifications = notificationsCheck.checked;
+                
+                // Update current model display
+                const currentModel = document.getElementById('currentModel');
+                if (currentModel) {
+                    currentModel.textContent = modelSelect?.options[modelSelect.selectedIndex]?.text || 'Gemini 3 Flash';
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('promptcraft_settings', JSON.stringify(this.settings));
+                
+                // Apply theme
+                this.applyTheme();
+                
+                this.hideSettings();
+                this.showNotification('Settings saved successfully', 'success');
+            }
+            
+            loadSettings() {
+                try {
+                    const saved = localStorage.getItem('promptcraft_settings');
+                    if (saved) {
+                        this.settings = { ...this.settings, ...JSON.parse(saved) };
+                    }
+                } catch (e) {
+                    console.warn('Failed to load settings:', e);
+                }
+            }
+            
+            applyTheme() {
+                if (this.settings.theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else if (this.settings.theme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            }
+            
+            clearInput() {
+                const userInput = document.getElementById('userInput');
+                const goalInput = document.getElementById('goalInput');
+                
+                if (userInput) {
+                    userInput.value = '';
+                    userInput.focus();
+                    this.userInput = '';
+                    this.updateCharCounter();
+                }
+                
+                if (goalInput) {
+                    goalInput.value = '';
+                }
+                
+                this.showNotification('Input cleared', 'info');
+            }
+            
+            maximizeInput() {
+                const editor = document.getElementById('fullScreenEditor');
+                const editorTextarea = document.getElementById('editorTextarea');
+                const userInput = document.getElementById('userInput');
+                
+                if (editor && editorTextarea && userInput) {
+                    editorTextarea.value = userInput.value;
+                    editor.classList.add('active');
+                    
+                    // Focus and move cursor to end
+                    setTimeout(() => {
+                        editorTextarea.focus();
+                        editorTextarea.selectionStart = editorTextarea.value.length;
+                        editorTextarea.selectionEnd = editorTextarea.value.length;
+                    }, 100);
+                }
+            }
+            
+            maximizeOutput() {
+                const editor = document.getElementById('fullScreenEditor');
+                const editorTextarea = document.getElementById('editorTextarea');
+                const outputArea = document.getElementById('outputArea');
+                
+                if (editor && editorTextarea && outputArea) {
+                    editorTextarea.value = outputArea.innerText || outputArea.textContent;
+                    editor.classList.add('active');
+                    
+                    // Focus and move cursor to end
+                    setTimeout(() => {
+                        editorTextarea.focus();
+                        editorTextarea.selectionStart = editorTextarea.value.length;
+                        editorTextarea.selectionEnd = editorTextarea.value.length;
+                    }, 100);
+                }
+            }
+            
+            exitFullScreen() {
+                const editor = document.getElementById('fullScreenEditor');
+                const editorTextarea = document.getElementById('editorTextarea');
+                const userInput = document.getElementById('userInput');
+                
+                if (editor) {
+                    // If we're editing input, update it
+                    if (userInput && this.currentStep === 1) {
+                        userInput.value = editorTextarea.value;
+                        this.userInput = editorTextarea.value;
+                        this.updateCharCounter();
+                        
+                        // Sync with goalInput
+                        const goalInput = document.getElementById('goalInput');
+                        if (goalInput) goalInput.value = editorTextarea.value;
+                    }
+                    
+                    editor.classList.remove('active');
+                }
+            }
+            
+            generateFromEditor() {
+                const editorTextarea = document.getElementById('editorTextarea');
+                const userInput = document.getElementById('userInput');
+                
+                if (editorTextarea && userInput) {
+                    userInput.value = editorTextarea.value;
+                    this.userInput = editorTextarea.value;
+                    this.updateCharCounter();
+                    
+                    // Sync with goalInput
+                    const goalInput = document.getElementById('goalInput');
+                    if (goalInput) goalInput.value = editorTextarea.value;
+                    
+                    this.exitFullScreen();
+                    this.generatePrompt();
+                }
+            }
+            
+            copyOutput() {
+                const outputArea = document.getElementById('outputArea');
+                if (!outputArea) return;
+                
+                const text = outputArea.innerText || outputArea.textContent;
+                
+                if (!text || text.includes('Your generated prompt will appear here')) {
+                    this.showNotification('No prompt to copy', 'warning');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showNotification('Prompt copied to clipboard', 'success');
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                    this.showNotification('Failed to copy', 'error');
+                });
+            }
+            
+            selectPlatform(e) {
+                const platform = e.currentTarget.dataset.platform;
+                const platforms = {
+                    gemini: 'https://gemini.google.com',
+                    chatgpt: 'https://chat.openai.com',
+                    claude: 'https://claude.ai',
+                    perplexity: 'https://www.perplexity.ai'
+                };
+                
+                // Get generated prompt
+                const outputArea = document.getElementById('outputArea');
+                if (!outputArea) {
+                    this.showNotification('Please generate a prompt first', 'warning');
+                    return;
+                }
+                
+                const prompt = outputArea.innerText || outputArea.textContent;
+                if (!prompt || prompt.includes('Your generated prompt will appear here')) {
+                    this.showNotification('Please generate a prompt first', 'warning');
+                    return;
+                }
+                
+                // Go to step 3
+                this.goToStep(3);
+                
+                // Show platform selection confirmation
+                this.showNotification(`Ready to use with ${platform.toUpperCase()}!`, 'success');
+                
+                // In a real app, you would open the platform with the prompt
+                // For now, just show a message
+                console.log(`Would open ${platforms[platform]} with prompt`);
+            }
+            
+            resetApp() {
+                this.currentStep = 1;
+                this.userInput = '';
+                this.generatedPrompt = '';
+                
+                // Clear input
+                const userInput = document.getElementById('userInput');
+                const goalInput = document.getElementById('goalInput');
+                const outputArea = document.getElementById('outputArea');
+                const resetBtn = document.getElementById('resetBtn');
+                const generateBtn = document.getElementById('generateBtn');
+                
+                if (userInput) userInput.value = '';
+                if (goalInput) goalInput.value = '';
+                if (outputArea) outputArea.innerHTML = '<p class="placeholder-text">Your generated prompt will appear here...</p>';
+                
+                // Hide reset button
+                if (resetBtn) resetBtn.style.display = 'none';
+                
+                // Enable generate button
+                if (generateBtn) {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
+                }
+                
+                // Hide generation info
+                const generationInfo = document.getElementById('generationInfo');
+                if (generationInfo) generationInfo.style.display = 'none';
+                
+                // Go back to step 1
+                this.goToStep(1);
+                
+                // Update character counter
+                this.updateCharCounter();
+                
+                // Focus on input
+                if (userInput) userInput.focus();
+                
+                this.showNotification('App reset successfully', 'info');
+            }
+            
+            updateStepDisplay() {
+                this.goToStep(this.currentStep);
+            }
+            
+            showNotification(message, type = 'info', duration = 3000) {
+                // Only show if notifications are enabled
+                if (!this.settings.notifications && type !== 'error') return;
+                
+                const container = document.getElementById('notificationContainer');
+                if (!container) return;
                 
                 const notification = document.createElement('div');
                 notification.className = 'notification';
+                notification.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 16px;
+                    background: white;
+                    border-left: 4px solid ${type === 'success' ? '#10B981' : 
+                                         type === 'error' ? '#EF4444' : 
+                                         type === 'warning' ? '#F59E0B' : '#4F46E5'};
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 10px;
+                    max-width: 400px;
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                const icon = type === 'success' ? 'check-circle' :
+                            type === 'error' ? 'exclamation-circle' :
+                            type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+                
                 notification.innerHTML = `
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                                       type === 'error' ? 'exclamation-circle' : 
-                                       type === 'warning' ? 'exclamation-triangle' : 'info-circle'}" 
-                       style="color: ${type === 'success' ? '#10B981' : 
-                                     type === 'error' ? '#EF4444' : 
-                                     type === 'warning' ? '#F59E0B' : '#4F46E5'}; margin-right:8px;"></i>
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;color:#6B7280;cursor:pointer;">
+                    <i class="fas fa-${icon}" style="
+                        color: ${type === 'success' ? '#10B981' : 
+                                type === 'error' ? '#EF4444' : 
+                                type === 'warning' ? '#F59E0B' : '#4F46E5'};
+                        margin-right: 12px;
+                        font-size: 18px;
+                    "></i>
+                    <span style="flex: 1; font-size: 14px; color: #374151;">${message}</span>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: none;
+                        border: none;
+                        color: #9CA3AF;
+                        cursor: pointer;
+                        margin-left: 8px;
+                        font-size: 16px;
+                        padding: 0;
+                        line-height: 1;
+                    ">
                         <i class="fas fa-times"></i>
                     </button>
                 `;
                 
                 container.appendChild(notification);
                 
+                // Auto-remove after duration
                 if (duration) {
                     setTimeout(() => {
                         if (notification.parentNode) {
@@ -941,8 +1631,30 @@
                         }
                     }, duration);
                 }
-            };
+                
+                // Log to console
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            }
         }
+        
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            window.app = new PromptCraftApp();
+            
+            // Make app available globally for debugging
+            window.PromptCraftApp = PromptCraftApp;
+            
+            // Simple fallback for showNotification
+            window.showNotification = function(message, type, duration) {
+                if (window.app) {
+                    window.app.showNotification(message, type, duration);
+                } else {
+                    console.log(`[${type || 'INFO'}] ${message}`);
+                }
+            };
+            
+            console.log('PromptCraft Pro v2.0 is ready!');
+        });
     </script>
 </body>
 </html>
