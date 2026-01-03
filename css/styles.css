@@ -2433,4 +2433,19 @@ select:focus, .language-select:focus {
 .platforms-grid > * {
     grid-column: unset !important;
 }
+/* 🔧 FIX: Place Prepare Prompt button just below textarea */
+
+.sticky-cta-container {
+    position: static !important;
+    pointer-events: auto;
+    justify-content: flex-end;
+    margin-top: var(--spacing-lg);
+}
+
+.sticky-cta.prepare {
+    position: static !important;
+    width: auto;
+    min-width: 180px;
+}
+
 
