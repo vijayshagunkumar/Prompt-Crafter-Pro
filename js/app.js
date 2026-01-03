@@ -1564,7 +1564,8 @@ Keep the summary concise yet comprehensive.`
                 }, 100);
             }
         }
-    }
+     // ✅ ADD THIS LINE
+    this.closeHistory();}
 
     // ======================
     // SETTINGS MANAGEMENT
