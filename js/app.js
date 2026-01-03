@@ -524,19 +524,23 @@ class PromptCraftApp {
     }
 
     // ✅ NEW: Ultra-safe text cleaning
-    cleanTextForDOM(text) {
-        if (!text || typeof text !== 'string') return '';
-        
-        console.log('Original text length:', text.length);
-        
-        // Remove ALL control characters and problematic Unicode
-        let clean = text
-            .replace(/[\x00-\x1F\x7F-\x9F\u200B-\u200F\u2028-\u202F\uFEFF]/g, '')
-            .replace(/\u0000/g, '')
-            .replace(/\uFFFD/g, '')
-            .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
-            .trim();
-        
+  
+     cleanTextForDOM(text) {
+    if (!text || typeof text !== 'string') return '';
+
+    return text
+        // Normalize line endings
+        .replace(/\r\n/g, '\n')
+
+        // Remove dangerous control chars ONLY
+        .replace(/[\u0000\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B\uFEFF]/g, '')
+
+        // Limit excessive blank lines
+        .replace(/\n{3,}/g, '\n\n')
+
+        .trim();
+}
+   
         // Ensure it ends with proper punctuation
         const lastChar = clean.slice(-1);
         if (!['.', '!', '?', ')', ']', '}'].includes(lastChar)) {
