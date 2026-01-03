@@ -1411,7 +1411,8 @@ Keep the summary concise yet comprehensive.`
             this.elements.userInput.value = item.fullInput;
             this.handleInputChange();
             this.openFullScreenEditor('input');
-            
+            this.closeHistory();   // 🔥 ADD THIS
+
             const editorTextarea = document.getElementById('editorTextarea');
             if (editorTextarea && item.fullPrompt) {
                 setTimeout(() => {
