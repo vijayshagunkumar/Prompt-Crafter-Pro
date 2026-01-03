@@ -1540,32 +1540,44 @@ Keep the summary concise yet comprehensive.`
         });
     }
 
-    restoreHistoryItem(id) {
-        const item = this.state.promptHistory.find(h => h.id === id);
-        if (item && this.elements.userInput) {
-            this.elements.userInput.value = item.fullInput;
-            this.handleInputChange();
-            this.showNotification('Input restored from history', 'success');
-            this.closeHistory();
+restoreHistoryItem(id) {
+    const item = this.state.promptHistory.find(h => h.id === id);
+    if (item && this.elements.userInput) {
+        this.elements.userInput.value = item.fullInput;
+
+        // ✅ FORCE FULL UI SYNC
+        this.handleInputChange();
+        this.updateButtonStates();   // 🔑 THIS WAS MISSING
+
+        this.showNotification('Input restored from history', 'success');
+        this.closeHistory();
+    }
+}
+
+
+viewHistoryItem(id) {
+    const item = this.state.promptHistory.find(h => h.id === id);
+    if (item && this.elements.userInput) {
+        this.elements.userInput.value = item.fullInput;
+
+        // ✅ FORCE FULL UI SYNC
+        this.handleInputChange();
+        this.updateButtonStates();   // 🔑 THIS WAS MISSING
+
+        this.openFullScreenEditor('input');
+
+        const editorTextarea = document.getElementById('editorTextarea');
+        if (editorTextarea && item.fullPrompt) {
+            setTimeout(() => {
+                editorTextarea.value =
+                    `Input: ${item.fullInput}\n\nGenerated Prompt:\n${item.fullPrompt}`;
+            }, 100);
         }
     }
 
-    viewHistoryItem(id) {
-        const item = this.state.promptHistory.find(h => h.id === id);
-        if (item && this.elements.userInput) {
-            this.elements.userInput.value = item.fullInput;
-            this.handleInputChange();
-            this.openFullScreenEditor('input');
-            
-            const editorTextarea = document.getElementById('editorTextarea');
-            if (editorTextarea && item.fullPrompt) {
-                setTimeout(() => {
-                    editorTextarea.value = `Input: ${item.fullInput}\n\nGenerated Prompt:\n${item.fullPrompt}`;
-                }, 100);
-            }
-        }
-     // ✅ CLOSE HISTORY AFTER SELECTION
-    this.closeHistory();}
+    this.closeHistory();
+}
+
 
     // ======================
     // SETTINGS MANAGEMENT
