@@ -722,7 +722,7 @@ class PromptCraftApp {
         if (voiceOutputLanguage) voiceOutputLanguage.value = this.state.settings.voiceOutputLanguage || 'en-US';
     }
 
-    // Save settings from modal (renamed to avoid conflict)
+    // Save settings from modal
     saveSettingsModal() {
         // Get values from form
         const themeSelect = document.getElementById('themeSelect');
@@ -1097,7 +1097,7 @@ Include:
         this.saveHistory();
     }
 
-        // Load history items
+    // Load history items
     loadHistoryItems() {
         const historyList = this.elements.historyList;
         historyList.innerHTML = '';
@@ -1230,22 +1230,13 @@ Include:
         return div.innerHTML;
     }
 
-    // Load history from storage
-    loadHistory() {
-        const saved = this.storageManager.getItem('promptHistory');
-        if (saved && Array.isArray(saved)) {
-            this.state.promptHistory = saved;
-        }
-    }
-
-    // Save history to storage
-    saveHistory() {
-        this.storageManager.setItem('promptHistory', this.state.promptHistory);
-    }
+    // ======================
+    // SETTINGS & STORAGE (FIXED)
+    // ======================
 
     // Load settings from storage
     loadSettings() {
-        const saved = this.storageManager.getItem('appSettings');
+        const saved = this.storageManager.load('promptCraftSettings');
         if (saved) {
             this.state.settings = { ...this.loadDefaultSettings(), ...saved };
             
@@ -1257,17 +1248,36 @@ Include:
 
     // Save settings to storage
     saveSettings() {
-        this.storageManager.setItem('appSettings', this.state.settings);
+        this.storageManager.save('promptCraftSettings', this.state.settings);
+    }
+
+    // Load history from storage
+    loadHistory() {
+        const saved = this.storageManager.load('promptCraftHistory', []);
+        if (saved && Array.isArray(saved)) {
+            this.state.promptHistory = saved;
+        }
+    }
+
+    // Save history to storage
+    saveHistory() {
+        this.storageManager.save('promptCraftHistory', this.state.promptHistory);
     }
 
     // Apply theme
     applyTheme() {
         const theme = this.state.settings.theme || 'dark';
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // Update theme display in footer
-        if (this.elements.currentTheme) {
-            this.elements.currentTheme.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+        if (theme === 'auto') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            if (this.elements.currentTheme) {
+                this.elements.currentTheme.textContent = prefersDark ? 'Dark' : 'Light';
+            }
+        } else {
+            document.documentElement.setAttribute('data-theme', theme);
+            if (this.elements.currentTheme) {
+                this.elements.currentTheme.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+            }
         }
     }
 
@@ -1276,6 +1286,10 @@ Include:
         const density = this.state.settings.uiDensity || 'comfortable';
         this.elements.appContainer.className = `app-container ${density}`;
     }
+
+    // ======================
+    // UI UPDATES
+    // ======================
 
     // Update model display
     updateModelDisplay() {
@@ -1473,7 +1487,32 @@ Include:
             this.elements.currentLanguage.textContent = lang.toUpperCase();
         }
     }
+
+    // ======================
+    // CLEANUP
+    // ======================
+
+    // Cleanup method
+    destroy() {
+        // Save data before cleanup
+        this.saveSettings();
+        this.saveHistory();
+        
+        // Cleanup voice handler if available
+        if (this.voiceHandler && typeof this.voiceHandler.destroy === 'function') {
+            this.voiceHandler.destroy();
+        }
+        
+        // Cleanup prompt generator if available
+        if (this.promptGenerator && typeof this.promptGenerator.clearSensitiveData === 'function') {
+            this.promptGenerator.clearSensitiveData();
+        }
+        
+        console.log('PromptCraftApp destroyed');
+    }
 }
 
-// Expose app to window for HTML onclick handlers
-window.app = new PromptCraftApp();
+// Initialize app when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.app = new PromptCraftApp();
+});
