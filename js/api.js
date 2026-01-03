@@ -1,155 +1,101 @@
 /**
  * API Service for PromptCraft Pro
  * Communicates with Cloudflare Worker backend
- * Matches the worker.js API structure
  */
 
-class API {
+class APIService {
     constructor() {
-        // Production API endpoint
-        this.apiUrl = 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
+        // Get API endpoint from config
+        this.endpoint = Config.getApiUrl();
+        this.apiKey = ''; // Your API key if needed
         
-        // Local development endpoint
-        if (window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1') {
-            this.apiUrl = 'http://127.0.0.1:8787';
-        }
-        
-        // API Key from your worker environment variable
-        this.apiKey = ''; // Will be injected via environment
-        
-        // Model mapping
-        this.availableModels = {
-            'gemini-3-flash-preview': {
-                name: 'Gemini 3 Flash',
-                provider: 'Google',
-                description: 'Latest Gemini 3 model'
-            },
-            'gemini-1.5-flash-latest': {
-                name: 'Gemini 1.5 Flash',
-                provider: 'Google',
-                description: 'Fast and capable model'
-            },
-            'gpt-4o-mini': {
-                name: 'GPT-4o Mini',
-                provider: 'OpenAI',
-                description: 'Cost-effective GPT-4 variant'
-            },
-            'llama-3.1-8b-instant': {
-                name: 'Llama 3.1 8B',
-                provider: 'Groq',
-                description: 'Fast Llama model via Groq'
-            }
+        // Request configuration
+        this.config = {
+            timeout: 30000,
+            maxRetries: 2,
+            retryDelay: 1000
         };
-        
-        // Default headers
-        this.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'User-Agent': 'PromptCraft-Pro-Frontend/1.0'
-        };
-        
-        // Add API key to headers if available
-        if (this.apiKey) {
-            this.headers['X-API-Key'] = this.apiKey;
-        }
         
         // Rate limiting state
-        this.rateLimitInfo = {
+        this.rateLimit = {
             minuteRemaining: 20,
             dailyRemaining: 500,
             lastReset: Date.now()
         };
         
-        // Retry configuration
-        this.retryConfig = {
-            maxRetries: 2,
-            retryDelay: 1000,
-            timeout: 30000
-        };
+        // Request history
+        this.history = [];
+        this.totalRequests = 0;
+        this.successfulRequests = 0;
+        this.failedRequests = 0;
     }
-
+    
     /**
      * Generate a prompt using the AI service
      */
     async generatePrompt(userInput, options = {}) {
-        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const startTime = Date.now();
+        const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         
-        console.log(`[API ${requestId}] Generating prompt with model: ${options.model || 'default'}`);
+        Config.debug(`Generating prompt with model: ${options.model || 'default'}`);
         
         try {
-            // Prepare request body
+            // Prepare request
             const requestBody = {
                 prompt: userInput,
-                model: options.model || 'gemini-3-flash-preview',
+                model: options.model || Config.getDefaultModel(),
                 ...options
             };
             
-            // Remove undefined properties
-            Object.keys(requestBody).forEach(key => 
-                requestBody[key] === undefined && delete requestBody[key]
-            );
-            
-            // Create AbortController for timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), this.retryConfig.timeout);
-            
-            // FIXED: Added mode and credentials
-            const response = await fetch(this.apiUrl, {
-                method: 'POST',
-                headers: this.headers,
-                body: JSON.stringify(requestBody),
-                signal: controller.signal,
-                mode: 'cors', // Added
-                credentials: 'omit' // Added
+            // Clean up undefined properties
+            Object.keys(requestBody).forEach(key => {
+                if (requestBody[key] === undefined) {
+                    delete requestBody[key];
+                }
             });
             
-            clearTimeout(timeoutId);
+            // Make API call
+            const response = await this.makeRequest(requestBody, requestId);
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
             
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw this.handleApiError(response.status, errorData, requestId);
+            // Update stats
+            this.totalRequests++;
+            this.successfulRequests++;
+            
+            // Log to history
+            this.history.push({
+                id: requestId,
+                timestamp: new Date().toISOString(),
+                input: userInput.substring(0, 100),
+                model: options.model || Config.getDefaultModel(),
+                responseTime,
+                success: true
+            });
+            
+            // Trim history if too long
+            if (this.history.length > 100) {
+                this.history = this.history.slice(-50);
             }
             
-            const data = await response.json();
-            
-            // Update rate limit info from response headers
-            this.updateRateLimitInfo(response);
-            
-            console.log(`[API ${requestId}] Success: ${data.model} via ${data.provider}`);
+            Config.info(`Prompt generated in ${responseTime}ms`);
             
             return {
                 success: true,
-                content: data.result,
-                model: data.model,
-                provider: data.provider,
-                usage: data.usage,
-                requestId: data.requestId || requestId,
-                rateLimit: data.rateLimit,
-                timestamp: data.timestamp
+                content: response.result || response.content,
+                model: response.model || options.model,
+                provider: response.provider || 'unknown',
+                responseTime,
+                requestId,
+                usage: response.usage,
+                rateLimit: response.rateLimit
             };
             
         } catch (error) {
-            console.error(`[API ${requestId}] Error:`, error.message);
+            this.totalRequests++;
+            this.failedRequests++;
             
-            // Retry logic
-            const retryCount = options.retryCount || 0;
-            
-            if (retryCount < this.retryConfig.maxRetries && 
-                !error.message.includes('timeout') &&
-                !error.message.includes('rate limit')) {
-                
-                console.log(`[API ${requestId}] Retrying (${retryCount + 1}/${this.retryConfig.maxRetries})...`);
-                
-                await new Promise(resolve => 
-                    setTimeout(resolve, this.retryConfig.retryDelay)
-                );
-                
-                return this.generatePrompt(userInput, {
-                    ...options,
-                    retryCount: retryCount + 1
-                });
-            }
+            Config.error(`Prompt generation failed:`, error.message);
             
             return {
                 success: false,
@@ -159,81 +105,134 @@ class API {
             };
         }
     }
-
+    
+    /**
+     * Make actual API request with retry logic
+     */
+    async makeRequest(body, requestId, retryCount = 0) {
+        try {
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+            
+            // Make request
+            const response = await fetch(this.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Request-ID': requestId,
+                    ...(this.apiKey && { 'X-API-Key': this.apiKey })
+                },
+                body: JSON.stringify(body),
+                signal: controller.signal,
+                mode: 'cors',
+                credentials: 'omit'
+            });
+            
+            clearTimeout(timeoutId);
+            
+            // Handle response
+            if (!response.ok) {
+                throw this.handleErrorResponse(response, requestId);
+            }
+            
+            const data = await response.json();
+            
+            // Update rate limit from headers
+            this.updateRateLimit(response.headers);
+            
+            return data;
+            
+        } catch (error) {
+            // Retry logic
+            if (retryCount < this.config.maxRetries) {
+                Config.warn(`Retrying request (${retryCount + 1}/${this.config.maxRetries})...`);
+                await new Promise(resolve => setTimeout(resolve, this.config.retryDelay));
+                return this.makeRequest(body, requestId, retryCount + 1);
+            }
+            
+            throw error;
+        }
+    }
+    
     /**
      * Handle API errors
      */
-    handleApiError(statusCode, errorData, requestId) {
+    handleErrorResponse(response, requestId) {
+        const status = response.status;
         const errors = {
-            400: { message: errorData.error || 'Invalid request format' },
-            401: { message: 'Authentication failed' },
-            403: { message: 'Access denied' },
-            404: { message: 'API endpoint not found' },
-            429: { message: 'Rate limit exceeded' },
-            500: { message: errorData.error || 'Internal server error' },
-            502: { message: 'Bad gateway' },
-            503: { message: 'Service unavailable' },
-            504: { message: 'Gateway timeout' }
+            400: 'Invalid request format',
+            401: 'Authentication failed',
+            403: 'Access denied',
+            404: 'API endpoint not found',
+            429: 'Rate limit exceeded',
+            500: 'Internal server error',
+            502: 'Bad gateway',
+            503: 'Service unavailable',
+            504: 'Gateway timeout'
         };
         
-        const error = errors[statusCode] || {
-            message: errorData.error || `HTTP ${statusCode}`
-        };
-        
-        return new Error(`${error.message} [${requestId}]`);
+        const message = errors[status] || `HTTP ${status}`;
+        return new Error(`${message} [${requestId}]`);
     }
-
+    
     /**
      * Update rate limit information
      */
-    updateRateLimitInfo(response) {
-        const minuteRemaining = response.headers.get('X-RateLimit-Remaining');
-        const dailyRemaining = response.headers.get('X-RateLimit-Daily-Remaining');
+    updateRateLimit(headers) {
+        const minuteRemaining = headers.get('X-RateLimit-Remaining');
+        const dailyRemaining = headers.get('X-RateLimit-Daily-Remaining');
         
-        if (minuteRemaining) {
-            this.rateLimitInfo.minuteRemaining = parseInt(minuteRemaining);
+        if (minuteRemaining !== null) {
+            this.rateLimit.minuteRemaining = parseInt(minuteRemaining);
         }
         
-        if (dailyRemaining) {
-            this.rateLimitInfo.dailyRemaining = parseInt(dailyRemaining);
+        if (dailyRemaining !== null) {
+            this.rateLimit.dailyRemaining = parseInt(dailyRemaining);
         }
         
-        this.rateLimitInfo.lastReset = Date.now();
+        this.rateLimit.lastReset = Date.now();
     }
-
+    
     /**
-     * Test API connectivity
+     * Test API connection
      */
     async testConnection() {
         try {
-            const response = await fetch(`${this.apiUrl}/health`, {
+            const startTime = Date.now();
+            const response = await fetch(this.endpoint + '/health', {
                 method: 'GET',
-                mode: 'cors',
-                credentials: 'omit',
                 headers: {
                     'Accept': 'application/json'
-                }
+                },
+                mode: 'cors',
+                credentials: 'omit'
             });
             
+            const responseTime = Date.now() - startTime;
+            
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 return {
                     online: true,
-                    status: data.status,
-                    models: data.models,
-                    environment: data.environment,
-                    version: data.version
+                    responseTime,
+                    status: data.status || 'healthy',
+                    models: data.models || [],
+                    environment: data.environment || 'unknown',
+                    version: data.version || 'unknown'
                 };
             }
             
             return {
                 online: false,
+                responseTime,
                 status: 'unhealthy',
                 statusCode: response.status
             };
             
         } catch (error) {
-            console.warn('API connection test failed:', error.message);
+            Config.warn('API connection test failed:', error.message);
             return {
                 online: false,
                 status: 'offline',
@@ -241,42 +240,14 @@ class API {
             };
         }
     }
-
+    
     /**
-     * Get available models
-     */
-    getAvailableModels() {
-        return this.availableModels;
-    }
-
-    /**
-     * Get model display name
-     */
-    getModelDisplayName(modelId) {
-        const model = this.availableModels[modelId];
-        return model ? model.name : modelId;
-    }
-
-    /**
-     * Get rate limit status
-     */
-    getRateLimitStatus() {
-        return {
-            ...this.rateLimitInfo,
-            minuteLimit: 20,
-            dailyLimit: 500,
-            used: 500 - this.rateLimitInfo.dailyRemaining
-        };
-    }
-
-    /**
-     * Fallback prompt generation
+     * Fallback prompt generation (when API is offline)
      */
     generateFallbackPrompt(userInput, style = 'detailed') {
-        console.log('Using fallback prompt generation');
-        
-        const promptStyles = {
+        const templates = {
             detailed: `# Expert AI Assistant Prompt
+
 ## Role Specification
 You are an expert AI assistant with specialized knowledge in this domain.
 
@@ -284,34 +255,34 @@ You are an expert AI assistant with specialized knowledge in this domain.
 ${userInput}
 
 ## Detailed Requirements
-1. Provide comprehensive, detailed analysis with specific examples
+1. Provide comprehensive analysis with specific examples
 2. Include actionable insights and practical recommendations
 3. Structure the response with clear, logical sections
-4. Use professional terminology appropriate for the context
-5. Consider potential edge cases, limitations, and alternative approaches
+4. Use professional terminology appropriate for context
+5. Consider potential edge cases and limitations
 6. Offer data-driven insights where applicable
 
 ## Response Structure
 - Executive Summary: Brief overview of key findings
-- Detailed Analysis: In-depth examination of all relevant aspects
-- Actionable Recommendations: Specific, implementable suggestions
+- Detailed Analysis: In-depth examination of all aspects
+- Actionable Recommendations: Specific suggestions
 - Next Steps: Clear guidance for implementation
-- Considerations: Important factors, risks, and limitations
+- Considerations: Important factors and risks
 
 ## Quality Standards
 - Clarity: Use clear, concise language
-- Depth: Provide thorough analysis without unnecessary verbosity
-- Practicality: Focus on actionable, real-world applications
-- Professionalism: Maintain appropriate tone for business/technical contexts`,
+- Depth: Provide thorough analysis
+- Practicality: Focus on real-world applications
+- Professionalism: Maintain appropriate tone`,
             
             concise: `# Task Specification
 ${userInput}
 
 # Response Requirements
 - Be direct and to the point
-- Focus on essential information only
+- Focus on essential information
 - Use clear, simple language
-- Avoid elaboration unless necessary
+- Avoid unnecessary elaboration
 - Structure with bullet points where helpful`,
             
             creative: `# Creative Task
@@ -319,8 +290,8 @@ ${userInput}
 
 # Creative Approach
 - Use innovative thinking and imaginative solutions
-- Incorporate storytelling elements where appropriate
-- Focus on unique perspectives and original ideas
+- Incorporate storytelling elements
+- Focus on unique perspectives
 - Engage with vivid, descriptive language
 - Balance creativity with practical application
 
@@ -334,63 +305,66 @@ ${userInput}
 ${userInput}
 
 # Analysis Framework
-1. **Key Metrics & Data Points**: Identify relevant quantitative measures
-2. **Trend Analysis**: Examine patterns and changes over time
-3. **Comparative Assessment**: Evaluate against benchmarks or alternatives
-4. **Risk Evaluation**: Identify and assess potential risks
-5. **Data-Driven Recommendations**: Base suggestions on evidence
-6. **Supporting Evidence**: Reference sources and data validity
+1. Key Metrics: Identify relevant quantitative measures
+2. Trend Analysis: Examine patterns over time
+3. Comparative Assessment: Evaluate against alternatives
+4. Risk Evaluation: Identify and assess risks
+5. Data-Driven Recommendations: Base suggestions on evidence
 
 # Reporting Requirements
 - Objective, unbiased language
 - Clear distinction between facts and interpretations
-- Visual representation suggestions (charts, graphs)
-- Executive summary of findings`,
-            
-            professional: `# Professional Business Request
-${userInput}
-
-# Response Structure
-## Executive Summary
-- Brief overview of key points and recommendations
-
-## Background & Context
-- Relevant background information
-- Current situation analysis
-
-## Detailed Analysis
-- Thorough examination of all relevant factors
-- Supporting data and evidence
-
-## Strategic Recommendations
-- Actionable business recommendations
-- Implementation considerations
-- Expected outcomes and benefits
-
-## Risk Assessment
-- Potential challenges and mitigation strategies
-- Contingency planning
-
-## Next Steps
-- Specific action items
-- Timeline and responsibilities
-- Success metrics
-
-# Professional Standards
-- Formal, business-appropriate tone
-- Professional formatting and structure
-- Citation of sources where applicable
-- Balanced consideration of stakeholder perspectives`
+- Visual representation suggestions
+- Executive summary of findings`
         };
-
-        return promptStyles[style] || promptStyles.detailed;
+        
+        return templates[style] || templates.detailed;
+    }
+    
+    /**
+     * Get API statistics
+     */
+    getStats() {
+        const successRate = this.totalRequests > 0 
+            ? Math.round((this.successfulRequests / this.totalRequests) * 100) 
+            : 100;
+        
+        return {
+            totalRequests: this.totalRequests,
+            successfulRequests: this.successfulRequests,
+            failedRequests: this.failedRequests,
+            successRate: `${successRate}%`,
+            rateLimit: this.rateLimit,
+            historyCount: this.history.length
+        };
+    }
+    
+    /**
+     * Get rate limit status
+     */
+    getRateLimitStatus() {
+        return {
+            ...this.rateLimit,
+            minuteLimit: 20,
+            dailyLimit: 500,
+            used: 500 - this.rateLimit.dailyRemaining
+        };
+    }
+    
+    /**
+     * Clear API history
+     */
+    clearHistory() {
+        this.history = [];
+        this.totalRequests = 0;
+        this.successfulRequests = 0;
+        this.failedRequests = 0;
     }
 }
 
 // Create singleton instance
-const apiService = new API();
+const apiService = new APIService();
 
 // Make globally available
-window.API = API;
+window.APIService = APIService;
 window.apiService = apiService;
-
