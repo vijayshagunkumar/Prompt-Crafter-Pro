@@ -1,6 +1,37 @@
 // Main Application Controller
 class PromptCraftApp {
     constructor() {
+        // Add global error handler to catch HTML syntax errors
+        window.addEventListener('error', (event) => {
+            console.error('Global error caught:', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+            
+            // Check if it's a syntax error from our output
+            if (event.message.includes('Invalid or unexpected token') && 
+                event.filename.includes('index.html')) {
+                console.error('⚠️ HTML Syntax Error detected - likely from output injection');
+                
+                // Try to recover by clearing output
+                if (this.elements && this.elements.outputArea) {
+                    this.elements.outputArea.textContent = 'Error: Generated content contained invalid characters. Please try again.';
+                    this.showNotification('Content error detected. Please regenerate prompt.', 'error');
+                }
+            }
+            
+            event.preventDefault();
+        });
+        
+        // Also catch unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+        });
+        
         this.state = {
             currentStep: 1,
             hasGeneratedPrompt: false,
@@ -336,10 +367,10 @@ class PromptCraftApp {
     }
 
     // ======================
-    // PROMPT GENERATION
+    // PROMPT GENERATION - FIXED VERSION
     // ======================
 
-    // Prepare prompt (main generation)
+    // Prepare prompt (main generation) - FIXED VERSION
     async preparePrompt() {
         const inputText = this.elements.userInput.value.trim();
         
@@ -361,6 +392,7 @@ class PromptCraftApp {
         
         try {
             console.log(`Generating prompt with model: ${selectedModel}`);
+            console.log('=== DEBUGGING OUTPUT ===');
             
             // Generate prompt using Cloudflare Worker
             const result = await this.promptGenerator.generatePrompt(inputText, {
@@ -369,10 +401,48 @@ class PromptCraftApp {
                 temperature: 0.4
             });
             
-            if (result.success) {
-                // Update output
-                this.elements.outputArea.textContent = result.prompt;
-                this.state.originalPrompt = result.prompt;
+            console.log('Generation result:', {
+                success: result.success,
+                promptLength: result.prompt?.length || 0,
+                promptPreview: result.prompt?.substring(0, 200) + '...'
+            });
+            
+            // Debug: Check the raw data
+            if (result.prompt) {
+                console.log('Raw prompt first 200 chars:', result.prompt.substring(0, 200));
+                console.log('Raw prompt length:', result.prompt.length);
+                
+                // Check for invalid characters
+                const invalidChars = [];
+                for (let i = 0; i < Math.min(result.prompt.length, 200); i++) {
+                    const charCode = result.prompt.charCodeAt(i);
+                    if (charCode < 32 && charCode !== 9 && charCode !== 10 && charCode !== 13) {
+                        invalidChars.push({ position: i, charCode });
+                    }
+                }
+                
+                if (invalidChars.length > 0) {
+                    console.warn('⚠️ Invalid characters found:', invalidChars);
+                }
+            }
+            
+            if (result.success && result.prompt) {
+                // SAFE: Check if prompt is valid and not too short
+                if (result.prompt.length < 50) {
+                    console.warn('⚠️ Generated prompt is too short:', result.prompt.length);
+                    console.warn('Prompt content:', result.prompt);
+                    this.showNotification('Generated prompt seems incomplete. Trying fallback...', 'warning');
+                    throw new Error('Prompt too short');
+                }
+                
+                // Sanitize and set output
+                const sanitizedPrompt = this.sanitizeText(result.prompt);
+                console.log('Sanitized prompt length:', sanitizedPrompt.length);
+                console.log('Sanitized preview:', sanitizedPrompt.substring(0, 200) + '...');
+                
+                // Update output with safe text
+                this.elements.outputArea.textContent = sanitizedPrompt;
+                this.state.originalPrompt = sanitizedPrompt;
                 this.state.promptModified = false;
                 this.state.hasGeneratedPrompt = true;
                 
@@ -390,7 +460,7 @@ class PromptCraftApp {
                 this.showSuggestions(result.suggestions);
                 
                 // Save to history with model info
-                this.saveToHistory(inputText, result.prompt, selectedModel);
+                this.saveToHistory(inputText, sanitizedPrompt, selectedModel);
                 
                 // Show success message with model info
                 const modelDisplayName = this.getModelDisplayName(selectedModel);
@@ -412,6 +482,21 @@ class PromptCraftApp {
         }
     }
 
+    // Sanitize text to prevent HTML syntax errors
+    sanitizeText(text) {
+        if (!text) return '';
+        
+        // Remove any invalid characters that could cause HTML parsing issues
+        const safeText = text
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '') // Remove control characters
+            .replace(/[\u2028\u2029]/g, '') // Remove line/paragraph separators
+            .replace(/\u0000/g, '') // Remove null characters
+            .replace(/\uFFFD/g, '') // Remove replacement characters
+            .trim();
+        
+        return safeText;
+    }
+
     // Try fallback models
     async tryFallbackModels(inputText) {
         const fallbackModels = ['gpt-4o-mini', 'llama-3.1-8b-instant'];
@@ -426,16 +511,17 @@ class PromptCraftApp {
                     temperature: 0.4
                 });
                 
-                if (fallbackResult.success) {
-                    this.elements.outputArea.textContent = fallbackResult.prompt;
-                    this.state.originalPrompt = fallbackResult.prompt;
+                if (fallbackResult.success && fallbackResult.prompt && fallbackResult.prompt.length > 50) {
+                    const sanitizedPrompt = this.sanitizeText(fallbackResult.prompt);
+                    this.elements.outputArea.textContent = sanitizedPrompt;
+                    this.state.originalPrompt = sanitizedPrompt;
                     this.state.hasGeneratedPrompt = true;
                     this.elements.outputSection.classList.add('visible');
                     this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
                     this.updateProgress();
                     this.updateButtonStates();
                     this.showSuggestions(fallbackResult.suggestions);
-                    this.saveToHistory(inputText, fallbackResult.prompt, fallbackModel);
+                    this.saveToHistory(inputText, sanitizedPrompt, fallbackModel);
                     
                     this.state.currentModel = fallbackModel;
                     this.updateModelDisplay();
@@ -454,15 +540,16 @@ class PromptCraftApp {
         if (!fallbackSuccess) {
             this.showNotification('Using local generation...', 'info');
             const localResult = this.promptGenerator.generatePromptLocally(inputText);
-            this.elements.outputArea.textContent = localResult.prompt;
-            this.state.originalPrompt = localResult.prompt;
+            const sanitizedPrompt = this.sanitizeText(localResult.prompt);
+            this.elements.outputArea.textContent = sanitizedPrompt;
+            this.state.originalPrompt = sanitizedPrompt;
             this.state.hasGeneratedPrompt = true;
             this.elements.outputSection.classList.add('visible');
             this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
             this.updateProgress();
             this.updateButtonStates();
             this.showSuggestions(localResult.suggestions);
-            this.saveToHistory(inputText, localResult.prompt, 'local-fallback');
+            this.saveToHistory(inputText, sanitizedPrompt, 'local-fallback');
             
             this.showNotification('Generated locally (AI service unavailable)', 'warning');
         }
@@ -1034,124 +1121,149 @@ class PromptCraftApp {
             
             code: `Write a Python function that:
 - Accepts a list of numbers
-- Returns a dictionary with the following statistics:
-  * mean, median, mode
-  * standard deviation
-  * min and max values
-  * 25th, 50th, and 75th percentiles
-- Include comprehensive error handling
-- Add clear docstrings and type hints
-- Optimize for performance with large datasets`,
+- Returns a dictionary with the minimum, maximum, average, and median values
+- Handles empty lists gracefully
+- Has clear docstring documentation
+- Includes type hints for better code readability`,
             
-            analysis: `Analyze the following sales data and provide insights:
-- Monthly sales figures for the past 24 months
-- Product category breakdown
-- Regional performance comparison
-- Customer acquisition vs retention rates
-- Seasonal trends and patterns
-
-Please provide:
-1. Executive summary of key findings
-2. Visual chart recommendations
-3. Three strategic recommendations
-4. Risk factors to monitor
-5. Key performance indicators for tracking`,
+            creative: `Write a short story (500-750 words) about a time traveler who accidentally brings a smartphone to medieval times. The story should:
+- Explore the cultural clash between technology and medieval society
+- Include humor but also moments of genuine connection
+- Feature at least one character who sees the potential in this "magic"
+- End with an open-ended but satisfying conclusion
+- Use vivid sensory details to bring both eras to life`,
             
-            creative: `Write a short story (500-700 words) about:
-- A retired astronaut discovering a mysterious signal
-- Set in a near-future where space tourism is common
-- Include themes of discovery, aging, and legacy
-- Create vivid sensory descriptions
-- Build suspense and emotional depth`,
-            
-            strategy: `Develop a go-to-market strategy for a new AI-powered project management tool targeting:
-- Small to medium businesses (50-500 employees)
-- Remote and hybrid teams
-- Competitive with Asana, Trello, and Monday.com
-
-Include:
-1. Target customer personas
-2. Unique value proposition
-3. Pricing strategy
-4. Marketing channels and tactics
-5. Sales funnel design
-6. Success metrics and milestones`,
-            
-            research: `Summarize the current state of quantum computing for business applications:
-- Key technological breakthroughs in the last 2 years
-- Major players and their approaches (Google, IBM, Microsoft, etc.)
-- Practical applications in finance, logistics, and drug discovery
-- Timeline for commercial viability
-- Investment opportunities and risks
-- Skills and talent required for adoption`
+            social: `Create a LinkedIn post announcing our company's new sustainability initiative. The post should:
+- Be professional yet approachable
+- Highlight the environmental impact
+- Include relevant hashtags
+- Encourage engagement from followers
+- Be under 250 words
+- Include a call-to-action for comments and shares`
         };
         
-        const example = examples[type];
-        if (example) {
-            this.elements.userInput.value = example;
-            this.handleInputChange();
-            this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} example loaded`, 'success');
-        }
+        const example = examples[type] || '';
+        this.elements.userInput.value = example;
+        this.handleInputChange();
+        
+        this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} example inserted!`, 'success');
     }
 
     // Toggle history
     toggleHistory() {
-        const isVisible = this.elements.historySection.classList.contains('visible');
-        if (isVisible) {
+        if (this.elements.historySection.classList.contains('active')) {
             this.closeHistory();
         } else {
-            this.loadHistoryItems();
-            this.elements.historySection.classList.add('visible');
+            this.openHistory();
         }
+    }
+
+    openHistory() {
+        this.elements.historySection.classList.add('active');
+        this.elements.historyBtn.innerHTML = '<i class="fas fa-history"></i> ';
+        this.loadHistory();
     }
 
     closeHistory() {
-        this.elements.historySection.classList.remove('visible');
+        this.elements.historySection.classList.remove('active');
+        this.elements.historyBtn.innerHTML = '<i class="fas fa-history"></i>';
     }
 
     // ======================
-    // SUGGESTIONS
+    // UI UPDATES & UTILITIES
     // ======================
 
-    // Show suggestions
-    showSuggestions(suggestions) {
-        if (!suggestions || suggestions.length === 0) {
-            this.elements.suggestionsPanel.classList.remove('visible');
-            return;
+    // Show loading state
+    showLoading(isLoading) {
+        const btn = this.elements.stickyPrepareBtn;
+        if (isLoading) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+            btn.disabled = true;
+        } else {
+            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Prepare Prompt';
+            btn.disabled = !this.elements.userInput.value.trim();
+        }
+    }
+
+    // Update button states
+    updateButtonStates() {
+        const hasInput = this.elements.userInput.value.trim().length > 0;
+        const hasPrompt = this.elements.outputArea.textContent.trim().length > 0;
+        const isModified = this.state.promptModified;
+        
+        // Prepare button
+        this.elements.stickyPrepareBtn.disabled = !hasInput;
+        
+        // Save prompt button
+        this.elements.savePromptBtn.disabled = !hasPrompt || !isModified;
+        
+        // Action buttons
+        const canUsePrompt = hasPrompt && this.state.hasGeneratedPrompt;
+        this.elements.copyBtn.disabled = !canUsePrompt;
+        this.elements.speakBtn.disabled = !canUsePrompt;
+        this.elements.exportBtn.disabled = !canUsePrompt;
+        
+        // Update platforms visibility
+        if (canUsePrompt) {
+            this.elements.platformsGrid.style.display = 'grid';
+            this.elements.platformsEmptyState.style.display = 'none';
+        } else {
+            this.elements.platformsGrid.style.display = 'none';
+            this.elements.platformsEmptyState.style.display = 'flex';
         }
         
-        this.elements.suggestionsList.innerHTML = suggestions.map(s => `
-            <div class="suggestion-item" onclick="window.app.applySuggestion('${s.action.replace(/'/g, "\\'")}')">
-                <i class="${s.icon}" style="color: var(--primary);"></i>
-                <span>${s.text}</span>
-            </div>
-        `).join('');
-        
-        this.elements.suggestionsPanel.classList.add('visible');
+        // Update undo button
+        this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
     }
 
-    // Apply suggestion
-    applySuggestion(action) {
-        const currentPrompt = this.elements.outputArea.textContent.trim();
-        this.elements.outputArea.textContent = currentPrompt + '\n\n' + action;
-        this.handlePromptEdit();
-        this.showNotification('Suggestion applied', 'success');
+    // Update progress bar
+    updateProgress() {
+        let progress = 0;
+        
+        if (this.elements.userInput.value.trim().length > 0) {
+            progress += 25;
+        }
+        
+        if (this.state.hasGeneratedPrompt) {
+            progress += 50;
+        }
+        
+        if (this.state.selectedPlatform) {
+            progress += 25;
+        }
+        
+        this.elements.progressFill.style.width = `${progress}%`;
+    }
+
+    // Update model display
+    updateModelDisplay() {
+        if (this.elements.currentModel) {
+            const modelName = this.getModelDisplayName(this.state.currentModel);
+            this.elements.currentModel.textContent = modelName;
+        }
     }
 
     // ======================
     // HISTORY MANAGEMENT
     // ======================
 
+    // Load history
+    loadHistory() {
+        const history = this.storageManager.load('promptHistory') || [];
+        this.state.promptHistory = history;
+        this.renderHistory();
+    }
+
     // Save to history
-    saveToHistory(input, output, model) {
+    saveToHistory(inputText, promptText, model) {
         const historyItem = {
             id: Date.now(),
             timestamp: new Date().toISOString(),
-            input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
-            output: output.substring(0, 200) + (output.length > 200 ? '...' : ''),
-            fullInput: input,
-            fullOutput: output,
-            model: model
+            input: inputText.substring(0, 100) + (inputText.length > 100 ? '...' : ''),
+            prompt: promptText.substring(0, 150) + (promptText.length > 150 ? '...' : ''),
+            model: model,
+            fullInput: inputText,
+            fullPrompt: promptText
         };
         
         this.state.promptHistory.unshift(historyItem);
@@ -1162,186 +1274,110 @@ Include:
             this.state.promptHistory = this.state.promptHistory.slice(0, maxItems);
         }
         
-        this.saveHistory();
+        this.storageManager.save('promptHistory', this.state.promptHistory);
+        this.renderHistory();
     }
 
-    // Load history items
-    loadHistoryItems() {
+    // Render history
+    renderHistory() {
         const historyList = this.elements.historyList;
+        if (!historyList) return;
+        
         historyList.innerHTML = '';
         
         if (this.state.promptHistory.length === 0) {
             historyList.innerHTML = `
-                <div class="history-empty">
-                    <div class="history-empty-icon">
-                        <i class="fas fa-history"></i>
-                    </div>
+                <div class="empty-history">
+                    <i class="fas fa-history"></i>
                     <p>No history yet</p>
-                    <p class="history-empty-subtitle">Generated prompts will appear here</p>
                 </div>
             `;
             return;
         }
         
         this.state.promptHistory.forEach(item => {
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.dataset.id = item.id;
-            
-            const date = new Date(item.timestamp);
-            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            historyItem.innerHTML = `
-                <div class="history-item-header">
-                    <span class="history-item-date">${formattedDate}</span>
-                    <span class="history-item-model">${this.getModelDisplayName(item.model)}</span>
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerHTML = `
+                <div class="history-item-content">
+                    <div class="history-item-header">
+                        <span class="history-item-time">${new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span class="history-item-model">${this.getModelDisplayName(item.model)}</span>
+                    </div>
+                    <div class="history-item-input">${this.escapeHTML(item.input)}</div>
+                    <div class="history-item-prompt">${this.escapeHTML(item.prompt)}</div>
                 </div>
-                <div class="history-item-input">${this.escapeHtml(item.input)}</div>
-                <div class="history-item-actions">
-                    <button class="btn-icon" title="Load" onclick="window.app.loadHistoryItem('${item.id}')">
-                        <i class="fas fa-redo"></i>
-                    </button>
-                    <button class="btn-icon" title="View Full" onclick="window.app.viewFullHistoryItem('${item.id}')">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                    <button class="btn-icon" title="Delete" onclick="window.app.deleteHistoryItem('${item.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
+                <button class="history-item-restore" data-id="${item.id}">
+                    <i class="fas fa-redo"></i>
+                </button>
             `;
             
-            historyList.appendChild(historyItem);
+            li.querySelector('.history-item-restore').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.restoreHistoryItem(item.id);
+            });
+            
+            li.addEventListener('click', () => {
+                this.viewHistoryItem(item.id);
+            });
+            
+            historyList.appendChild(li);
         });
     }
 
-    // Load history item
-    loadHistoryItem(id) {
-        const item = this.state.promptHistory.find(i => i.id == id);
-        if (!item) return;
-        
-        this.elements.userInput.value = item.fullInput;
-        this.elements.outputArea.textContent = item.fullOutput;
-        this.state.originalPrompt = item.fullOutput;
-        this.state.promptModified = false;
-        this.state.hasGeneratedPrompt = true;
-        this.state.currentModel = item.model;
-        
-        // Update UI
-        this.elements.outputSection.classList.add('visible');
-        this.updateButtonStates();
-        this.updateModelDisplay();
-        
-        // Scroll to output
-        this.elements.outputSection.scrollIntoView({ behavior: 'smooth' });
-        
-        this.showNotification('History item loaded', 'success');
+    // Restore history item
+    restoreHistoryItem(id) {
+        const item = this.state.promptHistory.find(h => h.id === id);
+        if (item) {
+            this.elements.userInput.value = item.fullInput;
+            this.handleInputChange();
+            this.showNotification('Input restored from history', 'success');
+            this.closeHistory();
+        }
     }
 
-    // View full history item
-    viewFullHistoryItem(id) {
-        const item = this.state.promptHistory.find(i => i.id == id);
-        if (!item) return;
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Prompt History</h3>
-                    <button class="btn-icon close-modal" onclick="this.closest('.modal').remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="history-full-view">
-                        <div class="history-section">
-                            <h4>Original Input</h4>
-                            <div class="history-full-text">${this.escapeHtml(item.fullInput)}</div>
-                        </div>
-                        <div class="history-section">
-                            <h4>Generated Prompt</h4>
-                            <div class="history-full-text">${this.escapeHtml(item.fullOutput)}</div>
-                        </div>
-                        <div class="history-meta">
-                            <span><i class="fas fa-calendar"></i> ${new Date(item.timestamp).toLocaleString()}</span>
-                            <span><i class="fas fa-brain"></i> ${this.getModelDisplayName(item.model)}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Close</button>
-                    <button class="btn btn-primary" onclick="window.app.loadHistoryItem('${item.id}'); this.closest('.modal').remove()">Load This Prompt</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('active'), 10);
-    }
-
-    // Delete history item
-    deleteHistoryItem(id) {
-        const index = this.state.promptHistory.findIndex(i => i.id == id);
-        if (index === -1) return;
-        
-        this.state.promptHistory.splice(index, 1);
-        this.saveHistory();
-        this.loadHistoryItems();
-        
-        this.showNotification('History item deleted', 'info');
-    }
-
-    // Escape HTML for safe rendering
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    // View history item
+    viewHistoryItem(id) {
+        const item = this.state.promptHistory.find(h => h.id === id);
+        if (item) {
+            // Open in full screen editor for viewing
+            this.elements.userInput.value = item.fullInput;
+            this.handleInputChange();
+            this.openFullScreenEditor('input');
+            
+            // Set the output if available
+            const editorTextarea = document.getElementById('editorTextarea');
+            if (editorTextarea && item.fullPrompt) {
+                setTimeout(() => {
+                    editorTextarea.value = `Input: ${item.fullInput}\n\nGenerated Prompt:\n${item.fullPrompt}`;
+                }, 100);
+            }
+        }
     }
 
     // ======================
-    // SETTINGS & STORAGE (FIXED)
+    // SETTINGS MANAGEMENT
     // ======================
 
-    // Load settings from storage
+    // Load settings
     loadSettings() {
-        const saved = this.storageManager.load('promptCraftSettings');
+        const saved = this.storageManager.load('appSettings');
         if (saved) {
             this.state.settings = { ...this.loadDefaultSettings(), ...saved };
-            
-            // Apply settings
-            this.applyTheme();
-            this.applyUIDensity();
         }
+        
+        this.applyTheme();
+        this.applyUIDensity();
     }
 
-    // Save settings to storage
+    // Save settings
     saveSettings() {
         try {
-            console.log('Saving settings to storage...');
-            const result = this.storageManager.save('promptCraftSettings', this.state.settings);
-            console.log('StorageManager.save result:', result);
-            return result;
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            return false;
-        }
-    }
-
-    // Load history from storage
-    loadHistory() {
-        const saved = this.storageManager.load('promptCraftHistory', []);
-        if (saved && Array.isArray(saved)) {
-            this.state.promptHistory = saved;
-        }
-    }
-
-    // Save history to storage
-    saveHistory() {
-        try {
-            this.storageManager.save('promptCraftHistory', this.state.promptHistory);
+            this.storageManager.save('appSettings', this.state.settings);
+            this.state.settingsModified = false;
             return true;
         } catch (error) {
-            console.error('Error saving history:', error);
+            console.error('Failed to save settings:', error);
             return false;
         }
     }
@@ -1349,35 +1385,114 @@ Include:
     // Apply theme
     applyTheme() {
         const theme = this.state.settings.theme || 'dark';
-        if (theme === 'auto') {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-            if (this.elements.currentTheme) {
-                this.elements.currentTheme.textContent = prefersDark ? 'Dark' : 'Light';
-            }
-        } else {
-            document.documentElement.setAttribute('data-theme', theme);
-            if (this.elements.currentTheme) {
-                this.elements.currentTheme.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
-            }
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        if (this.elements.currentTheme) {
+            this.elements.currentTheme.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
         }
     }
 
     // Apply UI density
     applyUIDensity() {
         const density = this.state.settings.uiDensity || 'comfortable';
-        this.elements.appContainer.className = `app-container ${density}`;
+        document.documentElement.setAttribute('data-density', density);
     }
 
     // ======================
-    // UI UPDATES
+    // NOTIFICATIONS
     // ======================
 
-    // Update model display
-    updateModelDisplay() {
-        if (this.elements.currentModel) {
-            this.elements.currentModel.textContent = this.getModelDisplayName(this.state.currentModel);
+    // Show notification
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${this.getNotificationIcon(type)}"></i>
+                <span>${this.escapeHTML(message)}</span>
+            </div>
+            <button class="notification-close">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        this.elements.notificationContainer.appendChild(notification);
+        
+        // Close button
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.remove();
+        });
+        
+        // Auto-remove
+        const duration = this.state.settings.notificationDuration || 3000;
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, duration);
+    }
+
+    // Get notification icon
+    getNotificationIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+
+    // ======================
+    // SUGGESTIONS
+    // ======================
+
+    // Show suggestions
+    showSuggestions(suggestions) {
+        const suggestionsList = this.elements.suggestionsList;
+        if (!suggestionsList) return;
+        
+        suggestionsList.innerHTML = '';
+        
+        if (!suggestions || suggestions.length === 0) {
+            this.elements.suggestionsPanel.style.display = 'none';
+            return;
         }
+        
+        suggestions.forEach(suggestion => {
+            const li = document.createElement('li');
+            li.className = 'suggestion-item';
+            li.textContent = suggestion;
+            li.addEventListener('click', () => {
+                this.applySuggestion(suggestion);
+            });
+            suggestionsList.appendChild(li);
+        });
+        
+        this.elements.suggestionsPanel.style.display = 'block';
+    }
+
+    // Apply suggestion
+    applySuggestion(suggestion) {
+        // Add suggestion to input
+        const currentInput = this.elements.userInput.value;
+        this.elements.userInput.value = currentInput + ' ' + suggestion;
+        this.handleInputChange();
+        
+        this.showNotification('Suggestion applied to input', 'info');
+    }
+
+    // ======================
+    // UTILITY METHODS
+    // ======================
+
+    // Escape HTML
+    escapeHTML(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // Test worker connection
@@ -1387,230 +1502,51 @@ Include:
             const testResult = await this.promptGenerator.testConnection();
             console.log('Worker test result:', testResult);
             
-            // Check for success - handle all possible success indicators
-            const isConnected = testResult && (
-                testResult.connected === true || 
-                testResult.success === true ||
-                (testResult.health && (testResult.health.status === 'healthy' || testResult.health.healthy === true))
-            );
-            
-            if (isConnected) {
-                console.log('✅ Worker connection test successful');
-                return true;
+            if (testResult.success) {
+                this.showNotification('Connected to AI services', 'success');
             } else {
-                console.warn('Worker connection test failed:', testResult?.error || 'Unknown response format');
-                // Log the actual response for debugging
-                console.log('Actual test response details:', JSON.stringify(testResult, null, 2));
-                return false;
+                console.warn('Worker test failed:', testResult.error);
             }
         } catch (error) {
-            console.error('Worker connection test error:', error);
-            return false;
+            console.warn('Worker test failed:', error);
         }
-    }
-
-    // Show loading state
-    showLoading(show) {
-        const btn = this.elements.stickyPrepareBtn;
-        if (show) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-magic"></i> Prepare Prompt';
-        }
-    }
-
-    // Update progress
-    updateProgress() {
-        let progress = 0;
-        
-        if (this.elements.userInput.value.trim().length > 10) {
-            progress += 33;
-        }
-        
-        if (this.state.hasGeneratedPrompt) {
-            progress += 33;
-        }
-        
-        if (this.state.selectedPlatform) {
-            progress += 34;
-        }
-        
-        this.elements.progressFill.style.width = `${progress}%`;
-    }
-
-    // Update button states
-    updateButtonStates() {
-        const hasInput = this.elements.userInput.value.trim().length > 0;
-        const hasOutput = this.state.hasGeneratedPrompt;
-        const isModified = this.state.promptModified;
-        
-        // Prepare button
-        this.elements.stickyPrepareBtn.disabled = !hasInput;
-        
-        // Save button
-        this.elements.savePromptBtn.disabled = !isModified;
-        
-        // Copy, speak, export buttons
-        const outputButtons = [this.elements.copyBtn, this.elements.speakBtn, this.elements.exportBtn];
-        outputButtons.forEach(btn => btn.disabled = !hasOutput);
-        
-        // Undo button
-        this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
-        
-        // Platform buttons
-        const platformCards = document.querySelectorAll('.platform-card');
-        platformCards.forEach(card => {
-            card.style.opacity = hasOutput ? '1' : '0.5';
-            card.style.pointerEvents = hasOutput ? 'auto' : 'none';
-        });
     }
 
     // Handle keyboard shortcuts
     handleKeyboardShortcuts(e) {
-        // Don't trigger shortcuts if user is typing in input or textarea
-        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
-            // Special case: Ctrl/Cmd + Enter in main input
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && e.target === this.elements.userInput) {
-                e.preventDefault();
-                if (!this.elements.stickyPrepareBtn.disabled) {
-                    this.preparePrompt();
-                }
-                return;
+        // Ctrl/Cmd + Enter to prepare prompt
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            if (!this.elements.stickyPrepareBtn.disabled) {
+                this.preparePrompt();
             }
-            return;
         }
         
-        // Global shortcuts
-        switch (e.key) {
-            case 'Escape':
-                if (this.state.isEditorOpen) {
-                    this.closeFullScreenEditor();
-                    e.preventDefault();
-                }
-                if (this.state.inspirationPanelOpen) {
-                    this.closeInspirationPanel();
-                    e.preventDefault();
-                }
-                if (document.getElementById('settingsModal')?.classList.contains('active')) {
-                    this.closeSettings();
-                    e.preventDefault();
-                }
-                break;
-                
-            case 'r':
-            case 'R':
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    this.resetApplication();
-                }
-                break;
-                
-            case 'h':
-            case 'H':
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    this.toggleHistory();
-                }
-                break;
-                
-            case 'i':
-            case 'I':
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    this.toggleInspirationPanel();
-                }
-                break;
-                
-            case 'z':
-            case 'Z':
-                if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
-                    e.preventDefault();
-                    this.undo();
-                }
-                break;
-                
-            case 'c':
-            case 'C':
-                if ((e.ctrlKey || e.metaKey) && e.altKey) {
-                    e.preventDefault();
-                    if (!this.elements.copyBtn.disabled) {
-                        this.copyPrompt();
-                    }
-                }
-                break;
-        }
-    }
-
-    // Show notification
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-            <button class="btn-icon" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        this.elements.notificationContainer.appendChild(notification);
-        
-        // Auto-remove after duration
-        const duration = this.state.settings.notificationDuration || 3000;
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.classList.add('fade-out');
-                setTimeout(() => {
-                    if (notification.parentElement) {
-                        notification.remove();
-                    }
-                }, 300);
+        // Escape to close panels
+        if (e.key === 'Escape') {
+            if (this.state.isEditorOpen) {
+                this.closeFullScreenEditor();
             }
-        }, duration);
+            
+            if (this.state.inspirationPanelOpen) {
+                this.closeInspirationPanel();
+            }
+            
+            if (this.elements.historySection.classList.contains('active')) {
+                this.closeHistory();
+            }
+        }
     }
 
     // Update UI
     updateUI() {
-        this.updateProgress();
         this.updateButtonStates();
+        this.updateProgress();
         this.updateModelDisplay();
-        
-        // Update language display
-        if (this.elements.currentLanguage) {
-            const lang = this.state.settings.interfaceLanguage || 'en';
-            this.elements.currentLanguage.textContent = lang.toUpperCase();
-        }
-    }
-
-    // ======================
-    // CLEANUP
-    // ======================
-
-    // Cleanup method
-    destroy() {
-        // Save data before cleanup
-        this.saveSettings();
-        this.saveHistory();
-        
-        // Cleanup voice handler if available
-        if (this.voiceHandler && typeof this.voiceHandler.destroy === 'function') {
-            this.voiceHandler.destroy();
-        }
-        
-        // Cleanup prompt generator if available
-        if (this.promptGenerator && typeof this.promptGenerator.clearSensitiveData === 'function') {
-            this.promptGenerator.clearSensitiveData();
-        }
-        
-        console.log('PromptCraftApp destroyed');
     }
 }
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new PromptCraftApp();
+    window.promptCraftApp = new PromptCraftApp();
 });
