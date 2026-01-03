@@ -9,7 +9,7 @@ class PromptCraftApp {
             currentStep: 1,
             userInput: '',
             generatedPrompt: '',
-            currentModel: Config.getDefaultModel(),
+            currentModel: Config.MODELS.DEFAULT,
             apiStatus: 'checking',
             isListening: false,
             isSpeaking: false,
@@ -28,29 +28,57 @@ class PromptCraftApp {
         // Elements cache
         this.elements = {};
         
-        // Services
-        this.api = apiService;
-        this.speech = speechService;
-        this.platforms = platforms;
-        this.theme = themeManager;
-        this.notifications = notifications;
+        // Services - USE WINDOW GLOBALS
+        this.api = window.apiService;
+        this.speech = window.speechService;
+        this.platforms = window.platforms;
+        this.theme = window.themeManager;
+        this.notifications = window.showNotification;
+        
+        // Validate services
+        if (!this.api) {
+            console.error('API service not available');
+        }
+        if (!this.speech) {
+            console.warn('Speech service not available');
+        }
+        if (!this.platforms) {
+            console.warn('Platforms service not available');
+        }
+        if (!this.theme) {
+            console.warn('Theme manager not available');
+        }
         
         // Initialize
         this.init();
     }
-    // Add this method to your PromptCraftApp class
-
+    
     /**
      * Initialize the application
      */
     init() {
-        this.cacheElements();
-        this.bindEvents();
-        this.loadSettings();
-        this.checkAPIStatus();
-        this.updateUI();
+        console.log('Initializing PromptCraftApp...');
         
-        Config.info('PromptCraft Pro initialized');
+        try {
+            this.cacheElements();
+            this.bindEvents();
+            this.loadSettings();
+            this.checkAPIStatus();
+            this.updateUI();
+            
+            console.log('✓ PromptCraftApp initialized successfully');
+            
+            // Show welcome notification if available
+            if (this.notifications) {
+                setTimeout(() => {
+                    this.notifications('PromptCraft Pro ready!', 'success', 3000);
+                }, 1000);
+            }
+            
+        } catch (error) {
+            console.error('Failed to initialize app:', error);
+            throw error;
+        }
     }
     
     /**
@@ -120,6 +148,8 @@ class PromptCraftApp {
         // Footer
         this.elements.currentModel = document.getElementById('currentModel');
         this.elements.rateLimit = document.getElementById('rateLimit');
+        
+        console.log(`✓ Cached ${Object.keys(this.elements).length} elements`);
     }
     
     /**
@@ -236,9 +266,7 @@ class PromptCraftApp {
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
         
-        // Speech events
-        window.addEventListener('speech:listeningresult', (e) => this.handleVoiceInput(e.detail.transcript));
-        window.addEventListener('speech:listeningerror', (e) => this.handleVoiceError(e.detail.error));
+        console.log('✓ Event listeners bound');
     }
     
     /**
@@ -285,7 +313,7 @@ class PromptCraftApp {
             if (this.state.isMaximized) {
                 this.exitFullScreen();
             }
-            if (this.elements.settingsModal.style.display === 'block') {
+            if (this.elements.settingsModal && this.elements.settingsModal.style.display === 'block') {
                 this.closeSettings();
             }
         }
@@ -314,7 +342,7 @@ class PromptCraftApp {
     clearInput() {
         this.elements.userInput.value = '';
         this.handleInputChange();
-        showNotification('Input cleared', 'info');
+        this.showNotification('Input cleared', 'info');
     }
     
     /**
@@ -329,7 +357,7 @@ class PromptCraftApp {
             this.elements.userInput.value = previous;
             this.handleInputChange();
             
-            showNotification('Undo applied', 'info');
+            this.showNotification('Undo applied', 'info');
         }
     }
     
@@ -345,7 +373,7 @@ class PromptCraftApp {
             this.elements.userInput.value = next;
             this.handleInputChange();
             
-            showNotification('Redo applied', 'info');
+            this.showNotification('Redo applied', 'info');
         }
     }
     
@@ -408,6 +436,11 @@ class PromptCraftApp {
      * Toggle voice input
      */
     toggleVoiceInput() {
+        if (!this.speech) {
+            this.showNotification('Voice input not available', 'error');
+            return;
+        }
+        
         if (this.state.isListening) {
             this.speech.stopListening();
             this.state.isListening = false;
@@ -416,9 +449,9 @@ class PromptCraftApp {
             if (this.speech.startListening()) {
                 this.state.isListening = true;
                 this.elements.voiceInputBtn.classList.add('active');
-                showNotification('Listening... Speak now', 'info');
+                this.showNotification('Listening... Speak now', 'info');
             } else {
-                showNotification('Voice input not available', 'error');
+                this.showNotification('Voice input not available', 'error');
             }
         }
     }
@@ -429,14 +462,14 @@ class PromptCraftApp {
     handleVoiceInput(transcript) {
         this.elements.userInput.value += ' ' + transcript;
         this.handleInputChange();
-        showNotification('Voice input added', 'success');
+        this.showNotification('Voice input added', 'success');
     }
     
     /**
      * Handle voice input error
      */
     handleVoiceError(error) {
-        showNotification(`Voice input error: ${error}`, 'error');
+        this.showNotification(`Voice input error: ${error}`, 'error');
     }
     
     /**
@@ -445,14 +478,16 @@ class PromptCraftApp {
     speakInput() {
         const text = this.elements.userInput.value.trim();
         if (!text) {
-            showNotification('No text to speak', 'warning');
+            this.showNotification('No text to speak', 'warning');
             return;
         }
         
-        if (this.speech.speak(text)) {
+        if (this.speech && this.speech.speak(text)) {
             this.state.isSpeaking = true;
             this.elements.speakInputBtn.classList.add('active');
-            showNotification('Speaking input text...', 'info');
+            this.showNotification('Speaking input text...', 'info');
+        } else {
+            this.showNotification('Speech output not available', 'error');
         }
     }
     
@@ -462,14 +497,16 @@ class PromptCraftApp {
     speakOutput() {
         const text = this.state.generatedPrompt.trim();
         if (!text) {
-            showNotification('No output to speak', 'warning');
+            this.showNotification('No output to speak', 'warning');
             return;
         }
         
-        if (this.speech.speak(text)) {
+        if (this.speech && this.speech.speak(text)) {
             this.state.isSpeaking = true;
             this.elements.speakOutputBtn.classList.add('active');
-            showNotification('Speaking output text...', 'info');
+            this.showNotification('Speaking output text...', 'info');
+        } else {
+            this.showNotification('Speech output not available', 'error');
         }
     }
     
@@ -524,7 +561,7 @@ class PromptCraftApp {
             this.elements.userInput.value = templates[template];
             this.handleInputChange();
             this.closeInspirationPanel();
-            showNotification(`${template} template applied`, 'success');
+            this.showNotification(`${template} template applied`, 'success');
         }
     }
     
@@ -535,9 +572,13 @@ class PromptCraftApp {
         const input = this.elements.userInput.value.trim();
         
         // Validate input
-        const validation = Config.validatePrompt(input);
-        if (!validation.valid) {
-            showNotification(validation.error, 'error');
+        if (!input) {
+            this.showNotification('Please enter a task description first', 'error');
+            return;
+        }
+        
+        if (input.length < 5) {
+            this.showNotification('Please enter a more detailed description', 'warning');
             return;
         }
         
@@ -546,27 +587,32 @@ class PromptCraftApp {
         this.elements.generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
         
         try {
-            showNotification('Generating prompt...', 'info');
+            this.showNotification('Generating optimized prompt...', 'info');
+            
+            // Check if API service is available
+            if (!this.api || !this.api.generatePrompt) {
+                throw new Error('API service not available');
+            }
             
             // Call API
-            const result = await this.api.generatePrompt(input, {
-                model: this.state.currentModel
-            });
+            const startTime = Date.now();
+            const result = await this.api.generatePrompt(input, this.state.currentModel);
+            const responseTime = Date.now() - startTime;
             
-            if (result.success) {
+            if (result && result.prompt) {
                 // Update state
-                this.state.generatedPrompt = result.content;
+                this.state.generatedPrompt = result.prompt;
                 this.state.currentStep = 2;
                 this.state.generationStats = {
-                    time: result.responseTime / 1000,
-                    model: result.model,
-                    tokens: result.usage?.total_tokens || Math.floor(result.content.length / 4)
+                    time: responseTime / 1000,
+                    model: result.model || this.state.currentModel,
+                    tokens: result.usage?.total_tokens || Math.floor(result.prompt.length / 4)
                 };
                 
                 // Update UI
-                this.elements.outputArea.textContent = result.content;
+                this.elements.outputArea.textContent = result.prompt;
                 this.elements.generationTime.textContent = this.state.generationStats.time.toFixed(2);
-                this.elements.usedModel.textContent = Config.getModelDisplayName(result.model);
+                this.elements.usedModel.textContent = result.model || this.state.currentModel;
                 this.elements.tokenCount.textContent = this.state.generationStats.tokens;
                 
                 // Show step 2 and 3
@@ -575,13 +621,13 @@ class PromptCraftApp {
                 this.elements.generationInfo.style.display = 'flex';
                 
                 // Update footer
-                this.elements.currentModel.textContent = Config.getModelDisplayName(result.model);
+                this.elements.currentModel.textContent = result.model || this.state.currentModel;
                 
                 // Update button states
                 this.elements.generateBtn.style.display = 'none';
                 this.elements.resetBtn.style.display = 'flex';
                 
-                showNotification('Prompt generated successfully!', 'success');
+                this.showNotification('Prompt generated successfully!', 'success');
                 
                 // Scroll to output
                 setTimeout(() => {
@@ -589,28 +635,41 @@ class PromptCraftApp {
                 }, 300);
                 
             } else {
-                // Use fallback
-                this.state.generatedPrompt = this.api.generateFallbackPrompt(input);
-                this.elements.outputArea.textContent = this.state.generatedPrompt;
-                this.state.currentStep = 2;
-                
-                // Show steps
-                this.elements.step2Card.style.display = 'block';
-                this.elements.step3Card.style.display = 'block';
-                
-                // Hide generation info for fallback
-                this.elements.generationInfo.style.display = 'none';
-                
-                // Update button states
-                this.elements.generateBtn.style.display = 'none';
-                this.elements.resetBtn.style.display = 'flex';
-                
-                showNotification('Generated with fallback (API offline)', 'warning');
+                throw new Error('Invalid response from API');
             }
             
         } catch (error) {
-            Config.error('Prompt generation error:', error);
-            showNotification('Failed to generate prompt', 'error');
+            console.error('Prompt generation error:', error);
+            
+            let errorMessage = 'Failed to generate prompt';
+            if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+                errorMessage = 'Connection error. Please check API configuration.';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Cannot connect to server. Please check your internet connection.';
+            } else if (error.message.includes('timeout')) {
+                errorMessage = 'Request timeout. Please try again.';
+            } else {
+                errorMessage = error.message || errorMessage;
+            }
+            
+            this.showNotification(errorMessage, 'error');
+            
+            // Fallback: Create a simple prompt
+            this.state.generatedPrompt = `Prompt (Fallback Mode):
+
+Role: AI Assistant
+Objective: ${input}
+Instructions: Please provide a detailed response to the above request.
+
+Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
+            
+            this.elements.outputArea.textContent = this.state.generatedPrompt;
+            this.state.currentStep = 2;
+            this.elements.step2Card.style.display = 'block';
+            this.elements.step3Card.style.display = 'block';
+            this.elements.generationInfo.style.display = 'none';
+            this.elements.generateBtn.style.display = 'none';
+            this.elements.resetBtn.style.display = 'flex';
             
         } finally {
             // Re-enable generate button
@@ -625,15 +684,16 @@ class PromptCraftApp {
     async copyOutput() {
         const text = this.state.generatedPrompt;
         if (!text) {
-            showNotification('No prompt to copy', 'warning');
+            this.showNotification('No prompt to copy', 'warning');
             return;
         }
         
-        const success = await Utils.copyToClipboard(text);
-        if (success) {
-            showNotification('Prompt copied to clipboard', 'success');
-        } else {
-            showNotification('Failed to copy prompt', 'error');
+        try {
+            await navigator.clipboard.writeText(text);
+            this.showNotification('Prompt copied to clipboard', 'success');
+        } catch (error) {
+            console.error('Copy failed:', error);
+            this.showNotification('Failed to copy prompt', 'error');
         }
     }
     
@@ -643,13 +703,22 @@ class PromptCraftApp {
     savePrompt() {
         const text = this.state.generatedPrompt;
         if (!text) {
-            showNotification('No prompt to save', 'warning');
+            this.showNotification('No prompt to save', 'warning');
             return;
         }
         
         const filename = `prompt-${new Date().toISOString().split('T')[0]}.txt`;
-        Utils.downloadFile(text, filename);
-        showNotification('Prompt saved as text file', 'success');
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showNotification('Prompt saved as text file', 'success');
     }
     
     /**
@@ -658,13 +727,17 @@ class PromptCraftApp {
     async openPlatform(platformId) {
         const prompt = this.state.generatedPrompt;
         if (!prompt) {
-            showNotification('Generate a prompt first', 'warning');
+            this.showNotification('Generate a prompt first', 'warning');
             return;
         }
         
-        const success = await this.platforms.openPlatform(platformId, prompt);
-        if (!success) {
-            showNotification('Failed to open platform', 'error');
+        if (this.platforms && this.platforms.openPlatform) {
+            const success = await this.platforms.openPlatform(platformId, prompt);
+            if (!success) {
+                this.showNotification('Failed to open platform', 'error');
+            }
+        } else {
+            this.showNotification('Platform integration not available', 'error');
         }
     }
     
@@ -693,7 +766,7 @@ class PromptCraftApp {
         // Close panels
         this.closeInspirationPanel();
         
-        showNotification('Application reset', 'info');
+        this.showNotification('Application reset', 'info');
     }
     
     /**
@@ -703,26 +776,25 @@ class PromptCraftApp {
         try {
             this.updateAPIStatus('checking', 'Checking API connection...');
             
-            const result = await this.api.testConnection();
-            
-            if (result.online) {
-                this.state.apiStatus = 'online';
-                this.updateAPIStatus('online', `API Connected (${result.responseTime}ms)`);
+            if (this.api && this.api.checkHealth) {
+                const result = await this.api.checkHealth();
                 
-                // Update rate limit
-                const rateLimit = this.api.getRateLimitStatus();
-                this.elements.rateLimit.textContent = 
-                    `${rateLimit.minuteRemaining}/${rateLimit.minuteLimit} (min)`;
-                    
+                if (result.online) {
+                    this.state.apiStatus = 'online';
+                    this.updateAPIStatus('online', `API Connected${result.latency ? ` (${result.latency}ms)` : ''}`);
+                } else {
+                    this.state.apiStatus = 'offline';
+                    this.updateAPIStatus('offline', 'API Offline - Using fallback mode');
+                }
             } else {
                 this.state.apiStatus = 'offline';
-                this.updateAPIStatus('offline', 'API Offline - Using fallback mode');
+                this.updateAPIStatus('offline', 'API Service not available');
             }
             
         } catch (error) {
             this.state.apiStatus = 'offline';
             this.updateAPIStatus('offline', 'API Connection failed');
-            Config.error('API check failed:', error);
+            console.error('API check failed:', error);
         }
     }
     
@@ -753,7 +825,7 @@ class PromptCraftApp {
         }
         
         if (this.elements.apiEndpoint) {
-            this.elements.apiEndpoint.textContent = Config.getApiUrl();
+            this.elements.apiEndpoint.textContent = Config.API.ENDPOINT;
         }
         
         if (this.elements.apiStatusDetail) {
@@ -784,67 +856,76 @@ class PromptCraftApp {
      */
     loadSettingsIntoForm() {
         // Load from localStorage or use defaults
-        const settings = JSON.parse(localStorage.getItem(Config.getStorageKey('settings')) || '{}');
+        const settings = JSON.parse(localStorage.getItem('promptcraft_settings') || '{}');
         
         // This would populate form fields with saved settings
         // For now, just show a basic settings form
-        this.elements.settingsModal.querySelector('.modal-body').innerHTML = `
-            <div class="settings-group">
-                <h3><i class="fas fa-plug"></i> API Settings</h3>
-                <div class="setting-item">
-                    <label>API Endpoint</label>
-                    <input type="text" value="${Config.getApiUrl()}" disabled>
-                    <small>Cloudflare Worker endpoint</small>
+        const modalBody = this.elements.settingsModal.querySelector('.modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div class="settings-group">
+                    <h3><i class="fas fa-plug"></i> API Settings</h3>
+                    <div class="setting-item">
+                        <label>API Endpoint</label>
+                        <input type="text" value="${Config.API.ENDPOINT}" disabled>
+                        <small>Cloudflare Worker endpoint</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>Default Model</label>
+                        <select id="settingsModel">
+                            ${Config.MODELS.AVAILABLE ? Config.MODELS.AVAILABLE.map(model => `
+                                <option value="${model.id}" ${model.id === this.state.currentModel ? 'selected' : ''}>
+                                    ${model.name}
+                                </option>
+                            `).join('') : ''}
+                        </select>
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <label>Default Model</label>
-                    <select id="settingsModel">
-                        ${Config.getAvailableModels().map(model => `
-                            <option value="${model.id}" ${model.id === this.state.currentModel ? 'selected' : ''}>
-                                ${model.name}
-                            </option>
-                        `).join('')}
-                    </select>
+                <div class="settings-group">
+                    <h3><i class="fas fa-palette"></i> Appearance</h3>
+                    <div class="setting-item">
+                        <label>Theme</label>
+                        <select id="settingsTheme">
+                            <option value="auto">Auto (System)</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="settings-group">
-                <h3><i class="fas fa-palette"></i> Appearance</h3>
-                <div class="setting-item">
-                    <label>Theme</label>
-                    <select id="settingsTheme">
-                        <option value="auto">Auto (System)</option>
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                    </select>
-                </div>
-            </div>
-        `;
+            `;
+        }
     }
     
     /**
      * Save settings
      */
     saveSettings() {
-        const model = document.getElementById('settingsTheme')?.value;
-        const theme = document.getElementById('settingsTheme')?.value;
+        const modelSelect = document.getElementById('settingsModel');
+        const themeSelect = document.getElementById('settingsTheme');
         
-        if (model) {
-            this.state.currentModel = model;
-            this.elements.currentModel.textContent = Config.getModelDisplayName(model);
+        if (modelSelect) {
+            this.state.currentModel = modelSelect.value;
+            if (this.elements.currentModel) {
+                this.elements.currentModel.textContent = modelSelect.options[modelSelect.selectedIndex].text;
+            }
         }
         
-        if (theme) {
-            this.theme.setTheme(theme);
+        if (themeSelect && this.theme) {
+            this.theme.setTheme(themeSelect.value);
         }
         
         // Save to localStorage
-        localStorage.setItem(Config.getStorageKey('settings'), JSON.stringify({
-            model: this.state.currentModel,
-            theme: this.theme.getTheme()
-        }));
+        try {
+            localStorage.setItem('promptcraft_settings', JSON.stringify({
+                model: this.state.currentModel,
+                theme: this.theme ? this.theme.getTheme() : 'auto'
+            }));
+        } catch (error) {
+            console.warn('Failed to save settings:', error);
+        }
         
         this.closeSettings();
-        showNotification('Settings saved', 'success');
+        this.showNotification('Settings saved', 'success');
     }
     
     /**
@@ -852,19 +933,25 @@ class PromptCraftApp {
      */
     loadSettings() {
         try {
-            const saved = JSON.parse(localStorage.getItem(Config.getStorageKey('settings')) || '{}');
+            const saved = JSON.parse(localStorage.getItem('promptcraft_settings') || '{}');
             
-            if (saved.model && Config.isValidModel(saved.model)) {
-                this.state.currentModel = saved.model;
-                this.elements.currentModel.textContent = Config.getModelDisplayName(saved.model);
+            if (saved.model && Config.MODELS.AVAILABLE) {
+                const isValid = Config.MODELS.AVAILABLE.some(m => m.id === saved.model);
+                if (isValid) {
+                    this.state.currentModel = saved.model;
+                    if (this.elements.currentModel) {
+                        const model = Config.MODELS.AVAILABLE.find(m => m.id === saved.model);
+                        this.elements.currentModel.textContent = model ? model.name : saved.model;
+                    }
+                }
             }
             
-            if (saved.theme) {
+            if (saved.theme && this.theme) {
                 this.theme.setTheme(saved.theme);
             }
             
         } catch (error) {
-            Config.warn('Failed to load settings:', error);
+            console.warn('Failed to load settings:', error);
         }
     }
     
@@ -932,7 +1019,21 @@ class PromptCraftApp {
             this.elements.apiStatusIndicator.className = `status-indicator ${this.state.apiStatus}`;
         }
     }
+    
+    /**
+     * Show notification (with fallback)
+     */
+    showNotification(message, type = 'info', duration = 3000) {
+        if (this.notifications) {
+            this.notifications(message, type, duration);
+        } else if (window.showNotification) {
+            window.showNotification(message, type, duration);
+        } else {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+    }
 }
 
 // Make globally available
 window.PromptCraftApp = PromptCraftApp;
+console.log('PromptCraftApp class loaded');
