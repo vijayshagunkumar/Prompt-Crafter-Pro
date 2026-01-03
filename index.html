@@ -260,7 +260,7 @@
     
     <!-- Debug script loading -->
     <script>
-        console.log('🔄 PromptCraft Pro starting...');
+        console.log('PromptCraft Pro starting...');
         
         // Track script loading
         window.scriptErrors = [];
@@ -699,32 +699,53 @@
         <textarea id="editorTextarea" class="editor-textarea"></textarea>
     </div>
 
-    <!-- JavaScript Files with robust loading -->
+    <!-- SIMPLE JavaScript Loading -->
     <script>
-        // Robust script loading with error handling
-        (function() {
-            console.log('🔄 Loading JavaScript files...');
+        // Simple script loading without complex template literals
+        console.log('Loading PromptCraft Pro...');
+        
+        // Define scripts to load
+        var scripts = [
+            'js/config.js',
+            'js/utils.js',
+            'js/notifications.js',
+            'js/api.js',
+            'js/speech.js',
+            'js/platforms.js',
+            'js/app.js',
+            'js/main.js'
+        ];
+        
+        // Load scripts one by one
+        function loadScripts() {
+            var index = 0;
             
-            const scripts = [
-                'js/config.js',
-                'js/utils.js',
-                'js/notifications.js',
-                'js/api.js',
-                'js/speech.js',
-                'js/platforms.js',
-                'js/app.js',
-                'js/main.js'
-            ];
-            
-            // Create fallbacks for missing files
-            const fallbacks = {
-                'themeManager': {
-                    code: `
-                        console.log('Using fallback themeManager');
-                        window.themeManager = {
+            function loadNext() {
+                if (index >= scripts.length) {
+                    console.log('All scripts loaded, initializing app...');
+                    initializeApp();
+                    return;
+                }
+                
+                var script = document.createElement('script');
+                script.src = scripts[index];
+                
+                script.onload = function() {
+                    console.log('Loaded: ' + scripts[index]);
+                    index++;
+                    loadNext();
+                };
+                
+                script.onerror = function() {
+                    console.warn('Failed to load: ' + scripts[index]);
+                    
+                    // Create fallback for critical files
+                    if (scripts[index] === 'js/theme.js') {
+                        console.log('Creating themeManager fallback');
+                        window.themeManager = window.themeManager || {
                             init: function() {
-                                const theme = localStorage.getItem('promptcraft_theme') || 'auto';
-                                let finalTheme = theme;
+                                var theme = localStorage.getItem('promptcraft_theme') || 'auto';
+                                var finalTheme = theme;
                                 if (theme === 'auto') {
                                     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                                         finalTheme = 'dark';
@@ -743,180 +764,113 @@
                                 return localStorage.getItem('promptcraft_theme') || 'auto';
                             }
                         };
-                        themeManager.init();
-                    `
-                },
-                'showNotification': {
-                    code: `
-                        console.log('Using fallback showNotification');
-                        window.showNotification = function(message, type = 'info', duration = 3000) {
-                            console.log(\`[\${type.toUpperCase()}] \${message}\`);
-                            // Create a simple notification
-                            const container = document.getElementById('notificationContainer') || 
-                                (() => {
-                                    const div = document.createElement('div');
-                                    div.id = 'notificationContainer';
-                                    div.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;';
-                                    document.body.appendChild(div);
-                                    return div;
-                                })();
-                            
-                            const notification = document.createElement('div');
-                            notification.style.cssText = \`
-                                background: white;
-                                border-radius: 8px;
-                                padding: 12px 16px;
-                                margin-bottom: 10px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                border-left: 4px solid \${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#4F46E5'};
-                                animation: fadeIn 0.3s ease;
-                            \`;
-                            
-                            notification.innerHTML = \`
-                                <i class="fas fa-\${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}" 
-                                   style="color: \${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#4F46E5'}; margin-right: 8px;">
-                                </i>
-                                \${message}
-                            \`;
-                            
-                            container.appendChild(notification);
-                            
-                            // Auto-remove
-                            if (duration > 0) {
-                                setTimeout(() => {
-                                    if (notification.parentNode) {
-                                        notification.parentNode.removeChild(notification);
-                                    }
-                                }, duration);
-                            }
-                        };
-                    `
-                }
-            };
-            
-            // Load scripts with error handling
-            function loadScript(src) {
-                return new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.async = false;
-                    
-                    script.onload = () => {
-                        console.log(\`✅ Loaded: \${src}\`);
-                        resolve();
-                    };
-                    
-                    script.onerror = () => {
-                        console.warn(\`⚠️ Failed to load: \${src}\`);
-                        
-                        // Check if this is a critical file
-                        const fileName = src.split('/').pop();
-                        if (fileName === 'theme.js') {
-                            console.log('Injecting themeManager fallback...');
-                            const script = document.createElement('script');
-                            script.textContent = fallbacks.themeManager.code;
-                            document.head.appendChild(script);
-                        }
-                        
-                        resolve(); // Continue even if file fails
-                    };
-                    
-                    document.head.appendChild(script);
-                });
-            }
-            
-            // Load all scripts sequentially
-            async function loadAllScripts() {
-                for (const src of scripts) {
-                    await loadScript(src);
-                }
-                
-                console.log('✅ All scripts loaded (or attempted)');
-                
-                // Apply any missing fallbacks
-                if (!window.showNotification) {
-                    const script = document.createElement('script');
-                    script.textContent = fallbacks.showNotification.code;
-                    document.head.appendChild(script);
-                }
-                
-                // Initialize the app
-                initializeApp();
-            }
-            
-            // Initialize the application
-            function initializeApp() {
-                console.log('🚀 Initializing PromptCraft Pro...');
-                
-                // Check for critical dependencies
-                const criticalDeps = ['Config', 'Utils'];
-                const missingCritical = criticalDeps.filter(dep => !window[dep]);
-                
-                if (missingCritical.length > 0) {
-                    console.error('Missing critical dependencies:', missingCritical);
-                    alert('Failed to load essential components. Please refresh the page.');
-                    return;
-                }
-                
-                // Check for optional dependencies
-                if (!window.themeManager) {
-                    console.warn('themeManager not found, using fallback');
-                    // Already injected fallback above
-                }
-                
-                // Initialize the app
-                setTimeout(() => {
-                    if (window.PromptCraftApp) {
-                        try {
-                            window.app = new PromptCraftApp();
-                            console.log('✅ PromptCraft Pro initialized successfully');
-                            
-                            // Show welcome message
-                            if (window.showNotification) {
-                                showNotification('Welcome to PromptCraft Pro!', 'success', 5000);
-                            }
-                        } catch (error) {
-                            console.error('Failed to initialize app:', error);
-                            if (window.showNotification) {
-                                showNotification('Failed to initialize application', 'error');
-                            }
-                        }
-                    } else {
-                        console.error('PromptCraftApp not found');
-                        if (window.showNotification) {
-                            showNotification('Application core not loaded', 'error');
-                        }
                     }
-                }, 500);
+                    
+                    index++;
+                    loadNext();
+                };
+                
+                document.head.appendChild(script);
             }
             
-            // Start loading when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', loadAllScripts);
-            } else {
-                loadAllScripts();
+            loadNext();
+        }
+        
+        // Initialize the app
+        function initializeApp() {
+            console.log('Initializing app...');
+            
+            // Check for essential dependencies
+            if (!window.Config || !window.Utils) {
+                console.error('Missing essential dependencies');
+                alert('Failed to load essential components. Please refresh.');
+                return;
             }
-        })();
+            
+            // Initialize theme
+            if (window.themeManager) {
+                window.themeManager.init();
+            }
+            
+            // Initialize the main app
+            setTimeout(function() {
+                if (window.PromptCraftApp) {
+                    try {
+                        window.app = new PromptCraftApp();
+                        console.log('PromptCraft Pro initialized successfully');
+                        
+                        // Show welcome message
+                        if (window.showNotification) {
+                            showNotification('Welcome to PromptCraft Pro!', 'success', 5000);
+                        } else {
+                            console.log('Welcome to PromptCraft Pro!');
+                        }
+                    } catch (error) {
+                        console.error('Failed to initialize app:', error);
+                        alert('App initialization failed: ' + error.message);
+                    }
+                } else {
+                    console.error('PromptCraftApp not found');
+                    alert('Application core not loaded. Check console for errors.');
+                }
+            }, 500);
+        }
+        
+        // Start loading when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadScripts);
+        } else {
+            loadScripts();
+        }
     </script>
     
-    <!-- Emergency fallback -->
+    <!-- Simple notification fallback -->
     <script>
-        // Emergency fallback for critical functions
-        window.addEventListener('error', function(e) {
-            console.error('Global error:', e.error);
-            
-            // If showNotification doesn't exist yet
-            if (!window.showNotification) {
-                window.showNotification = function(message, type = 'info') {
-                    console.log(\`[\${type}] \${message}\`);
-                };
-            }
-            
-            // Show error to user
-            if (window.showNotification) {
-                showNotification('An error occurred. Please refresh.', 'error');
-            }
-        });
+        // Simple notification fallback
+        if (!window.showNotification) {
+            window.showNotification = function(message, type, duration) {
+                console.log('[' + (type || 'info').toUpperCase() + '] ' + message);
+                
+                // Create a simple notification element
+                var container = document.getElementById('notificationContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'notificationContainer';
+                    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;';
+                    document.body.appendChild(container);
+                }
+                
+                var notification = document.createElement('div');
+                notification.style.cssText = 'background:white;border-radius:8px;padding:12px 16px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-left:4px solid;';
+                
+                // Set border color based on type
+                var color = '#4F46E5'; // default
+                if (type === 'success') color = '#10B981';
+                else if (type === 'error') color = '#EF4444';
+                else if (type === 'warning') color = '#F59E0B';
+                
+                notification.style.borderLeftColor = color;
+                
+                // Set icon based on type
+                var icon = 'info-circle';
+                if (type === 'success') icon = 'check-circle';
+                else if (type === 'error') icon = 'exclamation-circle';
+                else if (type === 'warning') icon = 'exclamation-triangle';
+                
+                notification.innerHTML = '<i class="fas fa-' + icon + '" style="color:' + color + ';margin-right:8px;"></i>' + message;
+                
+                container.appendChild(notification);
+                
+                // Auto-remove
+                if (duration && duration > 0) {
+                    setTimeout(function() {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, duration || 3000);
+                }
+            };
+        }
     </script>
 </body>
 </html>
