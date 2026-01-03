@@ -495,51 +495,32 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
     }
 
     // ✅ NEW: SUPER SAFE text insertion
-    setOutputText(text) {
-        try {
-            console.log('Setting output text, length:', text.length);
-            
-            // First, completely clean the text
-            const cleanText = this.cleanTextForDOM(text);
-            console.log('Cleaned text length:', cleanText.length);
-            
-            // Clear output area first
-            this.elements.outputArea.innerHTML = '';
-            
-            // Use document.createTextNode for maximum safety
-            const textNode = document.createTextNode(cleanText);
-            this.elements.outputArea.appendChild(textNode);
-            
-            // Verify it was set correctly
-            const verifyText = this.elements.outputArea.textContent;
-            if (verifyText !== cleanText) {
-                console.error('Text was not set correctly!');
-                console.error('Expected length:', cleanText.length);
-                console.error('Got length:', verifyText.length);
-                console.error('Expected (first 100):', cleanText.substring(0, 100));
-                console.error('Got (first 100):', verifyText.substring(0, 100));
-                
-                // Emergency fallback - use textContent directly
-                this.elements.outputArea.textContent = 'Generated prompt: ' + cleanText.substring(0, 500);
-                return true;
+setOutputText(text) {
+    try {
+        this.elements.outputArea.innerHTML = '';
+
+        const lines = this.cleanTextForDOM(text).split('\n');
+
+        for (const line of lines) {
+            if (line.trim()) {
+                const span = document.createElement('span');
+                span.textContent = line;
+                this.elements.outputArea.appendChild(span);
             }
-            
-            console.log('Successfully set output text:', cleanText.length, 'chars');
-            return true;
-            
-        } catch (error) {
-            console.error('Failed to set output text:', error);
-            
-            // Last resort
-            try {
-                this.elements.outputArea.textContent = 'Generated prompt (display error): ' + text.substring(0, 300);
-            } catch (e) {
-                this.elements.outputArea.textContent = 'Error displaying generated content.';
-            }
-            
-            return false;
+            this.elements.outputArea.appendChild(document.createElement('br'));
         }
+
+        this.elements.outputArea.scrollTop =
+            this.elements.outputArea.scrollHeight;
+
+        return true;
+    } catch (e) {
+        console.error('Display failed:', e);
+        this.elements.outputArea.textContent = text.slice(0, 500);
+        return false;
     }
+}
+
 
     // ✅ NEW: Ultra-safe text cleaning
   
