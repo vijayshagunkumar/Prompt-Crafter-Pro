@@ -3,29 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PromptCraft Pro - Enterprise AI Prompt Assistant">
-    <title>PromptCraft Pro | Enterprise AI Prompt Assistant</title>
+    <title>PromptCraft Pro - AI Prompt Generator</title>
     
-    <!-- Font Awesome -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- CSS Files - NOW COMPATIBLE WITH PRO LAYOUT -->
-  <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes.css">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/ui-components.css">
+    <link rel="stylesheet" href="css/responsive.css">
     
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠✨</text></svg>">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <style>
+        /* Additional inline styles for fixes */
+        #outputArea {
+            white-space: pre-wrap !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            max-height: none !important;
+            min-height: 300px;
+            overflow-y: auto;
+            padding: 20px !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+        
+        /* Loading Animation */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-
-<body>
+<body data-theme="light">
     <!-- Header -->
     <header class="app-header">
-        <div class="header-content">
+        <div class="container header-content">
             <div class="header-top">
                 <a href="#" class="logo">
                     <div class="logo-icon">
@@ -33,329 +64,562 @@
                     </div>
                     <div class="logo-text">
                         <h1>PromptCraft Pro</h1>
-                        <p>Enterprise-grade AI prompt optimization for professional workflows</p>
+                        <p>Enterprise AI Prompt Generator & Optimizer</p>
                     </div>
                 </a>
                 
                 <div class="header-actions">
+                    <!-- API Status Indicator -->
+                    <div id="apiStatusIndicator" class="api-status-indicator">
+                        <div class="status-indicator checking"></div>
+                        <span class="api-status-text checking-text">Checking API...</span>
+                        <span class="api-status-text online-text" style="display: none;">API Online</span>
+                        <span class="api-status-text offline-text" style="display: none;">API Offline</span>
+                    </div>
+                    
+                    <!-- Need Inspiration Button -->
+                    <button id="needInspirationBtn" class="need-inspiration-header">
+                        <i class="fas fa-lightbulb"></i>
+                        Need Inspiration?
+                    </button>
+                    
                     <!-- History Button -->
-                    <button id="historyBtn" class="action-btn glass-effect" title="Prompt History">
+                    <button id="historyBtn" class="action-btn" aria-label="View history">
                         <i class="fas fa-history"></i>
                         <span class="action-btn-tooltip">History</span>
                     </button>
                     
                     <!-- Settings Button -->
-                    <button id="settingsBtn" class="action-btn glass-effect" title="Settings">
-                        <i class="fas fa-sliders-h"></i>
+                    <button id="settingsBtn" class="action-btn" aria-label="Open settings">
+                        <i class="fas fa-cog"></i>
                         <span class="action-btn-tooltip">Settings</span>
                     </button>
                 </div>
             </div>
             
+            <!-- Progress Indicator -->
             <div class="progress-indicator">
-                <div id="progressFill" class="progress-fill"></div>
+                <div class="progress-fill"></div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="app-container">
-        <!-- Step 1: Input (Visible initially) -->
-        <div class="input-section">
+    <!-- Main App Container -->
+    <main class="container app-container">
+        <!-- Step 1: Input Section -->
+        <section class="input-section">
             <div class="card">
                 <div class="step-header">
                     <div class="step-number">1</div>
-                    <div>
-                        <div class="step-title">Describe Your Task</div>
-                        <div class="step-subtitle">Provide detailed context for optimal AI prompt generation</div>
+                    <div class="step-title-container">
+                        <h2 class="step-title">Describe Your Task</h2>
+                        <p class="step-subtitle">Enter what you want the AI to do. Be as specific or general as you like.</p>
                     </div>
                 </div>
                 
-                <div class="input-label">What would you like the AI to help you with?</div>
-                
-                <div class="textarea-container">
-                    <!-- Character Counter (Top-right corner) -->
-                    <div class="char-counter" id="charCounter">0/5000</div>
+                <div class="input-container">
+                    <label for="userInput" class="input-label">Your Task Description</label>
                     
-                    <!-- Maximize Button (Top-right corner inside box) -->
-                    <div class="textarea-top-right-controls">
-                        <button id="maximizeInputBtn" class="action-btn" title="Maximize Editor">
-                            <i class="fas fa-expand"></i>
-                            <span class="action-btn-tooltip">Maximize</span>
-                        </button>
-                    </div>
-                    
-                    <textarea 
-                        id="userInput"
-                        class="textarea"
-                        placeholder="Example: Create a comprehensive project proposal for implementing an AI-powered customer service chatbot that reduces response time by 40% while maintaining customer satisfaction scores..."
-                        rows="5"
-                    ></textarea>
-                    
-                    <!-- Text Area Controls (Bottom corners) -->
-                    <div class="textarea-controls">
-                        <div class="left-controls">
-                            <!-- Voice Input (Bottom-left) -->
-                            <button id="micBtn" class="action-btn" title="Voice Input">
-                                <i class="fas fa-microphone"></i>
-                                <span class="action-btn-tooltip">Voice Input</span>
-                            </button>
+                    <div class="textarea-container">
+                        <div class="char-counter">
+                            <span id="charCount">0</span>/<span id="charLimit">4000</span>
                         </div>
-                        <div class="right-controls">
-                            <!-- Undo Button (Bottom-right) -->
-                            <button id="undoBtn" class="undo-btn" title="Undo Last Change">
-                                <i class="fas fa-undo"></i>
-                                <span class="action-btn-tooltip">Undo</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Need Inspiration Button and Panel -->
-                <div class="inspiration-container">
-                    <button id="needInspirationBtn" class="need-inspiration-btn">
-                        <i class="fas fa-lightbulb"></i>
-                        Need Inspiration?
-                    </button>
-                    
-                    <!-- Inspiration Panel -->
-                    <div class="inspiration-panel" id="inspirationPanel">
-                        <div class="inspiration-header">
-                            <div class="inspiration-title">
-                                <i class="fas fa-lightbulb"></i>
-                                Inspiration Templates
-                            </div>
-                            <button class="close-inspiration-btn" id="closeInspirationBtn" title="Close">
+                        
+                        <!-- Textarea Top Right Controls -->
+                        <div class="textarea-top-right-controls">
+                            <button id="clearInputBtn" class="clear-btn" aria-label="Clear text">
                                 <i class="fas fa-times"></i>
                             </button>
+                            <button id="maximizeBtn" class="maximize-btn" aria-label="Maximize editor">
+                                <i class="fas fa-expand"></i>
+                            </button>
                         </div>
-                        <div class="inspiration-grid">
-                            <a href="#" class="inspiration-item" data-type="email">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-envelope"></i>
+                        
+                        <textarea 
+                            id="userInput" 
+                            class="textarea" 
+                            placeholder="Example: Write a Python script to scrape data from a website with error handling and logging..."
+                            rows="8"
+                        ></textarea>
+                        
+                        <!-- Textarea Bottom Controls -->
+                        <div class="textarea-controls">
+                            <div class="left-controls">
+                                <button id="micBtn" class="action-btn mic-btn" aria-label="Voice input">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button id="undoBtn" class="action-btn undo-btn disabled" aria-label="Undo">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </div>
+                            <div class="right-controls">
+                                <button id="speakBtn" class="action-btn speak-btn" aria-label="Speak text">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Selection -->
+                    <div class="model-selection-container">
+                        <label class="input-label">Select AI Model</label>
+                        <div class="model-buttons">
+                            <button class="model-button active" data-model="gemini-3-flash-preview">Gemini 3 Flash</button>
+                            <button class="model-button" data-model="gpt-4o-mini">GPT-4o Mini</button>
+                            <button class="model-button" data-model="llama-3.1-8b-instant">Llama 3.1</button>
+                        </div>
+                    </div>
+                    
+                    <!-- API Info Panel -->
+                    <div id="apiInfoPanel" class="api-info-panel" style="display: none;">
+                        <div class="api-info-content">
+                            <div class="api-status-line">
+                                <div class="api-status-icon checking"></div>
+                                <span class="api-status-message">Checking Cloudflare Worker API connection...</span>
+                            </div>
+                            <div class="api-details" style="display: none;">
+                                <div class="api-detail-item">
+                                    <span class="api-detail-label">Endpoint:</span>
+                                    <span class="api-detail-value" id="apiEndpointDisplay">https://promptcraft-api.vijay-shagunkumar.workers.dev</span>
                                 </div>
-                                <div class="inspiration-text">Business Email</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="code">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-code"></i>
+                                <div class="api-detail-item">
+                                    <span class="api-detail-label">Status:</span>
+                                    <span class="api-detail-value" id="apiStatusDisplay">Checking...</span>
                                 </div>
-                                <div class="inspiration-text">Code Generation</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="analysis">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-chart-bar"></i>
+                                <div class="api-detail-item">
+                                    <span class="api-detail-label">Response Time:</span>
+                                    <span class="api-detail-value" id="apiResponseTime">0ms</span>
                                 </div>
-                                <div class="inspiration-text">Data Analysis</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="creative">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-paint-brush"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Need Inspiration Panel -->
+                    <div class="inspiration-container">
+                        <div id="inspirationPanel" class="inspiration-panel">
+                            <div class="inspiration-header">
+                                <div class="inspiration-title">
+                                    <i class="fas fa-lightbulb"></i>
+                                    Quick Start Examples
                                 </div>
-                                <div class="inspiration-text">Creative Writing</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="strategy">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-chess"></i>
+                                <button id="closeInspirationBtn" class="close-inspiration-btn" aria-label="Close inspiration panel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="inspiration-grid">
+                                <div class="inspiration-item" data-example="code">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-code"></i>
+                                    </div>
+                                    <div class="inspiration-text">Write Code</div>
                                 </div>
-                                <div class="inspiration-text">Business Strategy</div>
-                            </a>
-                            <a href="#" class="inspiration-item" data-type="research">
-                                <div class="inspiration-icon">
-                                    <i class="fas fa-search"></i>
+                                <div class="inspiration-item" data-example="content">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-pen-fancy"></i>
+                                    </div>
+                                    <div class="inspiration-text">Create Content</div>
                                 </div>
-                                <div class="inspiration-text">Research Summary</div>
-                            </a>
+                                <div class="inspiration-item" data-example="analysis">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="inspiration-text">Data Analysis</div>
+                                </div>
+                                <div class="inspiration-item" data-example="learning">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="inspiration-text">Learning Assistant</div>
+                                </div>
+                                <div class="inspiration-item" data-example="business">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-briefcase"></i>
+                                    </div>
+                                    <div class="inspiration-text">Business Ideas</div>
+                                </div>
+                                <div class="inspiration-item" data-example="creative">
+                                    <div class="inspiration-icon">
+                                        <i class="fas fa-palette"></i>
+                                    </div>
+                                    <div class="inspiration-text">Creative Writing</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Steps 2 & 3: Output and AI Platforms Side-by-Side (Hidden initially) -->
-        <div class="output-section" id="outputSection">
+        <!-- Steps 2 & 3: Output and AI Platforms -->
+        <section id="outputSection" class="output-section">
             <!-- Step 2: Generated Prompt -->
-            <div class="card" id="outputCard">
-                <div class="step-header">
-                    <div class="step-number">2</div>
-                    <div>
-                        <div class="step-title">Generated Prompt</div>
-                        <div class="step-subtitle">Optimized for maximum AI performance and clarity</div>
-                    </div>
-                </div>
-                
-                <div class="output-container">
-                    <!-- Output Action Buttons (Top-right inside text box) -->
-                    <div class="output-actions">
-                        <button id="speakBtn" class="action-btn" title="Listen to Prompt">
-                            <i class="fas fa-volume-up"></i>
-                            <span class="action-btn-tooltip">Listen</span>
-                        </button>
-                        <button id="copyBtn" class="action-btn" title="Copy Prompt">
-                            <i class="fas fa-copy"></i>
-                            <span class="action-btn-tooltip">Copy</span>
-                        </button>
-                        <button id="exportBtn" class="action-btn" title="Export Prompt">
-                            <i class="fas fa-download"></i>
-                            <span class="action-btn-tooltip">Export</span>
-                        </button>
-                        <button id="maximizeOutputBtn" class="action-btn" title="Maximize Editor">
-                            <i class="fas fa-expand"></i>
-                            <span class="action-btn-tooltip">Maximize</span>
-                        </button>
+            <div class="output-column">
+                <div id="outputCard" class="card">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title-container">
+                            <h2 class="step-title">Optimized Prompt</h2>
+                            <p class="step-subtitle">AI-enhanced prompt ready to copy and use</p>
+                        </div>
                     </div>
                     
-                    <!-- Save Button (Appears when prompt is edited) -->
-                    <button id="savePromptBtn" class="save-btn">
-                        <i class="fas fa-save"></i>
-                        Save
-                    </button>
-                    
-                    <!-- Editable Output Area -->
-                    <div 
-                        id="outputArea" 
-                        class="output-area" 
-                        contenteditable="true"
-                        data-placeholder="Your optimized prompt will appear here. Describe your task in Step 1 and click 'Prepare Prompt' to generate."
-                    ></div>
-                </div>
-                
-                <!-- Suggestions Panel -->
-                <div class="suggestions-panel" id="suggestionsPanel">
-                    <h4 style="margin-bottom: 8px; color: var(--text-primary); font-size: 12px;">
-                        <i class="fas fa-bolt"></i> Optimization Suggestions
-                    </h4>
-                    <div id="suggestionsList"></div>
+                    <div class="output-container">
+                        <!-- Save Button -->
+                        <button id="savePromptBtn" class="save-btn">
+                            <i class="fas fa-save"></i>
+                            Save Prompt
+                        </button>
+                        
+                        <!-- Output Action Buttons -->
+                        <div class="output-actions">
+                            <button id="copyOutputBtn" class="action-btn" aria-label="Copy to clipboard">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button id="speakOutputBtn" class="action-btn" aria-label="Speak output">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Output Area -->
+                        <div id="outputArea" class="output-area" contenteditable="true"></div>
+                        
+                        <!-- Generation Info -->
+                        <div id="generationInfo" class="generation-info" style="display: none;">
+                            <div class="generation-stats">
+                                <div class="generation-stat">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Generated in: <span id="generationTime">0</span>s</span>
+                                </div>
+                                <div class="generation-stat">
+                                    <i class="fas fa-microchip"></i>
+                                    <span>Model: <span id="usedModel">gemini-3-flash-preview</span></span>
+                                </div>
+                                <div class="generation-stat">
+                                    <i class="fas fa-bolt"></i>
+                                    <span>Tokens: <span id="tokenCount">0</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Suggestions Panel -->
+                        <div id="suggestionsPanel" class="suggestions-panel">
+                            <div class="suggestion-item" data-action="make-shorter">
+                                <i class="fas fa-compress-alt"></i>
+                                <span>Make it shorter</span>
+                            </div>
+                            <div class="suggestion-item" data-action="make-detailed">
+                                <i class="fas fa-expand-alt"></i>
+                                <span>Add more details</span>
+                            </div>
+                            <div class="suggestion-item" data-action="make-formal">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Make it formal</span>
+                            </div>
+                            <div class="suggestion-item" data-action="make-casual">
+                                <i class="fas fa-comments"></i>
+                                <span>Make it casual</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Step 3: AI Platforms Sidebar -->
-            <div class="platforms-sidebar">
-                <div class="card" id="aiCard">
+            <!-- Step 3: AI Platforms -->
+            <div class="platforms-column">
+                <div id="aiCard" class="card">
                     <div class="step-header">
                         <div class="step-number">3</div>
-                        <div>
-                            <div class="step-title">Deploy to AI</div>
-                            <div class="step-subtitle">Select a platform to launch your prompt</div>
+                        <div class="step-title-container">
+                            <h2 class="step-title">AI Platforms</h2>
+                            <p class="step-subtitle">Use your prompt with these AI platforms</p>
                         </div>
                     </div>
                     
-                    <div class="platforms-header">
-                        <p style="color: var(--text-secondary); font-size: 12px;">
-                            Click any AI tool to copy the prompt and open the platform
-                        </p>
-                    </div>
-                    
-                    <div id="platformsGrid" class="platforms-grid">
-                        <!-- AI Platforms will be dynamically inserted here -->
-                        <div class="empty-state" id="platformsEmptyState">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <p>Generate a prompt first to see AI platform options</p>
+                    <div class="platforms-sidebar">
+                        <div class="platforms-header">
+                            <p>Click any platform to open with your generated prompt</p>
+                        </div>
+                        
+                        <div class="platforms-grid">
+                            <!-- Gemini -->
+                            <a href="#" class="platform-card recommended" data-platform="gemini" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fas fa-google"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">
+                                        Google Gemini
+                                        <span class="recommended-badge">Recommended</span>
+                                    </div>
+                                    <div class="platform-desc">Advanced reasoning with Google's AI</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Free</span>
+                                        <span class="platform-tag">Advanced</span>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- ChatGPT -->
+                            <a href="#" class="platform-card" data-platform="chatgpt" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fab fa-openai"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">OpenAI ChatGPT</div>
+                                    <div class="platform-desc">Most popular AI assistant</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Freemium</span>
+                                        <span class="platform-tag">Versatile</span>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- Claude -->
+                            <a href="#" class="platform-card" data-platform="claude" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">Anthropic Claude</div>
+                                    <div class="platform-desc">Safety-focused, long context</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Freemium</span>
+                                        <span class="platform-tag">Safe</span>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- Perplexity -->
+                            <a href="#" class="platform-card" data-platform="perplexity" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">Perplexity AI</div>
+                                    <div class="platform-desc">Real-time web search AI</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Freemium</span>
+                                        <span class="platform-tag">Web Search</span>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- DeepSeek -->
+                            <a href="#" class="platform-card" data-platform="deepseek" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">DeepSeek</div>
+                                    <div class="platform-desc">Free, powerful open model</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Free</span>
+                                        <span class="platform-tag">Open Source</span>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- Copilot -->
+                            <a href="#" class="platform-card" data-platform="copilot" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fab fa-microsoft"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">Microsoft Copilot</div>
+                                    <div class="platform-desc">Integrated with Microsoft 365</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Freemium</span>
+                                        <span class="platform-tag">Integrated</span>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- Grok -->
+                            <a href="#" class="platform-card" data-platform="grok" target="_blank">
+                                <div class="platform-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="platform-info">
+                                    <div class="platform-name">Grok AI</div>
+                                    <div class="platform-desc">X's AI with real-time data</div>
+                                    <div class="platform-tags">
+                                        <span class="platform-tag">Premium</span>
+                                        <span class="platform-tag">Real-time</span>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Prompt History Section -->
-        <div class="history-section" id="historySection">
+        </section>
+
+        <!-- History Section -->
+        <section id="historySection" class="history-section">
             <div class="card">
                 <div class="history-header">
-                    <div class="step-header">
-                        <div class="step-number">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div>
-                            <div class="step-title">Prompt History</div>
-                            <div class="step-subtitle">Recently generated and saved prompts</div>
-                        </div>
-                    </div>
-                    <button class="history-close-btn" id="closeHistoryBtn" title="Close History">
+                    <h3 class="step-title">
+                        <i class="fas fa-history"></i>
+                        Prompt History
+                    </h3>
+                    <button id="closeHistoryBtn" class="history-close-btn" aria-label="Close history">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="history-list" id="historyList">
+                <div id="historyList" class="history-list">
                     <!-- History items will be added here -->
-                    <div class="history-empty">
-                        <div class="history-empty-icon">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <p>No prompt history yet</p>
-                        <p class="history-empty-hint">Generate some prompts to see them here</p>
-                    </div>
                 </div>
             </div>
-        </div>
+        </section>
     </main>
 
     <!-- Sticky CTA Buttons -->
     <div class="sticky-cta-container">
-        <button id="stickyPrepareBtn" class="sticky-cta prepare">
-            <i class="fas fa-magic cta-icon"></i>
-            <span>Prepare Prompt</span>
+        <button id="preparePromptBtn" class="sticky-cta prepare visible">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            Prepare Prompt
+        </button>
+        <button id="resetAllBtn" class="sticky-cta reset hidden">
+            <i class="fas fa-redo"></i>
+            Reset All
         </button>
     </div>
-    
-    <!-- Reset Button -->
-    <button id="stickyResetBtn" class="sticky-cta reset hidden">
-        <i class="fas fa-redo cta-icon"></i>
-        <span>Reset</span>
+
+    <!-- Add the missing button right after sticky CTA buttons -->
+    <button id="stickyPrepareBtn" class="sticky-btn" style="
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    ">
+        🚀 Prepare Prompt
     </button>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-        <div class="footer-content">
-            <div class="footer-info">
-                <div class="footer-item">
-                    <span class="status-indicator"></span>
-                    <span>Status: <strong>Online</strong></span>
-                </div>
-                <div class="footer-item">
-                    <i class="fas fa-robot"></i>
-                    <span>AI Model: <strong id="currentModel">Google Gemini</strong></span>
-                </div>
-                <div class="footer-item">
-                    <i class="fas fa-palette"></i>
-                    <span>Theme: <strong id="currentTheme">Dark</strong></span>
-                </div>
-                <div class="footer-item">
-                    <i class="fas fa-language"></i>
-                    <span>Language: <strong id="currentLanguage">English</strong></span>
-                </div>
+    <!-- Full Screen Editor -->
+    <div id="fullScreenEditor" class="full-screen-editor">
+        <div class="editor-header">
+            <div class="editor-title">
+                <i class="fas fa-edit"></i>
+                <span>Full Screen Editor</span>
             </div>
-            <div class="footer-copyright">
-                <p>© 2024 PromptCraft Pro. Enterprise AI Prompt Assistant v2.0</p>
-                <p>Optimizing AI interactions for professional workflows</p>
+            <div class="editor-actions">
+                <button id="editorPrepareBtn" class="editor-prepare-btn">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    Prepare Prompt
+                </button>
+                <button id="exitFullScreenBtn" class="action-btn" aria-label="Exit full screen">
+                    <i class="fas fa-compress"></i>
+                </button>
             </div>
         </div>
-    </footer>
+        <div class="editor-content">
+            <textarea id="editorTextarea" class="editor-textarea" placeholder="Type your prompt here..."></textarea>
+            
+            <div class="editor-controls">
+                <div class="editor-left-controls">
+                    <button id="editorMicBtn" class="action-btn mic-btn" aria-label="Voice input">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="editorUndoBtn" class="action-btn undo-btn disabled" aria-label="Undo">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+                <div class="editor-right-controls">
+                    <button id="editorSpeakBtn" class="action-btn speak-btn" aria-label="Speak text">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <button id="editorClearBtn" class="action-btn clear-btn" aria-label="Clear text">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Editor API Status -->
+            <div class="editor-api-status">
+                <div class="editor-api-status-content">
+                    <div class="editor-api-status-icon checking"></div>
+                    <span>Checking API...</span>
+                </div>
+                <button class="editor-api-status-refresh" aria-label="Refresh API status">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal-overlay">
+    <!-- Settings Modal - COMPLETE FIXED VERSION -->
+    <div id="settingsModal" class="modal-overlay" role="dialog" aria-labelledby="settingsTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">
+                <h3 class="modal-title" id="settingsTitle">
                     <i class="fas fa-cog"></i>
                     Settings & Preferences
-                </div>
-                <button id="closeSettingsBtn" class="action-btn">
+                </h3>
+                <button id="closeSettingsBtn" class="action-btn" aria-label="Close settings">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <div class="modal-body">
-                <!-- Language Settings -->
+                <!-- API Settings -->
                 <div class="settings-group">
-                    <h3 class="settings-group-title">
-                        <i class="fas fa-language"></i>
-                        Language & Localization
-                    </h3>
+                    <h4 class="settings-group-title">
+                        <i class="fas fa-plug"></i>
+                        API Configuration
+                    </h4>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Interface Language</label>
-                        <select id="interfaceLanguage" class="language-select">
+                        <label for="apiEndpoint" class="setting-label">API Endpoint</label>
+                        <input 
+                            type="text" 
+                            id="apiEndpoint" 
+                            class="setting-input"
+                            value="https://promptcraft-api.vijay-shagunkumar.workers.dev"
+                            aria-describedby="apiEndpointHelp"
+                        >
+                        <p id="apiEndpointHelp" class="helper-text">Cloudflare Worker endpoint for AI services</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="apiMode" class="setting-label">API Mode</label>
+                        <select id="apiMode" class="setting-select" aria-describedby="apiModeHelp">
+                            <option value="auto">Auto (Online with fallback)</option>
+                            <option value="online">Online only</option>
+                            <option value="offline">Offline only</option>
+                        </select>
+                        <p id="apiModeHelp" class="helper-text">Control how the app uses AI services</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="defaultAiModel" class="setting-label">Default AI Model</label>
+                        <select id="defaultAiModel" class="setting-select" aria-describedby="defaultAiModelHelp">
+                            <option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Recommended)</option>
+                            <option value="gpt-4o-mini">GPT-4o Mini</option>
+                            <option value="llama-3.1-8b-instant">Llama 3.1 8B (Groq)</option>
+                        </select>
+                        <p id="defaultAiModelHelp" class="helper-text">Default model for prompt generation</p>
+                    </div>
+                </div>
+                
+                <!-- Language Settings -->
+                <div class="settings-group">
+                    <h4 class="settings-group-title">
+                        <i class="fas fa-language"></i>
+                        Language & Localization
+                    </h4>
+                    
+                    <div class="setting-item">
+                        <label for="interfaceLanguage" class="setting-label">Interface Language</label>
+                        <select id="interfaceLanguage" class="setting-select" aria-describedby="interfaceLanguageHelp">
                             <option value="en">English</option>
                             <option value="hi">Hindi</option>
                             <option value="te">Telugu</option>
@@ -368,12 +632,12 @@
                             <option value="ko">Korean</option>
                             <option value="zh">Chinese (Simplified)</option>
                         </select>
-                        <p class="helper-text">Select your preferred interface language</p>
+                        <p id="interfaceLanguageHelp" class="helper-text">Select your preferred interface language</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Voice Input Language</label>
-                        <select id="voiceInputLanguage">
+                        <label for="voiceInputLanguage" class="setting-label">Voice Input Language</label>
+                        <select id="voiceInputLanguage" class="setting-select" aria-describedby="voiceInputHelp">
                             <option value="en-US">English (US)</option>
                             <option value="en-GB">English (UK)</option>
                             <option value="hi-IN">Hindi (India)</option>
@@ -387,12 +651,12 @@
                             <option value="ko-KR">Korean</option>
                             <option value="zh-CN">Chinese (Simplified)</option>
                         </select>
-                        <p class="helper-text">Language for voice input recognition</p>
+                        <p id="voiceInputHelp" class="helper-text">Language for voice input recognition</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Voice Output Language</label>
-                        <select id="voiceOutputLanguage">
+                        <label for="voiceOutputLanguage" class="setting-label">Voice Output Language</label>
+                        <select id="voiceOutputLanguage" class="setting-select" aria-describedby="voiceOutputHelp">
                             <option value="en-US">English (US)</option>
                             <option value="en-GB">English (UK)</option>
                             <option value="hi-IN">Hindi (India)</option>
@@ -406,48 +670,48 @@
                             <option value="ko-KR">Korean</option>
                             <option value="zh-CN">Chinese (Simplified)</option>
                         </select>
-                        <p class="helper-text">Language for text-to-speech output</p>
+                        <p id="voiceOutputHelp" class="helper-text">Language for text-to-speech output</p>
                     </div>
                 </div>
                 
                 <!-- Appearance -->
                 <div class="settings-group">
-                    <h3 class="settings-group-title">
+                    <h4 class="settings-group-title">
                         <i class="fas fa-palette"></i>
                         Appearance & Interface
-                    </h3>
+                    </h4>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Theme</label>
-                        <select id="themeSelect">
+                        <label for="themeSelect" class="setting-label">Theme</label>
+                        <select id="themeSelect" class="setting-select" aria-describedby="themeHelp">
                             <option value="auto">Auto (System Preference)</option>
                             <option value="light">Light Theme</option>
                             <option value="dark">Dark Theme</option>
                         </select>
-                        <p class="helper-text">Choose your preferred visual theme</p>
+                        <p id="themeHelp" class="helper-text">Choose your preferred visual theme</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">UI Density</label>
-                        <select id="uiDensity">
+                        <label for="uiDensity" class="setting-label">UI Density</label>
+                        <select id="uiDensity" class="setting-select" aria-describedby="uiDensityHelp">
                             <option value="comfortable">Comfortable</option>
                             <option value="compact">Compact</option>
                             <option value="spacious">Spacious</option>
                         </select>
-                        <p class="helper-text">Adjust spacing and density for optimal workflow</p>
+                        <p id="uiDensityHelp" class="helper-text">Adjust spacing and density for optimal workflow</p>
                     </div>
                 </div>
                 
                 <!-- AI Preferences -->
                 <div class="settings-group">
-                    <h3 class="settings-group-title">
+                    <h4 class="settings-group-title">
                         <i class="fas fa-robot"></i>
-                        AI Model Preferences
-                    </h3>
+                        AI Platform Preferences
+                    </h4>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Default AI Platform</label>
-                        <select id="defaultModel">
+                        <label for="defaultPlatform" class="setting-label">Default AI Platform</label>
+                        <select id="defaultPlatform" class="setting-select" aria-describedby="defaultPlatformHelp">
                             <option value="gemini">Google Gemini</option>
                             <option value="chatgpt">OpenAI ChatGPT</option>
                             <option value="claude">Anthropic Claude</option>
@@ -456,84 +720,224 @@
                             <option value="copilot">Microsoft Copilot</option>
                             <option value="grok">Grok AI</option>
                         </select>
-                        <p class="helper-text">Select your preferred AI platform</p>
+                        <p id="defaultPlatformHelp" class="helper-text">Select your preferred AI platform interface</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Prompt Generation Style</label>
-                        <select id="promptStyle">
+                        <label for="promptStyle" class="setting-label">Prompt Generation Style</label>
+                        <select id="promptStyle" class="setting-select" aria-describedby="promptStyleHelp">
                             <option value="detailed">Detailed & Structured</option>
                             <option value="concise">Concise & Direct</option>
                             <option value="creative">Creative & Engaging</option>
                             <option value="analytical">Analytical & Technical</option>
                             <option value="professional">Professional & Formal</option>
                         </select>
-                        <p class="helper-text">Define the style of generated prompts</p>
+                        <p id="promptStyleHelp" class="helper-text">Define the style of generated prompts</p>
+                    </div>
+                </div>
+                
+                <!-- Speech Settings -->
+                <div class="settings-group">
+                    <h4 class="settings-group-title">
+                        <i class="fas fa-volume-up"></i>
+                        Speech Settings
+                    </h4>
+                    
+                    <div class="setting-item">
+                        <label for="speechRate" class="setting-label">Speech Rate</label>
+                        <div class="range-container">
+                            <input 
+                                type="range" 
+                                id="speechRate" 
+                                class="setting-range"
+                                min="0.5"
+                                max="2"
+                                step="0.1"
+                                value="1"
+                                aria-describedby="speechRateHelp"
+                            >
+                            <span class="range-value" id="speechRateValue">1.0</span>
+                        </div>
+                        <p id="speechRateHelp" class="helper-text">Adjust speech playback speed (0.5 = slow, 2 = fast)</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="speechPitch" class="setting-label">Speech Pitch</label>
+                        <div class="range-container">
+                            <input 
+                                type="range" 
+                                id="speechPitch" 
+                                class="setting-range"
+                                min="0.5"
+                                max="2"
+                                step="0.1"
+                                value="1"
+                                aria-describedby="speechPitchHelp"
+                            >
+                            <span class="range-value" id="speechPitchValue">1.0</span>
+                        </div>
+                        <p id="speechPitchHelp" class="helper-text">Adjust speech pitch (0.5 = low, 2 = high)</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="speechVolume" class="setting-label">Speech Volume</label>
+                        <div class="range-container">
+                            <input 
+                                type="range" 
+                                id="speechVolume" 
+                                class="setting-range"
+                                min="0"
+                                max="1"
+                                step="0.1"
+                                value="1"
+                                aria-describedby="speechVolumeHelp"
+                            >
+                            <span class="range-value" id="speechVolumeValue">1.0</span>
+                        </div>
+                        <p id="speechVolumeHelp" class="helper-text">Adjust speech volume (0 = silent, 1 = max)</p>
                     </div>
                 </div>
                 
                 <!-- Advanced Settings -->
                 <div class="settings-group">
-                    <h3 class="settings-group-title">
+                    <h4 class="settings-group-title">
                         <i class="fas fa-tools"></i>
                         Advanced Settings
-                    </h3>
+                    </h4>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Auto-Generation Delay</label>
-                        <select id="autoConvertDelay">
+                        <label for="autoConvertDelay" class="setting-label">Auto-Generation Delay</label>
+                        <select id="autoConvertDelay" class="setting-select" aria-describedby="autoConvertHelp">
                             <option value="0">Disabled</option>
                             <option value="3000">3 seconds</option>
                             <option value="5000">5 seconds</option>
                             <option value="10000">10 seconds</option>
                             <option value="30000">30 seconds</option>
                         </select>
-                        <p class="helper-text">Automatically generate prompt after typing stops</p>
+                        <p id="autoConvertHelp" class="helper-text">Automatically generate prompt after typing stops</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Notification Duration</label>
-                        <select id="notificationDuration">
+                        <label for="notificationDuration" class="setting-label">Notification Duration</label>
+                        <select id="notificationDuration" class="setting-select" aria-describedby="notificationHelp">
                             <option value="2000">2 seconds</option>
                             <option value="3000">3 seconds</option>
                             <option value="4000">4 seconds</option>
                             <option value="5000">5 seconds</option>
                             <option value="0">Persistent (until closed)</option>
                         </select>
-                        <p class="helper-text">How long notifications should display</p>
+                        <p id="notificationHelp" class="helper-text">How long notifications should display</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Editor Preferences</label>
-                        <select id="textareaSize">
+                        <label for="textareaSize" class="setting-label">Editor Preferences</label>
+                        <select id="textareaSize" class="setting-select" aria-describedby="textareaSizeHelp">
                             <option value="auto">Auto-resize</option>
                             <option value="comfortable">Comfortable</option>
                             <option value="compact">Compact</option>
                             <option value="expanded">Expanded</option>
                         </select>
-                        <p class="helper-text">Adjust text area size and behavior</p>
+                        <p id="textareaSizeHelp" class="helper-text">Adjust text area size and behavior</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label class="setting-label">Max History Items</label>
-                        <select id="maxHistoryItems">
-                            <option value="10">10 items</option>
-                            <option value="25">25 items</option>
-                            <option value="50">50 items</option>
-                            <option value="100">100 items</option>
-                            <option value="0">Disabled</option>
+                        <label for="maxHistoryItems" class="setting-label">Max History Items</label>
+                        <input 
+                            type="number" 
+                            id="maxHistoryItems" 
+                            class="setting-input"
+                            min="0"
+                            max="1000"
+                            step="10"
+                            value="50"
+                            aria-describedby="maxHistoryHelp"
+                        >
+                        <p id="maxHistoryHelp" class="helper-text">Maximum number of prompts to save in history (0 to disable)</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="debugMode" class="setting-label">Debug Mode</label>
+                        <select id="debugMode" class="setting-select" aria-describedby="debugModeHelp">
+                            <option value="off">Off</option>
+                            <option value="basic">Basic</option>
+                            <option value="verbose">Verbose</option>
                         </select>
-                        <p class="helper-text">Maximum number of prompts to save in history</p>
+                        <p id="debugModeHelp" class="helper-text">Enable console logging for debugging</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input 
+                                type="checkbox" 
+                                id="autoSave" 
+                                class="setting-checkbox"
+                                checked
+                                aria-describedby="autoSaveHelp"
+                            >
+                            Enable Auto-Save
+                        </label>
+                        <p id="autoSaveHelp" class="helper-text">Automatically save prompts to history</p>
+                    </div>
+                </div>
+                
+                <!-- System Status -->
+                <div class="settings-group">
+                    <h4 class="settings-group-title">
+                        <i class="fas fa-chart-line"></i>
+                        System Status
+                    </h4>
+                    
+                    <div class="setting-item">
+                        <div class="system-stats" id="systemStats">
+                            <div class="system-stat">
+                                <span class="stat-label">API Status:</span>
+                                <span class="stat-value" id="systemApiStatus">Checking...</span>
+                            </div>
+                            <div class="system-stat">
+                                <span class="stat-label">Total Requests:</span>
+                                <span class="stat-value" id="systemTotalRequests">0</span>
+                            </div>
+                            <div class="system-stat">
+                                <span class="stat-label">Success Rate:</span>
+                                <span class="stat-value" id="systemSuccessRate">100%</span>
+                            </div>
+                            <div class="system-stat">
+                                <span class="stat-label">Avg Response:</span>
+                                <span class="stat-value" id="systemAvgResponse">0ms</span>
+                            </div>
+                            <div class="system-stat">
+                                <span class="stat-label">Rate Limit:</span>
+                                <span class="stat-value" id="systemRateLimit">0/0 remaining</span>
+                            </div>
+                        </div>
+                        <p class="helper-text">Current system performance metrics</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="action-buttons-horizontal">
+                            <button id="testConnectionBtn" class="secondary-btn">
+                                <i class="fas fa-plug"></i>
+                                Test API Connection
+                            </button>
+                            <button id="clearCacheBtn" class="secondary-btn">
+                                <i class="fas fa-trash-alt"></i>
+                                Clear Cache
+                            </button>
+                            <button id="exportLogsBtn" class="secondary-btn">
+                                <i class="fas fa-download"></i>
+                                Export Logs
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <div class="modal-footer">
                 <div class="settings-actions">
-                    <button id="cancelSettingsBtn" class="settings-cancel-btn">
+                    <button id="cancelSettingsBtn" class="settings-cancel-btn" aria-label="Cancel settings changes">
                         Cancel
                     </button>
-                    <button id="saveSettingsBtn" class="settings-save-btn" disabled>
+                    <button id="saveSettingsBtn" class="settings-save-btn" disabled aria-label="Save settings">
                         <i class="fas fa-save"></i>
                         Save Changes
                     </button>
@@ -542,185 +946,488 @@
         </div>
     </div>
 
-    <!-- Full Screen Editor -->
-    <div id="fullScreenEditor" class="full-screen-editor">
-        <div class="editor-header">
-            <div class="editor-title">
-                <i class="fas fa-edit"></i>
-                <span id="editorTitle">Edit Prompt</span>
-            </div>
-            <div class="editor-actions">
-                <!-- Prepare Prompt button in fullscreen editor for Step 1 -->
-                <button id="editorPrepareBtn" class="editor-prepare-btn" disabled>
-                    <i class="fas fa-magic"></i>
-                    Prepare Prompt
-                </button>
-                <button id="closeEditorBtn" class="action-btn" title="Close (ESC)">
-                    <i class="fas fa-times"></i>
-                    <span class="action-btn-tooltip">Close</span>
-                </button>
-            </div>
-        </div>
-        <div class="editor-content">
-            <!-- Editor Controls -->
-            <div class="editor-controls">
-                <div class="editor-left-controls">
-                    <!-- Voice Input in editor -->
-                    <button id="editorMicBtn" class="action-btn" title="Voice Input">
-                        <i class="fas fa-microphone"></i>
-                        <span class="action-btn-tooltip">Voice Input</span>
-                    </button>
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container footer-content">
+            <div class="footer-info">
+                <div class="footer-item">
+                    <div class="status-indicator online"></div>
+                    <span>PromptCraft Pro v2.0</span>
                 </div>
-                <div class="editor-right-controls">
-                    <!-- Undo button in editor -->
-                    <button id="editorUndoBtn" class="undo-btn" title="Undo Last Change">
-                        <i class="fas fa-undo"></i>
-                        <span class="action-btn-tooltip">Undo</span>
-                    </button>
+                <div class="footer-item">
+                    <i class="fas fa-server"></i>
+                    <span>Powered by Cloudflare Workers</span>
+                </div>
+                <div class="footer-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure & Private</span>
+                </div>
+                <div class="footer-item rate-limit-display">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Rate Limit: <span id="rateLimitDisplay">∞</span></span>
                 </div>
             </div>
-            
-            <textarea id="editorTextarea" class="editor-textarea" placeholder="Start typing your prompt..."></textarea>
+            <div class="footer-copyright">
+                &copy; 2024 PromptCraft Pro. All rights reserved.
+            </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- Notifications Container -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <!-- JavaScript Files -->
-    <script src="js/modules/theme-manager.js"></script>
-    <script src="js/modules/voice-manager.js"></script>
-    <script src="js/modules/intent-detector.js"></script>
-    <script src="js/modules/ai-ranker.js"></script>
-    <script src="js/core/app.js"></script>
-
-    <!-- Initialize the Pro version -->
+    <!-- JavaScript Files - Load at the VERY END -->
+    <script src="js/utils.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/platforms.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/PromptCraftEnterprise.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- Main Application Script -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize theme from localStorage or default to dark
-        const savedTheme = localStorage.getItem('promptcraft-pro-theme') || 'dark';
-        document.body.className = savedTheme + '-theme';
-        
-        // Update theme display
-        document.getElementById('currentTheme').textContent = 
-            savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1);
-        
-        // Set up theme selector
-        const themeSelect = document.getElementById('themeSelect');
-        if (themeSelect) {
-            themeSelect.value = savedTheme;
-            themeSelect.addEventListener('change', function() {
-                const theme = this.value;
-                document.body.className = theme + '-theme';
-                localStorage.setItem('promptcraft-pro-theme', theme);
-                document.getElementById('currentTheme').textContent = 
-                    theme.charAt(0).toUpperCase() + theme.slice(1);
-            });
-        }
-        
-        // Set up language selector
-        const languageSelect = document.getElementById('interfaceLanguage');
-        if (languageSelect) {
-            const savedLang = localStorage.getItem('promptcraft-pro-language') || 'en';
-            languageSelect.value = savedLang;
-            document.getElementById('currentLanguage').textContent = 
-                languageSelect.options[languageSelect.selectedIndex].text;
+        // Prevent duplicate initialization
+        if (!window.promptCraftInitialized) {
+            window.promptCraftInitialized = true;
             
-            languageSelect.addEventListener('change', function() {
-                const lang = this.value;
-                localStorage.setItem('promptcraft-pro-language', lang);
-                document.getElementById('currentLanguage').textContent = 
-                    this.options[this.selectedIndex].text;
-            });
-        }
-        
-        // Set up model selector
-        const modelSelect = document.getElementById('defaultModel');
-        if (modelSelect) {
-            const savedModel = localStorage.getItem('promptcraft-pro-model') || 'gemini';
-            modelSelect.value = savedModel;
-            document.getElementById('currentModel').textContent = 
-                modelSelect.options[modelSelect.selectedIndex].text;
-            
-            modelSelect.addEventListener('change', function() {
-                const model = this.value;
-                localStorage.setItem('promptcraft-pro-model', model);
-                document.getElementById('currentModel').textContent = 
-                    this.options[this.selectedIndex].text;
-            });
-        }
-        
-        // Toggle output section when Prepare Prompt is clicked
-        const prepareBtn = document.getElementById('stickyPrepareBtn');
-        const outputSection = document.getElementById('outputSection');
-        const resetBtn = document.getElementById('stickyResetBtn');
-        
-        if (prepareBtn && outputSection) {
-            prepareBtn.addEventListener('click', function() {
-                outputSection.style.display = 'block';
-                prepareBtn.classList.add('hidden');
-                resetBtn.classList.remove('hidden');
+            // Initialize essential components with error handling
+            function initializeEssentialComponents() {
+                console.log('Initializing essential components...');
                 
-                // Scroll to output section
-                outputSection.scrollIntoView({ behavior: 'smooth' });
-            });
-        }
-        
-        if (resetBtn) {
-            resetBtn.addEventListener('click', function() {
-                outputSection.style.display = 'none';
-                prepareBtn.classList.remove('hidden');
-                resetBtn.classList.add('hidden');
-                
-                // Clear input
-                document.getElementById('userInput').value = '';
-                document.getElementById('outputArea').innerHTML = '';
-                
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
-        
-        // Toggle history panel
-        const historyBtn = document.getElementById('historyBtn');
-        const historySection = document.getElementById('historySection');
-        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
-        
-        if (historyBtn && historySection) {
-            historyBtn.addEventListener('click', function() {
-                historySection.style.display = 'block';
-            });
-        }
-        
-        if (closeHistoryBtn && historySection) {
-            closeHistoryBtn.addEventListener('click', function() {
-                historySection.style.display = 'none';
-            });
-        }
-        
-        // Character counter for input
-        const userInput = document.getElementById('userInput');
-        const charCounter = document.getElementById('charCounter');
-        
-        if (userInput && charCounter) {
-            userInput.addEventListener('input', function() {
-                const length = this.value.length;
-                charCounter.textContent = `${length}/5000`;
-                
-                // Enable/disable prepare button
-                const prepareBtn = document.getElementById('stickyPrepareBtn');
-                const editorPrepareBtn = document.getElementById('editorPrepareBtn');
-                
-                if (prepareBtn) {
-                    prepareBtn.disabled = length === 0;
+                // Prevent multiple initialization
+                if (window.essentialComponentsInitialized) {
+                    console.log('Components already initialized, skipping...');
+                    return;
                 }
-                if (editorPrepareBtn) {
-                    editorPrepareBtn.disabled = length === 0;
+                
+                try {
+                    // Initialize range input value displays
+                    const speechRate = document.getElementById('speechRate');
+                    const speechPitch = document.getElementById('speechPitch');
+                    const speechVolume = document.getElementById('speechVolume');
+                    
+                    if (speechRate) {
+                        const speechRateValue = document.getElementById('speechRateValue');
+                        if (speechRateValue) speechRateValue.textContent = speechRate.value;
+                        speechRate.addEventListener('input', function() {
+                            if (speechRateValue) speechRateValue.textContent = this.value;
+                            markSettingsAsChanged();
+                        });
+                    }
+                    
+                    if (speechPitch) {
+                        const speechPitchValue = document.getElementById('speechPitchValue');
+                        if (speechPitchValue) speechPitchValue.textContent = speechPitch.value;
+                        speechPitch.addEventListener('input', function() {
+                            if (speechPitchValue) speechPitchValue.textContent = this.value;
+                            markSettingsAsChanged();
+                        });
+                    }
+                    
+                    if (speechVolume) {
+                        const speechVolumeValue = document.getElementById('speechVolumeValue');
+                        if (speechVolumeValue) speechVolumeValue.textContent = speechVolume.value;
+                        speechVolume.addEventListener('input', function() {
+                            if (speechVolumeValue) speechVolumeValue.textContent = this.value;
+                            markSettingsAsChanged();
+                        });
+                    }
+                    
+                    // Settings change detection
+                    const settingsInputs = document.querySelectorAll('#settingsModal .setting-input, #settingsModal .setting-select, #settingsModal .setting-range, #settingsModal .setting-checkbox');
+                    settingsInputs.forEach(input => {
+                        input.addEventListener('change', markSettingsAsChanged);
+                    });
+                    
+                    // Settings modal functionality
+                    const settingsBtn = document.getElementById('settingsBtn');
+                    const settingsModal = document.getElementById('settingsModal');
+                    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+                    const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+                    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+                    
+                    if (settingsBtn && settingsModal) {
+                        settingsBtn.addEventListener('click', () => {
+                            loadCurrentSettings();
+                            settingsModal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        });
+                    }
+                    
+                    if (closeSettingsBtn) {
+                        closeSettingsBtn.addEventListener('click', closeSettingsModal);
+                    }
+                    
+                    if (cancelSettingsBtn) {
+                        cancelSettingsBtn.addEventListener('click', closeSettingsModal);
+                    }
+                    
+                    if (saveSettingsBtn) {
+                        saveSettingsBtn.addEventListener('click', saveSettings);
+                    }
+                    
+                    // Close modal on overlay click
+                    if (settingsModal) {
+                        settingsModal.addEventListener('click', (e) => {
+                            if (e.target === settingsModal) {
+                                closeSettingsModal();
+                            }
+                        });
+                    }
+                    
+                    // Add keyboard shortcuts for settings
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape' && settingsModal.classList.contains('active')) {
+                            closeSettingsModal();
+                        }
+                        if ((e.ctrlKey || e.metaKey) && e.key === ',' && !settingsModal.classList.contains('active')) {
+                            e.preventDefault();
+                            settingsBtn.click();
+                        }
+                    });
+                    
+                    // Test connection button
+                    const testConnectionBtn = document.getElementById('testConnectionBtn');
+                    if (testConnectionBtn) {
+                        testConnectionBtn.addEventListener('click', testAPIConnection);
+                    }
+                    
+                    // Clear cache button
+                    const clearCacheBtn = document.getElementById('clearCacheBtn');
+                    if (clearCacheBtn) {
+                        clearCacheBtn.addEventListener('click', clearApplicationCache);
+                    }
+                    
+                    // Export logs button
+                    const exportLogsBtn = document.getElementById('exportLogsBtn');
+                    if (exportLogsBtn) {
+                        exportLogsBtn.addEventListener('click', exportApplicationLogs);
+                    }
+                    
+                    // Load initial settings
+                    loadCurrentSettings();
+                    
+                    window.essentialComponentsInitialized = true;
+                    console.log('Essential components initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Error initializing essential components:', error);
                 }
-            });
-        }
-    });
-    </script>
+            }
 
+            // Settings helper functions
+            function markSettingsAsChanged() {
+                const saveBtn = document.getElementById('saveSettingsBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.add('settings-changed');
+                }
+            }
+
+            function closeSettingsModal() {
+                const settingsModal = document.getElementById('settingsModal');
+                if (settingsModal) {
+                    settingsModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function loadCurrentSettings() {
+                // Load saved settings from localStorage
+                const settings = JSON.parse(localStorage.getItem('promptCraftSettings') || '{}');
+                
+                // Load each setting into the form
+                const settingsToLoad = {
+                    'apiEndpoint': 'https://promptcraft-api.vijay-shagunkumar.workers.dev',
+                    'apiMode': 'auto',
+                    'defaultAiModel': 'gemini-3-flash-preview',
+                    'interfaceLanguage': 'en',
+                    'voiceInputLanguage': 'en-US',
+                    'voiceOutputLanguage': 'en-US',
+                    'themeSelect': 'auto',
+                    'uiDensity': 'comfortable',
+                    'defaultPlatform': 'gemini',
+                    'promptStyle': 'detailed',
+                    'speechRate': 1,
+                    'speechPitch': 1,
+                    'speechVolume': 1,
+                    'autoConvertDelay': '0',
+                    'notificationDuration': '3000',
+                    'textareaSize': 'auto',
+                    'maxHistoryItems': 50,
+                    'debugMode': 'off',
+                    'autoSave': true
+                };
+                
+                // Apply saved settings or defaults
+                Object.keys(settingsToLoad).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = settings[key] !== undefined ? settings[key] : settingsToLoad[key];
+                        } else {
+                            element.value = settings[key] !== undefined ? settings[key] : settingsToLoad[key];
+                            
+                            // Update range value displays
+                            if (['speechRate', 'speechPitch', 'speechVolume'].includes(key)) {
+                                const valueDisplay = document.getElementById(`${key}Value`);
+                                if (valueDisplay) {
+                                    valueDisplay.textContent = element.value;
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Reset save button
+                const saveBtn = document.getElementById('saveSettingsBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.classList.remove('settings-changed');
+                }
+            }
+
+            function saveSettings() {
+                console.log('Saving settings...');
+                
+                const settings = {};
+                const settingsElements = document.querySelectorAll('#settingsModal .setting-input, #settingsModal .setting-select, #settingsModal .setting-range, #settingsModal .setting-checkbox');
+                
+                settingsElements.forEach(element => {
+                    const id = element.id;
+                    if (id) {
+                        if (element.type === 'checkbox') {
+                            settings[id] = element.checked;
+                        } else if (element.type === 'range') {
+                            settings[id] = parseFloat(element.value);
+                        } else if (element.type === 'number') {
+                            settings[id] = parseInt(element.value);
+                        } else {
+                            settings[id] = element.value;
+                        }
+                    }
+                });
+                
+                // Save to localStorage
+                localStorage.setItem('promptCraftSettings', JSON.stringify(settings));
+                
+                // Apply settings immediately
+                applySettings(settings);
+                
+                // Show success message
+                showNotification('Settings saved successfully!', 'success');
+                
+                // Close modal after a brief delay
+                setTimeout(() => {
+                    closeSettingsModal();
+                }, 500);
+                
+                // Reset save button
+                const saveBtn = document.getElementById('saveSettingsBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.classList.remove('settings-changed');
+                }
+            }
+
+            function applySettings(settings) {
+                // Apply theme
+                if (settings.themeSelect) {
+                    applyTheme(settings.themeSelect);
+                }
+                
+                // Apply UI density
+                if (settings.uiDensity) {
+                    document.body.setAttribute('data-ui-density', settings.uiDensity);
+                }
+                
+                // Apply textarea size
+                if (settings.textareaSize) {
+                    const textarea = document.getElementById('userInput');
+                    if (textarea) {
+                        textarea.setAttribute('data-size', settings.textareaSize);
+                    }
+                }
+                
+                // Apply auto-save
+                if (typeof settings.autoSave !== 'undefined') {
+                    window.autoSaveEnabled = settings.autoSave;
+                }
+                
+                // Apply debug mode
+                if (settings.debugMode) {
+                    window.debugMode = settings.debugMode;
+                }
+            }
+
+            function applyTheme(theme) {
+                const html = document.documentElement;
+                
+                if (theme === 'auto') {
+                    // Use system preference
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        html.setAttribute('data-theme', 'dark');
+                    } else {
+                        html.setAttribute('data-theme', 'light');
+                    }
+                } else {
+                    html.setAttribute('data-theme', theme);
+                }
+            }
+
+            // API test function
+            async function testAPIConnection() {
+                const apiEndpoint = document.getElementById('apiEndpoint').value;
+                const testBtn = document.getElementById('testConnectionBtn');
+                const statusElement = document.getElementById('systemApiStatus');
+                
+                if (testBtn) {
+                    testBtn.disabled = true;
+                    testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+                }
+                
+                if (statusElement) {
+                    statusElement.textContent = 'Testing...';
+                    statusElement.className = 'stat-value testing';
+                }
+                
+                try {
+                    const response = await fetch(apiEndpoint, {
+                        method: 'HEAD',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        if (statusElement) {
+                            statusElement.textContent = 'Connected ✓';
+                            statusElement.className = 'stat-value connected';
+                        }
+                        showNotification('API connection successful!', 'success');
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('API connection test failed:', error);
+                    if (statusElement) {
+                        statusElement.textContent = 'Failed ✗';
+                        statusElement.className = 'stat-value failed';
+                    }
+                    showNotification(`API connection failed: ${error.message}`, 'error');
+                } finally {
+                    if (testBtn) {
+                        testBtn.disabled = false;
+                        testBtn.innerHTML = '<i class="fas fa-plug"></i> Test API Connection';
+                    }
+                }
+            }
+
+            // Cache functions
+            function clearApplicationCache() {
+                if (confirm('Are you sure you want to clear all cached data? This will remove saved prompts and history.')) {
+                    localStorage.removeItem('promptHistory');
+                    localStorage.removeItem('promptCraftSettings');
+                    showNotification('Cache cleared successfully!', 'success');
+                }
+            }
+
+            function exportApplicationLogs() {
+                const logs = {
+                    timestamp: new Date().toISOString(),
+                    settings: JSON.parse(localStorage.getItem('promptCraftSettings') || '{}'),
+                    historyCount: JSON.parse(localStorage.getItem('promptHistory') || '[]').length,
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform
+                };
+                
+                const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `promptcraft-logs-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showNotification('Logs exported successfully!', 'success');
+            }
+
+            // Notification function
+            function showNotification(message, type = 'info') {
+                // Create notification container if it doesn't exist
+                let notificationContainer = document.querySelector('.notification-container');
+                if (!notificationContainer) {
+                    notificationContainer = document.createElement('div');
+                    notificationContainer.className = 'notification-container';
+                    document.body.appendChild(notificationContainer);
+                }
+                
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} notification-icon"></i>
+                    <span class="notification-message">${message}</span>
+                    <button class="notification-close">&times;</button>
+                `;
+                
+                // Add to container
+                notificationContainer.appendChild(notification);
+                
+                // Show notification
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                // Auto-remove after delay
+                const duration = parseInt(document.getElementById('notificationDuration')?.value || '3000');
+                if (duration > 0) {
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                notification.parentNode.removeChild(notification);
+                            }
+                        }, 300);
+                    }, duration);
+                }
+                
+                // Close button functionality
+                const closeBtn = notification.querySelector('.notification-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        notification.classList.remove('show');
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                notification.parentNode.removeChild(notification);
+                            }
+                        }, 300);
+                    });
+                }
+                
+                return notification;
+            }
+
+            // Initialize when DOM is ready
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeEssentialComponents();
+                
+                // Initialize other components
+                if (typeof initializeApp === 'function') {
+                    initializeApp();
+                }
+                
+                // Initialize API status
+                if (typeof checkAPIStatus === 'function') {
+                    setTimeout(checkAPIStatus, 1000);
+                }
+            });
+
+            // Initialize now in case DOM is already loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeEssentialComponents);
+            } else {
+                initializeEssentialComponents();
+            }
+        }
+    </script>
 </body>
 </html>

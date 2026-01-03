@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Integration Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>PromptCraft API Integration Test</h1>
+    
+    <div>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <button onclick="testGeneration()">Test Prompt Generation</button>
+        <button onclick="testAll()">Run All Tests</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        import APIService from './js/api.js';
+        
+        const api = APIService;
+        const resultsDiv = document.getElementById('results');
+        
+        async function testHealth() {
+            resultsDiv.innerHTML = '<p>Testing health endpoint...</p>';
+            
+            try {
+                const status = await api.testConnection();
+                
+                if (status.online) {
+                    resultsDiv.innerHTML += `
+                        <p class="success">✅ API Online</p>
+                        <p>Status: ${status.status}</p>
+                        <p>Version: ${status.version}</p>
+                        <p>Models: ${status.models.join(', ')}</p>
+                        <p>Environment: ${JSON.stringify(status.environment)}</p>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ API Offline</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testGeneration() {
+            resultsDiv.innerHTML = '<p>Testing prompt generation...</p>';
+            
+            try {
+                const result = await api.generatePrompt('Write a short poem about AI', {
+                    model: 'gemini-3-flash-preview'
+                });
+                
+                if (result.success) {
+                    resultsDiv.innerHTML += `
+                        <p class="success">✅ Generation Successful</p>
+                        <p>Model: ${result.model}</p>
+                        <p>Provider: ${result.provider}</p>
+                        <p>Length: ${result.content.length} characters</p>
+                        <details>
+                            <summary>View Result</summary>
+                            <pre>${result.content.substring(0, 500)}...</pre>
+                        </details>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ Generation Failed: ${result.error}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testAll() {
+            resultsDiv.innerHTML = '<h2>Running All Tests...</h2>';
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testGeneration();
+        }
+        
+        // Auto-run on load
+        window.onload = testHealth;
+    </script>
+</body>
+</html>
