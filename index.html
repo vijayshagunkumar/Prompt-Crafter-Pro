@@ -331,5 +331,206 @@
     <script src="js/prompt-generator.js"></script>
     <script src="js/app.js"></script>
     <script src="js/config.js"></script>
+   <!-- Settings Modal -->
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-cog"></i>
+                Settings & Preferences
+            </div>
+            <button id="closeSettingsBtn" class="action-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <!-- Language Settings -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">
+                    <i class="fas fa-language"></i>
+                    Language & Localization
+                </h3>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Interface Language</label>
+                    <select id="interfaceLanguage" class="language-select">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="te">Telugu</option>
+                        <option value="kn">Kannada</option>
+                    </select>
+                    <p class="helper-text">Select your preferred interface language</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Voice Input Language</label>
+                    <select id="voiceInputLanguage">
+                        <option value="en-US">English (US)</option>
+                        <option value="hi-IN">Hindi (India)</option>
+                        <option value="te-IN">Telugu (India)</option>
+                    </select>
+                    <p class="helper-text">Language for voice input recognition</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Voice Output Language</label>
+                    <select id="voiceOutputLanguage">
+                        <option value="en-US">English (US)</option>
+                        <option value="hi-IN">Hindi (India)</option>
+                    </select>
+                    <p class="helper-text">Language for text-to-speech output</p>
+                </div>
+            </div>
+            
+            <!-- Appearance -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">
+                    <i class="fas fa-palette"></i>
+                    Appearance & Interface
+                </h3>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Theme</label>
+                    <select id="themeSelect">
+                        <option value="auto">Auto (System Preference)</option>
+                        <option value="light">Light Theme</option>
+                        <option value="dark">Dark Theme</option>
+                    </select>
+                    <p class="helper-text">Choose your preferred visual theme</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">UI Density</label>
+                    <select id="uiDensity">
+                        <option value="comfortable">Comfortable</option>
+                        <option value="compact">Compact</option>
+                        <option value="spacious">Spacious</option>
+                    </select>
+                    <p class="helper-text">Adjust spacing and density for optimal workflow</p>
+                </div>
+            </div>
+            
+            <!-- AI Preferences -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">
+                    <i class="fas fa-robot"></i>
+                    AI Model Preferences
+                </h3>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Default AI Model</label>
+                    <select id="defaultModel">
+                        <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="llama-3.1-8b-instant">Llama 3.1 8B</option>
+                    </select>
+                    <p class="helper-text">Select your preferred AI model</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Prompt Generation Style</label>
+                    <select id="promptStyle">
+                        <option value="detailed">Detailed & Structured</option>
+                        <option value="concise">Concise & Direct</option>
+                        <option value="creative">Creative & Engaging</option>
+                    </select>
+                    <p class="helper-text">Define the style of generated prompts</p>
+                </div>
+            </div>
+            
+            <!-- Advanced Settings -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">
+                    <i class="fas fa-tools"></i>
+                    Advanced Settings
+                </h3>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Auto-Generation Delay</label>
+                    <select id="autoConvertDelay">
+                        <option value="0">Disabled</option>
+                        <option value="3000">3 seconds</option>
+                        <option value="5000">5 seconds</option>
+                        <option value="10000">10 seconds</option>
+                    </select>
+                    <p class="helper-text">Automatically generate prompt after typing stops</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Notification Duration</label>
+                    <select id="notificationDuration">
+                        <option value="2000">2 seconds</option>
+                        <option value="3000">3 seconds</option>
+                        <option value="4000">4 seconds</option>
+                        <option value="5000">5 seconds</option>
+                    </select>
+                    <p class="helper-text">How long notifications should display</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">Max History Items</label>
+                    <select id="maxHistoryItems">
+                        <option value="10">10 items</option>
+                        <option value="25">25 items</option>
+                        <option value="50">50 items</option>
+                    </select>
+                    <p class="helper-text">Maximum number of prompts to save in history</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <div class="settings-actions">
+                <button id="cancelSettingsBtn" class="settings-cancel-btn">
+                    Cancel
+                </button>
+                <button id="saveSettingsBtn" class="settings-save-btn" disabled>
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Screen Editor -->
+<div id="fullScreenEditor" class="full-screen-editor">
+    <div class="editor-header">
+        <div class="editor-title">
+            <i class="fas fa-edit"></i>
+            <span id="editorTitle">Edit Prompt</span>
+        </div>
+        <div class="editor-actions">
+            <button id="editorPrepareBtn" class="editor-prepare-btn" disabled>
+                <i class="fas fa-magic"></i>
+                Prepare Prompt
+            </button>
+            <button id="closeEditorBtn" class="action-btn" title="Close (ESC)">
+                <i class="fas fa-times"></i>
+                <span class="action-btn-tooltip">Close</span>
+            </button>
+        </div>
+    </div>
+    <div class="editor-content">
+        <!-- Editor Controls -->
+        <div class="editor-controls">
+            <div class="editor-left-controls">
+                <button id="editorMicBtn" class="action-btn" title="Voice Input">
+                    <i class="fas fa-microphone"></i>
+                    <span class="action-btn-tooltip">Voice Input</span>
+                </button>
+            </div>
+            <div class="editor-right-controls">
+                <button id="editorUndoBtn" class="undo-btn" title="Undo Last Change">
+                    <i class="fas fa-undo"></i>
+                    <span class="action-btn-tooltip">Undo</span>
+                </button>
+            </div>
+        </div>
+        
+        <textarea id="editorTextarea" class="editor-textarea" placeholder="Start typing your prompt..."></textarea>
+    </div>
+</div> 
 </body>
 </html>
