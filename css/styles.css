@@ -2397,4 +2397,23 @@ select:focus, .language-select:focus {
     word-break: break-word;     /* Prevent horizontal overflow */
     overflow-y: auto;           /* Enable scrolling for long prompts */
 }
+/* =====================================================
+   STEP-3 – FORCE SINGLE COLUMN AI TOOLS (FINAL FIX)
+   ===================================================== */
+
+#aiCard {
+    min-width: 0;
+    width: 100%;
+}
+
+.platforms-grid {
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+}
+
+.platform-card {
+    width: 100%;
+    max-width: 100%;
+}
 
