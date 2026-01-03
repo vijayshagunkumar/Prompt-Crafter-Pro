@@ -2433,10 +2433,11 @@ select:focus, .language-select:focus {
 .platforms-grid > * {
     grid-column: unset !important;
 }
-/* Step-1 Prepare Prompt placement */
+/* floating prepare button */
 .sticky-cta-container {
-    position: static;
-    margin-top: var(--spacing-lg);
-    display: flex;
-    justify-content: flex-end;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: auto;
+    transform: none;
 }
