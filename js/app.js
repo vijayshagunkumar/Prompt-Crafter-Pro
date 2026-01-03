@@ -207,6 +207,39 @@ class PromptCraftApp {
             });
         });
         
+        // Settings button
+        this.elements.settingsBtn = document.getElementById('settingsBtn');
+        if (this.elements.settingsBtn) {
+            this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
+        }
+        
+        // Settings modal buttons
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        
+        if (closeSettingsBtn) {
+            closeSettingsBtn.addEventListener('click', () => this.closeSettings());
+        }
+        
+        if (cancelSettingsBtn) {
+            cancelSettingsBtn.addEventListener('click', () => this.closeSettings());
+        }
+        
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', () => this.saveSettingsModal());
+        }
+        
+        // Close settings when clicking outside
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal) {
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    this.closeSettings();
+                }
+            });
+        }
+        
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
         
@@ -618,6 +651,285 @@ class PromptCraftApp {
     }
 
     // ======================
+    // SETTINGS MODAL
+    // ======================
+
+    // Open settings modal
+    openSettings() {
+        console.log('Opening settings...');
+        
+        // Load current settings into form
+        this.loadSettingsIntoForm();
+        
+        // Show modal
+        const modal = document.getElementById('settingsModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        } else {
+            console.error('Settings modal not found!');
+            this.showNotification('Settings modal not found. Please refresh the page.', 'error');
+        }
+    }
+
+    // Close settings modal
+    closeSettings() {
+        const modal = document.getElementById('settingsModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Re-enable scrolling
+        }
+    }
+
+    // Load settings into form
+    loadSettingsIntoForm() {
+        // Theme
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) themeSelect.value = this.state.settings.theme || 'dark';
+        
+        // UI Density
+        const uiDensity = document.getElementById('uiDensity');
+        if (uiDensity) uiDensity.value = this.state.settings.uiDensity || 'comfortable';
+        
+        // Default Model
+        const defaultModel = document.getElementById('defaultModel');
+        if (defaultModel) defaultModel.value = this.state.settings.defaultModel || 'gemini-3-flash-preview';
+        
+        // Prompt Style
+        const promptStyle = document.getElementById('promptStyle');
+        if (promptStyle) promptStyle.value = this.state.settings.promptStyle || 'detailed';
+        
+        // Auto-convert delay
+        const autoConvertDelay = document.getElementById('autoConvertDelay');
+        if (autoConvertDelay) autoConvertDelay.value = this.state.settings.autoConvertDelay || 0;
+        
+        // Notification duration
+        const notificationDuration = document.getElementById('notificationDuration');
+        if (notificationDuration) notificationDuration.value = this.state.settings.notificationDuration || 3000;
+        
+        // Max history items
+        const maxHistoryItems = document.getElementById('maxHistoryItems');
+        if (maxHistoryItems) maxHistoryItems.value = this.state.settings.maxHistoryItems || 25;
+        
+        // Language settings
+        const interfaceLanguage = document.getElementById('interfaceLanguage');
+        if (interfaceLanguage) interfaceLanguage.value = this.state.settings.interfaceLanguage || 'en';
+        
+        const voiceInputLanguage = document.getElementById('voiceInputLanguage');
+        if (voiceInputLanguage) voiceInputLanguage.value = this.state.settings.voiceInputLanguage || 'en-US';
+        
+        const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
+        if (voiceOutputLanguage) voiceOutputLanguage.value = this.state.settings.voiceOutputLanguage || 'en-US';
+    }
+
+    // Save settings from modal (renamed to avoid conflict)
+    saveSettingsModal() {
+        // Get values from form
+        const themeSelect = document.getElementById('themeSelect');
+        const uiDensity = document.getElementById('uiDensity');
+        const defaultModel = document.getElementById('defaultModel');
+        const promptStyle = document.getElementById('promptStyle');
+        const autoConvertDelay = document.getElementById('autoConvertDelay');
+        const notificationDuration = document.getElementById('notificationDuration');
+        const maxHistoryItems = document.getElementById('maxHistoryItems');
+        const interfaceLanguage = document.getElementById('interfaceLanguage');
+        const voiceInputLanguage = document.getElementById('voiceInputLanguage');
+        const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
+        
+        // Update settings
+        if (themeSelect) {
+            this.state.settings.theme = themeSelect.value;
+            this.applyTheme();
+        }
+        
+        if (uiDensity) {
+            this.state.settings.uiDensity = uiDensity.value;
+            this.applyUIDensity();
+        }
+        
+        if (defaultModel) {
+            this.state.settings.defaultModel = defaultModel.value;
+            this.state.currentModel = defaultModel.value;
+            this.updateModelDisplay();
+        }
+        
+        if (promptStyle) this.state.settings.promptStyle = promptStyle.value;
+        if (autoConvertDelay) this.state.settings.autoConvertDelay = parseInt(autoConvertDelay.value);
+        if (notificationDuration) this.state.settings.notificationDuration = parseInt(notificationDuration.value);
+        if (maxHistoryItems) this.state.settings.maxHistoryItems = parseInt(maxHistoryItems.value);
+        if (interfaceLanguage) this.state.settings.interfaceLanguage = interfaceLanguage.value;
+        if (voiceInputLanguage) this.state.settings.voiceInputLanguage = voiceInputLanguage.value;
+        if (voiceOutputLanguage) this.state.settings.voiceOutputLanguage = voiceOutputLanguage.value;
+        
+        // Save to storage
+        this.saveSettings();
+        
+        // Close modal
+        this.closeSettings();
+        
+        // Show success message
+        this.showNotification('Settings saved successfully!', 'success');
+    }
+
+    // ======================
+    // FULL SCREEN EDITOR
+    // ======================
+
+    // Open full screen editor
+    openFullScreenEditor(type) {
+        console.log('Opening full screen editor for:', type);
+        
+        this.state.isEditorOpen = true;
+        this.state.currentEditor = type;
+        
+        const editor = document.getElementById('fullScreenEditor');
+        const editorTextarea = document.getElementById('editorTextarea');
+        const editorTitle = document.getElementById('editorTitle');
+        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
+        
+        if (!editor || !editorTextarea) {
+            console.error('Full screen editor elements not found!');
+            this.showNotification('Editor not available. Please refresh the page.', 'error');
+            return;
+        }
+        
+        // Set editor content based on type
+        let text = '';
+        if (type === 'input') {
+            text = this.elements.userInput.value;
+            editorTitle.textContent = 'Edit Input';
+            if (editorPrepareBtn) {
+                editorPrepareBtn.style.display = 'flex';
+                editorPrepareBtn.disabled = !text.trim();
+            }
+        } else {
+            text = this.elements.outputArea.textContent;
+            editorTitle.textContent = 'Edit Output';
+            if (editorPrepareBtn) {
+                editorPrepareBtn.style.display = 'none';
+            }
+        }
+        
+        // Set text and show editor
+        editorTextarea.value = text;
+        editor.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        
+        // Focus on textarea
+        setTimeout(() => {
+            editorTextarea.focus();
+            editorTextarea.setSelectionRange(text.length, text.length);
+        }, 100);
+        
+        // Setup editor events
+        this.setupEditorEvents();
+    }
+
+    // Setup editor events
+    setupEditorEvents() {
+        const editorTextarea = document.getElementById('editorTextarea');
+        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
+        const closeEditorBtn = document.getElementById('closeEditorBtn');
+        const editorMicBtn = document.getElementById('editorMicBtn');
+        const editorUndoBtn = document.getElementById('editorUndoBtn');
+        
+        if (!editorTextarea) return;
+        
+        // Update prepare button state
+        editorTextarea.addEventListener('input', () => {
+            if (editorPrepareBtn) {
+                editorPrepareBtn.disabled = !editorTextarea.value.trim();
+            }
+        });
+        
+        // Prepare from editor
+        if (editorPrepareBtn) {
+            editorPrepareBtn.onclick = () => this.prepareFromEditor();
+        }
+        
+        // Close editor
+        if (closeEditorBtn) {
+            closeEditorBtn.onclick = () => this.closeFullScreenEditor();
+        }
+        
+        // Voice input in editor
+        if (editorMicBtn) {
+            editorMicBtn.onclick = () => {
+                this.voiceHandler.toggleListening(this.state.settings.voiceInputLanguage || 'en-US');
+            };
+        }
+        
+        // Undo in editor
+        if (editorUndoBtn) {
+            editorUndoBtn.onclick = () => {
+                // Simple undo for editor
+                document.execCommand('undo');
+            };
+        }
+        
+        // Keyboard shortcuts in editor
+        editorTextarea.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter to prepare
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (this.state.currentEditor === 'input' && editorPrepareBtn && !editorPrepareBtn.disabled) {
+                    this.prepareFromEditor();
+                }
+            }
+            
+            // Escape to close
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.closeFullScreenEditor();
+            }
+        });
+    }
+
+    // Prepare from editor
+    async prepareFromEditor() {
+        const editorTextarea = document.getElementById('editorTextarea');
+        if (!editorTextarea) return;
+        
+        const inputText = editorTextarea.value.trim();
+        
+        if (!inputText) {
+            this.showNotification('Please describe your task first', 'error');
+            return;
+        }
+        
+        // Update main input
+        this.elements.userInput.value = inputText;
+        this.handleInputChange();
+        
+        // Close editor
+        this.closeFullScreenEditor();
+        
+        // Generate prompt
+        await this.preparePrompt();
+    }
+
+    // Close full screen editor
+    closeFullScreenEditor() {
+        const editor = document.getElementById('fullScreenEditor');
+        const editorTextarea = document.getElementById('editorTextarea');
+        
+        if (editor && editorTextarea) {
+            // Save changes if editing output
+            if (this.state.currentEditor === 'output') {
+                const newText = editorTextarea.value;
+                this.elements.outputArea.textContent = newText;
+                this.handlePromptEdit();
+            }
+            
+            // Close editor
+            editor.classList.remove('active');
+            document.body.style.overflow = ''; // Re-enable scrolling
+            this.state.isEditorOpen = false;
+            this.state.currentEditor = null;
+        }
+    }
+
+    // ======================
     // UI CONTROLS
     // ======================
 
@@ -785,7 +1097,7 @@ Include:
         this.saveHistory();
     }
 
-    // Load history items
+        // Load history items
     loadHistoryItems() {
         const historyList = this.elements.historyList;
         historyList.innerHTML = '';
@@ -796,7 +1108,8 @@ Include:
                     <div class="history-empty-icon">
                         <i class="fas fa-history"></i>
                     </div>
-                    <p>No prompt history yet</p>
+                    <p>No history yet</p>
+                    <p class="history-empty-subtitle">Generated prompts will appear here</p>
                 </div>
             `;
             return;
@@ -805,162 +1118,215 @@ Include:
         this.state.promptHistory.forEach(item => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
+            historyItem.dataset.id = item.id;
             
             const date = new Date(item.timestamp);
-            const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const dateString = date.toLocaleDateString();
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
             historyItem.innerHTML = `
-                <div class="history-content">
-                    <div class="history-text" title="${item.input}">${item.input}</div>
-                    <div class="history-time">
-                        <i class="fas fa-clock"></i>
-                        ${dateString} at ${timeString}
-                        <span class="history-model">${item.model}</span>
-                    </div>
+                <div class="history-item-header">
+                    <span class="history-item-date">${formattedDate}</span>
+                    <span class="history-item-model">${this.getModelDisplayName(item.model)}</span>
                 </div>
-                <div class="history-actions">
-                    <button class="action-btn load-history-btn" title="Load Prompt">
-                        <i class="fas fa-arrow-up"></i>
-                        <span class="action-btn-tooltip">Load</span>
+                <div class="history-item-input">${this.escapeHtml(item.input)}</div>
+                <div class="history-item-actions">
+                    <button class="btn-icon" title="Load" onclick="window.app.loadHistoryItem('${item.id}')">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="btn-icon" title="View Full" onclick="window.app.viewFullHistoryItem('${item.id}')">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="btn-icon" title="Delete" onclick="window.app.deleteHistoryItem('${item.id}')">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             `;
-            
-            // Add load button functionality
-            const loadBtn = historyItem.querySelector('.load-history-btn');
-            loadBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.loadHistoryItem(item);
-            });
-            
-            historyItem.addEventListener('click', () => {
-                this.loadHistoryItem(item);
-            });
             
             historyList.appendChild(historyItem);
         });
     }
 
     // Load history item
-    loadHistoryItem(item) {
+    loadHistoryItem(id) {
+        const item = this.state.promptHistory.find(i => i.id == id);
+        if (!item) return;
+        
         this.elements.userInput.value = item.fullInput;
         this.elements.outputArea.textContent = item.fullOutput;
         this.state.originalPrompt = item.fullOutput;
+        this.state.promptModified = false;
         this.state.hasGeneratedPrompt = true;
-        this.state.currentModel = item.model || 'gemini-3-flash-preview';
+        this.state.currentModel = item.model;
         
-        this.handleInputChange();
+        // Update UI
         this.elements.outputSection.classList.add('visible');
-        this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
-        this.updateProgress();
         this.updateButtonStates();
         this.updateModelDisplay();
-        this.closeHistory();
         
-        this.showNotification('Prompt loaded from history', 'success');
+        // Scroll to output
+        this.elements.outputSection.scrollIntoView({ behavior: 'smooth' });
+        
+        this.showNotification('History item loaded', 'success');
     }
 
-    // ======================
-    // SETTINGS & STORAGE
-    // ======================
+    // View full history item
+    viewFullHistoryItem(id) {
+        const item = this.state.promptHistory.find(i => i.id == id);
+        if (!item) return;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Prompt History</h3>
+                    <button class="btn-icon close-modal" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="history-full-view">
+                        <div class="history-section">
+                            <h4>Original Input</h4>
+                            <div class="history-full-text">${this.escapeHtml(item.fullInput)}</div>
+                        </div>
+                        <div class="history-section">
+                            <h4>Generated Prompt</h4>
+                            <div class="history-full-text">${this.escapeHtml(item.fullOutput)}</div>
+                        </div>
+                        <div class="history-meta">
+                            <span><i class="fas fa-calendar"></i> ${new Date(item.timestamp).toLocaleString()}</span>
+                            <span><i class="fas fa-brain"></i> ${this.getModelDisplayName(item.model)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Close</button>
+                    <button class="btn btn-primary" onclick="window.app.loadHistoryItem('${item.id}'); this.closest('.modal').remove()">Load This Prompt</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
 
-    // Load settings
+    // Delete history item
+    deleteHistoryItem(id) {
+        const index = this.state.promptHistory.findIndex(i => i.id == id);
+        if (index === -1) return;
+        
+        this.state.promptHistory.splice(index, 1);
+        this.saveHistory();
+        this.loadHistoryItems();
+        
+        this.showNotification('History item deleted', 'info');
+    }
+
+    // Escape HTML for safe rendering
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Load history from storage
+    loadHistory() {
+        const saved = this.storageManager.getItem('promptHistory');
+        if (saved && Array.isArray(saved)) {
+            this.state.promptHistory = saved;
+        }
+    }
+
+    // Save history to storage
+    saveHistory() {
+        this.storageManager.setItem('promptHistory', this.state.promptHistory);
+    }
+
+    // Load settings from storage
     loadSettings() {
-        const saved = this.storageManager.load('promptCraftSettings');
+        const saved = this.storageManager.getItem('appSettings');
         if (saved) {
-            this.state.settings = { ...this.state.settings, ...saved };
-            // Apply theme
+            this.state.settings = { ...this.loadDefaultSettings(), ...saved };
+            
+            // Apply settings
             this.applyTheme();
-            // Apply UI density
             this.applyUIDensity();
         }
     }
 
-    // Save settings
+    // Save settings to storage
     saveSettings() {
-        this.storageManager.save('promptCraftSettings', this.state.settings);
-    }
-
-    // Load history
-    loadHistory() {
-        const history = this.storageManager.load('promptCraftHistory', []);
-        this.state.promptHistory = history;
-    }
-
-    // Save history
-    saveHistory() {
-        this.storageManager.save('promptCraftHistory', this.state.promptHistory);
+        this.storageManager.setItem('appSettings', this.state.settings);
     }
 
     // Apply theme
     applyTheme() {
-        const theme = this.state.settings.theme;
-        if (theme === 'auto') {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-theme', prefersDark);
-            this.elements.currentTheme.textContent = prefersDark ? 'Dark' : 'Light';
-        } else {
-            document.body.classList.toggle('dark-theme', theme === 'dark');
-            this.elements.currentTheme.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        const theme = this.state.settings.theme || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Update theme display in footer
+        if (this.elements.currentTheme) {
+            this.elements.currentTheme.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
         }
     }
 
     // Apply UI density
     applyUIDensity() {
-        const density = this.state.settings.uiDensity;
-        const root = document.documentElement;
-        
-        const densities = {
-            comfortable: {
-                '--spacing-xs': '0.25rem',
-                '--spacing-sm': '0.5rem',
-                '--spacing-md': '0.75rem',
-                '--spacing-lg': '1rem',
-                '--spacing-xl': '1.5rem',
-                '--spacing-2xl': '2rem',
-                '--font-size-base': '1rem'
-            },
-            compact: {
-                '--spacing-xs': '0.125rem',
-                '--spacing-sm': '0.25rem',
-                '--spacing-md': '0.5rem',
-                '--spacing-lg': '0.75rem',
-                '--spacing-xl': '1rem',
-                '--spacing-2xl': '1.5rem',
-                '--font-size-base': '0.875rem'
-            },
-            spacious: {
-                '--spacing-xs': '0.5rem',
-                '--spacing-sm': '1rem',
-                '--spacing-md': '1.5rem',
-                '--spacing-lg': '2rem',
-                '--spacing-xl': '3rem',
-                '--spacing-2xl': '4rem',
-                '--font-size-base': '1.125rem'
-            }
-        };
-        
-        const vars = densities[density] || densities.comfortable;
-        Object.entries(vars).forEach(([key, value]) => {
-            root.style.setProperty(key, value);
-        });
+        const density = this.state.settings.uiDensity || 'comfortable';
+        this.elements.appContainer.className = `app-container ${density}`;
     }
 
-    // ======================
-    // UI UPDATES
-    // ======================
+    // Update model display
+    updateModelDisplay() {
+        if (this.elements.currentModel) {
+            this.elements.currentModel.textContent = this.getModelDisplayName(this.state.currentModel);
+        }
+    }
+
+    // Test worker connection
+    async testWorkerConnection() {
+        try {
+            const testResult = await this.promptGenerator.testConnection();
+            if (testResult.success) {
+                console.log('Worker connection test successful');
+                return true;
+            } else {
+                console.warn('Worker connection test failed:', testResult.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('Worker connection test error:', error);
+            return false;
+        }
+    }
+
+    // Show loading state
+    showLoading(show) {
+        const btn = this.elements.stickyPrepareBtn;
+        if (show) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Prepare Prompt';
+        }
+    }
 
     // Update progress
     updateProgress() {
-        let progress = 33;
+        let progress = 0;
+        
+        if (this.elements.userInput.value.trim().length > 10) {
+            progress += 33;
+        }
         
         if (this.state.hasGeneratedPrompt) {
-            progress = 66;
+            progress += 33;
         }
         
         if (this.state.selectedPlatform) {
-            progress = 100;
+            progress += 34;
         }
         
         this.elements.progressFill.style.width = `${progress}%`;
@@ -970,35 +1336,129 @@ Include:
     updateButtonStates() {
         const hasInput = this.elements.userInput.value.trim().length > 0;
         const hasOutput = this.state.hasGeneratedPrompt;
+        const isModified = this.state.promptModified;
         
-        // Prepare prompt button
-        if (hasOutput) {
-            this.elements.stickyPrepareBtn.classList.add('removed');
-            this.elements.stickyResetBtn.classList.remove('hidden');
-            this.elements.stickyResetBtn.classList.add('visible');
-        } else {
-            this.elements.stickyPrepareBtn.classList.remove('removed');
-            this.elements.stickyResetBtn.classList.add('hidden');
-            this.elements.stickyResetBtn.classList.remove('visible');
-        }
-        
-        // Enable/disable buttons
+        // Prepare button
         this.elements.stickyPrepareBtn.disabled = !hasInput;
-        this.elements.copyBtn.disabled = !hasOutput;
-        this.elements.speakBtn.disabled = !hasOutput;
-        this.elements.exportBtn.disabled = !hasOutput;
-        this.elements.savePromptBtn.classList.toggle('visible', this.state.promptModified);
         
-        // Enable/disable undo button
-        const canUndo = this.state.undoStack.length > 0;
-        this.elements.undoBtn.disabled = !canUndo;
-        this.elements.undoBtn.classList.toggle('disabled', !canUndo);
+        // Save button
+        this.elements.savePromptBtn.disabled = !isModified;
+        
+        // Copy, speak, export buttons
+        const outputButtons = [this.elements.copyBtn, this.elements.speakBtn, this.elements.exportBtn];
+        outputButtons.forEach(btn => btn.disabled = !hasOutput);
+        
+        // Undo button
+        this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
+        
+        // Platform buttons
+        const platformCards = document.querySelectorAll('.platform-card');
+        platformCards.forEach(card => {
+            card.style.opacity = hasOutput ? '1' : '0.5';
+            card.style.pointerEvents = hasOutput ? 'auto' : 'none';
+        });
     }
 
-    // Update model display
-    updateModelDisplay() {
-        const modelName = this.getModelDisplayName(this.state.currentModel);
-        this.elements.currentModel.textContent = modelName;
+    // Handle keyboard shortcuts
+    handleKeyboardShortcuts(e) {
+        // Don't trigger shortcuts if user is typing in input or textarea
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+            // Special case: Ctrl/Cmd + Enter in main input
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && e.target === this.elements.userInput) {
+                e.preventDefault();
+                if (!this.elements.stickyPrepareBtn.disabled) {
+                    this.preparePrompt();
+                }
+                return;
+            }
+            return;
+        }
+        
+        // Global shortcuts
+        switch (e.key) {
+            case 'Escape':
+                if (this.state.isEditorOpen) {
+                    this.closeFullScreenEditor();
+                    e.preventDefault();
+                }
+                if (this.state.inspirationPanelOpen) {
+                    this.closeInspirationPanel();
+                    e.preventDefault();
+                }
+                break;
+                
+            case 'r':
+            case 'R':
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    this.resetApplication();
+                }
+                break;
+                
+            case 'h':
+            case 'H':
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    this.toggleHistory();
+                }
+                break;
+                
+            case 'i':
+            case 'I':
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    this.toggleInspirationPanel();
+                }
+                break;
+                
+            case 'z':
+            case 'Z':
+                if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+                    e.preventDefault();
+                    this.undo();
+                }
+                break;
+                
+            case 'c':
+            case 'C':
+                if ((e.ctrlKey || e.metaKey) && e.altKey) {
+                    e.preventDefault();
+                    if (!this.elements.copyBtn.disabled) {
+                        this.copyPrompt();
+                    }
+                }
+                break;
+        }
+    }
+
+    // Show notification
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="btn-icon" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        this.elements.notificationContainer.appendChild(notification);
+        
+        // Auto-remove after duration
+        const duration = this.state.settings.notificationDuration || 3000;
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.classList.add('fade-out');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, duration);
     }
 
     // Update UI
@@ -1006,139 +1466,14 @@ Include:
         this.updateProgress();
         this.updateButtonStates();
         this.updateModelDisplay();
-    }
-
-    // ======================
-    // NOTIFICATIONS
-    // ======================
-
-    // Show notification
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
         
-        const icons = {
-            success: 'fas fa-check-circle',
-            error: 'fas fa-exclamation-circle',
-            warning: 'fas fa-exclamation-triangle',
-            info: 'fas fa-info-circle'
-        };
-        
-        notification.innerHTML = `
-            <i class="notification-icon ${icons[type]}"></i>
-            <div class="notification-message">${message}</div>
-        `;
-        
-        this.elements.notificationContainer.appendChild(notification);
-        
-        // Auto-remove after duration
-        const duration = this.state.settings.notificationDuration || 3000;
-        if (duration > 0) {
-            setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.2s ease forwards';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 200);
-            }, duration);
+        // Update language display
+        if (this.elements.currentLanguage) {
+            const lang = this.state.settings.interfaceLanguage || 'en';
+            this.elements.currentLanguage.textContent = lang.toUpperCase();
         }
-    }
-
-    // Show loading state
-    showLoading(show) {
-        if (show) {
-            this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            this.elements.stickyPrepareBtn.disabled = true;
-        } else {
-            this.elements.stickyPrepareBtn.innerHTML = '<i class="fas fa-magic"></i> Prepare Prompt';
-            this.elements.stickyPrepareBtn.disabled = false;
-        }
-    }
-
-    // ======================
-    // WORKER CONNECTION
-    // ======================
-
-    // Test worker connection
-    async testWorkerConnection() {
-        try {
-            const result = await this.promptGenerator.testConnection();
-            if (result.connected) {
-                console.log('Worker connection successful:', result.health);
-                // Update available models if needed
-                if (result.models && result.models.length > 0) {
-                    console.log('Available models:', result.models);
-                }
-            } else {
-                console.warn('Worker connection failed:', result.error);
-                this.showNotification('AI service connection failed. Local mode only.', 'warning');
-            }
-        } catch (error) {
-            console.error('Worker connection test error:', error);
-        }
-    }
-
-    // ======================
-    // KEYBOARD SHORTCUTS
-    // ======================
-
-    // Handle keyboard shortcuts
-    handleKeyboardShortcuts(e) {
-        // Close modals with Escape
-        if (e.key === 'Escape') {
-            if (this.state.inspirationPanelOpen) {
-                this.closeInspirationPanel();
-            }
-            if (this.elements.historySection.classList.contains('visible')) {
-                this.closeHistory();
-            }
-        }
-        
-        // Ctrl/Cmd + Enter to prepare prompt
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            this.preparePrompt();
-        }
-        
-        // Ctrl/Cmd + Z for undo
-        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-            e.preventDefault();
-            this.undo();
-        }
-        
-        // Ctrl/Cmd + H for history
-        if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
-            e.preventDefault();
-            this.toggleHistory();
-        }
-    }
-
-    // ======================
-    // EDITOR FUNCTIONS
-    // ======================
-
-    // Open full screen editor
-    openFullScreenEditor(type) {
-        // This is a simplified version. You can expand this as needed.
-        alert('Full screen editor coming soon! For now, use the main text area.');
-    }
-
-    // ======================
-    // CLEANUP
-    // ======================
-
-    // Cleanup
-    destroy() {
-        this.voiceHandler.destroy();
-        this.promptGenerator.clearSensitiveData();
-        // Save before closing
-        this.saveSettings();
-        this.saveHistory();
     }
 }
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.app = new PromptCraftApp();
-});
+// Expose app to window for HTML onclick handlers
+window.app = new PromptCraftApp();
