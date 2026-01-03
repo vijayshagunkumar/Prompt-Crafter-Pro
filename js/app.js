@@ -1,50 +1,47 @@
 // Main Application Controller
 class PromptCraftApp {
-    constructor() {
-        // Add global error handler to catch HTML syntax errors
-// Global error handler (filtered – production safe)
-window.addEventListener('error', (event) => {
-    // Ignore errors not coming from our JS files
-    if (
-        !event.filename ||
-        event.filename === window.location.href ||   // index.html noise
-        event.lineno === 1 ||                          // inline / injected scripts
-        !event.filename.includes('/js/')               // not our code
-    ) {
-        return;
-    }
+    constructor() {// ======================
+// GLOBAL ERROR FILTER (REGISTER ONCE – PRODUCTION SAFE)
+// ======================
+if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
+    window.__PROMPTCRAFT_ERROR_HANDLER__ = true;
 
-    console.error('App error:', {
-        message: event.message,
-        file: event.filename,
-        line: event.lineno,
-        column: event.colno
+    // Filter noisy external / injected errors
+    window.addEventListener('error', (event) => {
+        if (
+            !event.filename ||                             // anonymous / injected
+            event.filename === window.location.href ||     // index.html noise
+            event.lineno === 1 ||                          // inline scripts / CF runtime
+            !event.filename.includes('/js/')               // not our JS files
+        ) {
+            return;
+        }
+
+        console.error('App error:', {
+            message: event.message,
+            file: event.filename,
+            line: event.lineno,
+            column: event.colno
+        });
     });
-});
 
+    // Filter noisy unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+        if (
+            !event.reason ||
+            !event.reason.stack ||
+            (
+                !event.reason.stack.includes('app.js') &&
+                !event.reason.stack.includes('prompt-generator.js')
+            )
+        ) {
+            return;
+        }
 
-        
-        // Also catch unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
-    // Ignore external / anonymous promise rejections
-    if (
-        !event.reason ||
-        !event.reason.stack ||
-        (
-            !event.reason.stack.includes('app.js') &&
-            !event.reason.stack.includes('prompt-generator.js')
-        )
-    ) {
-        return;
-    }
+        console.error('Unhandled app promise rejection:', event.reason);
+    });
+}
 
-    console.error('Unhandled app promise rejection:', event.reason);
-
-    this.showNotification(
-        'An internal async error occurred. Please retry.',
-        'error'
-    );
-});
 
         
         this.state = {
