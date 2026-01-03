@@ -1,7 +1,7 @@
 // Prompt Generator with Cloudflare Worker Integration
 class PromptGenerator {
     constructor(config = {}) {
-        // Default configuration - UPDATE WITH YOUR WORKER URL
+        // Default configuration - USING YOUR WORKER URL
         this.config = {
             workerUrl: config.workerUrl || 'https://promptcraft-api.vijay-shagunkumar.workers.dev/',
             apiKey: config.apiKey || '',
@@ -12,6 +12,7 @@ class PromptGenerator {
             ...config
         };
 
+        console.log('PromptGenerator initialized with worker:', this.config.workerUrl);
         this.isGenerating = false;
         this.abortController = null;
     }
@@ -35,19 +36,20 @@ class PromptGenerator {
                 ...options
             };
 
+            console.log('Calling worker API with options:', mergedOptions);
             const response = await this.callWorkerAPI(input, mergedOptions);
             
             if (response.success) {
                 return {
                     success: true,
-                    prompt: response.result, // Updated: worker returns "result" field
+                    prompt: response.result, // Worker returns "result" field
                     suggestions: response.suggestions || [],
                     metadata: {
                         model: response.model,
                         provider: response.provider,
                         usage: response.usage,
                         requestId: response.requestId,
-                        ...response.metadata
+                        timestamp: new Date().toISOString()
                     }
                 };
             } else {
@@ -73,36 +75,33 @@ class PromptGenerator {
 
     // Call Cloudflare Worker API
     async callWorkerAPI(input, options) {
-        const { workerUrl, apiKey, timeout } = this.config;
+        const { workerUrl, timeout } = this.config;
         const signal = this.abortController.signal;
 
         const requestData = {
             prompt: input, // Worker expects "prompt" field
             model: options.model,
-            style: options.style,
             temperature: options.temperature,
             maxTokens: options.maxTokens,
             timestamp: Date.now()
         };
 
-        // Headers for your worker
+        // Headers for your worker (no API key needed since ENABLE_API_KEYS is false)
         const headers = {
             'Content-Type': 'application/json',
             'User-Agent': 'PromptCraftPro/2.0'
         };
 
-        // Add API key if required (but based on worker config, it's disabled)
-        if (apiKey && this.config.enableApiKey) {
-            headers['X-API-Key'] = apiKey;
-        }
-
         try {
             const timeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => {
                     this.abortController.abort();
-                    reject(new Error('Request timeout'));
+                    reject(new Error('Request timeout after ' + timeout + 'ms'));
                 }, timeout);
             });
+
+            console.log('Sending request to:', workerUrl);
+            console.log('Request data:', { ...requestData, prompt: input.substring(0, 100) + '...' });
 
             const fetchPromise = fetch(workerUrl, {
                 method: 'POST',
@@ -132,6 +131,11 @@ class PromptGenerator {
             }
 
             const data = await response.json();
+            console.log('Worker response received:', {
+                success: data.success,
+                model: data.model,
+                resultLength: data.result?.length || 0
+            });
             
             // Check if worker returned success
             if (!data.success) {
@@ -148,7 +152,7 @@ class PromptGenerator {
         }
     }
 
-    // Fallback local prompt generation (unchanged)
+    // Fallback local prompt generation
     generatePromptLocally(input, options = {}) {
         const style = options.style || 'detailed';
         
@@ -221,7 +225,7 @@ Use professional tone and formal structure suitable for business communications.
         };
     }
 
-    // Generate optimization suggestions (unchanged)
+    // Generate optimization suggestions
     generateSuggestions(prompt) {
         const suggestions = [];
         
@@ -272,6 +276,19 @@ Use professional tone and formal structure suitable for business communications.
             });
         }
         
+        // Check for specificity
+        const specificWords = ['specific', 'detailed', 'concrete', 'example', 'step-by-step'];
+        const hasSpecificWords = specificWords.some(word => prompt.toLowerCase().includes(word));
+        if (!hasSpecificWords) {
+            suggestions.push({
+                id: 'add-specificity',
+                text: 'Make the prompt more specific',
+                icon: 'fas fa-bullseye',
+                severity: 'medium',
+                action: 'Add specific examples or requirements'
+            });
+        }
+        
         return suggestions;
     }
 
@@ -290,6 +307,7 @@ Use professional tone and formal structure suitable for business communications.
         try {
             // Test health endpoint
             const healthUrl = this.config.workerUrl.replace(/\/$/, '') + '/health';
+            console.log('Testing connection to:', healthUrl);
             
             const response = await fetch(healthUrl, {
                 method: 'GET',
@@ -301,6 +319,7 @@ Use professional tone and formal structure suitable for business communications.
             });
 
             if (!response.ok) {
+                console.error('Health check failed:', response.status, response.statusText);
                 return {
                     connected: false,
                     status: response.status,
@@ -310,6 +329,7 @@ Use professional tone and formal structure suitable for business communications.
             }
 
             const data = await response.json();
+            console.log('Health check successful:', data);
             
             return {
                 connected: true,
@@ -327,9 +347,24 @@ Use professional tone and formal structure suitable for business communications.
         }
     }
 
+    // Get available models
+    async getAvailableModels() {
+        try {
+            const health = await this.testConnection();
+            if (health.connected && health.models) {
+                return health.models;
+            }
+            return ['gemini-3-flash-preview', 'gpt-4o-mini', 'llama-3.1-8b-instant'];
+        } catch (error) {
+            console.error('Failed to get available models:', error);
+            return ['gemini-3-flash-preview'];
+        }
+    }
+
     // Update configuration
     updateConfig(newConfig) {
         this.config = { ...this.config, ...newConfig };
+        console.log('PromptGenerator config updated:', this.config);
     }
 
     // Get current configuration
