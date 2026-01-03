@@ -2395,3 +2395,128 @@ select:focus, .language-select:focus {
     word-break: break-word;     /* Prevent horizontal overflow */
     overflow-y: auto;           /* Enable scrolling for long prompts */
 }
+
+/* ===============================
+   STEP 3 – AI PLATFORM GRID (FIXED)
+   =============================== */
+
+/* Grid container */
+.platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md);
+    overflow: visible;
+}
+
+/* Platform card */
+.platform-card {
+    display: flex;
+    flex-direction: column;          /* ✅ vertical card */
+    align-items: center;
+    text-align: center;
+
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.04),
+        rgba(255,255,255,0.02)
+    );
+
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+
+    min-height: 260px;               /* ✅ consistent height */
+    cursor: pointer;
+
+    transition: 
+        transform 200ms ease,
+        box-shadow 200ms ease,
+        border-color 200ms ease;
+}
+
+.platform-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+/* Recommended card */
+.platform-card.recommended {
+    border-color: var(--success);
+    box-shadow: 0 0 0 1px rgba(16,185,129,0.4);
+}
+
+/* Logo container */
+.platform-logo-container {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+    padding: 10px;
+}
+
+.dark-theme .platform-logo-container {
+    background: rgba(255,255,255,0.08);
+}
+
+.platform-logo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Text content */
+.platform-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Name */
+.platform-name {
+    font-weight: 700;
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Description */
+.platform-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Tags */
+.platform-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    justify-content: center;
+    margin-top: auto;
+}
+
+.platform-tag {
+    font-size: var(--font-size-xs);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: rgba(79,70,229,0.15);
+    color: var(--primary);
+}
+
+/* Recommended badge – FIXED POSITION */
+.recommended-badge {
+    position: static;               /* ✅ no absolute nonsense */
+    margin-bottom: var(--spacing-sm);
+    background: var(--success);
+    color: white;
+    font-size: var(--font-size-xs);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+}
