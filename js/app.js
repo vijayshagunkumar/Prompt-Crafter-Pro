@@ -1564,7 +1564,7 @@ Keep the summary concise yet comprehensive.`
                 }, 100);
             }
         }
-     // ✅ ADD THIS LINE
+     // ✅ CLOSE HISTORY AFTER SELECTION
     this.closeHistory();}
 
     // ======================
