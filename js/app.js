@@ -172,9 +172,9 @@ class PromptCraftApp {
             appContainer: document.querySelector('.app-container'),
             
             // Editor elements (with null safety - these might be removed from HTML)
-            editorPrepareBtn: document.getElementById('editorPrepareBtn'),
+  
             editorMicBtn: document.getElementById('editorMicBtn'),
-            editorUndoBtn: document.getElementById('editorUndoBtn'),
+ 
             
             // Settings elements
             settingsBtn: document.getElementById('settingsBtn'),
@@ -1181,12 +1181,7 @@ This structured approach ensures you get detailed, actionable responses tailored
                 this.voiceHandler.toggleListening(this.state.settings.voiceInputLanguage || 'en-US');
             };
         }
-        
-        if (editorUndoBtn) {
-            editorUndoBtn.onclick = () => {
-                document.execCommand('undo');
-            };
-        }
+    
         
         editorTextarea.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -1427,12 +1422,7 @@ Keep the summary concise yet comprehensive.`
         }
         
         // Editor prepare button (if exists)
-        if (this.elements.editorPrepareBtn) {
-            const editorTextarea = document.getElementById('editorTextarea');
-            if (editorTextarea) {
-                this.elements.editorPrepareBtn.disabled = !editorTextarea.value.trim();
-            }
-        }
+     
     }
 
     updateProgress() {
@@ -1542,41 +1532,58 @@ Keep the summary concise yet comprehensive.`
 
 restoreHistoryItem(id) {
     const item = this.state.promptHistory.find(h => h.id === id);
-    if (item && this.elements.userInput) {
+    if (!item) return;
+
+    this.clearGeneratedPrompt(); // ✅ ADD THIS
+
+    if (this.elements.userInput) {
         this.elements.userInput.value = item.fullInput;
-
-        // ✅ FORCE FULL UI SYNC
         this.handleInputChange();
-        this.updateButtonStates();   // 🔑 THIS WAS MISSING
-
-        this.showNotification('Input restored from history', 'success');
-        this.closeHistory();
     }
-}
 
-
-viewHistoryItem(id) {
-    const item = this.state.promptHistory.find(h => h.id === id);
-    if (item && this.elements.userInput) {
-        this.elements.userInput.value = item.fullInput;
-
-        // ✅ FORCE FULL UI SYNC
-        this.handleInputChange();
-        this.updateButtonStates();   // 🔑 THIS WAS MISSING
-
-        this.openFullScreenEditor('input');
-
+    if (this.state.isEditorOpen && this.state.currentEditor === 'input') {
         const editorTextarea = document.getElementById('editorTextarea');
-        if (editorTextarea && item.fullPrompt) {
-            setTimeout(() => {
-                editorTextarea.value =
-                    `Input: ${item.fullInput}\n\nGenerated Prompt:\n${item.fullPrompt}`;
-            }, 100);
-        }
+        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
+
+        if (editorTextarea) editorTextarea.value = item.fullInput;
+        if (editorPrepareBtn) editorPrepareBtn.disabled = false;
     }
 
     this.closeHistory();
 }
+
+
+
+
+viewHistoryItem(id) {
+    const item = this.state.promptHistory.find(h => h.id === id);
+    if (!item) return;
+    this.clearGeneratedPrompt(); // ✅ ADD THIS
+
+    if (this.elements.userInput) {
+        this.elements.userInput.value = item.fullInput;
+        this.handleInputChange();
+        this.updateButtonStates();
+    }
+
+    this.openFullScreenEditor('input');
+
+    setTimeout(() => {
+        const editorTextarea = document.getElementById('editorTextarea');
+        const editorPrepareBtn = document.getElementById('editorPrepareBtn');
+
+        if (editorTextarea) {
+            editorTextarea.value = item.fullInput;
+        }
+
+        if (editorPrepareBtn) {
+            editorPrepareBtn.disabled = false; // 🔥 KEY LINE
+        }
+    }, 0);
+
+    this.closeHistory();
+}
+
 
 
     // ======================
