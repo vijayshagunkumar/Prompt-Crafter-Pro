@@ -1387,12 +1387,20 @@ Include:
             const testResult = await this.promptGenerator.testConnection();
             console.log('Worker test result:', testResult);
             
-            if (testResult && testResult.success) {
-                console.log('Worker connection test successful:', testResult);
+            // Check for success - handle all possible success indicators
+            const isConnected = testResult && (
+                testResult.connected === true || 
+                testResult.success === true ||
+                (testResult.health && (testResult.health.status === 'healthy' || testResult.health.healthy === true))
+            );
+            
+            if (isConnected) {
+                console.log('✅ Worker connection test successful');
                 return true;
             } else {
-                console.warn('Worker connection test failed:', testResult?.error || 'Unknown error');
-                // Don't show error notification for testing failures
+                console.warn('Worker connection test failed:', testResult?.error || 'Unknown response format');
+                // Log the actual response for debugging
+                console.log('Actual test response details:', JSON.stringify(testResult, null, 2));
                 return false;
             }
         } catch (error) {
