@@ -1,120 +1,146 @@
 /**
- * Main initialization for PromptCraft Pro
+ * Main initialization script
  */
 
-// Define the initialization function
-function initializeApp() {
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 PromptCraft Pro Initializing...');
+    
+    // Check for required APIs
+    if (!window.fetch) {
+        alert('Your browser does not support fetch API. Please use a modern browser.');
+        return;
+    }
+    
     try {
-        console.log('🚀 Initializing PromptCraft Pro...');
+        // Initialize notification system first
+        if (!window.notifications) {
+            console.error('Notification system not loaded');
+        }
         
-        // Make sure PromptCraftEnterprise exists
-        if (typeof PromptCraftEnterprise === 'undefined') {
-            console.error('❌ PromptCraftEnterprise class not found');
+        // Check for dependencies
+        const requiredDeps = ['Config', 'Utils', 'apiService', 'speechService', 'platforms', 'themeManager'];
+        const missingDeps = requiredDeps.filter(dep => !window[dep]);
+        
+        if (missingDeps.length > 0) {
+            console.error('Missing dependencies:', missingDeps);
+            showNotification('Failed to load required components. Please refresh.', 'error');
+            return;
+        }
+        
+        // Initialize theme
+        themeManager.applyTheme();
+        
+        // Setup speech service error handling
+        if (!speechService.isRecognitionAvailable()) {
+            console.warn('Speech recognition not available');
+            const voiceBtn = document.getElementById('voiceInputBtn');
+            if (voiceBtn) {
+                voiceBtn.disabled = true;
+                voiceBtn.title = 'Voice input not supported';
+            }
+        }
+        
+        if (!speechService.isSynthesisAvailable()) {
+            console.warn('Speech synthesis not available');
+            const speakBtns = document.querySelectorAll('.speak-btn');
+            speakBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.title = 'Text-to-speech not supported';
+            });
+        }
+        
+        // Initialize app
+        if (window.PromptCraftApp) {
+            window.app = new PromptCraftApp();
+            console.log('✅ PromptCraft Pro initialized successfully');
             
-            // Check if we can load it from the global scope
-            if (window.PromptCraftEnterprise) {
-                console.log('✅ Found PromptCraftEnterprise in window scope');
-            } else {
-                console.error('❌ PromptCraftEnterprise not found anywhere');
-                throw new Error('PromptCraftEnterprise class not loaded. Check script loading order.');
-            }
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification('Welcome to PromptCraft Pro! Enter your task and click Generate.', 'info', 5000);
+            }, 1000);
+            
+        } else {
+            throw new Error('PromptCraftApp class not found');
         }
-        
-        // Create and initialize the application
-        window.promptCraft = new PromptCraftEnterprise();
-        
-        // Initialize the app
-        if (typeof window.promptCraft.initialize === 'function') {
-            window.promptCraft.initialize();
-        }
-        
-        // Add global error handler
-        window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            if (window.promptCraft && typeof window.promptCraft.showNotification === 'function') {
-                window.promptCraft.showNotification('An unexpected error occurred', 'error');
-            }
-        });
-        
-        // Add unhandled promise rejection handler
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            if (window.promptCraft && typeof window.promptCraft.showNotification === 'function') {
-                window.promptCraft.showNotification('An unexpected error occurred', 'error');
-            }
-        });
-        
-        // Check for development mode using URL or localStorage
-        const isDevMode = window.location.hostname === 'localhost' || 
-                         window.location.hostname === '127.0.0.1' ||
-                         localStorage.getItem('debugMode') === 'true';
-        
-        // Make services globally available for debugging in dev mode
-        if (isDevMode) {
-            window.PromptCraft = window.promptCraft;
-            console.log('📢 PromptCraft available as window.PromptCraft for debugging');
-            console.log('🔧 Development mode enabled');
-        }
-        
-        console.log('✅ PromptCraft Pro initialized successfully');
-        return window.promptCraft;
         
     } catch (error) {
         console.error('❌ Failed to initialize PromptCraft Pro:', error);
         
         // Show error to user
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, #dc2626, #7c2d12);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            z-index: 9999;
-            font-family: var(--font-sans, sans-serif);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        `;
-        
-        errorDiv.innerHTML = `
-            <i class="fas fa-exclamation-triangle"></i>
-            <div>
-                <strong>Application Error:</strong> Failed to initialize. 
-                <br><small>${error.message}</small>
-            </div>
-            <button onclick="location.reload()" style="
-                background: rgba(255,255,255,0.2);
-                border: 1px solid rgba(255,255,255,0.3);
+        const errorHtml = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #ef4444, #7f1d1d);
                 color: white;
-                padding: 4px 12px;
-                border-radius: 4px;
-                cursor: pointer;
-                margin-left: 10px;
-                font-size: 12px;
+                padding: 16px;
+                text-align: center;
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             ">
-                Reload Page
-            </button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 20px;"></i>
+                    <div>
+                        <strong>Initialization Error:</strong> ${error.message}
+                        <br><small>Check browser console for details</small>
+                    </div>
+                    <button onclick="location.reload()" style="
+                        background: rgba(255,255,255,0.2);
+                        border: 1px solid rgba(255,255,255,0.3);
+                        color: white;
+                        padding: 6px 16px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        margin-left: 16px;
+                        font-size: 14px;
+                    ">
+                        Reload Page
+                    </button>
+                </div>
+            </div>
         `;
         
-        document.body.appendChild(errorDiv);
-        throw error;
+        const errorDiv = document.createElement('div');
+        errorDiv.innerHTML = errorHtml;
+        document.body.prepend(errorDiv.firstElementChild);
     }
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Wait a bit for all scripts to load
-    setTimeout(() => {
-        initializeApp();
-    }, 100);
 });
 
-// Make the function globally available
-window.initializeApp = initializeApp;
+// Global error handler
+window.addEventListener('error', function(event) {
+    console.error('Global error:', event.error);
+    if (window.showNotification) {
+        showNotification('An unexpected error occurred', 'error');
+    }
+});
 
+// Unhandled promise rejection handler
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    if (window.showNotification) {
+        showNotification('An unexpected error occurred', 'error');
+    }
+});
+
+// Make showNotification globally available if notifications failed
+if (!window.showNotification) {
+    window.showNotification = function(message, type = 'info', duration = 3000) {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+        // Simple fallback using console
+    };
+}
+
+// Export to global scope for debugging
+window.PromptCraft = {
+    version: Config.FRONTEND.VERSION,
+    api: apiService,
+    speech: speechService,
+    platforms: platforms,
+    theme: themeManager,
+    utils: Utils,
+    config: Config
+};
