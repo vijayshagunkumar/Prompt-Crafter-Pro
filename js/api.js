@@ -61,7 +61,7 @@ class APIService {
             }
 
             const responseData = await response.json();
-            console.log(`[API ${requestId}] Success`);
+            console.log(`[API ${requestId}] Success`, responseData);
 
             return responseData;
 
@@ -90,41 +90,66 @@ class APIService {
     /**
      * Generate optimized prompt
      */
-    async generatePrompt(prompt, model = Config.getDefaultModel()) {
-        console.log("[API] Generating prompt with model:", model);
+    async generatePrompt(data) {
+        console.log("[API] Generating prompt with data:", data);
+        
+        // Handle both formats:
+        // Format 1: { model: 'model-name', prompt: 'prompt text' }
+        // Format 2: (string prompt, string model) - backward compatibility
+        
+        let requestData;
+        if (typeof data === 'string') {
+            // Backward compatibility: generatePrompt(prompt, model)
+            const model = arguments[1] || Config.getDefaultModel();
+            requestData = {
+                model: model,
+                prompt: data
+            };
+        } else if (typeof data === 'object') {
+            // New format: generatePrompt({ model, prompt })
+            requestData = data;
+        } else {
+            throw new Error("Invalid data format for generatePrompt");
+        }
 
-        if (!prompt || !prompt.trim()) {
+        if (!requestData.prompt || !requestData.prompt.trim()) {
             throw new Error("Please enter a task description first.");
         }
 
-        const sanitizedPrompt = typeof Config.sanitizeInput === 'function'
-            ? Config.sanitizeInput(prompt)
-            : prompt.trim();
+        if (!requestData.model) {
+            requestData.model = Config.getDefaultModel();
+        }
 
-        const data = {
-            prompt: sanitizedPrompt,
-            model
-        };
+        console.log("[API] Sending request:", requestData);
 
         const response = await this.makeRequest(
             "/",
-            data,
+            requestData,
             "POST",
             "GENERATE"
         );
 
+        console.log("[API] Response received:", response);
+
+        // Handle different response formats
         if (!response.success) {
             throw new Error(response.error || "Failed to generate prompt");
+        }
+
+        // Your Worker returns 'result', but the app expects 'prompt'
+        const promptText = response.result || response.prompt || "";
+        
+        if (!promptText) {
+            throw new Error("No prompt generated");
         }
 
         console.log("[API] Prompt generated successfully");
 
         return {
-            prompt: response.result,
-            model: response.model || model,
+            prompt: promptText,
+            model: response.model || requestData.model,
             provider: response.provider || "unknown",
             usage: response.usage || {},
-            requestId: response.requestId,
             rateLimit: response.rateLimit || {}
         };
     }
@@ -150,12 +175,13 @@ class APIService {
             }
 
             const data = await response.json();
+            console.log("[API] Health check response:", data);
 
             return {
                 status: data.status || 'unknown',
                 online: true,
                 version: data.version,
-                models: data.models,
+                models: data.models || [],
                 environment: data.environment
             };
 
