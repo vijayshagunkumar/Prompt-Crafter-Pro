@@ -2433,19 +2433,16 @@ select:focus, .language-select:focus {
 .platforms-grid > * {
     grid-column: unset !important;
 }
-/* 🔧 FIX: Right-align Prepare Prompt below textarea */
+/* 🔧 FINAL OVERRIDE — FORCE RIGHT POSITION */
 
 .sticky-cta-container {
     position: static !important;
-    display: flex !important;
-    justify-content: flex-end !important;
-    pointer-events: auto;
     margin-top: var(--spacing-lg);
+    text-align: right !important;   /* 🔥 THIS is the missing piece */
 }
 
 .sticky-cta.prepare {
     position: static !important;
-    margin-left: auto !important; /* 🔥 forces right alignment */
-    width: auto;
-    min-width: 180px;
+    display: inline-block !important;
+    margin: 0 !important;
 }
