@@ -230,14 +230,14 @@ class PromptCraftApp {
         // Input handling
         this.elements.userInput.addEventListener('input', () => this.handleInputChange());
         
-        // Clear input button
-        if (this.elements.clearInputBtn) {
-            this.elements.clearInputBtn.addEventListener('click', () => {
-                this.elements.userInput.value = '';
-                this.clearGeneratedPrompt();
-                this.updateButtonStates();
-            });
-        }
+   // Clear input button
+if (this.elements.clearInputBtn) {
+    this.elements.clearInputBtn.addEventListener('click', () => {
+        this.elements.userInput.value = '';
+        this.handleInputChange();   // 🔥 important
+    });
+}
+
         
         // Button events
         this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
