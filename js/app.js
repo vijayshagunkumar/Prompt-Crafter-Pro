@@ -38,7 +38,8 @@ class PromptCraftApp {
         // Initialize
         this.init();
     }
-    
+    // Add this method to your PromptCraftApp class
+
     /**
      * Initialize the application
      */
