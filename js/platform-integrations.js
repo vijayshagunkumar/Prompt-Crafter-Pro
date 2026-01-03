@@ -79,14 +79,34 @@ class PlatformIntegrations {
                 launchUrl: 'https://grok.x.ai/',
                 params: { query: '' },
                 logoUrl: 'https://cdn.worldvectorlogo.com/logos/x-social-media-logo.svg'
+            },
+            {
+                id: 'groq',
+                name: 'Groq Playground',
+                icon: 'fas fa-rocket',
+                color: '#00B894',
+                description: 'Ultra-fast inference engine',
+                tags: ['Fast', 'API', 'Playground'],
+                launchUrl: 'https://console.groq.com/playground',
+                params: { prompt: '' },
+                logoUrl: 'https://cdn.worldvectorlogo.com/logos/groq-logo.svg'
             }
         ];
+        
+        // Store logo loading state to prevent duplicate onerror handlers
+        this.loadedLogos = new Set();
     }
 
-    // Generate platform card HTML
+    // ✅ FIXED: Generate platform card HTML without inline onerror JS
     generatePlatformCard(platform, isSelected = false) {
+        // ✅ FIX 2: Remove inline onerror JS completely
+        // Use data attributes and handle fallback in separate function
         const logoHtml = platform.logoUrl ? 
-            `<img src="${platform.logoUrl}" alt="${platform.name} Logo" onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<i class=\"${platform.icon}\"></i>';">` :
+            `<img src="${platform.logoUrl}" 
+                  alt="${platform.name} Logo" 
+                  class="platform-logo" 
+                  data-platform="${platform.id}"
+                  data-fallback-icon="${platform.icon}">` :
             `<i class="${platform.icon}"></i>`;
         
         return `
@@ -109,6 +129,31 @@ class PlatformIntegrations {
         `;
     }
 
+    // ✅ FIXED: Handle logo image errors safely
+    setupLogoErrorHandlers() {
+        document.querySelectorAll('.platform-logo').forEach(img => {
+            if (this.loadedLogos.has(img.src)) return;
+            
+            img.addEventListener('error', (e) => {
+                const target = e.target;
+                const fallbackIcon = target.getAttribute('data-fallback-icon');
+                const platformId = target.getAttribute('data-platform');
+                
+                if (fallbackIcon && platformId) {
+                    // Replace with icon
+                    const container = target.parentElement;
+                    container.innerHTML = `<i class="${fallbackIcon}"></i>`;
+                    this.loadedLogos.add(target.src);
+                }
+            });
+            
+            // Mark as loaded when successful
+            img.addEventListener('load', (e) => {
+                this.loadedLogos.add(e.target.src);
+            });
+        });
+    }
+
     // Render all platforms to container
     renderPlatforms(container, selectedPlatform = null) {
         if (!container) return;
@@ -116,6 +161,9 @@ class PlatformIntegrations {
         container.innerHTML = this.platforms.map(platform => 
             this.generatePlatformCard(platform, selectedPlatform === platform.id)
         ).join('');
+        
+        // Set up safe logo error handlers after render
+        setTimeout(() => this.setupLogoErrorHandlers(), 0);
     }
 
     // Get platform by ID
@@ -128,57 +176,183 @@ class PlatformIntegrations {
         const platform = this.getPlatformById(platformId);
         if (!platform) return null;
         
-        const url = new URL(platform.launchUrl);
-        
-        // Add prompt to URL parameters if the platform supports it
-        if (platform.params) {
-            const paramName = Object.keys(platform.params)[0];
-            if (paramName) {
-                // Some platforms might need URL encoding
-                url.searchParams.set(paramName, encodeURIComponent(prompt));
-            }
-        }
-        
-        return url.toString();
+        // For most platforms, just return the base URL since they don't accept prompt in URL
+        // The prompt will be copied to clipboard
+        return platform.launchUrl;
     }
 
-    // Copy prompt and launch platform
+    // ✅ FIXED: Copy prompt and launch platform safely
     async copyAndLaunch(platformId, prompt, callback) {
         try {
-            // Copy to clipboard
+            const platform = this.getPlatformById(platformId);
+            if (!platform) {
+                throw new Error(`Platform ${platformId} not found`);
+            }
+            
+            // ✅ FIX 1 & 3: Open window FIRST (within user gesture context)
+            const win = window.open(
+                platform.launchUrl,
+                '_blank',
+                'noopener,noreferrer,width=1200,height=800'
+            );
+            
+            // Then copy to clipboard (async)
             await navigator.clipboard.writeText(prompt);
             
-            // Get launch URL
-            const launchUrl = this.generateLaunchUrl(platformId, prompt);
+            // Handle popup block scenario
+            if (!win) {
+                const message = `Prompt copied! Popup was blocked. Please visit ${platform.name} manually.`;
+                console.warn(message);
+                
+                if (callback) {
+                    callback({
+                        success: true,
+                        platformId,
+                        platformName: platform.name,
+                        launchUrl: platform.launchUrl,
+                        message: message,
+                        popupBlocked: true
+                    });
+                }
+                
+                return {
+                    success: true,
+                    platformId,
+                    platformName: platform.name,
+                    launchUrl: platform.launchUrl,
+                    message: message,
+                    popupBlocked: true
+                };
+            }
             
-            // Callback with success
+            // Success case
+            const message = `Prompt copied! Opening ${platform.name}...`;
+            
             if (callback) {
                 callback({
                     success: true,
                     platformId,
-                    platformName: this.getPlatformById(platformId)?.name,
-                    launchUrl
+                    platformName: platform.name,
+                    launchUrl: platform.launchUrl,
+                    message: message,
+                    popupBlocked: false,
+                    window: win
                 });
             }
             
-            // Return data for further processing
             return {
                 success: true,
                 platformId,
-                platformName: this.getPlatformById(platformId)?.name,
-                launchUrl
+                platformName: platform.name,
+                launchUrl: platform.launchUrl,
+                message: message,
+                popupBlocked: false
             };
             
         } catch (err) {
             console.error('Failed to copy and launch:', err);
             
+            // Fallback for older browsers
+            if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+                // Use fallback copy method
+                const textArea = document.createElement('textarea');
+                textArea.value = prompt;
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        // Open platform after successful copy
+                        const platform = this.getPlatformById(platformId);
+                        if (platform) {
+                            const win = window.open(
+                                platform.launchUrl,
+                                '_blank',
+                                'noopener,noreferrer'
+                            );
+                            
+                            const message = win ? 
+                                'Prompt copied! Opening platform...' :
+                                'Prompt copied! Please visit manually.';
+                            
+                            if (callback) {
+                                callback({
+                                    success: true,
+                                    platformId,
+                                    platformName: platform.name,
+                                    message: message + ' (used fallback method)',
+                                    usedFallback: true
+                                });
+                            }
+                            
+                            return {
+                                success: true,
+                                platformId,
+                                platformName: platform.name,
+                                message: message,
+                                usedFallback: true
+                            };
+                        }
+                    }
+                } catch (fallbackErr) {
+                    console.error('Fallback copy failed:', fallbackErr);
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            }
+            
+            const errorMessage = 'Failed to copy prompt. Please try manually.';
+            
             if (callback) {
                 callback({
                     success: false,
-                    error: err.message
+                    platformId,
+                    error: err.message,
+                    message: errorMessage
                 });
             }
             
+            return {
+                success: false,
+                platformId,
+                error: err.message,
+                message: errorMessage
+            };
+        }
+    }
+
+    // ✅ NEW: Optimized launch method for immediate user gesture
+    handlePlatformClick(platformId, prompt) {
+        // This should be called DIRECTLY from a click event handler
+        const platform = this.getPlatformById(platformId);
+        if (!platform) return false;
+        
+        try {
+            // Open window immediately (sync - within user gesture)
+            const win = window.open(
+                platform.launchUrl,
+                '_blank',
+                'noopener,noreferrer'
+            );
+            
+            // Copy to clipboard (async - after window is opened)
+            navigator.clipboard.writeText(prompt).then(() => {
+                console.log(`Prompt copied for ${platform.name}`);
+            }).catch(err => {
+                console.warn('Clipboard write failed:', err);
+                // Still show platform opened message
+            });
+            
+            return {
+                success: true,
+                platformName: platform.name,
+                window: win,
+                popupBlocked: !win
+            };
+            
+        } catch (err) {
+            console.error('Platform launch failed:', err);
             return {
                 success: false,
                 error: err.message
