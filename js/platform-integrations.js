@@ -190,11 +190,12 @@ class PlatformIntegrations {
             }
             
             // ✅ FIX 1 & 3: Open window FIRST (within user gesture context)
-            const win = window.open(
-                platform.launchUrl,
-                '_blank',
-                'noopener,noreferrer,width=1200,height=800'
-            );
+         window.open(
+  platform.launchUrl,
+  '_blank',
+  'noopener,noreferrer'
+);
+
             
             // Then copy to clipboard (async)
             await navigator.clipboard.writeText(prompt);
