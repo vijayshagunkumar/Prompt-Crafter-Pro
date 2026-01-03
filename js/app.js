@@ -134,28 +134,35 @@ class PromptCraftApp {
     async init() {
         console.log('Initializing PromptCraft Pro...');
         
-        // Load settings
-        this.loadSettings();
-        
-        // Set up event listeners
-        this.setupEventListeners();
-        
-        // Set up voice handler callbacks
-        this.setupVoiceCallbacks();
-        
-        // Update UI
-        this.updateUI();
-        
-        // Load history
-        this.loadHistory();
-        
-        // Test worker connection
-        await this.testWorkerConnection();
-        
-        // Update model display
-        this.updateModelDisplay();
-        
-        console.log('PromptCraft Pro initialized successfully!');
+        try {
+            // Load settings
+            this.loadSettings();
+            
+            // Set up event listeners
+            this.setupEventListeners();
+            
+            // Set up voice handler callbacks
+            this.setupVoiceCallbacks();
+            
+            // Update UI
+            this.updateUI();
+            
+            // Load history
+            this.loadHistory();
+            
+            // Test worker connection (don't block initialization)
+            this.testWorkerConnection().catch(error => {
+                console.warn('Worker test failed, continuing with local mode:', error);
+            });
+            
+            // Update model display
+            this.updateModelDisplay();
+            
+            console.log('PromptCraft Pro initialized successfully!');
+        } catch (error) {
+            console.error('Failed to initialize PromptCraft:', error);
+            this.showNotification('Failed to initialize application. Please refresh the page.', 'error');
+        }
     }
 
     // Set up event listeners
@@ -236,6 +243,13 @@ class PromptCraftApp {
             settingsModal.addEventListener('click', (e) => {
                 if (e.target === settingsModal) {
                     this.closeSettings();
+                }
+            });
+            
+            // Enable save button when form changes
+            settingsModal.addEventListener('change', () => {
+                if (saveSettingsBtn) {
+                    saveSettingsBtn.disabled = false;
                 }
             });
         }
@@ -720,10 +734,18 @@ class PromptCraftApp {
         
         const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
         if (voiceOutputLanguage) voiceOutputLanguage.value = this.state.settings.voiceOutputLanguage || 'en-US';
+        
+        // Enable save button initially
+        const saveBtn = document.getElementById('saveSettingsBtn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+        }
     }
 
     // Save settings from modal
     saveSettingsModal() {
+        console.log('Saving settings...');
+        
         // Get values from form
         const themeSelect = document.getElementById('themeSelect');
         const uiDensity = document.getElementById('uiDensity');
@@ -736,39 +758,85 @@ class PromptCraftApp {
         const voiceInputLanguage = document.getElementById('voiceInputLanguage');
         const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
         
+        // Debug: Check if elements exist
+        console.log('Form elements found:', {
+            themeSelect: !!themeSelect,
+            uiDensity: !!uiDensity,
+            defaultModel: !!defaultModel,
+            promptStyle: !!promptStyle
+        });
+        
         // Update settings
         if (themeSelect) {
             this.state.settings.theme = themeSelect.value;
+            console.log('Theme set to:', themeSelect.value);
             this.applyTheme();
         }
         
         if (uiDensity) {
             this.state.settings.uiDensity = uiDensity.value;
+            console.log('UI Density set to:', uiDensity.value);
             this.applyUIDensity();
         }
         
         if (defaultModel) {
             this.state.settings.defaultModel = defaultModel.value;
             this.state.currentModel = defaultModel.value;
+            console.log('Default model set to:', defaultModel.value);
             this.updateModelDisplay();
         }
         
-        if (promptStyle) this.state.settings.promptStyle = promptStyle.value;
-        if (autoConvertDelay) this.state.settings.autoConvertDelay = parseInt(autoConvertDelay.value);
-        if (notificationDuration) this.state.settings.notificationDuration = parseInt(notificationDuration.value);
-        if (maxHistoryItems) this.state.settings.maxHistoryItems = parseInt(maxHistoryItems.value);
-        if (interfaceLanguage) this.state.settings.interfaceLanguage = interfaceLanguage.value;
-        if (voiceInputLanguage) this.state.settings.voiceInputLanguage = voiceInputLanguage.value;
-        if (voiceOutputLanguage) this.state.settings.voiceOutputLanguage = voiceOutputLanguage.value;
+        if (promptStyle) {
+            this.state.settings.promptStyle = promptStyle.value;
+            console.log('Prompt style set to:', promptStyle.value);
+        }
+        
+        if (autoConvertDelay) {
+            this.state.settings.autoConvertDelay = parseInt(autoConvertDelay.value);
+            console.log('Auto-convert delay set to:', autoConvertDelay.value);
+        }
+        
+        if (notificationDuration) {
+            this.state.settings.notificationDuration = parseInt(notificationDuration.value);
+            console.log('Notification duration set to:', notificationDuration.value);
+        }
+        
+        if (maxHistoryItems) {
+            this.state.settings.maxHistoryItems = parseInt(maxHistoryItems.value);
+            console.log('Max history items set to:', maxHistoryItems.value);
+        }
+        
+        if (interfaceLanguage) {
+            this.state.settings.interfaceLanguage = interfaceLanguage.value;
+            console.log('Interface language set to:', interfaceLanguage.value);
+        }
+        
+        if (voiceInputLanguage) {
+            this.state.settings.voiceInputLanguage = voiceInputLanguage.value;
+            console.log('Voice input language set to:', voiceInputLanguage.value);
+        }
+        
+        if (voiceOutputLanguage) {
+            this.state.settings.voiceOutputLanguage = voiceOutputLanguage.value;
+            console.log('Voice output language set to:', voiceOutputLanguage.value);
+        }
+        
+        // Debug: Check settings before saving
+        console.log('Settings to save:', this.state.settings);
         
         // Save to storage
-        this.saveSettings();
+        const saveResult = this.saveSettings();
+        console.log('Save result:', saveResult);
         
         // Close modal
         this.closeSettings();
         
         // Show success message
-        this.showNotification('Settings saved successfully!', 'success');
+        if (saveResult) {
+            this.showNotification('Settings saved successfully!', 'success');
+        } else {
+            this.showNotification('Failed to save settings. Please try again.', 'error');
+        }
     }
 
     // ======================
@@ -1248,7 +1316,15 @@ Include:
 
     // Save settings to storage
     saveSettings() {
-        this.storageManager.save('promptCraftSettings', this.state.settings);
+        try {
+            console.log('Saving settings to storage...');
+            const result = this.storageManager.save('promptCraftSettings', this.state.settings);
+            console.log('StorageManager.save result:', result);
+            return result;
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            return false;
+        }
     }
 
     // Load history from storage
@@ -1261,7 +1337,13 @@ Include:
 
     // Save history to storage
     saveHistory() {
-        this.storageManager.save('promptCraftHistory', this.state.promptHistory);
+        try {
+            this.storageManager.save('promptCraftHistory', this.state.promptHistory);
+            return true;
+        } catch (error) {
+            console.error('Error saving history:', error);
+            return false;
+        }
     }
 
     // Apply theme
@@ -1301,12 +1383,16 @@ Include:
     // Test worker connection
     async testWorkerConnection() {
         try {
+            console.log('Testing worker connection...');
             const testResult = await this.promptGenerator.testConnection();
-            if (testResult.success) {
-                console.log('Worker connection test successful');
+            console.log('Worker test result:', testResult);
+            
+            if (testResult && testResult.success) {
+                console.log('Worker connection test successful:', testResult);
                 return true;
             } else {
-                console.warn('Worker connection test failed:', testResult.error);
+                console.warn('Worker connection test failed:', testResult?.error || 'Unknown error');
+                // Don't show error notification for testing failures
                 return false;
             }
         } catch (error) {
@@ -1397,6 +1483,10 @@ Include:
                 }
                 if (this.state.inspirationPanelOpen) {
                     this.closeInspirationPanel();
+                    e.preventDefault();
+                }
+                if (document.getElementById('settingsModal')?.classList.contains('active')) {
+                    this.closeSettings();
                     e.preventDefault();
                 }
                 break;
