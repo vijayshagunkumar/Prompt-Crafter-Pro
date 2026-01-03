@@ -399,20 +399,31 @@ class PromptCraftApp {
     }
 
     // Handle input changes
-    handleInputChange() {
-        const text = this.elements.userInput.value;
-        const charCount = text.length;
-        const maxLength = 5000;
-        
-        this.elements.charCounter.textContent = `${charCount}/${maxLength}`;
-        this.elements.charCounter.style.color = charCount > maxLength * 0.9 ? 'var(--danger)' : 'var(--text-tertiary)';
-        
-        this.updateButtonStates();
-        
-        if (text.trim().length === 0 && this.state.hasGeneratedPrompt) {
-            this.clearGeneratedPrompt();
-        }
+handleInputChange() {
+    const text = this.elements.userInput.value;
+    const charCount = text.length;
+    const maxLength = 5000;
+
+    this.elements.charCounter.textContent = `${charCount}/${maxLength}`;
+    this.elements.charCounter.style.color =
+        charCount > maxLength * 0.9 ? 'var(--danger)' : 'var(--text-tertiary)';
+
+    // 🔥 CORE FIX: input changed AFTER generation → revert state
+    if (this.state.hasGeneratedPrompt) {
+        this.state.hasGeneratedPrompt = false;
+        this.state.promptModified = false;
+
+        // Swap buttons
+        this.elements.stickyResetBtn.style.display = 'none';
+        this.elements.stickyPrepareBtn.style.display = 'flex';
+
+        // Hide generated output
+        this.elements.outputSection.classList.remove('visible');
     }
+
+    this.updateButtonStates();
+}
+
 
     // Handle prompt editing
     handlePromptEdit() {
