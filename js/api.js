@@ -1,370 +1,204 @@
-/**
- * API Service for PromptCraft Pro
- * Communicates with Cloudflare Worker backend
- */
+// API Service for PromptCraft Pro
+console.log("[API] Loading API service...");
 
 class APIService {
     constructor() {
-        // Get API endpoint from config
-        this.endpoint = Config.getApiUrl();
-        this.apiKey = ''; // Your API key if needed
-        
-        // Request configuration
-        this.config = {
-            timeout: 30000,
-            maxRetries: 2,
-            retryDelay: 1000
-        };
-        
-        // Rate limiting state
-        this.rateLimit = {
-            minuteRemaining: 20,
-            dailyRemaining: 500,
-            lastReset: Date.now()
-        };
-        
-        // Request history
-        this.history = [];
-        this.totalRequests = 0;
-        this.successfulRequests = 0;
-        this.failedRequests = 0;
+        this.baseURL = Config.API.ENDPOINT;
+        this.activeRequests = new Map();
+        console.log("[API] Initialized with endpoint:", this.baseURL);
     }
-    
-    /**
-     * Generate a prompt using the AI service
-     */
-    async generatePrompt(userInput, options = {}) {
+
+    // ✅ FIXED: Removed x-request-id header that was causing CORS errors
+    async makeRequest(endpoint, data, method = 'POST') {
+        const url = `${this.baseURL}${endpoint}`;
         const startTime = Date.now();
-        const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const requestId = Utils.String.generateId?.() || Date.now().toString(36);
         
-        Config.debug(`Generating prompt with model: ${options.model || 'default'}`);
+        console.log(`[API ${requestId}] ${method} ${url}`, data ? "with data" : "no data");
+        
+        // Track request for cancellation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), Config.API.TIMEOUT);
+        this.activeRequests.set(requestId, controller);
         
         try {
-            // Prepare request
-            const requestBody = {
-                prompt: userInput,
-                model: options.model || Config.getDefaultModel(),
-                ...options
-            };
-            
-            // Clean up undefined properties
-            Object.keys(requestBody).forEach(key => {
-                if (requestBody[key] === undefined) {
-                    delete requestBody[key];
-                }
-            });
-            
-            // Make API call
-            const response = await this.makeRequest(requestBody, requestId);
-            const endTime = Date.now();
-            const responseTime = endTime - startTime;
-            
-            // Update stats
-            this.totalRequests++;
-            this.successfulRequests++;
-            
-            // Log to history
-            this.history.push({
-                id: requestId,
-                timestamp: new Date().toISOString(),
-                input: userInput.substring(0, 100),
-                model: options.model || Config.getDefaultModel(),
-                responseTime,
-                success: true
-            });
-            
-            // Trim history if too long
-            if (this.history.length > 100) {
-                this.history = this.history.slice(-50);
-            }
-            
-            Config.info(`Prompt generated in ${responseTime}ms`);
-            
-            return {
-                success: true,
-                content: response.result || response.content,
-                model: response.model || options.model,
-                provider: response.provider || 'unknown',
-                responseTime,
-                requestId,
-                usage: response.usage,
-                rateLimit: response.rateLimit
-            };
-            
-        } catch (error) {
-            this.totalRequests++;
-            this.failedRequests++;
-            
-            Config.error(`Prompt generation failed:`, error.message);
-            
-            return {
-                success: false,
-                error: error.message,
-                requestId,
-                fallbackUsed: true
-            };
-        }
-    }
-    
-    /**
-     * Make actual API request with retry logic
-     */
-    async makeRequest(body, requestId, retryCount = 0) {
-        try {
-            // Create AbortController for timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
-            
-            // Make request
-            const response = await fetch(this.endpoint, {
-                method: 'POST',
+            const response = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Request-ID': requestId,
-                    ...(this.apiKey && { 'X-API-Key': this.apiKey })
+                    // ⚠️ REMOVED: 'x-request-id': requestId,  // This was causing CORS errors
+                    ...(Config.API.KEY ? { 'Authorization': `Bearer ${Config.API.KEY}` } : {})
                 },
-                body: JSON.stringify(body),
-                signal: controller.signal,
-                mode: 'cors',
-                credentials: 'omit'
+                body: method !== 'GET' ? JSON.stringify(data) : undefined,
+                signal: controller.signal
             });
             
             clearTimeout(timeoutId);
+            const latency = Date.now() - startTime;
             
-            // Handle response
+            console.log(`[API ${requestId}] Response ${response.status} in ${latency}ms`);
+            
             if (!response.ok) {
-                throw this.handleErrorResponse(response, requestId);
+                let errorMessage = `HTTP ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                } catch (e) {
+                    // Ignore JSON parse errors for error responses
+                }
+                throw new Error(errorMessage);
             }
             
-            const data = await response.json();
+            const responseData = await response.json();
+            console.log(`[API ${requestId}] Success:`, responseData.success !== false);
             
-            // Update rate limit from headers
-            this.updateRateLimit(response.headers);
-            
-            return data;
+            return responseData;
             
         } catch (error) {
-            // Retry logic
-            if (retryCount < this.config.maxRetries) {
-                Config.warn(`Retrying request (${retryCount + 1}/${this.config.maxRetries})...`);
-                await new Promise(resolve => setTimeout(resolve, this.config.retryDelay));
-                return this.makeRequest(body, requestId, retryCount + 1);
+            clearTimeout(timeoutId);
+            console.error(`[API ${requestId}] Request failed:`, error.message);
+            
+            // Enhanced error messages
+            let userMessage = "Network error. Please check your connection.";
+            
+            if (error.name === 'AbortError') {
+                userMessage = "Request timeout. Please try again.";
+            } else if (error.message.includes('Failed to fetch')) {
+                userMessage = "Cannot connect to server. Please check if the API is running.";
+            } else if (error.message.includes('CORS')) {
+                userMessage = "Cross-origin request blocked. Please contact administrator.";
             }
             
+            throw new Error(userMessage);
+            
+        } finally {
+            this.activeRequests.delete(requestId);
+            clearTimeout(timeoutId);
+        }
+    }
+
+    async generatePrompt(prompt, model = Config.MODELS.DEFAULT) {
+        console.log("[API] Generating prompt with model:", model);
+        
+        if (!prompt || prompt.trim().length === 0) {
+            throw new Error("Please enter a task description first.");
+        }
+        
+        if (prompt.length > Config.APP.MAX_INPUT_LENGTH) {
+            throw new Error(`Task description too long (max ${Config.APP.MAX_INPUT_LENGTH} characters)`);
+        }
+        
+        try {
+            showNotification("Generating optimized prompt...", "info", 2000);
+            
+            const data = {
+                prompt: prompt.trim(),
+                model: model
+            };
+            
+            const response = await this.makeRequest("/", data, "POST");
+            
+            if (!response.success) {
+                throw new Error(response.error || "Failed to generate prompt");
+            }
+            
+            console.log("[API] Prompt generated successfully:", {
+                model: response.model,
+                length: response.result?.length || 0
+            });
+            
+            return {
+                prompt: response.result,
+                model: response.model,
+                provider: response.provider || "google",
+                usage: response.usage || {},
+                requestId: response.requestId,
+                rateLimit: response.rateLimit || {}
+            };
+            
+        } catch (error) {
+            console.error("[API] Generation failed:", error);
             throw error;
         }
     }
-    
-    /**
-     * Handle API errors
-     */
-    handleErrorResponse(response, requestId) {
-        const status = response.status;
-        const errors = {
-            400: 'Invalid request format',
-            401: 'Authentication failed',
-            403: 'Access denied',
-            404: 'API endpoint not found',
-            429: 'Rate limit exceeded',
-            500: 'Internal server error',
-            502: 'Bad gateway',
-            503: 'Service unavailable',
-            504: 'Gateway timeout'
-        };
+
+    async checkHealth() {
+        console.log("[API] Checking health...");
         
-        const message = errors[status] || `HTTP ${status}`;
-        return new Error(`${message} [${requestId}]`);
-    }
-    
-    /**
-     * Update rate limit information
-     */
-    updateRateLimit(headers) {
-        const minuteRemaining = headers.get('X-RateLimit-Remaining');
-        const dailyRemaining = headers.get('X-RateLimit-Daily-Remaining');
-        
-        if (minuteRemaining !== null) {
-            this.rateLimit.minuteRemaining = parseInt(minuteRemaining);
-        }
-        
-        if (dailyRemaining !== null) {
-            this.rateLimit.dailyRemaining = parseInt(dailyRemaining);
-        }
-        
-        this.rateLimit.lastReset = Date.now();
-    }
-    
-    /**
-     * Test API connection
-     */
-    async testConnection() {
         try {
-            const startTime = Date.now();
-            const response = await fetch(this.endpoint + '/health', {
+            const response = await fetch(`${this.baseURL}/health`, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json'
-                },
-                mode: 'cors',
-                credentials: 'omit'
+                    'Content-Type': 'application/json'
+                }
             });
             
-            const responseTime = Date.now() - startTime;
-            
-            if (response.ok) {
-                const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
                 return {
-                    online: true,
-                    responseTime,
-                    status: data.status || 'healthy',
-                    models: data.models || [],
-                    environment: data.environment || 'unknown',
-                    version: data.version || 'unknown'
+                    status: 'error',
+                    online: false,
+                    message: `API returned ${response.status}`
                 };
             }
             
+            const data = await response.json();
             return {
-                online: false,
-                responseTime,
-                status: 'unhealthy',
-                statusCode: response.status
+                status: data.status || 'unknown',
+                online: true,
+                message: 'API is online',
+                version: data.version,
+                models: data.models,
+                environment: data.environment
             };
             
         } catch (error) {
-            Config.warn('API connection test failed:', error.message);
+            console.warn("[API] Health check failed:", error.message);
             return {
-                online: false,
                 status: 'offline',
-                error: error.message
+                online: false,
+                message: error.message
             };
         }
     }
-    
-    /**
-     * Fallback prompt generation (when API is offline)
-     */
-    generateFallbackPrompt(userInput, style = 'detailed') {
-        const templates = {
-            detailed: `# Expert AI Assistant Prompt
 
-## Role Specification
-You are an expert AI assistant with specialized knowledge in this domain.
-
-## Primary Task
-${userInput}
-
-## Detailed Requirements
-1. Provide comprehensive analysis with specific examples
-2. Include actionable insights and practical recommendations
-3. Structure the response with clear, logical sections
-4. Use professional terminology appropriate for context
-5. Consider potential edge cases and limitations
-6. Offer data-driven insights where applicable
-
-## Response Structure
-- Executive Summary: Brief overview of key findings
-- Detailed Analysis: In-depth examination of all aspects
-- Actionable Recommendations: Specific suggestions
-- Next Steps: Clear guidance for implementation
-- Considerations: Important factors and risks
-
-## Quality Standards
-- Clarity: Use clear, concise language
-- Depth: Provide thorough analysis
-- Practicality: Focus on real-world applications
-- Professionalism: Maintain appropriate tone`,
-            
-            concise: `# Task Specification
-${userInput}
-
-# Response Requirements
-- Be direct and to the point
-- Focus on essential information
-- Use clear, simple language
-- Avoid unnecessary elaboration
-- Structure with bullet points where helpful`,
-            
-            creative: `# Creative Task
-${userInput}
-
-# Creative Approach
-- Use innovative thinking and imaginative solutions
-- Incorporate storytelling elements
-- Focus on unique perspectives
-- Engage with vivid, descriptive language
-- Balance creativity with practical application
-
-# Style Guidelines
-- Engaging and inspiring tone
-- Rich sensory descriptions
-- Metaphorical language where effective
-- Emotional resonance without sentimentality`,
-            
-            analytical: `# Analytical Task
-${userInput}
-
-# Analysis Framework
-1. Key Metrics: Identify relevant quantitative measures
-2. Trend Analysis: Examine patterns over time
-3. Comparative Assessment: Evaluate against alternatives
-4. Risk Evaluation: Identify and assess risks
-5. Data-Driven Recommendations: Base suggestions on evidence
-
-# Reporting Requirements
-- Objective, unbiased language
-- Clear distinction between facts and interpretations
-- Visual representation suggestions
-- Executive summary of findings`
-        };
+    async checkStatus() {
+        console.log("[API] Checking status...");
         
-        return templates[style] || templates.detailed;
+        try {
+            // Simple HEAD request to check connectivity
+            const startTime = Date.now();
+            await fetch(this.baseURL, {
+                method: 'HEAD',
+                mode: 'no-cors' // This doesn't require CORS
+            });
+            const latency = Date.now() - startTime;
+            
+            return {
+                online: true,
+                latency: latency,
+                message: `Connected (${latency}ms)`
+            };
+            
+        } catch (error) {
+            console.warn("[API] Status check failed:", error.message);
+            return {
+                online: false,
+                latency: null,
+                message: error.message
+            };
+        }
     }
-    
-    /**
-     * Get API statistics
-     */
-    getStats() {
-        const successRate = this.totalRequests > 0 
-            ? Math.round((this.successfulRequests / this.totalRequests) * 100) 
-            : 100;
-        
-        return {
-            totalRequests: this.totalRequests,
-            successfulRequests: this.successfulRequests,
-            failedRequests: this.failedRequests,
-            successRate: `${successRate}%`,
-            rateLimit: this.rateLimit,
-            historyCount: this.history.length
-        };
-    }
-    
-    /**
-     * Get rate limit status
-     */
-    getRateLimitStatus() {
-        return {
-            ...this.rateLimit,
-            minuteLimit: 20,
-            dailyLimit: 500,
-            used: 500 - this.rateLimit.dailyRemaining
-        };
-    }
-    
-    /**
-     * Clear API history
-     */
-    clearHistory() {
-        this.history = [];
-        this.totalRequests = 0;
-        this.successfulRequests = 0;
-        this.failedRequests = 0;
+
+    cancelAllRequests() {
+        console.log("[API] Cancelling all active requests");
+        for (const [id, controller] of this.activeRequests) {
+            controller.abort();
+            console.log(`[API] Cancelled request ${id}`);
+        }
+        this.activeRequests.clear();
     }
 }
 
-// Create singleton instance
-const apiService = new APIService();
-
-// Make globally available
+// Create global instance
 window.APIService = APIService;
-window.apiService = apiService;
+console.log("[API] Service loaded and ready");
