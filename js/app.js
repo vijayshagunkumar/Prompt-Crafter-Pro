@@ -9,7 +9,7 @@ class PromptCraftApp {
             currentStep: 1,
             userInput: '',
             generatedPrompt: '',
-            currentModel: (Config && Config.MODELS && Config.MODELS.DEFAULT) || 'gemini-3-flash-preview',
+            currentModel: 'gemini-3-flash-preview',
             apiStatus: 'checking',
             isListening: false,
             isSpeaking: false,
@@ -28,26 +28,8 @@ class PromptCraftApp {
         // Elements cache
         this.elements = {};
         
-        // Services - USE WINDOW GLOBALS
-        this.api = window.apiService;
-        this.speech = window.speechService;
-        this.platforms = window.platforms;
-        this.theme = window.themeManager;
-        this.notifications = window.showNotification;
-        
-        // Validate services
-        if (!this.api) {
-            console.error('API service not available');
-        }
-        if (!this.speech) {
-            console.warn('Speech service not available');
-        }
-        if (!this.platforms) {
-            console.warn('Platforms service not available');
-        }
-        if (!this.theme) {
-            console.warn('Theme manager not available');
-        }
+        // Don't store service references - use window globals directly
+        // This prevents timing issues when services load
         
         // Initialize
         this.init();
@@ -69,9 +51,9 @@ class PromptCraftApp {
             console.log('✓ PromptCraftApp initialized successfully');
             
             // Show welcome notification if available
-            if (this.notifications) {
+            if (window.showNotification) {
                 setTimeout(() => {
-                    this.notifications('PromptCraft Pro ready!', 'success', 3000);
+                    window.showNotification('PromptCraft Pro ready!', 'success', 3000);
                 }, 1000);
             }
             
@@ -436,17 +418,17 @@ class PromptCraftApp {
      * Toggle voice input
      */
     toggleVoiceInput() {
-        if (!this.speech) {
+        if (!window.speechService) {
             this.showNotification('Voice input not available', 'error');
             return;
         }
         
         if (this.state.isListening) {
-            this.speech.stopListening();
+            window.speechService.stopListening();
             this.state.isListening = false;
             this.elements.voiceInputBtn.classList.remove('active');
         } else {
-            if (this.speech.startListening()) {
+            if (window.speechService.startListening()) {
                 this.state.isListening = true;
                 this.elements.voiceInputBtn.classList.add('active');
                 this.showNotification('Listening... Speak now', 'info');
@@ -482,7 +464,7 @@ class PromptCraftApp {
             return;
         }
         
-        if (this.speech && this.speech.speak(text)) {
+        if (window.speechService && window.speechService.speak(text)) {
             this.state.isSpeaking = true;
             this.elements.speakInputBtn.classList.add('active');
             this.showNotification('Speaking input text...', 'info');
@@ -501,7 +483,7 @@ class PromptCraftApp {
             return;
         }
         
-        if (this.speech && this.speech.speak(text)) {
+        if (window.speechService && window.speechService.speak(text)) {
             this.state.isSpeaking = true;
             this.elements.speakOutputBtn.classList.add('active');
             this.showNotification('Speaking output text...', 'info');
@@ -590,13 +572,18 @@ class PromptCraftApp {
             this.showNotification('Generating optimized prompt...', 'info');
             
             // Check if API service is available
-            if (!this.api || !this.api.generatePrompt) {
-                throw new Error('API service not available');
+            if (!window.apiService || !window.apiService.generatePrompt) {
+                // Try to create it if it doesn't exist
+                if (window.APIService) {
+                    window.apiService = new window.APIService();
+                } else {
+                    throw new Error('API service not available');
+                }
             }
             
             // Call API
             const startTime = Date.now();
-            const result = await this.api.generatePrompt(input, this.state.currentModel);
+            const result = await window.apiService.generatePrompt(input, this.state.currentModel);
             const responseTime = Date.now() - startTime;
             
             if (result && result.prompt) {
@@ -731,8 +718,8 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             return;
         }
         
-        if (this.platforms && this.platforms.openPlatform) {
-            const success = await this.platforms.openPlatform(platformId, prompt);
+        if (window.platforms && window.platforms.openPlatform) {
+            const success = await window.platforms.openPlatform(platformId, prompt);
             if (!success) {
                 this.showNotification('Failed to open platform', 'error');
             }
@@ -776,8 +763,8 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         try {
             this.updateAPIStatus('checking', 'Checking API connection...');
             
-            if (this.api && this.api.checkHealth) {
-                const result = await this.api.checkHealth();
+            if (window.apiService && window.apiService.checkHealth) {
+                const result = await window.apiService.checkHealth();
                 
                 if (result.online) {
                     this.state.apiStatus = 'online';
@@ -825,7 +812,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         }
         
         if (this.elements.apiEndpoint) {
-            this.elements.apiEndpoint.textContent = Config ? Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
+            this.elements.apiEndpoint.textContent = window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
         }
         
         if (this.elements.apiStatusDetail) {
@@ -859,7 +846,6 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         const settings = JSON.parse(localStorage.getItem('promptcraft_settings') || '{}');
         
         // This would populate form fields with saved settings
-        // For now, just show a basic settings form
         const modalBody = this.elements.settingsModal.querySelector('.modal-body');
         if (modalBody) {
             modalBody.innerHTML = `
@@ -867,7 +853,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
                     <h3><i class="fas fa-plug"></i> API Settings</h3>
                     <div class="setting-item">
                         <label>API Endpoint</label>
-                        <input type="text" value="${Config ? Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" disabled>
+                        <input type="text" value="${window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" disabled>
                         <small>Cloudflare Worker endpoint</small>
                     </div>
                     <div class="setting-item">
@@ -908,15 +894,15 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             }
         }
         
-        if (themeSelect && this.theme) {
-            this.theme.setTheme(themeSelect.value);
+        if (themeSelect && window.themeManager) {
+            window.themeManager.setTheme(themeSelect.value);
         }
         
         // Save to localStorage
         try {
             localStorage.setItem('promptcraft_settings', JSON.stringify({
                 model: this.state.currentModel,
-                theme: this.theme ? this.theme.getTheme() : 'auto'
+                theme: window.themeManager ? window.themeManager.getTheme() : 'auto'
             }));
         } catch (error) {
             console.warn('Failed to save settings:', error);
@@ -946,8 +932,8 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
                 }
             }
             
-            if (saved.theme && this.theme) {
-                this.theme.setTheme(saved.theme);
+            if (saved.theme && window.themeManager) {
+                window.themeManager.setTheme(saved.theme);
             }
             
         } catch (error) {
@@ -1024,9 +1010,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
      * Show notification (with fallback)
      */
     showNotification(message, type = 'info', duration = 3000) {
-        if (this.notifications) {
-            this.notifications(message, type, duration);
-        } else if (window.showNotification) {
+        if (window.showNotification) {
             window.showNotification(message, type, duration);
         } else {
             console.log(`[${type.toUpperCase()}] ${message}`);
