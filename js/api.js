@@ -72,7 +72,7 @@ class APIService {
         }
     }
 
-    async generatePrompt(prompt, model = Config.MODELS.DEFAULT) {
+    async generatePrompt(prompt, model = 'gemini-3-flash-preview') {
         console.log("[API] Generating prompt with model:", model);
         
         if (!prompt || prompt.trim().length === 0) {
@@ -147,6 +147,34 @@ class APIService {
         }
     }
 
+    async checkStatus() {
+        console.log("[API] Checking status...");
+        
+        try {
+            // Simple HEAD request to check connectivity
+            const startTime = Date.now();
+            const response = await fetch(this.baseURL, {
+                method: 'HEAD',
+                mode: 'no-cors'
+            });
+            const latency = Date.now() - startTime;
+            
+            return {
+                online: true,
+                latency: latency,
+                message: `Connected (${latency}ms)`
+            };
+            
+        } catch (error) {
+            console.warn("[API] Status check failed:", error.message);
+            return {
+                online: false,
+                latency: null,
+                message: error.message
+            };
+        }
+    }
+
     cancelAllRequests() {
         console.log("[API] Cancelling all active requests");
         for (const [id, controller] of this.activeRequests) {
@@ -156,6 +184,28 @@ class APIService {
     }
 }
 
-// Create global instance
+// Create and export the service
 window.APIService = APIService;
+
+// ⭐ CRITICAL FIX: Always create the apiService instance immediately
+try {
+    if (Config && Config.API && Config.API.ENDPOINT) {
+        window.apiService = new APIService();
+        console.log("[API] Created global apiService instance");
+    } else {
+        console.warn("[API] Config not ready, delaying apiService creation");
+        // Try again when Config might be available
+        setTimeout(() => {
+            if (Config && Config.API && Config.API.ENDPOINT && !window.apiService) {
+                window.apiService = new APIService();
+                console.log("[API] Created delayed apiService instance");
+            }
+        }, 500);
+    }
+} catch (error) {
+    console.error("[API] Failed to create apiService:", error);
+    // Create a fallback anyway
+    window.apiService = new APIService();
+}
+
 console.log("[API] Service loaded and ready");
