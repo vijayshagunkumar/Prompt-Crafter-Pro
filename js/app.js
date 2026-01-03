@@ -202,78 +202,82 @@ class PromptCraftApp {
     }
 
     // Prepare prompt (main generation)
-    async preparePrompt() {
-        const inputText = this.elements.userInput.value.trim();
+// Prepare prompt (main generation)
+async preparePrompt() {
+    const inputText = this.elements.userInput.value.trim();
+    
+    if (!inputText) {
+        this.showNotification('Please describe your task first', 'error');
+        return;
+    }
+    
+    if (inputText.length < 10) {
+        this.showNotification('Please provide more details for better results', 'warning');
+        return;
+    }
+    
+    // Show loading state
+    this.showLoading(true);
+    
+    try {
+        // Generate prompt using Cloudflare Worker
+        const result = await this.promptGenerator.generatePrompt(inputText, {
+            model: 'gemini-3-flash-preview', // Default model from your worker
+            style: 'detailed',
+            temperature: 0.4
+        });
         
-        if (!inputText) {
-            this.showNotification('Please describe your task first', 'error');
-            return;
-        }
-        
-        if (inputText.length < 10) {
-            this.showNotification('Please provide more details for better results', 'warning');
-            return;
-        }
-        
-        // Show loading state
-        this.showLoading(true);
-        
-        try {
-            // Generate prompt using Cloudflare Worker
-            const result = await this.promptGenerator.generatePrompt(inputText, {
-                style: 'detailed', // Get from settings
-                model: 'gemini' // Get from settings
-            });
-            
-            if (result.success) {
-                // Update output
-                this.elements.outputArea.textContent = result.prompt;
-                this.state.originalPrompt = result.prompt;
-                this.state.promptModified = false;
-                this.state.hasGeneratedPrompt = true;
-                
-                // Show output section
-                this.elements.outputSection.classList.add('visible');
-                
-                // Update platforms
-                this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
-                
-                // Update progress and UI
-                this.updateProgress();
-                this.updateButtonStates();
-                
-                // Generate and show suggestions
-                this.showSuggestions(result.suggestions);
-                
-                // Save to history
-                this.saveToHistory(inputText, result.prompt);
-                
-                this.showNotification('Prompt successfully generated! Click any AI tool to copy and launch.', 'success');
-                
-            } else {
-                throw new Error('Failed to generate prompt');
-            }
-            
-        } catch (error) {
-            console.error('Prompt generation error:', error);
-            this.showNotification('Failed to generate prompt. Using local generation...', 'warning');
-            
-            // Fallback to local generation
-            const localResult = this.promptGenerator.generatePromptLocally(inputText);
-            this.elements.outputArea.textContent = localResult.prompt;
-            this.state.originalPrompt = localResult.prompt;
+        if (result.success) {
+            // Update output
+            this.elements.outputArea.textContent = result.prompt;
+            this.state.originalPrompt = result.prompt;
+            this.state.promptModified = false;
             this.state.hasGeneratedPrompt = true;
+            
+            // Show output section
             this.elements.outputSection.classList.add('visible');
+            
+            // Update platforms
             this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+            
+            // Update progress and UI
             this.updateProgress();
             this.updateButtonStates();
-            this.showSuggestions(localResult.suggestions);
-            this.saveToHistory(inputText, localResult.prompt);
             
-        } finally {
-            this.showLoading(false);
+            // Generate and show suggestions
+            this.showSuggestions(result.suggestions);
+            
+            // Save to history
+            this.saveToHistory(inputText, result.prompt);
+            
+            // Show success message with model info
+            const modelName = result.metadata?.model || 'AI';
+            this.showNotification(`Prompt generated successfully with ${modelName}!`, 'success');
+            
+        } else {
+            throw new Error('Failed to generate prompt');
         }
+        
+    } catch (error) {
+        console.error('Prompt generation error:', error);
+        this.showNotification('Failed to generate prompt. Using local generation...', 'warning');
+        
+        // Fallback to local generation
+        const localResult = this.promptGenerator.generatePromptLocally(inputText);
+        this.elements.outputArea.textContent = localResult.prompt;
+        this.state.originalPrompt = localResult.prompt;
+        this.state.hasGeneratedPrompt = true;
+        this.elements.outputSection.classList.add('visible');
+        this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
+        this.updateProgress();
+        this.updateButtonStates();
+        this.showSuggestions(localResult.suggestions);
+        this.saveToHistory(inputText, localResult.prompt);
+        
+    } finally {
+        this.showLoading(false);
     }
+}
 
     // Handle platform click
     async handlePlatformClick(platformId) {
