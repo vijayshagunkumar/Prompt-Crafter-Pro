@@ -1,5 +1,6 @@
 /**
  * Main Application Class - PromptCraft Pro
+ * Fixed version with proper API integration
  */
 
 class PromptCraftApp {
@@ -9,7 +10,7 @@ class PromptCraftApp {
             currentStep: 1,
             userInput: '',
             generatedPrompt: '',
-            currentModel: 'gemini-3-flash-preview',
+            currentModel: 'llama-3.1-8b-instant', // Changed default to match API
             apiStatus: 'checking',
             isListening: false,
             isSpeaking: false,
@@ -22,14 +23,46 @@ class PromptCraftApp {
                 time: 0,
                 model: '',
                 tokens: 0
-            }
+            },
+            platform: 'chatgpt' // Default platform
         };
         
         // Elements cache
         this.elements = {};
         
-        // Don't store service references - use window globals directly
-        // This prevents timing issues when services load
+        // Platform configurations
+        this.platformConfigs = {
+            'chatgpt': {
+                name: 'ChatGPT',
+                icon: 'fas fa-comment',
+                tone: 'professional',
+                format: 'structured'
+            },
+            'midjourney': {
+                name: 'Midjourney',
+                icon: 'fas fa-palette',
+                tone: 'descriptive',
+                format: 'visual'
+            },
+            'dalle': {
+                name: 'DALL-E',
+                icon: 'fas fa-image',
+                tone: 'descriptive',
+                format: 'visual'
+            },
+            'claude': {
+                name: 'Claude',
+                icon: 'fas fa-brain',
+                tone: 'analytical',
+                format: 'detailed'
+            },
+            'gemini': {
+                name: 'Gemini',
+                icon: 'fas fa-robot',
+                tone: 'versatile',
+                format: 'conversational'
+            }
+        };
         
         // Initialize
         this.init();
@@ -48,6 +81,9 @@ class PromptCraftApp {
             this.checkAPIStatus();
             this.updateUI();
             
+            // Set up voice service handlers if available
+            this.setupVoiceHandlers();
+            
             console.log('✓ PromptCraftApp initialized successfully');
             
             // Show welcome notification if available
@@ -59,7 +95,7 @@ class PromptCraftApp {
             
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            throw error;
+            this.showNotification('App initialization failed. Some features may not work.', 'error');
         }
     }
     
@@ -75,6 +111,11 @@ class PromptCraftApp {
         this.elements.undoBtn = document.getElementById('undoBtn');
         this.elements.speakInputBtn = document.getElementById('speakInputBtn');
         this.elements.charCount = document.getElementById('charCount');
+        
+        // Platform selector
+        this.elements.platformSelect = document.getElementById('platformSelect');
+        this.elements.goalInput = document.getElementById('goalInput');
+        this.elements.detailsInput = document.getElementById('detailsInput');
         
         // Inspiration
         this.elements.inspirationBtn = document.getElementById('inspirationBtn');
@@ -142,6 +183,13 @@ class PromptCraftApp {
         if (this.elements.userInput) {
             this.elements.userInput.addEventListener('input', (e) => this.handleInputChange(e));
             this.elements.userInput.addEventListener('keydown', (e) => this.handleInputKeydown(e));
+        }
+        
+        // Platform selector events
+        if (this.elements.platformSelect) {
+            this.elements.platformSelect.addEventListener('change', (e) => {
+                this.state.platform = e.target.value;
+            });
         }
         
         // Input buttons
@@ -245,6 +293,15 @@ class PromptCraftApp {
             this.elements.exitFullScreenBtn.addEventListener('click', () => this.exitFullScreen());
         }
         
+        // Click outside to close inspiration panel
+        document.addEventListener('click', (e) => {
+            if (this.state.inspirationPanelOpen && 
+                !e.target.closest('.inspiration-btn') && 
+                !e.target.closest('.inspiration-panel')) {
+                this.closeInspirationPanel();
+            }
+        });
+        
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
         
@@ -252,10 +309,35 @@ class PromptCraftApp {
     }
     
     /**
+     * Set up voice service handlers
+     */
+    setupVoiceHandlers() {
+        if (window.speechService) {
+            window.speechService.onResult = (transcript) => this.handleVoiceInput(transcript);
+            window.speechService.onError = (error) => this.handleVoiceError(error);
+            window.speechService.onEnd = () => {
+                this.state.isListening = false;
+                if (this.elements.voiceInputBtn) {
+                    this.elements.voiceInputBtn.classList.remove('active');
+                }
+            };
+            window.speechService.onSpeakingEnd = () => {
+                this.state.isSpeaking = false;
+                if (this.elements.speakInputBtn) {
+                    this.elements.speakInputBtn.classList.remove('active');
+                }
+                if (this.elements.speakOutputBtn) {
+                    this.elements.speakOutputBtn.classList.remove('active');
+                }
+            };
+        }
+    }
+    
+    /**
      * Handle input changes
      */
     handleInputChange(e) {
-        const text = this.elements.userInput.value;
+        const text = this.elements.userInput ? this.elements.userInput.value : '';
         this.state.userInput = text;
         
         // Update character count
@@ -299,6 +381,12 @@ class PromptCraftApp {
                 this.closeSettings();
             }
         }
+        
+        // Ctrl/Cmd + / for inspiration
+        if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+            e.preventDefault();
+            this.toggleInspirationPanel();
+        }
     }
     
     /**
@@ -322,7 +410,15 @@ class PromptCraftApp {
      * Clear input textarea
      */
     clearInput() {
-        this.elements.userInput.value = '';
+        if (this.elements.userInput) {
+            this.elements.userInput.value = '';
+        }
+        if (this.elements.goalInput) {
+            this.elements.goalInput.value = '';
+        }
+        if (this.elements.detailsInput) {
+            this.elements.detailsInput.value = '';
+        }
         this.handleInputChange();
         this.showNotification('Input cleared', 'info');
     }
@@ -332,11 +428,13 @@ class PromptCraftApp {
      */
     undo() {
         if (this.state.undoStack.length > 0) {
-            const current = this.elements.userInput.value;
+            const current = this.elements.userInput ? this.elements.userInput.value : '';
             this.state.redoStack.push(current);
             
             const previous = this.state.undoStack.pop();
-            this.elements.userInput.value = previous;
+            if (this.elements.userInput) {
+                this.elements.userInput.value = previous;
+            }
             this.handleInputChange();
             
             this.showNotification('Undo applied', 'info');
@@ -348,11 +446,13 @@ class PromptCraftApp {
      */
     redo() {
         if (this.state.redoStack.length > 0) {
-            const current = this.elements.userInput.value;
+            const current = this.elements.userInput ? this.elements.userInput.value : '';
             this.state.undoStack.push(current);
             
             const next = this.state.redoStack.pop();
-            this.elements.userInput.value = next;
+            if (this.elements.userInput) {
+                this.elements.userInput.value = next;
+            }
             this.handleInputChange();
             
             this.showNotification('Redo applied', 'info');
@@ -364,8 +464,12 @@ class PromptCraftApp {
      */
     maximizeInput() {
         this.state.isMaximized = true;
-        this.elements.editorTextarea.value = this.state.userInput;
+        const text = this.elements.goalInput ? this.elements.goalInput.value + '\n\n' + (this.elements.detailsInput ? this.elements.detailsInput.value : '') : '';
+        this.elements.editorTextarea.value = text.trim();
         this.elements.fullScreenEditor.style.display = 'flex';
+        
+        // Show generate button
+        this.elements.generateFromEditorBtn.style.display = 'flex';
         
         // Focus and select text
         setTimeout(() => {
@@ -407,9 +511,17 @@ class PromptCraftApp {
      * Generate from fullscreen editor
      */
     generateFromEditor() {
-        const text = this.elements.editorTextarea.value;
-        this.elements.userInput.value = text;
-        this.handleInputChange();
+        const text = this.elements.editorTextarea.value.trim();
+        
+        // Parse the text for goal and details
+        const lines = text.split('\n\n');
+        if (this.elements.goalInput && lines.length > 0) {
+            this.elements.goalInput.value = lines[0];
+        }
+        if (this.elements.detailsInput && lines.length > 1) {
+            this.elements.detailsInput.value = lines.slice(1).join('\n\n');
+        }
+        
         this.exitFullScreen();
         this.generatePrompt();
     }
@@ -417,7 +529,7 @@ class PromptCraftApp {
     /**
      * Toggle voice input
      */
-    toggleVoiceInput() {
+    async toggleVoiceInput() {
         if (!window.speechService) {
             this.showNotification('Voice input not available', 'error');
             return;
@@ -428,12 +540,17 @@ class PromptCraftApp {
             this.state.isListening = false;
             this.elements.voiceInputBtn.classList.remove('active');
         } else {
-            if (window.speechService.startListening()) {
-                this.state.isListening = true;
-                this.elements.voiceInputBtn.classList.add('active');
-                this.showNotification('Listening... Speak now', 'info');
-            } else {
-                this.showNotification('Voice input not available', 'error');
+            try {
+                if (await window.speechService.startListening()) {
+                    this.state.isListening = true;
+                    this.elements.voiceInputBtn.classList.add('active');
+                    this.showNotification('Listening... Speak now', 'info');
+                } else {
+                    this.showNotification('Voice input permission denied', 'error');
+                }
+            } catch (error) {
+                console.error('Voice input error:', error);
+                this.showNotification('Voice input failed', 'error');
             }
         }
     }
@@ -442,7 +559,13 @@ class PromptCraftApp {
      * Handle voice input result
      */
     handleVoiceInput(transcript) {
-        this.elements.userInput.value += ' ' + transcript;
+        if (this.elements.goalInput && !this.elements.goalInput.value.trim()) {
+            this.elements.goalInput.value = transcript;
+        } else if (this.elements.detailsInput) {
+            this.elements.detailsInput.value += (this.elements.detailsInput.value ? ' ' : '') + transcript;
+        } else if (this.elements.userInput) {
+            this.elements.userInput.value += (this.elements.userInput.value ? ' ' : '') + transcript;
+        }
         this.handleInputChange();
         this.showNotification('Voice input added', 'success');
     }
@@ -458,8 +581,8 @@ class PromptCraftApp {
      * Speak input text
      */
     speakInput() {
-        const text = this.elements.userInput.value.trim();
-        if (!text) {
+        const text = this.elements.goalInput ? this.elements.goalInput.value : '';
+        if (!text.trim()) {
             this.showNotification('No text to speak', 'warning');
             return;
         }
@@ -508,8 +631,12 @@ class PromptCraftApp {
      */
     openInspirationPanel() {
         this.state.inspirationPanelOpen = true;
-        this.elements.inspirationPanel.style.display = 'block';
-        this.elements.inspirationBtn.classList.add('active');
+        if (this.elements.inspirationPanel) {
+            this.elements.inspirationPanel.style.display = 'block';
+        }
+        if (this.elements.inspirationBtn) {
+            this.elements.inspirationBtn.classList.add('active');
+        }
     }
     
     /**
@@ -517,8 +644,12 @@ class PromptCraftApp {
      */
     closeInspirationPanel() {
         this.state.inspirationPanelOpen = false;
-        this.elements.inspirationPanel.style.display = 'none';
-        this.elements.inspirationBtn.classList.remove('active');
+        if (this.elements.inspirationPanel) {
+            this.elements.inspirationPanel.style.display = 'none';
+        }
+        if (this.elements.inspirationBtn) {
+            this.elements.inspirationBtn.classList.remove('active');
+        }
     }
     
     /**
@@ -540,7 +671,9 @@ class PromptCraftApp {
         };
         
         if (templates[template]) {
-            this.elements.userInput.value = templates[template];
+            if (this.elements.goalInput) {
+                this.elements.goalInput.value = templates[template];
+            }
             this.handleInputChange();
             this.closeInspirationPanel();
             this.showNotification(`${template} template applied`, 'success');
@@ -548,19 +681,54 @@ class PromptCraftApp {
     }
     
     /**
+     * Build prompt template for API
+     */
+    buildPromptTemplate(platform, goal, details) {
+        const platformConfig = this.platformConfigs[platform] || this.platformConfigs.chatgpt;
+        
+        const template = `Generate an optimized prompt for ${platformConfig.name} platform.
+
+Goal: ${goal}
+
+Additional Details: ${details || "None provided"}
+
+Platform Requirements:
+- Tone: ${platformConfig.tone}
+- Format: ${platformConfig.format}
+- Style: Optimized for ${platformConfig.name}'s specific capabilities
+
+Instructions:
+1. Create a professional, effective prompt
+2. Structure it for maximum clarity
+3. Include necessary parameters for the platform
+4. Optimize for best results
+5. Use appropriate formatting
+
+Generate only the prompt, no additional explanations.`;
+
+        return template;
+    }
+    
+    /**
      * Generate prompt using AI
      */
     async generatePrompt() {
-        const input = this.elements.userInput.value.trim();
+        // Get input values
+        const platform = this.elements.platformSelect ? this.elements.platformSelect.value : 'chatgpt';
+        const goal = this.elements.goalInput ? this.elements.goalInput.value.trim() : '';
+        const details = this.elements.detailsInput ? this.elements.detailsInput.value.trim() : '';
         
         // Validate input
-        if (!input) {
-            this.showNotification('Please enter a task description first', 'error');
+        if (!goal) {
+            this.showNotification('Please enter a goal for your prompt', 'warning');
+            if (this.elements.goalInput) {
+                this.elements.goalInput.focus();
+            }
             return;
         }
         
-        if (input.length < 5) {
-            this.showNotification('Please enter a more detailed description', 'warning');
+        if (goal.length < 5) {
+            this.showNotification('Please enter a more detailed goal (at least 5 characters)', 'warning');
             return;
         }
         
@@ -573,21 +741,40 @@ class PromptCraftApp {
             
             // Check if API service is available
             if (!window.apiService || !window.apiService.generatePrompt) {
-                // Try to create it if it doesn't exist
-                if (window.APIService) {
-                    window.apiService = new window.APIService();
-                } else {
-                    throw new Error('API service not available');
-                }
+                throw new Error('API service not available. Please check your connection.');
             }
             
-            // Call API
+            // Build the prompt template
+            const promptTemplate = this.buildPromptTemplate(platform, goal, details);
+            
+            console.log('[API Request]', {
+                model: this.state.currentModel,
+                platform: platform,
+                goalLength: goal.length,
+                detailsLength: details.length
+            });
+            
+            // Call API with timeout
             const startTime = Date.now();
-            const result = await window.apiService.generatePrompt(input, this.state.currentModel);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            
+            let result;
+            try {
+                result = await window.apiService.generatePrompt({
+                    model: this.state.currentModel,
+                    prompt: promptTemplate
+                }, controller.signal);
+                clearTimeout(timeoutId);
+            } catch (apiError) {
+                clearTimeout(timeoutId);
+                throw apiError;
+            }
+            
             const responseTime = Date.now() - startTime;
             
             if (result && result.prompt) {
-                // Update state
+                // Success - update state and UI
                 this.state.generatedPrompt = result.prompt;
                 this.state.currentStep = 2;
                 this.state.generationStats = {
@@ -598,7 +785,7 @@ class PromptCraftApp {
                 
                 // Update UI
                 this.elements.outputArea.textContent = result.prompt;
-                this.elements.generationTime.textContent = this.state.generationStats.time.toFixed(2);
+                this.elements.generationTime.textContent = this.state.generationStats.time.toFixed(2) + 's';
                 this.elements.usedModel.textContent = result.model || this.state.currentModel;
                 this.elements.tokenCount.textContent = this.state.generationStats.tokens;
                 
@@ -618,7 +805,9 @@ class PromptCraftApp {
                 
                 // Scroll to output
                 setTimeout(() => {
-                    this.elements.step2Card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (this.elements.step2Card) {
+                        this.elements.step2Card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }, 300);
                 
             } else {
@@ -629,28 +818,26 @@ class PromptCraftApp {
             console.error('Prompt generation error:', error);
             
             let errorMessage = 'Failed to generate prompt';
-            if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
-                errorMessage = 'Connection error. Please check API configuration.';
-            } else if (error.message.includes('Failed to fetch')) {
-                errorMessage = 'Cannot connect to server. Please check your internet connection.';
-            } else if (error.message.includes('timeout')) {
+            let errorType = 'error';
+            
+            if (error.name === 'AbortError') {
                 errorMessage = 'Request timeout. Please try again.';
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                errorMessage = 'Cannot connect to server. Please check your internet connection.';
+            } else if (error.message.includes('500')) {
+                errorMessage = 'Server error. The API may be temporarily unavailable.';
+            } else if (error.message.includes('API service not available')) {
+                errorMessage = 'API service not loaded. Please refresh the page.';
             } else {
                 errorMessage = error.message || errorMessage;
             }
             
-            this.showNotification(errorMessage, 'error');
+            this.showNotification(errorMessage, errorType);
             
             // Fallback: Create a simple prompt
-            this.state.generatedPrompt = `Prompt (Fallback Mode):
-
-Role: AI Assistant
-Objective: ${input}
-Instructions: Please provide a detailed response to the above request.
-
-Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
-            
-            this.elements.outputArea.textContent = this.state.generatedPrompt;
+            const fallbackPrompt = this.createFallbackPrompt(platform, goal, details);
+            this.state.generatedPrompt = fallbackPrompt;
+            this.elements.outputArea.textContent = fallbackPrompt;
             this.state.currentStep = 2;
             this.elements.step2Card.style.display = 'block';
             this.elements.step3Card.style.display = 'block';
@@ -658,11 +845,60 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             this.elements.generateBtn.style.display = 'none';
             this.elements.resetBtn.style.display = 'flex';
             
+            this.showNotification('Using fallback prompt generator', 'warning');
+            
         } finally {
             // Re-enable generate button
             this.elements.generateBtn.disabled = false;
             this.elements.generateBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Prompt';
         }
+    }
+    
+    /**
+     * Create fallback prompt when API fails
+     */
+    createFallbackPrompt(platform, goal, details) {
+        const platformName = this.platformConfigs[platform]?.name || platform;
+        
+        let prompt = `# ${platformName} Prompt\n\n`;
+        prompt += `## Goal\n${goal}\n\n`;
+        
+        if (details) {
+            prompt += `## Details\n${details}\n\n`;
+        }
+        
+        prompt += `## Instructions\n`;
+        
+        switch (platform) {
+            case 'midjourney':
+                prompt += `Create a visually stunning image with the following characteristics:\n`;
+                prompt += `- Subject: ${goal}\n`;
+                prompt += `- Style: Photorealistic, detailed\n`;
+                prompt += `- Lighting: Dramatic, cinematic\n`;
+                prompt += `- Composition: Professional photography\n`;
+                prompt += `- Parameters: --ar 16:9 --v 6.0 --style raw\n`;
+                break;
+            case 'dalle':
+                prompt += `Generate an image with:\n`;
+                prompt += `- Main subject: ${goal}\n`;
+                prompt += `- Style: Digital art, high quality\n`;
+                prompt += `- Details: Sharp focus, intricate details\n`;
+                prompt += `- Color palette: Vibrant and balanced\n`;
+                break;
+            case 'chatgpt':
+            default:
+                prompt += `Please provide a comprehensive response that addresses the following:\n`;
+                prompt += `1. Clearly state the main objective\n`;
+                prompt += `2. Provide detailed, actionable information\n`;
+                prompt += `3. Use professional but accessible language\n`;
+                prompt += `4. Include examples if relevant\n`;
+                prompt += `5. Structure the response logically\n`;
+                break;
+        }
+        
+        prompt += `\nNote: Generated in fallback mode. For better results, check your API connection.`;
+        
+        return prompt;
     }
     
     /**
@@ -680,7 +916,18 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             this.showNotification('Prompt copied to clipboard', 'success');
         } catch (error) {
             console.error('Copy failed:', error);
-            this.showNotification('Failed to copy prompt', 'error');
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                this.showNotification('Prompt copied to clipboard', 'success');
+            } catch (err) {
+                this.showNotification('Failed to copy prompt', 'error');
+            }
+            document.body.removeChild(textArea);
         }
     }
     
@@ -694,18 +941,26 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             return;
         }
         
-        const filename = `prompt-${new Date().toISOString().split('T')[0]}.txt`;
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.showNotification('Prompt saved as text file', 'success');
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `promptcraft-${timestamp}.txt`;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('Prompt saved as text file', 'success');
+        } catch (error) {
+            console.error('Save failed:', error);
+            this.showNotification('Failed to save prompt', 'error');
+        }
     }
     
     /**
@@ -720,7 +975,9 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         
         if (window.platforms && window.platforms.openPlatform) {
             const success = await window.platforms.openPlatform(platformId, prompt);
-            if (!success) {
+            if (success) {
+                this.showNotification(`Opening in ${this.platformConfigs[platformId]?.name || platformId}...`, 'info');
+            } else {
                 this.showNotification('Failed to open platform', 'error');
             }
         } else {
@@ -732,26 +989,59 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
      * Reset application
      */
     resetApp() {
-        // Clear input
-        this.elements.userInput.value = '';
+        // Clear input fields
+        if (this.elements.goalInput) {
+            this.elements.goalInput.value = '';
+        }
+        if (this.elements.detailsInput) {
+            this.elements.detailsInput.value = '';
+        }
+        if (this.elements.userInput) {
+            this.elements.userInput.value = '';
+        }
         this.handleInputChange();
         
         // Clear output
         this.state.generatedPrompt = '';
-        this.elements.outputArea.textContent = '';
+        if (this.elements.outputArea) {
+            this.elements.outputArea.textContent = '';
+        }
         
         // Reset steps
         this.state.currentStep = 1;
-        this.elements.step2Card.style.display = 'none';
-        this.elements.step3Card.style.display = 'none';
-        this.elements.generationInfo.style.display = 'none';
+        if (this.elements.step2Card) {
+            this.elements.step2Card.style.display = 'none';
+        }
+        if (this.elements.step3Card) {
+            this.elements.step3Card.style.display = 'none';
+        }
+        if (this.elements.generationInfo) {
+            this.elements.generationInfo.style.display = 'none';
+        }
         
         // Reset buttons
-        this.elements.generateBtn.style.display = 'flex';
-        this.elements.resetBtn.style.display = 'none';
+        if (this.elements.generateBtn) {
+            this.elements.generateBtn.style.display = 'flex';
+        }
+        if (this.elements.resetBtn) {
+            this.elements.resetBtn.style.display = 'none';
+        }
+        
+        // Reset platform select
+        if (this.elements.platformSelect) {
+            this.elements.platformSelect.value = 'chatgpt';
+        }
         
         // Close panels
         this.closeInspirationPanel();
+        this.exitFullScreen();
+        
+        // Focus on goal input
+        if (this.elements.goalInput) {
+            setTimeout(() => {
+                this.elements.goalInput.focus();
+            }, 100);
+        }
         
         this.showNotification('Application reset', 'info');
     }
@@ -766,7 +1056,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             if (window.apiService && window.apiService.checkHealth) {
                 const result = await window.apiService.checkHealth();
                 
-                if (result.online) {
+                if (result.healthy) {
                     this.state.apiStatus = 'online';
                     this.updateAPIStatus('online', `API Connected${result.latency ? ` (${result.latency}ms)` : ''}`);
                 } else {
@@ -812,7 +1102,8 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         }
         
         if (this.elements.apiEndpoint) {
-            this.elements.apiEndpoint.textContent = window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
+            const endpoint = window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
+            this.elements.apiEndpoint.textContent = endpoint;
         }
         
         if (this.elements.apiStatusDetail) {
@@ -827,132 +1118,150 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
      * Open settings modal
      */
     openSettings() {
-        this.elements.settingsModal.style.display = 'flex';
-        this.loadSettingsIntoForm();
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.style.display = 'flex';
+            this.loadSettingsIntoForm();
+        }
     }
     
     /**
      * Close settings modal
      */
     closeSettings() {
-        this.elements.settingsModal.style.display = 'none';
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.style.display = 'none';
+        }
     }
     
     /**
      * Load settings into form
      */
-
-        /**
-     * Load settings into form
-     */
     loadSettingsIntoForm() {
-        // Get current theme
+        const modalBody = this.elements.settingsModal ? this.elements.settingsModal.querySelector('.modal-body') : null;
+        if (!modalBody) return;
+        
         const currentTheme = window.themeManager ? window.themeManager.getTheme() : 'auto';
         
-        // Only show models that are actually available in your Worker
-        // Based on your Worker health check, you have:
-        // - gemini-3-flash-preview (Gemini 3 Flash)
-        // - gpt-4o-mini (GPT-4o Mini)
-        // - llama-3.1-8b-instant (Llama 3.1 8B Instant)
-        // Remove Claude since you don't have it configured
-        
+        // Available models (based on your API worker)
         const availableModels = [
+            { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' },
             { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash' },
-            { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
-            { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' }
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini' }
         ];
         
-        const modalBody = this.elements.settingsModal.querySelector('.modal-body');
-        if (modalBody) {
-            modalBody.innerHTML = `
-                <div class="settings-group">
-                    <h3><i class="fas fa-plug"></i> API Settings</h3>
-                    <div class="setting-item">
-                        <label>API Endpoint</label>
-                        <input type="text" class="settings-input" value="${window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" readonly>
-                        <small>Cloudflare Worker endpoint</small>
-                    </div>
-                    <div class="setting-item">
-                        <label>Default AI Model</label>
-                        <select id="settingsModel" class="settings-select">
-                            ${availableModels.map(model => `
-                                <option value="${model.id}" ${this.state.currentModel === model.id ? 'selected' : ''}>
-                                    ${model.name}
-                                </option>
-                            `).join('')}
-                        </select>
-                        <small>Select which AI model to use for prompt generation</small>
-                    </div>
+        modalBody.innerHTML = `
+            <div class="settings-group">
+                <h3><i class="fas fa-plug"></i> API Settings</h3>
+                <div class="setting-item">
+                    <label>API Endpoint</label>
+                    <input type="text" class="settings-input" value="${window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" readonly>
+                    <small>Cloudflare Worker endpoint</small>
                 </div>
-                
-                <div class="settings-group">
-                    <h3><i class="fas fa-palette"></i> Appearance</h3>
-                    <div class="setting-item">
-                        <label>Theme</label>
-                        <select id="settingsTheme" class="settings-select">
-                            <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
-                            <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
-                            <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
-                        </select>
-                        <small>Choose light, dark, or auto (follows system)</small>
-                    </div>
-                    <div class="setting-item">
-                        <label>Animations</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="settingsAnimations" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <small>Enable/disable UI animations</small>
-                    </div>
+                <div class="setting-item">
+                    <label>Default AI Model</label>
+                    <select id="settingsModel" class="settings-select">
+                        ${availableModels.map(model => `
+                            <option value="${model.id}" ${this.state.currentModel === model.id ? 'selected' : ''}>
+                                ${model.name}
+                            </option>
+                        `).join('')}
+                    </select>
+                    <small>Select which AI model to use for prompt generation</small>
                 </div>
-                
-                <div class="settings-group">
-                    <h3><i class="fas fa-bell"></i> Notifications</h3>
-                    <div class="setting-item">
-                        <label>Show Notifications</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="settingsNotifications" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <small>Show success/error notifications</small>
-                    </div>
+            </div>
+            
+            <div class="settings-group">
+                <h3><i class="fas fa-palette"></i> Appearance</h3>
+                <div class="setting-item">
+                    <label>Theme</label>
+                    <select id="settingsTheme" class="settings-select">
+                        <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+                        <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
+                        <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
+                    </select>
+                    <small>Choose light, dark, or auto (follows system)</small>
                 </div>
-                
-                <div class="settings-group">
-                    <h3><i class="fas fa-microphone"></i> Voice Features</h3>
-                    <div class="setting-item">
-                        <label>Voice Input</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="settingsVoiceInput" ${window.speechService ? 'checked' : ''}>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <small>Enable voice input (browser permission required)</small>
+            </div>
+            
+            <div class="settings-group">
+                <h3><i class="fas fa-bell"></i> Notifications</h3>
+                <div class="setting-item">
+                    <label>Show Notifications</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="settingsNotifications" checked>
+                        <span class="toggle-slider"></span>
                     </div>
-                    <div class="setting-item">
-                        <label>Text-to-Speech</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="settingsTextToSpeech" ${window.speechService ? 'checked' : ''}>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <small>Enable reading prompts aloud</small>
-                    </div>
+                    <small>Show success/error notifications</small>
                 </div>
-            `;
+            </div>
+            
+            <div class="settings-group">
+                <h3><i class="fas fa-microphone"></i> Voice Features</h3>
+                <div class="setting-item">
+                    <label>Voice Input</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="settingsVoiceInput" ${window.speechService ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </div>
+                    <small>Enable voice input</small>
+                </div>
+                <div class="setting-item">
+                    <label>Text-to-Speech</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="settingsTextToSpeech" ${window.speechService ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </div>
+                    <small>Enable reading prompts aloud</small>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <h3><i class="fas fa-database"></i> Data Management</h3>
+                <div class="setting-item">
+                    <label>Save Prompts Locally</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="settingsSavePrompts" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                    <small>Save generated prompts to browser storage</small>
+                </div>
+                <button id="clearDataBtn" class="btn-secondary" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-trash"></i> Clear All Local Data
+                </button>
+            </div>
+        `;
+        
+        // Add event listener for clear data button
+        const clearDataBtn = modalBody.querySelector('#clearDataBtn');
+        if (clearDataBtn) {
+            clearDataBtn.addEventListener('click', () => this.clearLocalData());
         }
     }
+    
     /**
-     * Save settings
+     * Clear all local data
      */
+    clearLocalData() {
+        if (confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
+            try {
+                localStorage.clear();
+                this.showNotification('All local data cleared', 'success');
+            } catch (error) {
+                this.showNotification('Failed to clear data', 'error');
+            }
+        }
+    }
+    
     /**
      * Save settings
      */
     saveSettings() {
         const modelSelect = document.getElementById('settingsModel');
         const themeSelect = document.getElementById('settingsTheme');
-        const animationsCheckbox = document.getElementById('settingsAnimations');
         const notificationsCheckbox = document.getElementById('settingsNotifications');
         const voiceInputCheckbox = document.getElementById('settingsVoiceInput');
         const textToSpeechCheckbox = document.getElementById('settingsTextToSpeech');
+        const savePromptsCheckbox = document.getElementById('settingsSavePrompts');
         
         // Save model
         if (modelSelect) {
@@ -971,11 +1280,11 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         // Save other settings to localStorage
         const settings = {
             model: this.state.currentModel,
-            theme: window.themeManager ? window.themeManager.getTheme() : 'auto',
-            animations: animationsCheckbox ? animationsCheckbox.checked : true,
+            theme: themeSelect ? themeSelect.value : 'auto',
             notifications: notificationsCheckbox ? notificationsCheckbox.checked : true,
             voiceInput: voiceInputCheckbox ? voiceInputCheckbox.checked : false,
             textToSpeech: textToSpeechCheckbox ? textToSpeechCheckbox.checked : false,
+            savePrompts: savePromptsCheckbox ? savePromptsCheckbox.checked : true,
             savedAt: new Date().toISOString()
         };
         
@@ -1000,11 +1309,10 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
             if (saved.model) {
                 this.state.currentModel = saved.model;
                 if (this.elements.currentModel) {
-                    // Simple model name mapping
                     const modelNames = {
+                        'llama-3.1-8b-instant': 'Llama 3.1 8B Instant',
                         'gemini-3-flash-preview': 'Gemini 3 Flash',
-                        'gpt-4o-mini': 'GPT-4o Mini',
-                        'claude-3-haiku': 'Claude 3 Haiku'
+                        'gpt-4o-mini': 'GPT-4o Mini'
                     };
                     this.elements.currentModel.textContent = modelNames[saved.model] || saved.model;
                 }
@@ -1023,12 +1331,12 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
      * Update button states based on current state
      */
     updateButtonStates() {
-        const hasInput = this.state.userInput.trim().length > 0;
+        const hasGoal = this.elements.goalInput ? this.elements.goalInput.value.trim().length > 0 : false;
         const hasOutput = this.state.generatedPrompt.trim().length > 0;
         
         // Input buttons
         if (this.elements.clearInputBtn) {
-            this.elements.clearInputBtn.disabled = !hasInput && !hasOutput;
+            this.elements.clearInputBtn.disabled = !hasGoal && !hasOutput;
         }
         
         if (this.elements.undoBtn) {
@@ -1036,7 +1344,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         }
         
         if (this.elements.speakInputBtn) {
-            this.elements.speakInputBtn.disabled = !hasInput;
+            this.elements.speakInputBtn.disabled = !hasGoal;
         }
         
         // Output buttons
@@ -1058,7 +1366,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         
         // Generate button
         if (this.elements.generateBtn) {
-            this.elements.generateBtn.disabled = !hasInput;
+            this.elements.generateBtn.disabled = !hasGoal;
         }
     }
     
@@ -1070,7 +1378,8 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         
         // Update progress steps
         document.querySelectorAll('.step').forEach(step => {
-            const stepNum = parseInt(step.dataset.step);
+            if (!step) return;
+            const stepNum = parseInt(step.dataset.step) || 0;
             if (stepNum <= this.state.currentStep) {
                 step.classList.add('active');
             } else {
@@ -1091,7 +1400,70 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         if (window.showNotification) {
             window.showNotification(message, type, duration);
         } else {
-            console.log(`[${type.toUpperCase()}] ${message}`);
+            // Simple console fallback
+            const colors = {
+                'success': '#10B981',
+                'error': '#EF4444',
+                'warning': '#F59E0B',
+                'info': '#3B82F6'
+            };
+            console.log(`%c[${type.toUpperCase()}] ${message}`, `color: ${colors[type] || '#6B7280'}`);
+            
+            // Simple UI fallback
+            const notification = document.createElement('div');
+            notification.className = `simple-notification ${type}`;
+            notification.innerHTML = `
+                <div class="simple-notification-content">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                       type === 'error' ? 'exclamation-circle' : 
+                                       type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10B981' : 
+                            type === 'error' ? '#EF4444' : 
+                            type === 'warning' ? '#F59E0B' : '#3B82F6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Add animation style if not present
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, duration);
         }
     }
 }
