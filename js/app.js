@@ -67,7 +67,8 @@ class PromptCraftApp {
             workerUrl: this.config.WORKER_CONFIG?.workerUrl,
             defaultModel: this.config.WORKER_CONFIG?.defaultModel,
             timeout: 30000,
-            fallbackToLocal: true
+            fallbackToLocal: true,
+            enableDebug: true
         });
 
         // Bind elements
@@ -391,40 +392,26 @@ class PromptCraftApp {
         this.showLoading(true);
         
         try {
-            console.log(`Generating prompt with model: ${selectedModel}`);
-            console.log('=== DEBUGGING OUTPUT ===');
+            console.log(`=== STARTING PROMPT GENERATION ===`);
+            console.log(`Model: ${selectedModel}`);
+            console.log(`Input length: ${inputText.length} chars`);
+            console.log(`Input preview: ${inputText.substring(0, 100)}...`);
             
             // Generate prompt using Cloudflare Worker
             const result = await this.promptGenerator.generatePrompt(inputText, {
                 model: selectedModel,
                 style: 'detailed',
-                temperature: 0.4
+                temperature: 0.4,
+                timeout: 25000 // 25 second timeout
             });
             
             console.log('Generation result:', {
                 success: result.success,
                 promptLength: result.prompt?.length || 0,
-                promptPreview: result.prompt?.substring(0, 200) + '...'
+                fallbackUsed: result.fallbackUsed || false,
+                model: result.model,
+                provider: result.provider
             });
-            
-            // Debug: Check the raw data
-            if (result.prompt) {
-                console.log('Raw prompt first 200 chars:', result.prompt.substring(0, 200));
-                console.log('Raw prompt length:', result.prompt.length);
-                
-                // Check for invalid characters
-                const invalidChars = [];
-                for (let i = 0; i < Math.min(result.prompt.length, 200); i++) {
-                    const charCode = result.prompt.charCodeAt(i);
-                    if (charCode < 32 && charCode !== 9 && charCode !== 10 && charCode !== 13) {
-                        invalidChars.push({ position: i, charCode });
-                    }
-                }
-                
-                if (invalidChars.length > 0) {
-                    console.warn('⚠️ Invalid characters found:', invalidChars);
-                }
-            }
             
             if (result.success && result.prompt) {
                 // SAFE: Check if prompt is valid and not too short
@@ -435,14 +422,14 @@ class PromptCraftApp {
                     throw new Error('Prompt too short');
                 }
                 
-                // Sanitize and set output
-                const sanitizedPrompt = this.sanitizeText(result.prompt);
-                console.log('Sanitized prompt length:', sanitizedPrompt.length);
-                console.log('Sanitized preview:', sanitizedPrompt.substring(0, 200) + '...');
+                // ✅ Use SUPER SAFE text insertion
+                const success = this.setOutputText(result.prompt);
                 
-                // Update output with safe text
-                this.elements.outputArea.textContent = sanitizedPrompt;
-                this.state.originalPrompt = sanitizedPrompt;
+                if (!success) {
+                    throw new Error('Failed to safely display prompt');
+                }
+                
+                this.state.originalPrompt = result.prompt;
                 this.state.promptModified = false;
                 this.state.hasGeneratedPrompt = true;
                 
@@ -457,14 +444,21 @@ class PromptCraftApp {
                 this.updateButtonStates();
                 
                 // Generate and show suggestions
-                this.showSuggestions(result.suggestions);
+                if (result.suggestions && result.suggestions.length > 0) {
+                    this.showSuggestions(result.suggestions);
+                }
                 
                 // Save to history with model info
-                this.saveToHistory(inputText, sanitizedPrompt, selectedModel);
+                this.saveToHistory(inputText, result.prompt, result.model);
                 
                 // Show success message with model info
-                const modelDisplayName = this.getModelDisplayName(selectedModel);
-                this.showNotification(`Prompt generated successfully with ${modelDisplayName}!`, 'success');
+                const modelDisplayName = this.getModelDisplayName(result.model);
+                const fallbackNote = result.fallbackUsed ? ' (using fallback)' : '';
+                this.showNotification(`Prompt generated successfully with ${modelDisplayName}${fallbackNote}!`, 'success');
+                
+                console.log(`=== GENERATION SUCCESSFUL ===`);
+                console.log(`Final prompt length: ${result.prompt.length} chars`);
+                console.log(`Prompt preview: ${result.prompt.substring(0, 200)}...`);
                 
             } else {
                 throw new Error('Failed to generate prompt');
@@ -482,51 +476,121 @@ class PromptCraftApp {
         }
     }
 
-    // Sanitize text to prevent HTML syntax errors
-    sanitizeText(text) {
-        if (!text) return '';
-        
-        // Remove any invalid characters that could cause HTML parsing issues
-        const safeText = text
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '') // Remove control characters
-            .replace(/[\u2028\u2029]/g, '') // Remove line/paragraph separators
-            .replace(/\u0000/g, '') // Remove null characters
-            .replace(/\uFFFD/g, '') // Remove replacement characters
-            .trim();
-        
-        return safeText;
+    // ✅ NEW: SUPER SAFE text insertion
+    setOutputText(text) {
+        try {
+            console.log('Setting output text, length:', text.length);
+            
+            // First, completely clean the text
+            const cleanText = this.cleanTextForDOM(text);
+            console.log('Cleaned text length:', cleanText.length);
+            
+            // Clear output area first
+            this.elements.outputArea.innerHTML = '';
+            
+            // Use document.createTextNode for maximum safety
+            const textNode = document.createTextNode(cleanText);
+            this.elements.outputArea.appendChild(textNode);
+            
+            // Verify it was set correctly
+            const verifyText = this.elements.outputArea.textContent;
+            if (verifyText !== cleanText) {
+                console.error('Text was not set correctly!');
+                console.error('Expected length:', cleanText.length);
+                console.error('Got length:', verifyText.length);
+                console.error('Expected (first 100):', cleanText.substring(0, 100));
+                console.error('Got (first 100):', verifyText.substring(0, 100));
+                
+                // Emergency fallback - use textContent directly
+                this.elements.outputArea.textContent = 'Generated prompt: ' + cleanText.substring(0, 500);
+                return true;
+            }
+            
+            console.log('Successfully set output text:', cleanText.length, 'chars');
+            return true;
+            
+        } catch (error) {
+            console.error('Failed to set output text:', error);
+            
+            // Last resort
+            try {
+                this.elements.outputArea.textContent = 'Generated prompt (display error): ' + text.substring(0, 300);
+            } catch (e) {
+                this.elements.outputArea.textContent = 'Error displaying generated content.';
+            }
+            
+            return false;
+        }
     }
 
-    // Try fallback models
+    // ✅ NEW: Ultra-safe text cleaning
+    cleanTextForDOM(text) {
+        if (!text || typeof text !== 'string') return '';
+        
+        console.log('Original text length:', text.length);
+        
+        // Remove ALL control characters and problematic Unicode
+        let clean = text
+            .replace(/[\x00-\x1F\x7F-\x9F\u200B-\u200F\u2028-\u202F\uFEFF]/g, '')
+            .replace(/\u0000/g, '')
+            .replace(/\uFFFD/g, '')
+            .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
+            .trim();
+        
+        // Ensure it ends with proper punctuation
+        const lastChar = clean.slice(-1);
+        if (!['.', '!', '?', ')', ']', '}'].includes(lastChar)) {
+            clean = clean + '.';
+        }
+        
+        console.log('Cleaned text length:', clean.length);
+        console.log('Cleaned preview (first 200):', clean.substring(0, 200));
+        
+        return clean;
+    }
+
+    // ✅ UPDATED: Try fallback models
     async tryFallbackModels(inputText) {
         const fallbackModels = ['gpt-4o-mini', 'llama-3.1-8b-instant'];
         let fallbackSuccess = false;
         
         for (const fallbackModel of fallbackModels) {
             try {
+                console.log(`Trying fallback model: ${fallbackModel}`);
                 this.showNotification(`Trying ${fallbackModel}...`, 'info');
+                
                 const fallbackResult = await this.promptGenerator.generatePrompt(inputText, {
                     model: fallbackModel,
                     style: 'detailed',
-                    temperature: 0.4
+                    temperature: 0.4,
+                    timeout: 20000
                 });
                 
                 if (fallbackResult.success && fallbackResult.prompt && fallbackResult.prompt.length > 50) {
-                    const sanitizedPrompt = this.sanitizeText(fallbackResult.prompt);
-                    this.elements.outputArea.textContent = sanitizedPrompt;
-                    this.state.originalPrompt = sanitizedPrompt;
+                    // Use safe insertion
+                    const success = this.setOutputText(fallbackResult.prompt);
+                    
+                    if (!success) {
+                        console.warn(`Failed to display prompt from ${fallbackModel}`);
+                        continue;
+                    }
+                    
+                    this.state.originalPrompt = fallbackResult.prompt;
                     this.state.hasGeneratedPrompt = true;
                     this.elements.outputSection.classList.add('visible');
                     this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
                     this.updateProgress();
                     this.updateButtonStates();
-                    this.showSuggestions(fallbackResult.suggestions);
-                    this.saveToHistory(inputText, sanitizedPrompt, fallbackModel);
                     
+                    if (fallbackResult.suggestions) {
+                        this.showSuggestions(fallbackResult.suggestions);
+                    }
+                    
+                    this.saveToHistory(inputText, fallbackResult.prompt, fallbackModel);
                     this.state.currentModel = fallbackModel;
                     this.updateModelDisplay();
                     
-                    this.showNotification(`Generated with fallback model ${fallbackModel}`, 'success');
+                    this.showNotification(`Generated with ${fallbackModel}`, 'success');
                     fallbackSuccess = true;
                     break;
                 }
@@ -538,20 +602,52 @@ class PromptCraftApp {
         
         // If all fallbacks fail, use local generation
         if (!fallbackSuccess) {
+            console.log('All AI models failed, using local generation');
+            this.useLocalGeneration(inputText);
+        }
+    }
+
+    // ✅ NEW: Local generation fallback
+    useLocalGeneration(inputText) {
+        try {
             this.showNotification('Using local generation...', 'info');
-            const localResult = this.promptGenerator.generatePromptLocally(inputText);
-            const sanitizedPrompt = this.sanitizeText(localResult.prompt);
-            this.elements.outputArea.textContent = sanitizedPrompt;
-            this.state.originalPrompt = sanitizedPrompt;
+            
+            // Create a simple but complete prompt locally
+            const localPrompt = `Based on your request: "${inputText.substring(0, 100)}..."
+
+I'll help you create a comprehensive prompt. Here's a structured approach:
+
+1. **Define the role**: Expert assistant specialized in the relevant domain
+2. **Set clear objectives**: Address the specific requirements mentioned
+3. **Provide context**: Consider relevant background information
+4. **Give step-by-step instructions**: Break down complex tasks
+5. **Include examples**: Show expected output format
+6. **Specify constraints**: Mention any limitations or requirements
+7. **Define success criteria**: How to know when the task is complete
+
+This structured approach ensures you get detailed, actionable responses tailored to your needs.`;
+            
+            // Use safe insertion
+            const success = this.setOutputText(localPrompt);
+            
+            if (!success) {
+                throw new Error('Failed to display local prompt');
+            }
+            
+            this.state.originalPrompt = localPrompt;
             this.state.hasGeneratedPrompt = true;
             this.elements.outputSection.classList.add('visible');
             this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
             this.updateProgress();
             this.updateButtonStates();
-            this.showSuggestions(localResult.suggestions);
-            this.saveToHistory(inputText, sanitizedPrompt, 'local-fallback');
+            this.saveToHistory(inputText, localPrompt, 'local');
             
-            this.showNotification('Generated locally (AI service unavailable)', 'warning');
+            this.showNotification('Generated locally', 'warning');
+            console.log('Local generation successful');
+            
+        } catch (error) {
+            console.error('Local generation failed:', error);
+            this.showNotification('Could not generate prompt. Please try again.', 'error');
         }
     }
 
@@ -561,7 +657,8 @@ class PromptCraftApp {
             'gemini-3-flash-preview': 'Gemini 3 Flash',
             'gpt-4o-mini': 'GPT-4o Mini',
             'llama-3.1-8b-instant': 'Llama 3.1 8B',
-            'local-fallback': 'Local AI'
+            'local': 'Local Generation',
+            'local-fallback': 'Local Fallback'
         };
         return modelNames[modelId] || modelId;
     }
