@@ -497,22 +497,30 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
     // ✅ NEW: SUPER SAFE text insertion
 setOutputText(text) {
     try {
+        if (!this.elements.outputArea) return false;
+
+        // Hard reset (important for contenteditable)
         this.elements.outputArea.innerHTML = '';
+        this.elements.outputArea.textContent = '';
 
-        const lines = this.cleanTextForDOM(text).split('\n');
+        // Clean but PRESERVE newlines
+        const cleanText = this.cleanTextForDOM(text);
 
-        for (const line of lines) {
-            if (line.trim()) {
-                const span = document.createElement('span');
-                span.textContent = line;
-                this.elements.outputArea.appendChild(span);
-            }
-            this.elements.outputArea.appendChild(document.createElement('br'));
-        }
+        // 🔥 SINGLE ASSIGNMENT (this is the key)
+        this.elements.outputArea.textContent = cleanText;
 
-        this.elements.outputArea.scrollTop =
-            this.elements.outputArea.scrollHeight;
+        // Force layout recalculation
+        this.elements.outputArea.style.display = 'none';
+        this.elements.outputArea.offsetHeight; // force reflow
+        this.elements.outputArea.style.display = '';
 
+        // Scroll AFTER layout settles
+        requestAnimationFrame(() => {
+            this.elements.outputArea.scrollTop =
+                this.elements.outputArea.scrollHeight;
+        });
+
+        console.log('Successfully set output text:', cleanText.length, 'chars');
         return true;
     } catch (e) {
         console.error('Display failed:', e);
@@ -520,9 +528,6 @@ setOutputText(text) {
         return false;
     }
 }
-
-
-    // ✅ NEW: Ultra-safe text cleaning
   
 cleanTextForDOM(text) {
     if (!text || typeof text !== 'string') return '';
