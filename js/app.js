@@ -3,384 +3,7 @@
 // Version: 2.0.0 - PRODUCTION READY
 // ============================================
 
-// ======================
-// STORAGE MANAGER
-// ======================
-class StorageManager {
-    constructor() {
-        this.prefix = 'promptcraft_';
-    }
-
-    save(key, data) {
-        try {
-            localStorage.setItem(this.prefix + key, JSON.stringify(data));
-            return true;
-        } catch (error) {
-            console.error('Failed to save to localStorage:', error);
-            return false;
-        }
-    }
-
-    load(key) {
-        try {
-            const data = localStorage.getItem(this.prefix + key);
-            return data ? JSON.parse(data) : null;
-        } catch (error) {
-            console.error('Failed to load from localStorage:', error);
-            return null;
-        }
-    }
-
-    remove(key) {
-        try {
-            localStorage.removeItem(this.prefix + key);
-            return true;
-        } catch (error) {
-            console.error('Failed to remove from localStorage:', error);
-            return false;
-        }
-    }
-
-    clear() {
-        try {
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith(this.prefix)) {
-                    localStorage.removeItem(key);
-                }
-            });
-            return true;
-        } catch (error) {
-            console.error('Failed to clear localStorage:', error);
-            return false;
-        }
-    }
-}
-
-// ======================
-// VOICE HANDLER
-// ======================
-class VoiceHandler {
-    constructor() {
-        this.isListening = false;
-        this.isSpeaking = false;
-        this.recognition = null;
-        this.synth = window.speechSynthesis;
-        this.callbacks = {};
-    }
-
-    setCallbacks(callbacks) {
-        this.callbacks = callbacks;
-    }
-
-    toggleListening(lang = 'en-US') {
-        if (this.isListening) {
-            this.stopListening();
-        } else {
-            this.startListening(lang);
-        }
-    }
-
-    startListening(lang = 'en-US') {
-        if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-            if (this.callbacks.onError) {
-                this.callbacks.onError('Speech recognition not supported');
-            }
-            return;
-        }
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = lang;
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
-
-        this.recognition.onstart = () => {
-            this.isListening = true;
-            if (this.callbacks.onListeningStart) {
-                this.callbacks.onListeningStart();
-            }
-        };
-
-        this.recognition.onresult = (event) => {
-            let transcript = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i].isFinal) {
-                    transcript += event.results[i][0].transcript;
-                }
-            }
-
-            if (transcript && this.callbacks.onTranscript) {
-                this.callbacks.onTranscript(transcript);
-            }
-        };
-
-        this.recognition.onerror = (event) => {
-            this.isListening = false;
-            if (this.callbacks.onError) {
-                this.callbacks.onError(event.error);
-            }
-        };
-
-        this.recognition.onend = () => {
-            this.isListening = false;
-        };
-
-        this.recognition.start();
-    }
-
-    stopListening() {
-        if (this.recognition) {
-            this.recognition.stop();
-            this.isListening = false;
-        }
-    }
-
-    toggleSpeaking(text, options = {}) {
-        if (this.isSpeaking) {
-            this.stopSpeaking();
-        } else {
-            this.startSpeaking(text, options);
-        }
-    }
-
-    startSpeaking(text, options = {}) {
-        if (!text || !this.synth) return;
-
-        this.stopSpeaking();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = options.lang || 'en-US';
-        utterance.rate = options.rate || 1;
-        utterance.pitch = options.pitch || 1;
-        utterance.volume = options.volume || 1;
-
-        utterance.onstart = () => {
-            this.isSpeaking = true;
-            if (this.callbacks.onSpeakingStart) {
-                this.callbacks.onSpeakingStart();
-            }
-        };
-
-        utterance.onend = () => {
-            this.isSpeaking = false;
-            if (this.callbacks.onSpeakingEnd) {
-                this.callbacks.onSpeakingEnd();
-            }
-        };
-
-        utterance.onerror = (event) => {
-            this.isSpeaking = false;
-            if (this.callbacks.onError) {
-                this.callbacks.onError('Speech synthesis error');
-            }
-        };
-
-        this.synth.speak(utterance);
-    }
-
-    stopSpeaking() {
-        if (this.synth && this.isSpeaking) {
-            this.synth.cancel();
-            this.isSpeaking = false;
-        }
-    }
-}
-
-// ======================
-// PLATFORM INTEGRATIONS (SINGLE DEFINITION)
-// ======================
-class PlatformIntegrations {
-    constructor() {
-        this.platforms = {
-            chatgpt: {
-                name: 'ChatGPT',
-                icon: 'fa-brands fa-openai',
-                color: 'var(--chatgpt)',
-                launchUrl: 'https://chat.openai.com/chat',
-                copyMessage: 'Prompt copied! Opening ChatGPT...',
-                enabled: true
-            },
-            gemini: {
-                name: 'Gemini',
-                icon: 'fa-brands fa-google',
-                color: 'var(--gemini)',
-                launchUrl: 'https://gemini.google.com/app',
-                copyMessage: 'Prompt copied! Opening Gemini...',
-                enabled: true
-            },
-            claude: {
-                name: 'Claude',
-                icon: 'fa-solid fa-robot',
-                color: 'var(--claude)',
-                launchUrl: 'https://claude.ai/new',
-                copyMessage: 'Prompt copied! Opening Claude...',
-                enabled: true
-            },
-            perplexity: {
-                name: 'Perplexity',
-                icon: 'fa-solid fa-magnifying-glass',
-                color: 'var(--perplexity)',
-                launchUrl: 'https://www.perplexity.ai/',
-                copyMessage: 'Prompt copied! Opening Perplexity...',
-                enabled: true
-            },
-            groq: {
-                name: 'Groq',
-                icon: 'fa-solid fa-bolt',
-                color: 'var(--groq)',
-                launchUrl: 'https://console.groq.com/playground',
-                copyMessage: 'Prompt copied! Opening Groq...',
-                enabled: true
-            },
-            notion: {
-                name: 'Notion',
-                icon: 'fa-solid fa-note-sticky',
-                color: 'var(--notion)',
-                launchUrl: 'https://www.notion.so/',
-                copyMessage: 'Prompt copied to clipboard for Notion',
-                enabled: true
-            },
-            discord: {
-                name: 'Discord',
-                icon: 'fa-brands fa-discord',
-                color: 'var(--discord)',
-                launchUrl: 'https://discord.com/channels/@me',
-                copyMessage: 'Prompt copied to clipboard for Discord',
-                enabled: true
-            },
-            slack: {
-                name: 'Slack',
-                icon: 'fa-brands fa-slack',
-                color: 'var(--slack)',
-                launchUrl: 'https://slack.com/',
-                copyMessage: 'Prompt copied to clipboard for Slack',
-                enabled: true
-            }
-        };
-    }
-
-    async copyAndLaunch(platformId, prompt) {
-        try {
-            console.log(`Launching ${platformId} with prompt length: ${prompt.length}`);
-            
-            // 1. Copy prompt to clipboard
-            await navigator.clipboard.writeText(prompt);
-            
-            // 2. Get platform config
-            const platform = this.platforms[platformId];
-            if (!platform) {
-                throw new Error(`Unknown platform: ${platformId}`);
-            }
-            
-            // 3. Return success result (let app handle notifications)
-            const result = {
-                success: true,
-                platformId: platformId,
-                platformName: platform.name,
-                copyMessage: platform.copyMessage,
-                launchUrl: platform.launchUrl
-            };
-            
-            // 4. SAFE: Open the PLATFORM URL, NOT the prompt!
-            setTimeout(() => {
-                if (platform.launchUrl) {
-                    console.log(`Opening platform URL: ${platform.launchUrl}`);
-                    window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
-                }
-            }, 500);
-            
-            return result;
-            
-        } catch (error) {
-            console.error('Failed to copy/launch:', error);
-            return {
-                success: false,
-                platformId: platformId,
-                error: error.message
-            };
-        }
-    }
-
-    renderPlatforms(container) {
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        Object.entries(this.platforms).forEach(([id, platform]) => {
-            if (platform.enabled) {
-                const card = document.createElement('div');
-                card.className = 'platform-card';
-                card.dataset.platform = id;
-                card.style.setProperty('--platform-color', platform.color);
-                
-                card.innerHTML = `
-                    <div class="platform-icon">
-                        <i class="${platform.icon}"></i>
-                    </div>
-                    <div class="platform-name">${platform.name}</div>
-                `;
-                
-                container.appendChild(card);
-            }
-        });
-    }
-
-    getPlatformInfo(platformId) {
-        return this.platforms[platformId] || null;
-    }
-
-    isPlatformEnabled(platformId) {
-        const platform = this.platforms[platformId];
-        return platform ? platform.enabled : false;
-    }
-
-    setPlatformEnabled(platformId, enabled) {
-        const platform = this.platforms[platformId];
-        if (platform) {
-            platform.enabled = enabled;
-            return true;
-        }
-        return false;
-    }
-
-    getAllPlatforms() {
-        return Object.keys(this.platforms);
-    }
-
-    getEnabledPlatforms() {
-        return Object.entries(this.platforms)
-            .filter(([id, platform]) => platform.enabled)
-            .map(([id, platform]) => ({ id, ...platform }));
-    }
-
-    async copyToClipboard(prompt, platformName = '') {
-        try {
-            await navigator.clipboard.writeText(prompt);
-            return {
-                success: true,
-                message: platformName 
-                    ? `Prompt copied for ${platformName}`
-                    : 'Prompt copied to clipboard'
-            };
-        } catch (error) {
-            console.error('Copy failed:', error);
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    }
-
-    launchPlatform(platformId) {
-        const platform = this.platforms[platformId];
-        if (platform && platform.launchUrl) {
-            console.log(`Launching platform: ${platformId} -> ${platform.launchUrl}`);
-            window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
-            return true;
-        }
-        return false;
-    }
-}
+// NO OTHER CLASS DEFINITIONS HERE - THEY ARE IN SEPARATE FILES
 
 // ======================
 // MAIN APPLICATION CONTROLLER
@@ -455,12 +78,12 @@ class PromptCraftApp {
             }
         };
         
-        // Initialize managers
+        // ======================
+        // INITIALIZE MANAGERS
+        // ======================
         this.storageManager = new StorageManager();
         this.voiceHandler = new VoiceHandler();
         this.platformIntegrations = new PlatformIntegrations();
-        
-        // Initialize prompt generator
         this.promptGenerator = new PromptGenerator({
             workerUrl: this.config.WORKER_CONFIG?.workerUrl,
             defaultModel: this.config.WORKER_CONFIG?.defaultModel,
@@ -500,6 +123,7 @@ class PromptCraftApp {
             userInput: document.getElementById('userInput'),
             charCounter: document.getElementById('charCounter'),
             undoBtn: document.getElementById('undoBtn'),
+            clearInputBtn: document.getElementById('clearInputBtn'),
             micBtn: document.getElementById('micBtn'),
             maximizeInputBtn: document.getElementById('maximizeInputBtn'),
             needInspirationBtn: document.getElementById('needInspirationBtn'),
@@ -549,6 +173,11 @@ class PromptCraftApp {
             // Notification container (create if doesn't exist)
             notificationContainer: document.getElementById('notificationContainer') || this.createNotificationContainer()
         };
+        
+        // Add tooltip to inspiration button
+        if (this.elements.needInspirationBtn) {
+            this.elements.needInspirationBtn.title = 'Click to insert ready-made prompt samples';
+        }
     }
 
     // Create notification container if it doesn't exist
@@ -599,6 +228,15 @@ class PromptCraftApp {
     setupEventListeners() {
         // Input handling
         this.elements.userInput.addEventListener('input', () => this.handleInputChange());
+        
+        // Clear input button
+        if (this.elements.clearInputBtn) {
+            this.elements.clearInputBtn.addEventListener('click', () => {
+                this.elements.userInput.value = '';
+                this.clearGeneratedPrompt();
+                this.updateButtonStates();
+            });
+        }
         
         // Button events
         this.elements.stickyPrepareBtn.addEventListener('click', () => this.preparePrompt());
@@ -842,6 +480,10 @@ class PromptCraftApp {
                 this.state.promptModified = false;
                 this.state.hasGeneratedPrompt = true;
                 
+                // ✅ FIX: Hide Prepare button, show Reset button
+                this.elements.stickyPrepareBtn.style.display = 'none';
+                this.elements.stickyResetBtn.style.display = 'flex';
+                
                 this.elements.outputSection.classList.add('visible');
                 this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
                 this.updateProgress();
@@ -939,6 +581,11 @@ class PromptCraftApp {
                     
                     this.state.originalPrompt = fallbackResult.prompt;
                     this.state.hasGeneratedPrompt = true;
+                    
+                    // ✅ FIX: Hide Prepare button, show Reset button
+                    this.elements.stickyPrepareBtn.style.display = 'none';
+                    this.elements.stickyResetBtn.style.display = 'flex';
+                    
                     this.elements.outputSection.classList.add('visible');
                     this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
                     this.updateProgress();
@@ -994,6 +641,11 @@ This structured approach ensures you get detailed, actionable responses tailored
             
             this.state.originalPrompt = localPrompt;
             this.state.hasGeneratedPrompt = true;
+            
+            // ✅ FIX: Hide Prepare button, show Reset button
+            this.elements.stickyPrepareBtn.style.display = 'none';
+            this.elements.stickyResetBtn.style.display = 'flex';
+            
             this.elements.outputSection.classList.add('visible');
             this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
             this.updateProgress();
@@ -1137,6 +789,10 @@ This structured approach ensures you get detailed, actionable responses tailored
     // ======================
 
     resetApplication() {
+        // ✅ FIX: Reset button visibility
+        this.elements.stickyPrepareBtn.style.display = 'flex';
+        this.elements.stickyResetBtn.style.display = 'none';
+        
         this.state.undoStack = [];
         this.state.redoStack = [];
         
@@ -1144,9 +800,19 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.clearGeneratedPrompt();
         this.closeHistory();
         
-        this.state.currentModel = 'gemini-3-flash-preview';
+        this.state.selectedPlatform = null;
+        this.state.hasGeneratedPrompt = false;
+        
+        // ✅ FIX: Restore model from settings
+        if (this.state.settings.defaultModel) {
+            this.state.currentModel = this.state.settings.defaultModel;
+        } else {
+            this.state.currentModel = 'gemini-3-flash-preview';
+        }
+        
         this.updateModelDisplay();
         this.updateButtonStates();
+        this.updateProgress();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
@@ -1270,6 +936,7 @@ This structured approach ensures you get detailed, actionable responses tailored
             this.state.settings.defaultModel = defaultModel.value;
             this.state.currentModel = defaultModel.value;
             console.log('Default model set to:', defaultModel.value);
+            // ✅ FIX: Update model display immediately
             this.updateModelDisplay();
         }
         
@@ -1510,17 +1177,40 @@ This structured approach ensures you get detailed, actionable responses tailored
 - Include relevant hashtags
 - Encourage engagement from followers
 - Be under 250 words
-- Include a call-to-action for comments and shares`
+- Include a call-to-action for comments and shares`,
+            
+            // ✅ FIX: Added missing examples
+            analysis: `Analyze the given dataset and provide insights by:
+1. Identifying key trends and patterns
+2. Detecting anomalies or outliers
+3. Providing actionable recommendations
+4. Visualizing findings where appropriate
+5. Considering business context and implications
+
+Focus on practical insights that drive decision-making.`,
+            
+            research: `Summarize the research paper/article by:
+1. Explaining the research question and objectives
+2. Describing methodology and data sources
+3. Presenting key findings and results
+4. Discussing limitations and implications
+5. Suggesting areas for future research
+
+Keep the summary concise yet comprehensive.`
         };
         
         const example = examples[type] || '';
-        this.elements.userInput.value = example;
-        this.handleInputChange();
-        
-        this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} example inserted!`, 'success');
+        if (example) {
+            this.elements.userInput.value = example;
+            this.handleInputChange();
+            this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} example inserted!`, 'success');
+        } else {
+            this.showNotification('Example not available', 'warning');
+        }
     }
 
     toggleHistory() {
+        // ✅ FIX: Proper toggle logic
         if (this.elements.historySection.classList.contains('active')) {
             this.closeHistory();
         } else {
@@ -1576,6 +1266,11 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
         
         this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
+        
+        // Show/hide clear button
+        if (this.elements.clearInputBtn) {
+            this.elements.clearInputBtn.style.display = hasInput ? 'flex' : 'none';
+        }
     }
 
     updateProgress() {
@@ -1715,6 +1410,11 @@ This structured approach ensures you get detailed, actionable responses tailored
         const saved = this.storageManager.load('appSettings');
         if (saved) {
             this.state.settings = { ...this.loadDefaultSettings(), ...saved };
+        }
+        
+        // ✅ FIX: Restore model from saved settings
+        if (this.state.settings.defaultModel) {
+            this.state.currentModel = this.state.settings.defaultModel;
         }
         
         this.applyTheme();
