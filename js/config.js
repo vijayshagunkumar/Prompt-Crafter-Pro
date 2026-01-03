@@ -2,7 +2,7 @@
 const AppConfig = {
     // Cloudflare Worker Configuration
     WORKER_CONFIG: {
-        // Replace with your actual worker URL
+        // Your worker URL
         workerUrl: 'https://promptcraft-api.vijay-shagunkumar.workers.dev/',
         
         // Worker endpoints
@@ -32,21 +32,27 @@ const AppConfig = {
             name: 'Gemini 3 Flash',
             provider: 'Google',
             description: 'Latest Gemini model with fast response times',
-            recommended: true
+            recommended: true,
+            icon: 'fab fa-google',
+            color: '#8B5CF6'
         },
         {
             id: 'gpt-4o-mini',
             name: 'GPT-4o Mini',
             provider: 'OpenAI',
             description: 'Cost-effective OpenAI model',
-            recommended: false
+            recommended: false,
+            icon: 'fas fa-comment-alt',
+            color: '#10A37F'
         },
         {
             id: 'llama-3.1-8b-instant',
             name: 'Llama 3.1 8B',
             provider: 'Groq',
             description: 'Fast Llama model via Groq',
-            recommended: false
+            recommended: false,
+            icon: 'fas fa-robot',
+            color: '#3B82F6'
         }
     ],
     
