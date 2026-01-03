@@ -2433,16 +2433,3 @@ select:focus, .language-select:focus {
 .platforms-grid > * {
     grid-column: unset !important;
 }
-/* 🔧 FINAL OVERRIDE — FORCE RIGHT POSITION */
-
-.sticky-cta-container {
-    position: static !important;
-    margin-top: var(--spacing-lg);
-    text-align: right !important;   /* 🔥 THIS is the missing piece */
-}
-
-.sticky-cta.prepare {
-    position: static !important;
-    display: inline-block !important;
-    margin: 0 !important;
-}
