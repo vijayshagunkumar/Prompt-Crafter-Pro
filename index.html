@@ -12,6 +12,36 @@
     <!-- CSS Files -->
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- ✅ Adjustment 1: Fixed History Section CSS -->
+    <style>
+        .history-section {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+        
+        /* ✅ FIX: Use 'active' class to match app.js, not 'visible' */
+        .history-section.active {
+            display: block;
+        }
+        
+        /* Voice recording indicator */
+        #micBtn.recording,
+        #editorMicBtn.recording {
+            background-color: #ff4444 !important;
+            color: white !important;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
 </head>
 <body class="dark-theme">
     <!-- Header -->
@@ -94,9 +124,15 @@
                                     <i class="fas fa-microphone"></i>
                                     <span class="action-btn-tooltip">Voice Input</span>
                                 </button>
+                                
+                                <!-- ✅ FIX 2: Clear Button (matches app.js) -->
+                                <button id="clearInputBtn" class="action-btn" title="Clear Input">
+                                    <i class="fas fa-times"></i>
+                                    <span class="action-btn-tooltip">Clear</span>
+                                </button>
                             </div>
                             <div class="right-controls">
-                                <!-- Undo Button (Bottom-right) - REPLACES Clear Button -->
+                                <!-- Undo Button (Bottom-right) -->
                                 <button id="undoBtn" class="undo-btn" title="Undo Last Change">
                                     <i class="fas fa-undo"></i>
                                     <span class="action-btn-tooltip">Undo</span>
@@ -284,8 +320,8 @@
             </button>
         </div>
         
-        <!-- Reset Button - Fixed in bottom right corner -->
-        <button id="stickyResetBtn" class="sticky-cta reset hidden">
+        <!-- ✅ FIX 3: Reset Button without hidden class -->
+        <button id="stickyResetBtn" class="sticky-cta reset">
             <i class="fas fa-redo cta-icon"></i>
             <span>Reset</span>
         </button>
@@ -506,6 +542,7 @@
             <!-- Editor Controls -->
             <div class="editor-controls">
                 <div class="editor-left-controls">
+                    <!-- ✅ Voice button with visual recording indicator -->
                     <button id="editorMicBtn" class="action-btn" title="Voice Input">
                         <i class="fas fa-microphone"></i>
                         <span class="action-btn-tooltip">Voice Input</span>
@@ -523,12 +560,16 @@
         </div>
     </div>
 
-    <!-- JS Files -->
+    <!-- ✅ CRITICAL: Correct Script Load Order -->
+    <!-- ✅ config.js MUST come FIRST to define window.AppConfig before other scripts use it -->
+    <script src="js/config.js"></script>
     <script src="js/storage-manager.js"></script>
     <script src="js/voice-handler.js"></script>
     <script src="js/platform-integrations.js"></script>
     <script src="js/prompt-generator.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/config.js"></script>
+    
+    <!-- ✅ ADJUSTMENT 2: REMOVED the unnecessary inline script block -->
+    <!-- All app logic should be in app.js, not scattered in HTML -->
 </body>
 </html>
