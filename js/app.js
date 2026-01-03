@@ -2,36 +2,56 @@
 class PromptCraftApp {
     constructor() {
         // Add global error handler to catch HTML syntax errors
-        window.addEventListener('error', (event) => {
-            console.error('Global error caught:', {
-                message: event.message,
-                filename: event.filename,
-                lineno: event.lineno,
-                colno: event.colno,
-                error: event.error
-            });
-            
-            // Check if it's a syntax error from our output
-     if (event.error instanceof SyntaxError ||
-    event.message.includes('Invalid or unexpected token')) {
+// Global error handler (filtered – production safe)
+window.addEventListener('error', (event) => {
+    // Ignore errors NOT coming from our JS files
+    if (
+        !event.filename ||
+        (
+            !event.filename.includes('app.js') &&
+            !event.filename.includes('prompt-generator.js')
+        ) ||
+        event.lineno === 1
+    ) {
+        return; // Ignore Cloudflare Pages, inline HTML, extensions
+    }
 
-                console.error('⚠️ HTML Syntax Error detected - likely from output injection');
-                
-                // Try to recover by clearing output
-                if (this.elements && this.elements.outputArea) {
-                    this.elements.outputArea.textContent = 'Error: Generated content contained invalid characters. Please try again.';
-                    this.showNotification('Content error detected. Please regenerate prompt.', 'error');
-                }
-            }
-            
-            event.preventDefault();
-        });
+    console.error('App runtime error:', {
+        message: event.message,
+        file: event.filename,
+        line: event.lineno,
+        column: event.colno
+    });
+
+    this.showNotification(
+        'An internal error occurred. Please retry.',
+        'error'
+    );
+});
+
         
         // Also catch unhandled promise rejections
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            event.preventDefault();
-        });
+  window.addEventListener('unhandledrejection', (event) => {
+    // Ignore external / anonymous promise rejections
+    if (
+        !event.reason ||
+        !event.reason.stack ||
+        (
+            !event.reason.stack.includes('app.js') &&
+            !event.reason.stack.includes('prompt-generator.js')
+        )
+    ) {
+        return;
+    }
+
+    console.error('Unhandled app promise rejection:', event.reason);
+
+    this.showNotification(
+        'An internal async error occurred. Please retry.',
+        'error'
+    );
+});
+
         
         this.state = {
             currentStep: 1,
