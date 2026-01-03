@@ -943,33 +943,51 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
     /**
      * Save settings
      */
+    /**
+     * Save settings
+     */
     saveSettings() {
         const modelSelect = document.getElementById('settingsModel');
         const themeSelect = document.getElementById('settingsTheme');
+        const animationsCheckbox = document.getElementById('settingsAnimations');
+        const notificationsCheckbox = document.getElementById('settingsNotifications');
+        const voiceInputCheckbox = document.getElementById('settingsVoiceInput');
+        const textToSpeechCheckbox = document.getElementById('settingsTextToSpeech');
         
+        // Save model
         if (modelSelect) {
             this.state.currentModel = modelSelect.value;
             if (this.elements.currentModel) {
-                this.elements.currentModel.textContent = modelSelect.options[modelSelect.selectedIndex].text;
+                const modelName = modelSelect.options[modelSelect.selectedIndex].text;
+                this.elements.currentModel.textContent = modelName;
             }
         }
         
+        // Save theme
         if (themeSelect && window.themeManager) {
             window.themeManager.setTheme(themeSelect.value);
         }
         
-        // Save to localStorage
+        // Save other settings to localStorage
+        const settings = {
+            model: this.state.currentModel,
+            theme: window.themeManager ? window.themeManager.getTheme() : 'auto',
+            animations: animationsCheckbox ? animationsCheckbox.checked : true,
+            notifications: notificationsCheckbox ? notificationsCheckbox.checked : true,
+            voiceInput: voiceInputCheckbox ? voiceInputCheckbox.checked : false,
+            textToSpeech: textToSpeechCheckbox ? textToSpeechCheckbox.checked : false,
+            savedAt: new Date().toISOString()
+        };
+        
         try {
-            localStorage.setItem('promptcraft_settings', JSON.stringify({
-                model: this.state.currentModel,
-                theme: window.themeManager ? window.themeManager.getTheme() : 'auto'
-            }));
+            localStorage.setItem('promptcraft_settings', JSON.stringify(settings));
+            console.log('Settings saved:', settings);
         } catch (error) {
             console.warn('Failed to save settings:', error);
         }
         
         this.closeSettings();
-        this.showNotification('Settings saved', 'success');
+        this.showNotification('Settings saved successfully', 'success');
     }
     
     /**
