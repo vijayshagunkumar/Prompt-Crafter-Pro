@@ -3,23 +3,39 @@ console.log("[API] Loading API service...");
 
 class APIService {
     constructor() {
-        this.baseURL = Config.API.ENDPOINT;
+        // Use environment-aware endpoint if available
+        this.baseURL = typeof Config.getApiUrl === 'function'
+            ? Config.getApiUrl()
+            : Config.API.ENDPOINT;
+
         this.activeRequests = new Map();
+
         console.log("[API] Initialized with endpoint:", this.baseURL);
     }
 
-    async makeRequest(endpoint, data, method = 'POST') {
+    /**
+     * Core request handler
+     */
+    async makeRequest(endpoint, data, method = 'POST', timeoutType = 'DEFAULT') {
         const url = `${this.baseURL}${endpoint}`;
         const startTime = Date.now();
         const requestId = Date.now().toString(36);
-        
+
         console.log(`[API ${requestId}] ${method} ${url}`);
-        
-        // Track request for cancellation
+
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), Config.API.TIMEOUT);
+
+        const timeout =
+            Config.API.TIMEOUTS?.[timeoutType.toUpperCase()] ??
+            Config.API.TIMEOUTS?.DEFAULT ??
+            15000;
+
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, timeout);
+
         this.activeRequests.set(requestId, controller);
-        
+
         try {
             const response = await fetch(url, {
                 method,
@@ -29,96 +45,102 @@ class APIService {
                 body: method !== 'GET' ? JSON.stringify(data) : undefined,
                 signal: controller.signal
             });
-            
-            clearTimeout(timeoutId);
+
             const latency = Date.now() - startTime;
-            
             console.log(`[API ${requestId}] Response ${response.status} in ${latency}ms`);
-            
+
             if (!response.ok) {
                 let errorMessage = `HTTP ${response.status}`;
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorData.message || errorMessage;
-                } catch (e) {
+                } catch (_) {
                     // Ignore JSON parse errors
                 }
                 throw new Error(errorMessage);
             }
-            
+
             const responseData = await response.json();
             console.log(`[API ${requestId}] Success`);
-            
+
             return responseData;
-            
+
         } catch (error) {
-            clearTimeout(timeoutId);
-            console.error(`[API ${requestId}] Request failed:`, error.message);
-            
             let userMessage = "Network error";
+
             if (error.name === 'AbortError') {
-                userMessage = "Request timeout";
+                userMessage = "Request timeout. Please try again.";
             } else if (error.message.includes('Failed to fetch')) {
                 userMessage = "Cannot connect to server";
             } else if (error.message.includes('CORS')) {
                 userMessage = "Connection blocked by CORS";
+            } else if (error.message) {
+                userMessage = error.message;
             }
-            
+
+            console.error(`[API ${requestId}] Request failed:`, userMessage);
             throw new Error(userMessage);
-            
+
         } finally {
-            this.activeRequests.delete(requestId);
             clearTimeout(timeoutId);
+            this.activeRequests.delete(requestId);
         }
     }
 
-    async generatePrompt(prompt, model = 'gemini-3-flash-preview') {
+    /**
+     * Generate optimized prompt
+     */
+    async generatePrompt(prompt, model = Config.getDefaultModel()) {
         console.log("[API] Generating prompt with model:", model);
-        
-        if (!prompt || prompt.trim().length === 0) {
+
+        if (!prompt || !prompt.trim()) {
             throw new Error("Please enter a task description first.");
         }
-        
-        try {
-            const data = {
-                prompt: prompt.trim(),
-                model: model
-            };
-            
-            const response = await this.makeRequest("/", data, "POST");
-            
-            if (!response.success) {
-                throw new Error(response.error || "Failed to generate prompt");
-            }
-            
-            console.log("[API] Prompt generated successfully");
-            
-            return {
-                prompt: response.result,
-                model: response.model,
-                provider: response.provider || "google",
-                usage: response.usage || {},
-                requestId: response.requestId,
-                rateLimit: response.rateLimit || {}
-            };
-            
-        } catch (error) {
-            console.error("[API] Generation failed:", error);
-            throw error;
+
+        const sanitizedPrompt = typeof Config.sanitizeInput === 'function'
+            ? Config.sanitizeInput(prompt)
+            : prompt.trim();
+
+        const data = {
+            prompt: sanitizedPrompt,
+            model
+        };
+
+        const response = await this.makeRequest(
+            "/",
+            data,
+            "POST",
+            "GENERATE"
+        );
+
+        if (!response.success) {
+            throw new Error(response.error || "Failed to generate prompt");
         }
+
+        console.log("[API] Prompt generated successfully");
+
+        return {
+            prompt: response.result,
+            model: response.model || model,
+            provider: response.provider || "unknown",
+            usage: response.usage || {},
+            requestId: response.requestId,
+            rateLimit: response.rateLimit || {}
+        };
     }
 
+    /**
+     * Health check
+     */
     async checkHealth() {
         console.log("[API] Checking health...");
-        
+
         try {
             const response = await fetch(`${this.baseURL}/health`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' }
             });
-            
+
             if (!response.ok) {
                 return {
                     status: 'error',
@@ -126,17 +148,17 @@ class APIService {
                     message: `API returned ${response.status}`
                 };
             }
-            
+
             const data = await response.json();
+
             return {
                 status: data.status || 'unknown',
                 online: true,
-                message: 'API is online',
                 version: data.version,
                 models: data.models,
                 environment: data.environment
             };
-            
+
         } catch (error) {
             console.warn("[API] Health check failed:", error.message);
             return {
@@ -147,26 +169,24 @@ class APIService {
         }
     }
 
+    /**
+     * Lightweight connectivity check
+     */
     async checkStatus() {
         console.log("[API] Checking status...");
-        
+
         try {
-            // Simple HEAD request to check connectivity
             const startTime = Date.now();
-            const response = await fetch(this.baseURL, {
-                method: 'HEAD',
-                mode: 'no-cors'
-            });
+            await fetch(this.baseURL, { method: 'HEAD', mode: 'no-cors' });
             const latency = Date.now() - startTime;
-            
+
             return {
                 online: true,
-                latency: latency,
+                latency,
                 message: `Connected (${latency}ms)`
             };
-            
+
         } catch (error) {
-            console.warn("[API] Status check failed:", error.message);
             return {
                 online: false,
                 latency: null,
@@ -175,28 +195,30 @@ class APIService {
         }
     }
 
+    /**
+     * Cancel all in-flight requests
+     */
     cancelAllRequests() {
         console.log("[API] Cancelling all active requests");
-        for (const [id, controller] of this.activeRequests) {
+        for (const controller of this.activeRequests.values()) {
             controller.abort();
         }
         this.activeRequests.clear();
     }
 }
 
-// Create and export the service
+// Make globally available
 window.APIService = APIService;
 
-// ⭐ CRITICAL FIX: Always create the apiService instance immediately
+// Create singleton instance safely
 try {
-    if (Config && Config.API && Config.API.ENDPOINT) {
+    if (window.Config?.API?.ENDPOINT) {
         window.apiService = new APIService();
         console.log("[API] Created global apiService instance");
     } else {
         console.warn("[API] Config not ready, delaying apiService creation");
-        // Try again when Config might be available
         setTimeout(() => {
-            if (Config && Config.API && Config.API.ENDPOINT && !window.apiService) {
+            if (!window.apiService && window.Config?.API?.ENDPOINT) {
                 window.apiService = new APIService();
                 console.log("[API] Created delayed apiService instance");
             }
@@ -204,7 +226,6 @@ try {
     }
 } catch (error) {
     console.error("[API] Failed to create apiService:", error);
-    // Create a fallback anyway
     window.apiService = new APIService();
 }
 
