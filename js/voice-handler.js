@@ -7,15 +7,19 @@ class VoiceHandler {
         this.speechSynthesis = window.speechSynthesis;
         this.userStoppedSpeech = false;
         this.supported = this.checkSupport();
-        
+
         this.init();
     }
 
-    // Check browser support
+    // ======================
+    // SUPPORT CHECK
+    // ======================
     checkSupport() {
-        const speechRecognitionSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+        const speechRecognitionSupported =
+            'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+
         const speechSynthesisSupported = 'speechSynthesis' in window;
-        
+
         return {
             speechRecognition: speechRecognitionSupported,
             speechSynthesis: speechSynthesisSupported,
@@ -23,19 +27,26 @@ class VoiceHandler {
         };
     }
 
-    // Initialize speech recognition
+    // ======================
+    // INIT
+    // ======================
     init() {
-        if (this.supported.speechRecognition) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.speechRecognition = new SpeechRecognition();
-            this.speechRecognition.continuous = false;
-            this.speechRecognition.interimResults = true;
-            this.speechRecognition.lang = 'en-US';
-            
-            this.setupEventListeners();
-        }
+        if (!this.supported.speechRecognition) return;
+
+        const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        this.speechRecognition = new SpeechRecognition();
+        this.speechRecognition.continuous = false;
+        this.speechRecognition.interimResults = true;
+        this.speechRecognition.lang = 'en-US';
+
+        this.setupEventListeners();
     }
 
+    // ======================
+    // RECOGNITION EVENTS
+    // ======================
     setupEventListeners() {
         if (!this.speechRecognition) return;
 
@@ -53,46 +64,56 @@ class VoiceHandler {
         };
 
         this.speechRecognition.onerror = (event) => {
-            this.onError?.(event.error);
-            this.stopListening();
+            // Ignore abort / user stop errors
+            if (event.error !== 'aborted') {
+                this.onError?.(event.error);
+            }
+            this.forceStopListening();
         };
 
         this.speechRecognition.onend = () => {
-            this.stopListening();
+            // DO NOT call stop() again here
+            this.isListening = false;
+            this.onListeningEnd?.();
         };
     }
 
-    // Start voice input
+    // ======================
+    // LISTENING CONTROL
+    // ======================
     startListening(language = 'en-US') {
         if (!this.supported.speechRecognition) {
             this.onError?.('Speech recognition not supported');
             return false;
         }
 
+        // 🔒 HARD LOCK: prevent double start
+        if (this.isListening) return false;
+
         try {
             this.speechRecognition.lang = language;
             this.speechRecognition.start();
             return true;
         } catch (error) {
+            this.isListening = false;
             this.onError?.('Failed to start voice input');
             return false;
         }
     }
 
-    // Stop voice input
     stopListening() {
-        if (this.speechRecognition && this.isListening) {
-            try {
-                this.speechRecognition.stop();
-            } catch (e) {
-                // Ignore errors when stopping
-            }
-        }
+        if (!this.isListening) return;
+        this.forceStopListening();
+    }
+
+    forceStopListening() {
+        try {
+            this.speechRecognition?.stop();
+        } catch (_) {}
         this.isListening = false;
         this.onListeningEnd?.();
     }
 
-    // Toggle listening state
     toggleListening(language = 'en-US') {
         if (this.isListening) {
             this.stopListening();
@@ -101,72 +122,71 @@ class VoiceHandler {
         }
     }
 
-    // Speak text
+    // ======================
+    // SPEECH SYNTHESIS
+    // ======================
     speak(text, options = {}) {
         if (!this.supported.speechSynthesis) {
             this.onError?.('Speech synthesis not supported');
             return false;
         }
 
+        // Cancel any existing speech cleanly
         if (this.speechSynthesis.speaking) {
+            this.userStoppedSpeech = true;
             this.speechSynthesis.cancel();
         }
 
         const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Apply options
+
         utterance.lang = options.lang || 'en-US';
-        utterance.rate = options.rate || 1.0;
-        utterance.pitch = options.pitch || 1.0;
-        utterance.volume = options.volume || 1.0;
-        
+        utterance.rate = options.rate ?? 1.0;
+        utterance.pitch = options.pitch ?? 1.0;
+        utterance.volume = options.volume ?? 1.0;
+
         utterance.onstart = () => {
             this.isSpeaking = true;
             this.onSpeakingStart?.();
         };
-        
+
         utterance.onend = () => {
+            this.isSpeaking = false;
             if (!this.userStoppedSpeech) {
                 this.onSpeakingEnd?.();
             }
-            this.stopSpeaking();
+            this.userStoppedSpeech = false;
         };
-        
-        utterance.onerror = (event) => {
+
+        utterance.onerror = () => {
+            // Suppress error if user stopped manually
             if (!this.userStoppedSpeech) {
-                this.onError?.(event.error);
+                this.onError?.('Speech playback failed');
             }
-            this.stopSpeaking();
+            this.isSpeaking = false;
+            this.userStoppedSpeech = false;
         };
 
         this.speechSynthesis.speak(utterance);
         return true;
     }
 
-    // Stop speaking
-    stopSpeaking() {
-        if (this.speechSynthesis.speaking) {
-            this.speechSynthesis.cancel();
-        }
-        this.isSpeaking = false;
-        this.userStoppedSpeech = false;
-    }
-
-    // Toggle speaking
     toggleSpeaking(text, options = {}) {
         if (this.isSpeaking) {
             this.userStoppedSpeech = true;
-            this.stopSpeaking();
+            this.speechSynthesis.cancel();
+            this.isSpeaking = false;
         } else {
             this.speak(text, options);
         }
     }
 
-    // Get available voices
+    // ======================
+    // VOICES
+    // ======================
     getVoices() {
         return new Promise((resolve) => {
             const voices = this.speechSynthesis.getVoices();
-            if (voices.length > 0) {
+            if (voices.length) {
                 resolve(voices);
             } else {
                 this.speechSynthesis.onvoiceschanged = () => {
@@ -176,20 +196,15 @@ class VoiceHandler {
         });
     }
 
-    // Get languages with available voices
     async getAvailableLanguages() {
         const voices = await this.getVoices();
-        const languages = new Set();
-        
-        voices.forEach(voice => {
-            languages.add(voice.lang);
-        });
-        
-        return Array.from(languages).sort();
+        return [...new Set(voices.map(v => v.lang))].sort();
     }
 
-    // Set callbacks
-    setCallbacks(callbacks) {
+    // ======================
+    // CALLBACKS
+    // ======================
+    setCallbacks(callbacks = {}) {
         this.onListeningStart = callbacks.onListeningStart;
         this.onListeningEnd = callbacks.onListeningEnd;
         this.onTranscript = callbacks.onTranscript;
@@ -198,10 +213,12 @@ class VoiceHandler {
         this.onError = callbacks.onError;
     }
 
-    // Cleanup
+    // ======================
+    // CLEANUP
+    // ======================
     destroy() {
-        this.stopListening();
-        this.stopSpeaking();
+        this.forceStopListening();
+        this.speechSynthesis?.cancel();
         this.speechRecognition = null;
     }
 }
