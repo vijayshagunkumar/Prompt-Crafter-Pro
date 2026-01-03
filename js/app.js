@@ -841,11 +841,27 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
     /**
      * Load settings into form
      */
+
+        /**
+     * Load settings into form
+     */
     loadSettingsIntoForm() {
-        // Load from localStorage or use defaults
-        const settings = JSON.parse(localStorage.getItem('promptcraft_settings') || '{}');
+        // Get current theme
+        const currentTheme = window.themeManager ? window.themeManager.getTheme() : 'auto';
         
-        // This would populate form fields with saved settings
+        // Only show models that are actually available in your Worker
+        // Based on your Worker health check, you have:
+        // - gemini-3-flash-preview (Gemini 3 Flash)
+        // - gpt-4o-mini (GPT-4o Mini)
+        // - llama-3.1-8b-instant (Llama 3.1 8B Instant)
+        // Remove Claude since you don't have it configured
+        
+        const availableModels = [
+            { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash' },
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
+            { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' }
+        ];
+        
         const modalBody = this.elements.settingsModal.querySelector('.modal-body');
         if (modalBody) {
             modalBody.innerHTML = `
@@ -853,33 +869,77 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
                     <h3><i class="fas fa-plug"></i> API Settings</h3>
                     <div class="setting-item">
                         <label>API Endpoint</label>
-                        <input type="text" value="${window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" disabled>
+                        <input type="text" class="settings-input" value="${window.Config ? window.Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" readonly>
                         <small>Cloudflare Worker endpoint</small>
                     </div>
                     <div class="setting-item">
-                        <label>Default Model</label>
-                        <select id="settingsModel">
-                            <option value="gemini-3-flash-preview" ${this.state.currentModel === 'gemini-3-flash-preview' ? 'selected' : ''}>Gemini 3 Flash</option>
-                            <option value="gpt-4o-mini" ${this.state.currentModel === 'gpt-4o-mini' ? 'selected' : ''}>GPT-4o Mini</option>
-                            <option value="claude-3-haiku" ${this.state.currentModel === 'claude-3-haiku' ? 'selected' : ''}>Claude 3 Haiku</option>
+                        <label>Default AI Model</label>
+                        <select id="settingsModel" class="settings-select">
+                            ${availableModels.map(model => `
+                                <option value="${model.id}" ${this.state.currentModel === model.id ? 'selected' : ''}>
+                                    ${model.name}
+                                </option>
+                            `).join('')}
                         </select>
+                        <small>Select which AI model to use for prompt generation</small>
                     </div>
                 </div>
+                
                 <div class="settings-group">
                     <h3><i class="fas fa-palette"></i> Appearance</h3>
                     <div class="setting-item">
                         <label>Theme</label>
-                        <select id="settingsTheme">
-                            <option value="auto">Auto (System)</option>
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
+                        <select id="settingsTheme" class="settings-select">
+                            <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+                            <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
+                            <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
                         </select>
+                        <small>Choose light, dark, or auto (follows system)</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>Animations</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="settingsAnimations" checked>
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <small>Enable/disable UI animations</small>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3><i class="fas fa-bell"></i> Notifications</h3>
+                    <div class="setting-item">
+                        <label>Show Notifications</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="settingsNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <small>Show success/error notifications</small>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3><i class="fas fa-microphone"></i> Voice Features</h3>
+                    <div class="setting-item">
+                        <label>Voice Input</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="settingsVoiceInput" ${window.speechService ? 'checked' : ''}>
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <small>Enable voice input (browser permission required)</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>Text-to-Speech</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="settingsTextToSpeech" ${window.speechService ? 'checked' : ''}>
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <small>Enable reading prompts aloud</small>
                     </div>
                 </div>
             `;
         }
     }
-    
     /**
      * Save settings
      */
