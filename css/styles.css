@@ -1753,14 +1753,7 @@ select:focus, .language-select:focus {
         grid-template-columns: repeat(3, 1fr);
     }
 }
-.platform-card {
-    width: 100%;                 /* IMPORTANT */
-    display: flex;
-    flex-direction: row;         /* logo left, text right */
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    text-align: left;
-}
+
 
 @media (max-width: 992px) {
     .output-section {
