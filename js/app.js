@@ -9,7 +9,7 @@ class PromptCraftApp {
             currentStep: 1,
             userInput: '',
             generatedPrompt: '',
-            currentModel: Config.MODELS.DEFAULT,
+            currentModel: (Config && Config.MODELS && Config.MODELS.DEFAULT) || 'gemini-3-flash-preview',
             apiStatus: 'checking',
             isListening: false,
             isSpeaking: false,
@@ -825,7 +825,7 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         }
         
         if (this.elements.apiEndpoint) {
-            this.elements.apiEndpoint.textContent = Config.API.ENDPOINT;
+            this.elements.apiEndpoint.textContent = Config ? Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev';
         }
         
         if (this.elements.apiStatusDetail) {
@@ -867,17 +867,15 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
                     <h3><i class="fas fa-plug"></i> API Settings</h3>
                     <div class="setting-item">
                         <label>API Endpoint</label>
-                        <input type="text" value="${Config.API.ENDPOINT}" disabled>
+                        <input type="text" value="${Config ? Config.API.ENDPOINT : 'https://promptcraft-api.vijay-shagunkumar.workers.dev'}" disabled>
                         <small>Cloudflare Worker endpoint</small>
                     </div>
                     <div class="setting-item">
                         <label>Default Model</label>
                         <select id="settingsModel">
-                            ${Config.MODELS.AVAILABLE ? Config.MODELS.AVAILABLE.map(model => `
-                                <option value="${model.id}" ${model.id === this.state.currentModel ? 'selected' : ''}>
-                                    ${model.name}
-                                </option>
-                            `).join('') : ''}
+                            <option value="gemini-3-flash-preview" ${this.state.currentModel === 'gemini-3-flash-preview' ? 'selected' : ''}>Gemini 3 Flash</option>
+                            <option value="gpt-4o-mini" ${this.state.currentModel === 'gpt-4o-mini' ? 'selected' : ''}>GPT-4o Mini</option>
+                            <option value="claude-3-haiku" ${this.state.currentModel === 'claude-3-haiku' ? 'selected' : ''}>Claude 3 Haiku</option>
                         </select>
                     </div>
                 </div>
@@ -935,14 +933,16 @@ Note: Generated in fallback mode due to: ${error.message.substring(0, 100)}...`;
         try {
             const saved = JSON.parse(localStorage.getItem('promptcraft_settings') || '{}');
             
-            if (saved.model && Config.MODELS.AVAILABLE) {
-                const isValid = Config.MODELS.AVAILABLE.some(m => m.id === saved.model);
-                if (isValid) {
-                    this.state.currentModel = saved.model;
-                    if (this.elements.currentModel) {
-                        const model = Config.MODELS.AVAILABLE.find(m => m.id === saved.model);
-                        this.elements.currentModel.textContent = model ? model.name : saved.model;
-                    }
+            if (saved.model) {
+                this.state.currentModel = saved.model;
+                if (this.elements.currentModel) {
+                    // Simple model name mapping
+                    const modelNames = {
+                        'gemini-3-flash-preview': 'Gemini 3 Flash',
+                        'gpt-4o-mini': 'GPT-4o Mini',
+                        'claude-3-haiku': 'Claude 3 Haiku'
+                    };
+                    this.elements.currentModel.textContent = modelNames[saved.model] || saved.model;
                 }
             }
             
