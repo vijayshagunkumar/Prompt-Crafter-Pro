@@ -74,83 +74,113 @@ class PromptGenerator {
     }
 
     // Call Cloudflare Worker API
-    async callWorkerAPI(input, options) {
-        const { workerUrl, timeout } = this.config;
-        const signal = this.abortController.signal;
+async callWorkerAPI(input, options) {
+    const { workerUrl, timeout } = this.config;
+    const signal = this.abortController.signal;
 
-        const requestData = {
-            prompt: input, // Worker expects "prompt" field
-            model: options.model,
-            temperature: options.temperature,
-            maxTokens: options.maxTokens,
-            timestamp: Date.now()
-        };
+    const requestData = {
+        prompt: input,
+        model: options.model,
+        temperature: options.temperature,
+        maxTokens: options.maxTokens,
+        timestamp: Date.now()
+    };
 
-        // Headers for your worker (no API key needed since ENABLE_API_KEYS is false)
-        const headers = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'PromptCraftPro/2.0'
-        };
+    const headers = {
+        'Content-Type': 'application/json',
+        'User-Agent': 'PromptCraftPro/2.0'
+    };
 
-        try {
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => {
+    try {
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                if (this.abortController) {
                     this.abortController.abort();
-                    reject(new Error('Request timeout after ' + timeout + 'ms'));
-                }, timeout);
-            });
-
-            console.log('Sending request to:', workerUrl);
-            console.log('Request data:', { ...requestData, prompt: input.substring(0, 100) + '...' });
-
-            const fetchPromise = fetch(workerUrl, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(requestData),
-                signal: signal,
-                mode: 'cors'
-            });
-
-            const response = await Promise.race([fetchPromise, timeoutPromise]);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Worker API error:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText
-                });
-                
-                // Try to parse JSON error
-                try {
-                    const errorData = JSON.parse(errorText);
-                    throw new Error(errorData.error || `HTTP ${response.status}`);
-                } catch (e) {
-                    throw new Error(`Worker API error (${response.status}): ${errorText.substring(0, 100)}`);
                 }
-            }
+                reject(new Error('Request timeout after ' + timeout + 'ms'));
+            }, timeout);
+        });
 
-            const data = await response.json();
-            console.log('Worker response received:', {
+        console.log('Sending request to:', workerUrl);
+        console.log('Request data:', { 
+            model: requestData.model,
+            promptLength: input.length 
+        });
+
+        const fetchPromise = fetch(workerUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestData),
+            signal: signal,
+            mode: 'cors'
+        });
+
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
+        
+        // Check response status
+        if (!response.ok) {
+            let errorText = 'No error text available';
+            try {
+                errorText = await response.text();
+            } catch (e) {
+                // Ignore text extraction error
+            }
+            
+            console.error('Worker API error:', {
+                status: response.status,
+                statusText: response.statusText,
+                url: workerUrl
+            });
+            
+            throw new Error(`Worker API error (${response.status}): ${response.statusText}`);
+        }
+
+        // Parse response carefully
+        let data;
+        try {
+            const responseText = await response.text();
+            
+            // Clean response text (remove any invalid characters)
+            const cleanedText = responseText.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+            
+            data = JSON.parse(cleanedText);
+            
+            // Log response for debugging
+            console.log('Worker response parsed:', {
                 success: data.success,
                 model: data.model,
+                hasResult: !!data.result,
                 resultLength: data.result?.length || 0
             });
             
-            // Check if worker returned success
-            if (!data.success) {
-                throw new Error(data.error || 'Worker returned unsuccessful response');
-            }
-            
-            return data;
-
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                throw new Error('Request was aborted due to timeout');
-            }
-            throw error;
+        } catch (parseError) {
+            console.error('Failed to parse worker response:', parseError);
+            console.error('Raw response (first 500 chars):', 
+                (await response.text()).substring(0, 500));
+            throw new Error('Invalid response from worker');
         }
+        
+        // Check if worker returned success
+        if (!data.success) {
+            console.error('Worker returned unsuccessful response:', data);
+            throw new Error(data.error || 'Worker returned unsuccessful response');
+        }
+        
+        // Check for required fields
+        if (!data.result) {
+            console.error('Worker response missing result field:', data);
+            throw new Error('No result in worker response');
+        }
+        
+        return data;
+
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            throw new Error('Request was aborted due to timeout');
+        }
+        throw error;
     }
+}
 
     // Fallback local prompt generation
     generatePromptLocally(input, options = {}) {
@@ -294,13 +324,13 @@ Use professional tone and formal structure suitable for business communications.
 
     // Cancel ongoing generation
     cancelGeneration() {
-        if (this.abortController) {
-            this.abortController.abort();
-            this.isGenerating = false;
-            return true;
-        }
-        return false;
+    if (this.abortController && this.abortController.abort) {
+        this.abortController.abort();
+        this.isGenerating = false;
+        return true;
     }
+    return false;
+}
 
     // Test worker connection
     async testConnection() {
