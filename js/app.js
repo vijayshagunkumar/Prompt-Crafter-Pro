@@ -1,49 +1,435 @@
-// Main Application Controller
-class PromptCraftApp {
-    constructor() {// ======================
-// GLOBAL ERROR FILTER (REGISTER ONCE – PRODUCTION SAFE)
+// ============================================
+// PROMPTCRAFT PRO - MAIN APPLICATION CONTROLLER
+// Version: 2.0.0 - PRODUCTION READY
+// ============================================
+
 // ======================
-if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
-    window.__PROMPTCRAFT_ERROR_HANDLER__ = true;
+// STORAGE MANAGER
+// ======================
+class StorageManager {
+    constructor() {
+        this.prefix = 'promptcraft_';
+    }
 
-    // Filter noisy external / injected errors
-    window.addEventListener('error', (event) => {
-        if (
-            !event.filename ||                             // anonymous / injected
-            event.filename === window.location.href ||     // index.html noise
-            event.lineno === 1 ||                          // inline scripts / CF runtime
-            !event.filename.includes('/js/')               // not our JS files
-        ) {
-            return;
+    save(key, data) {
+        try {
+            localStorage.setItem(this.prefix + key, JSON.stringify(data));
+            return true;
+        } catch (error) {
+            console.error('Failed to save to localStorage:', error);
+            return false;
         }
+    }
 
-        console.error('App error:', {
-            message: event.message,
-            file: event.filename,
-            line: event.lineno,
-            column: event.colno
-        });
-    });
-
-    // Filter noisy unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
-        if (
-            !event.reason ||
-            !event.reason.stack ||
-            (
-                !event.reason.stack.includes('app.js') &&
-                !event.reason.stack.includes('prompt-generator.js')
-            )
-        ) {
-            return;
+    load(key) {
+        try {
+            const data = localStorage.getItem(this.prefix + key);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to load from localStorage:', error);
+            return null;
         }
+    }
 
-        console.error('Unhandled app promise rejection:', event.reason);
-    });
+    remove(key) {
+        try {
+            localStorage.removeItem(this.prefix + key);
+            return true;
+        } catch (error) {
+            console.error('Failed to remove from localStorage:', error);
+            return false;
+        }
+    }
+
+    clear() {
+        try {
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(this.prefix)) {
+                    localStorage.removeItem(key);
+                }
+            });
+            return true;
+        } catch (error) {
+            console.error('Failed to clear localStorage:', error);
+            return false;
+        }
+    }
 }
 
+// ======================
+// VOICE HANDLER
+// ======================
+class VoiceHandler {
+    constructor() {
+        this.isListening = false;
+        this.isSpeaking = false;
+        this.recognition = null;
+        this.synth = window.speechSynthesis;
+        this.callbacks = {};
+    }
 
+    setCallbacks(callbacks) {
+        this.callbacks = callbacks;
+    }
+
+    toggleListening(lang = 'en-US') {
+        if (this.isListening) {
+            this.stopListening();
+        } else {
+            this.startListening(lang);
+        }
+    }
+
+    startListening(lang = 'en-US') {
+        if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+            if (this.callbacks.onError) {
+                this.callbacks.onError('Speech recognition not supported');
+            }
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = lang;
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+
+        this.recognition.onstart = () => {
+            this.isListening = true;
+            if (this.callbacks.onListeningStart) {
+                this.callbacks.onListeningStart();
+            }
+        };
+
+        this.recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    transcript += event.results[i][0].transcript;
+                }
+            }
+
+            if (transcript && this.callbacks.onTranscript) {
+                this.callbacks.onTranscript(transcript);
+            }
+        };
+
+        this.recognition.onerror = (event) => {
+            this.isListening = false;
+            if (this.callbacks.onError) {
+                this.callbacks.onError(event.error);
+            }
+        };
+
+        this.recognition.onend = () => {
+            this.isListening = false;
+        };
+
+        this.recognition.start();
+    }
+
+    stopListening() {
+        if (this.recognition) {
+            this.recognition.stop();
+            this.isListening = false;
+        }
+    }
+
+    toggleSpeaking(text, options = {}) {
+        if (this.isSpeaking) {
+            this.stopSpeaking();
+        } else {
+            this.startSpeaking(text, options);
+        }
+    }
+
+    startSpeaking(text, options = {}) {
+        if (!text || !this.synth) return;
+
+        this.stopSpeaking();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = options.lang || 'en-US';
+        utterance.rate = options.rate || 1;
+        utterance.pitch = options.pitch || 1;
+        utterance.volume = options.volume || 1;
+
+        utterance.onstart = () => {
+            this.isSpeaking = true;
+            if (this.callbacks.onSpeakingStart) {
+                this.callbacks.onSpeakingStart();
+            }
+        };
+
+        utterance.onend = () => {
+            this.isSpeaking = false;
+            if (this.callbacks.onSpeakingEnd) {
+                this.callbacks.onSpeakingEnd();
+            }
+        };
+
+        utterance.onerror = (event) => {
+            this.isSpeaking = false;
+            if (this.callbacks.onError) {
+                this.callbacks.onError('Speech synthesis error');
+            }
+        };
+
+        this.synth.speak(utterance);
+    }
+
+    stopSpeaking() {
+        if (this.synth && this.isSpeaking) {
+            this.synth.cancel();
+            this.isSpeaking = false;
+        }
+    }
+}
+
+// ======================
+// PLATFORM INTEGRATIONS (SINGLE DEFINITION)
+// ======================
+class PlatformIntegrations {
+    constructor() {
+        this.platforms = {
+            chatgpt: {
+                name: 'ChatGPT',
+                icon: 'fa-brands fa-openai',
+                color: 'var(--chatgpt)',
+                launchUrl: 'https://chat.openai.com/chat',
+                copyMessage: 'Prompt copied! Opening ChatGPT...',
+                enabled: true
+            },
+            gemini: {
+                name: 'Gemini',
+                icon: 'fa-brands fa-google',
+                color: 'var(--gemini)',
+                launchUrl: 'https://gemini.google.com/app',
+                copyMessage: 'Prompt copied! Opening Gemini...',
+                enabled: true
+            },
+            claude: {
+                name: 'Claude',
+                icon: 'fa-solid fa-robot',
+                color: 'var(--claude)',
+                launchUrl: 'https://claude.ai/new',
+                copyMessage: 'Prompt copied! Opening Claude...',
+                enabled: true
+            },
+            perplexity: {
+                name: 'Perplexity',
+                icon: 'fa-solid fa-magnifying-glass',
+                color: 'var(--perplexity)',
+                launchUrl: 'https://www.perplexity.ai/',
+                copyMessage: 'Prompt copied! Opening Perplexity...',
+                enabled: true
+            },
+            groq: {
+                name: 'Groq',
+                icon: 'fa-solid fa-bolt',
+                color: 'var(--groq)',
+                launchUrl: 'https://console.groq.com/playground',
+                copyMessage: 'Prompt copied! Opening Groq...',
+                enabled: true
+            },
+            notion: {
+                name: 'Notion',
+                icon: 'fa-solid fa-note-sticky',
+                color: 'var(--notion)',
+                launchUrl: 'https://www.notion.so/',
+                copyMessage: 'Prompt copied to clipboard for Notion',
+                enabled: true
+            },
+            discord: {
+                name: 'Discord',
+                icon: 'fa-brands fa-discord',
+                color: 'var(--discord)',
+                launchUrl: 'https://discord.com/channels/@me',
+                copyMessage: 'Prompt copied to clipboard for Discord',
+                enabled: true
+            },
+            slack: {
+                name: 'Slack',
+                icon: 'fa-brands fa-slack',
+                color: 'var(--slack)',
+                launchUrl: 'https://slack.com/',
+                copyMessage: 'Prompt copied to clipboard for Slack',
+                enabled: true
+            }
+        };
+    }
+
+    async copyAndLaunch(platformId, prompt) {
+        try {
+            console.log(`Launching ${platformId} with prompt length: ${prompt.length}`);
+            
+            // 1. Copy prompt to clipboard
+            await navigator.clipboard.writeText(prompt);
+            
+            // 2. Get platform config
+            const platform = this.platforms[platformId];
+            if (!platform) {
+                throw new Error(`Unknown platform: ${platformId}`);
+            }
+            
+            // 3. Return success result (let app handle notifications)
+            const result = {
+                success: true,
+                platformId: platformId,
+                platformName: platform.name,
+                copyMessage: platform.copyMessage,
+                launchUrl: platform.launchUrl
+            };
+            
+            // 4. SAFE: Open the PLATFORM URL, NOT the prompt!
+            setTimeout(() => {
+                if (platform.launchUrl) {
+                    console.log(`Opening platform URL: ${platform.launchUrl}`);
+                    window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
+                }
+            }, 500);
+            
+            return result;
+            
+        } catch (error) {
+            console.error('Failed to copy/launch:', error);
+            return {
+                success: false,
+                platformId: platformId,
+                error: error.message
+            };
+        }
+    }
+
+    renderPlatforms(container) {
+        if (!container) return;
         
+        container.innerHTML = '';
+        
+        Object.entries(this.platforms).forEach(([id, platform]) => {
+            if (platform.enabled) {
+                const card = document.createElement('div');
+                card.className = 'platform-card';
+                card.dataset.platform = id;
+                card.style.setProperty('--platform-color', platform.color);
+                
+                card.innerHTML = `
+                    <div class="platform-icon">
+                        <i class="${platform.icon}"></i>
+                    </div>
+                    <div class="platform-name">${platform.name}</div>
+                `;
+                
+                container.appendChild(card);
+            }
+        });
+    }
+
+    getPlatformInfo(platformId) {
+        return this.platforms[platformId] || null;
+    }
+
+    isPlatformEnabled(platformId) {
+        const platform = this.platforms[platformId];
+        return platform ? platform.enabled : false;
+    }
+
+    setPlatformEnabled(platformId, enabled) {
+        const platform = this.platforms[platformId];
+        if (platform) {
+            platform.enabled = enabled;
+            return true;
+        }
+        return false;
+    }
+
+    getAllPlatforms() {
+        return Object.keys(this.platforms);
+    }
+
+    getEnabledPlatforms() {
+        return Object.entries(this.platforms)
+            .filter(([id, platform]) => platform.enabled)
+            .map(([id, platform]) => ({ id, ...platform }));
+    }
+
+    async copyToClipboard(prompt, platformName = '') {
+        try {
+            await navigator.clipboard.writeText(prompt);
+            return {
+                success: true,
+                message: platformName 
+                    ? `Prompt copied for ${platformName}`
+                    : 'Prompt copied to clipboard'
+            };
+        } catch (error) {
+            console.error('Copy failed:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    launchPlatform(platformId) {
+        const platform = this.platforms[platformId];
+        if (platform && platform.launchUrl) {
+            console.log(`Launching platform: ${platformId} -> ${platform.launchUrl}`);
+            window.open(platform.launchUrl, '_blank', 'noopener,noreferrer');
+            return true;
+        }
+        return false;
+    }
+}
+
+// ======================
+// MAIN APPLICATION CONTROLLER
+// ======================
+class PromptCraftApp {
+    constructor() {
+        // ======================
+        // GLOBAL ERROR FILTER (REGISTER ONCE – PRODUCTION SAFE)
+        // ======================
+        if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
+            window.__PROMPTCRAFT_ERROR_HANDLER__ = true;
+
+            window.addEventListener('error', (event) => {
+                if (
+                    !event.filename ||                             // anonymous / injected
+                    event.filename === window.location.href ||     // index.html noise
+                    event.lineno === 1 ||                          // inline scripts / CF runtime
+                    !event.filename.includes('/js/')               // not our JS files
+                ) {
+                    return;
+                }
+
+                console.error('App error:', {
+                    message: event.message,
+                    file: event.filename,
+                    line: event.lineno,
+                    column: event.colno
+                });
+            });
+
+            window.addEventListener('unhandledrejection', (event) => {
+                if (
+                    !event.reason ||
+                    !event.reason.stack ||
+                    (
+                        !event.reason.stack.includes('app.js') &&
+                        !event.reason.stack.includes('prompt-generator.js')
+                    )
+                ) {
+                    return;
+                }
+
+                console.error('Unhandled app promise rejection:', event.reason);
+            });
+        }
+
+        // ======================
+        // APP STATE
+        // ======================
         this.state = {
             currentStep: 1,
             hasGeneratedPrompt: false,
@@ -223,11 +609,16 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
         this.elements.savePromptBtn.addEventListener('click', () => this.savePrompt());
         this.elements.stickyResetBtn.addEventListener('click', () => this.resetApplication());
         this.elements.outputArea.addEventListener('paste', (e) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-});
-
+            e.preventDefault();
+            const text = e.clipboardData.getData('text/plain');
+            const outputArea = this.elements.outputArea;
+            const selection = window.getSelection();
+            
+            if (selection.rangeCount) {
+                selection.deleteFromDocument();
+                selection.getRangeAt(0).insertNode(document.createTextNode(text));
+            }
+        });
         
         // Voice button
         this.elements.micBtn.addEventListener('click', () => this.toggleVoiceInput());
@@ -244,7 +635,7 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
         this.elements.historyBtn.addEventListener('click', () => this.toggleHistory());
         this.elements.closeHistoryBtn.addEventListener('click', () => this.closeHistory());
         
-        // Platform clicks
+        // ✅ FIXED: Platform clicks - uses SAFE launch logic
         this.elements.platformsGrid.addEventListener('click', (e) => {
             const platformCard = e.target.closest('.platform-card');
             if (platformCard) {
@@ -319,11 +710,21 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
             },
             onTranscript: (text) => {
                 if (this.state.isEditorOpen && this.state.currentEditor === 'input') {
-                    // Handle editor voice input
                     const editor = document.getElementById('editorTextarea');
-                    if (editor) editor.value += text;
+                    if (editor) {
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
+                        editor.selectionStart = editor.selectionEnd = start + text.length;
+                    }
                 } else {
-                    this.elements.userInput.value += text;
+                    const start = this.elements.userInput.selectionStart;
+                    const end = this.elements.userInput.selectionEnd;
+                    this.elements.userInput.value = 
+                        this.elements.userInput.value.substring(0, start) + 
+                        text + 
+                        this.elements.userInput.value.substring(end);
+                    this.elements.userInput.selectionStart = this.elements.userInput.selectionEnd = start + text.length;
                     this.handleInputChange();
                 }
             },
@@ -365,14 +766,11 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
         const charCount = text.length;
         const maxLength = 5000;
         
-        // Update character counter
         this.elements.charCounter.textContent = `${charCount}/${maxLength}`;
         this.elements.charCounter.style.color = charCount > maxLength * 0.9 ? 'var(--danger)' : 'var(--text-tertiary)';
         
-        // Update button states
         this.updateButtonStates();
         
-        // Clear generated prompt if Step 1 input is cleared
         if (text.trim().length === 0 && this.state.hasGeneratedPrompt) {
             this.clearGeneratedPrompt();
         }
@@ -386,10 +784,9 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
     }
 
     // ======================
-    // PROMPT GENERATION - FIXED VERSION
+    // PROMPT GENERATION
     // ======================
 
-    // Prepare prompt (main generation) - FIXED VERSION
     async preparePrompt() {
         const inputText = this.elements.userInput.value.trim();
         
@@ -403,10 +800,8 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
             return;
         }
         
-        // Get selected model
         const selectedModel = this.state.currentModel || 'gemini-3-flash-preview';
         
-        // Show loading state
         this.showLoading(true);
         
         try {
@@ -415,12 +810,11 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
             console.log(`Input length: ${inputText.length} chars`);
             console.log(`Input preview: ${inputText.substring(0, 100)}...`);
             
-            // Generate prompt using Cloudflare Worker
             const result = await this.promptGenerator.generatePrompt(inputText, {
                 model: selectedModel,
                 style: 'detailed',
                 temperature: 0.4,
-                timeout: 25000 // 25 second timeout
+                timeout: 25000
             });
             
             console.log('Generation result:', {
@@ -432,15 +826,12 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
             });
             
             if (result.success && result.prompt) {
-                // SAFE: Check if prompt is valid and not too short
                 if (result.prompt.length < 50) {
-                    console.warn('⚠️ Generated prompt is too short:', result.prompt.length);
-                    console.warn('Prompt content:', result.prompt);
+                    console.warn('Generated prompt is too short:', result.prompt.length);
                     this.showNotification('Generated prompt seems incomplete. Trying fallback...', 'warning');
                     throw new Error('Prompt too short');
                 }
                 
-                // ✅ Use SUPER SAFE text insertion
                 const success = this.setOutputText(result.prompt);
                 
                 if (!success) {
@@ -451,25 +842,17 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
                 this.state.promptModified = false;
                 this.state.hasGeneratedPrompt = true;
                 
-                // Show output section
                 this.elements.outputSection.classList.add('visible');
-                
-                // Update platforms
                 this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
-                
-                // Update progress and UI
                 this.updateProgress();
                 this.updateButtonStates();
                 
-                // Generate and show suggestions
                 if (result.suggestions && result.suggestions.length > 0) {
                     this.showSuggestions(result.suggestions);
                 }
                 
-                // Save to history with model info
                 this.saveToHistory(inputText, result.prompt, result.model);
                 
-                // Show success message with model info
                 const modelDisplayName = this.getModelDisplayName(result.model);
                 const fallbackNote = result.fallbackUsed ? ' (using fallback)' : '';
                 this.showNotification(`Prompt generated successfully with ${modelDisplayName}${fallbackNote}!`, 'success');
@@ -486,7 +869,6 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
             console.error('Prompt generation error:', error);
             this.showNotification(`Failed to generate with ${selectedModel}. Trying fallback...`, 'warning');
             
-            // Try fallback models
             await this.tryFallbackModels(inputText);
             
         } finally {
@@ -494,59 +876,43 @@ if (!window.__PROMPTCRAFT_ERROR_HANDLER__) {
         }
     }
 
-    // ✅ NEW: SUPER SAFE text insertion
-setOutputText(text) {
-    try {
-        if (!this.elements.outputArea) return false;
+    setOutputText(text) {
+        try {
+            if (!this.elements.outputArea) return false;
 
-        // Hard reset (important for contenteditable)
-        this.elements.outputArea.innerHTML = '';
-        this.elements.outputArea.textContent = '';
+            this.elements.outputArea.innerHTML = '';
+            this.elements.outputArea.textContent = '';
 
-        // Clean but PRESERVE newlines
-        const cleanText = this.cleanTextForDOM(text);
+            const cleanText = this.cleanTextForDOM(text);
+            this.elements.outputArea.textContent = cleanText;
 
-        // 🔥 SINGLE ASSIGNMENT (this is the key)
-        this.elements.outputArea.textContent = cleanText;
+            this.elements.outputArea.style.display = 'none';
+            this.elements.outputArea.offsetHeight;
+            this.elements.outputArea.style.display = '';
 
-        // Force layout recalculation
-        this.elements.outputArea.style.display = 'none';
-        this.elements.outputArea.offsetHeight; // force reflow
-        this.elements.outputArea.style.display = '';
+            requestAnimationFrame(() => {
+                this.elements.outputArea.scrollTop = this.elements.outputArea.scrollHeight;
+            });
 
-        // Scroll AFTER layout settles
-        requestAnimationFrame(() => {
-            this.elements.outputArea.scrollTop =
-                this.elements.outputArea.scrollHeight;
-        });
-
-        console.log('Successfully set output text:', cleanText.length, 'chars');
-        return true;
-    } catch (e) {
-        console.error('Display failed:', e);
-        this.elements.outputArea.textContent = text.slice(0, 500);
-        return false;
+            console.log('Successfully set output text:', cleanText.length, 'chars');
+            return true;
+        } catch (e) {
+            console.error('Display failed:', e);
+            this.elements.outputArea.textContent = text.slice(0, 500);
+            return false;
+        }
     }
-}
-  
-cleanTextForDOM(text) {
-    if (!text || typeof text !== 'string') return '';
+    
+    cleanTextForDOM(text) {
+        if (!text || typeof text !== 'string') return '';
 
-    return text
-        // Normalize line endings
-        .replace(/\r\n/g, '\n')
-
-        // Remove ONLY dangerous control characters
-        // (DO NOT remove \n or \t)
-        .replace(/[\u0000\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B\uFEFF]/g, '')
-
-        // Collapse excessive blank lines (keep markdown readable)
-        .replace(/\n{3,}/g, '\n\n')
-
-        .trim();
-}
+        return text
+            .replace(/\r\n/g, '\n')
+            .replace(/[\u0000\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B\uFEFF]/g, '')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    }
         
-    // ✅ UPDATED: Try fallback models
     async tryFallbackModels(inputText) {
         const fallbackModels = ['gpt-4o-mini', 'llama-3.1-8b-instant'];
         let fallbackSuccess = false;
@@ -564,7 +930,6 @@ cleanTextForDOM(text) {
                 });
                 
                 if (fallbackResult.success && fallbackResult.prompt && fallbackResult.prompt.length > 50) {
-                    // Use safe insertion
                     const success = this.setOutputText(fallbackResult.prompt);
                     
                     if (!success) {
@@ -597,19 +962,16 @@ cleanTextForDOM(text) {
             }
         }
         
-        // If all fallbacks fail, use local generation
         if (!fallbackSuccess) {
             console.log('All AI models failed, using local generation');
             this.useLocalGeneration(inputText);
         }
     }
 
-    // ✅ NEW: Local generation fallback
     useLocalGeneration(inputText) {
         try {
             this.showNotification('Using local generation...', 'info');
             
-            // Create a simple but complete prompt locally
             const localPrompt = `Based on your request: "${inputText.substring(0, 100)}..."
 
 I'll help you create a comprehensive prompt. Here's a structured approach:
@@ -624,7 +986,6 @@ I'll help you create a comprehensive prompt. Here's a structured approach:
 
 This structured approach ensures you get detailed, actionable responses tailored to your needs.`;
             
-            // Use safe insertion
             const success = this.setOutputText(localPrompt);
             
             if (!success) {
@@ -648,7 +1009,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Get model display name
     getModelDisplayName(modelId) {
         const modelNames = {
             'gemini-3-flash-preview': 'Gemini 3 Flash',
@@ -661,10 +1021,9 @@ This structured approach ensures you get detailed, actionable responses tailored
     }
 
     // ======================
-    // PLATFORM INTEGRATION
+    // PLATFORM INTEGRATION - SAFE LAUNCH
     // ======================
 
-    // Handle platform click
     async handlePlatformClick(platformId) {
         const prompt = this.elements.outputArea.textContent.trim();
         
@@ -673,24 +1032,24 @@ This structured approach ensures you get detailed, actionable responses tailored
             return;
         }
         
-        const result = await this.platformIntegrations.copyAndLaunch(platformId, prompt, (response) => {
-            if (response.success) {
-                this.showNotification(`Prompt copied! Opening ${response.platformName}...`, 'success');
+        try {
+            const result = await this.platformIntegrations.copyAndLaunch(platformId, prompt);
+            
+            if (result.success) {
+                this.showNotification(result.copyMessage, 'success');
                 this.state.selectedPlatform = platformId;
                 this.updateProgress();
                 this.updatePlatformSelection();
-                
-                // Open platform
-                if (response.launchUrl) {
-                    window.open(response.launchUrl, '_blank');
-                }
             } else {
                 this.showNotification('Failed to copy prompt', 'error');
             }
-        });
+            
+        } catch (error) {
+            console.error('Platform launch error:', error);
+            this.showNotification('Failed to launch platform', 'error');
+        }
     }
 
-    // Update platform selection UI
     updatePlatformSelection() {
         document.querySelectorAll('.platform-card').forEach(card => {
             card.classList.remove('selected');
@@ -704,7 +1063,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // PROMPT ACTIONS
     // ======================
 
-    // Copy prompt to clipboard
     async copyPrompt() {
         const text = this.elements.outputArea.textContent.trim();
         
@@ -717,7 +1075,6 @@ This structured approach ensures you get detailed, actionable responses tailored
             await navigator.clipboard.writeText(text);
             this.showNotification('Prompt copied to clipboard!', 'success');
             
-            // Visual feedback
             this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
             setTimeout(() => {
                 this.elements.copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
@@ -729,7 +1086,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Toggle speech
     toggleSpeech() {
         const text = this.elements.outputArea.textContent.trim();
         
@@ -743,12 +1099,10 @@ This structured approach ensures you get detailed, actionable responses tailored
         });
     }
 
-    // Toggle voice input
     toggleVoiceInput() {
         this.voiceHandler.toggleListening(this.state.settings.voiceInputLanguage || 'en-US');
     }
 
-    // Export prompt
     exportPrompt() {
         const prompt = this.elements.outputArea.textContent.trim();
         
@@ -771,7 +1125,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.showNotification('Prompt exported successfully!', 'success');
     }
 
-    // Save prompt
     savePrompt() {
         this.state.originalPrompt = this.elements.outputArea.textContent.trim();
         this.state.promptModified = false;
@@ -783,35 +1136,23 @@ This structured approach ensures you get detailed, actionable responses tailored
     // APPLICATION CONTROLS
     // ======================
 
-    // Reset application
     resetApplication() {
-        // Clear undo/redo stacks
         this.state.undoStack = [];
         this.state.redoStack = [];
         
-        // Clear input
         this.elements.userInput.value = '';
-        
-        // Clear generated prompt
         this.clearGeneratedPrompt();
-        
-        // Hide history
         this.closeHistory();
         
-        // Reset model
         this.state.currentModel = 'gemini-3-flash-preview';
         this.updateModelDisplay();
-        
-        // Update button states
         this.updateButtonStates();
         
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
         this.showNotification('Application reset to initial state', 'info');
     }
 
-    // Clear generated prompt
     clearGeneratedPrompt() {
         this.elements.outputArea.textContent = '';
         this.state.originalPrompt = null;
@@ -823,7 +1164,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.updateButtonStates();
     }
 
-    // Undo
     undo() {
         if (this.state.undoStack.length === 0) {
             this.showNotification('Nothing to undo', 'info');
@@ -833,7 +1173,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         const lastAction = this.state.undoStack.pop();
         this.state.redoStack.push(lastAction);
         
-        // Restore previous state
         if (lastAction.type === 'input') {
             this.elements.userInput.value = lastAction.value;
             this.handleInputChange();
@@ -849,85 +1188,61 @@ This structured approach ensures you get detailed, actionable responses tailored
     // SETTINGS MODAL
     // ======================
 
-    // Open settings modal
     openSettings() {
         console.log('Opening settings...');
         
-        // Load current settings into form
         this.loadSettingsIntoForm();
         
-        // Show modal
         const modal = document.getElementById('settingsModal');
         if (modal) {
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            document.body.style.overflow = 'hidden';
         } else {
             console.error('Settings modal not found!');
             this.showNotification('Settings modal not found. Please refresh the page.', 'error');
         }
     }
 
-    // Close settings modal
     closeSettings() {
         const modal = document.getElementById('settingsModal');
         if (modal) {
             modal.classList.remove('active');
-            document.body.style.overflow = ''; // Re-enable scrolling
+            document.body.style.overflow = '';
         }
     }
 
-    // Load settings into form
     loadSettingsIntoForm() {
-        // Theme
         const themeSelect = document.getElementById('themeSelect');
-        if (themeSelect) themeSelect.value = this.state.settings.theme || 'dark';
-        
-        // UI Density
         const uiDensity = document.getElementById('uiDensity');
-        if (uiDensity) uiDensity.value = this.state.settings.uiDensity || 'comfortable';
-        
-        // Default Model
         const defaultModel = document.getElementById('defaultModel');
-        if (defaultModel) defaultModel.value = this.state.settings.defaultModel || 'gemini-3-flash-preview';
-        
-        // Prompt Style
         const promptStyle = document.getElementById('promptStyle');
-        if (promptStyle) promptStyle.value = this.state.settings.promptStyle || 'detailed';
-        
-        // Auto-convert delay
         const autoConvertDelay = document.getElementById('autoConvertDelay');
-        if (autoConvertDelay) autoConvertDelay.value = this.state.settings.autoConvertDelay || 0;
-        
-        // Notification duration
         const notificationDuration = document.getElementById('notificationDuration');
-        if (notificationDuration) notificationDuration.value = this.state.settings.notificationDuration || 3000;
-        
-        // Max history items
         const maxHistoryItems = document.getElementById('maxHistoryItems');
-        if (maxHistoryItems) maxHistoryItems.value = this.state.settings.maxHistoryItems || 25;
-        
-        // Language settings
         const interfaceLanguage = document.getElementById('interfaceLanguage');
-        if (interfaceLanguage) interfaceLanguage.value = this.state.settings.interfaceLanguage || 'en';
-        
         const voiceInputLanguage = document.getElementById('voiceInputLanguage');
-        if (voiceInputLanguage) voiceInputLanguage.value = this.state.settings.voiceInputLanguage || 'en-US';
-        
         const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
+        
+        if (themeSelect) themeSelect.value = this.state.settings.theme || 'dark';
+        if (uiDensity) uiDensity.value = this.state.settings.uiDensity || 'comfortable';
+        if (defaultModel) defaultModel.value = this.state.settings.defaultModel || 'gemini-3-flash-preview';
+        if (promptStyle) promptStyle.value = this.state.settings.promptStyle || 'detailed';
+        if (autoConvertDelay) autoConvertDelay.value = this.state.settings.autoConvertDelay || 0;
+        if (notificationDuration) notificationDuration.value = this.state.settings.notificationDuration || 3000;
+        if (maxHistoryItems) maxHistoryItems.value = this.state.settings.maxHistoryItems || 25;
+        if (interfaceLanguage) interfaceLanguage.value = this.state.settings.interfaceLanguage || 'en';
+        if (voiceInputLanguage) voiceInputLanguage.value = this.state.settings.voiceInputLanguage || 'en-US';
         if (voiceOutputLanguage) voiceOutputLanguage.value = this.state.settings.voiceOutputLanguage || 'en-US';
         
-        // Enable save button initially
         const saveBtn = document.getElementById('saveSettingsBtn');
         if (saveBtn) {
             saveBtn.disabled = false;
         }
     }
 
-    // Save settings from modal
     saveSettingsModal() {
         console.log('Saving settings...');
         
-        // Get values from form
         const themeSelect = document.getElementById('themeSelect');
         const uiDensity = document.getElementById('uiDensity');
         const defaultModel = document.getElementById('defaultModel');
@@ -939,15 +1254,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         const voiceInputLanguage = document.getElementById('voiceInputLanguage');
         const voiceOutputLanguage = document.getElementById('voiceOutputLanguage');
         
-        // Debug: Check if elements exist
-        console.log('Form elements found:', {
-            themeSelect: !!themeSelect,
-            uiDensity: !!uiDensity,
-            defaultModel: !!defaultModel,
-            promptStyle: !!promptStyle
-        });
-        
-        // Update settings
         if (themeSelect) {
             this.state.settings.theme = themeSelect.value;
             console.log('Theme set to:', themeSelect.value);
@@ -1002,17 +1308,13 @@ This structured approach ensures you get detailed, actionable responses tailored
             console.log('Voice output language set to:', voiceOutputLanguage.value);
         }
         
-        // Debug: Check settings before saving
         console.log('Settings to save:', this.state.settings);
         
-        // Save to storage
         const saveResult = this.saveSettings();
         console.log('Save result:', saveResult);
         
-        // Close modal
         this.closeSettings();
         
-        // Show success message
         if (saveResult) {
             this.showNotification('Settings saved successfully!', 'success');
         } else {
@@ -1024,7 +1326,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // FULL SCREEN EDITOR
     // ======================
 
-    // Open full screen editor
     openFullScreenEditor(type) {
         console.log('Opening full screen editor for:', type);
         
@@ -1042,7 +1343,6 @@ This structured approach ensures you get detailed, actionable responses tailored
             return;
         }
         
-        // Set editor content based on type
         let text = '';
         if (type === 'input') {
             text = this.elements.userInput.value;
@@ -1059,22 +1359,18 @@ This structured approach ensures you get detailed, actionable responses tailored
             }
         }
         
-        // Set text and show editor
         editorTextarea.value = text;
         editor.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        document.body.style.overflow = 'hidden';
         
-        // Focus on textarea
         setTimeout(() => {
             editorTextarea.focus();
             editorTextarea.setSelectionRange(text.length, text.length);
         }, 100);
         
-        // Setup editor events
         this.setupEditorEvents();
     }
 
-    // Setup editor events
     setupEditorEvents() {
         const editorTextarea = document.getElementById('editorTextarea');
         const editorPrepareBtn = document.getElementById('editorPrepareBtn');
@@ -1084,41 +1380,33 @@ This structured approach ensures you get detailed, actionable responses tailored
         
         if (!editorTextarea) return;
         
-        // Update prepare button state
         editorTextarea.addEventListener('input', () => {
             if (editorPrepareBtn) {
                 editorPrepareBtn.disabled = !editorTextarea.value.trim();
             }
         });
         
-        // Prepare from editor
         if (editorPrepareBtn) {
             editorPrepareBtn.onclick = () => this.prepareFromEditor();
         }
         
-        // Close editor
         if (closeEditorBtn) {
             closeEditorBtn.onclick = () => this.closeFullScreenEditor();
         }
         
-        // Voice input in editor
         if (editorMicBtn) {
             editorMicBtn.onclick = () => {
                 this.voiceHandler.toggleListening(this.state.settings.voiceInputLanguage || 'en-US');
             };
         }
         
-        // Undo in editor
         if (editorUndoBtn) {
             editorUndoBtn.onclick = () => {
-                // Simple undo for editor
                 document.execCommand('undo');
             };
         }
         
-        // Keyboard shortcuts in editor
         editorTextarea.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + Enter to prepare
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
                 if (this.state.currentEditor === 'input' && editorPrepareBtn && !editorPrepareBtn.disabled) {
@@ -1126,7 +1414,6 @@ This structured approach ensures you get detailed, actionable responses tailored
                 }
             }
             
-            // Escape to close
             if (e.key === 'Escape') {
                 e.preventDefault();
                 this.closeFullScreenEditor();
@@ -1134,7 +1421,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         });
     }
 
-    // Prepare from editor
     async prepareFromEditor() {
         const editorTextarea = document.getElementById('editorTextarea');
         if (!editorTextarea) return;
@@ -1146,33 +1432,26 @@ This structured approach ensures you get detailed, actionable responses tailored
             return;
         }
         
-        // Update main input
         this.elements.userInput.value = inputText;
         this.handleInputChange();
         
-        // Close editor
         this.closeFullScreenEditor();
-        
-        // Generate prompt
         await this.preparePrompt();
     }
 
-    // Close full screen editor
     closeFullScreenEditor() {
         const editor = document.getElementById('fullScreenEditor');
         const editorTextarea = document.getElementById('editorTextarea');
         
         if (editor && editorTextarea) {
-            // Save changes if editing output
             if (this.state.currentEditor === 'output') {
                 const newText = editorTextarea.value;
                 this.elements.outputArea.textContent = newText;
                 this.handlePromptEdit();
             }
             
-            // Close editor
             editor.classList.remove('active');
-            document.body.style.overflow = ''; // Re-enable scrolling
+            document.body.style.overflow = '';
             this.state.isEditorOpen = false;
             this.state.currentEditor = null;
         }
@@ -1182,7 +1461,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // UI CONTROLS
     // ======================
 
-    // Toggle inspiration panel
     toggleInspirationPanel() {
         if (this.state.inspirationPanelOpen) {
             this.closeInspirationPanel();
@@ -1203,7 +1481,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.elements.needInspirationBtn.innerHTML = '<i class="fas fa-lightbulb"></i>';
     }
 
-    // Insert example
     insertExample(type) {
         const examples = {
             email: `Compose a professional follow-up email to a client who attended our product demo last week. The email should:
@@ -1243,7 +1520,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} example inserted!`, 'success');
     }
 
-    // Toggle history
     toggleHistory() {
         if (this.elements.historySection.classList.contains('active')) {
             this.closeHistory();
@@ -1267,7 +1543,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // UI UPDATES & UTILITIES
     // ======================
 
-    // Show loading state
     showLoading(isLoading) {
         const btn = this.elements.stickyPrepareBtn;
         if (isLoading) {
@@ -1279,25 +1554,19 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Update button states
     updateButtonStates() {
         const hasInput = this.elements.userInput.value.trim().length > 0;
         const hasPrompt = this.elements.outputArea.textContent.trim().length > 0;
         const isModified = this.state.promptModified;
         
-        // Prepare button
         this.elements.stickyPrepareBtn.disabled = !hasInput;
-        
-        // Save prompt button
         this.elements.savePromptBtn.disabled = !hasPrompt || !isModified;
         
-        // Action buttons
         const canUsePrompt = hasPrompt && this.state.hasGeneratedPrompt;
         this.elements.copyBtn.disabled = !canUsePrompt;
         this.elements.speakBtn.disabled = !canUsePrompt;
         this.elements.exportBtn.disabled = !canUsePrompt;
         
-        // Update platforms visibility
         if (canUsePrompt) {
             this.elements.platformsGrid.style.display = 'grid';
             this.elements.platformsEmptyState.style.display = 'none';
@@ -1306,11 +1575,9 @@ This structured approach ensures you get detailed, actionable responses tailored
             this.elements.platformsEmptyState.style.display = 'flex';
         }
         
-        // Update undo button
         this.elements.undoBtn.disabled = this.state.undoStack.length === 0;
     }
 
-    // Update progress bar
     updateProgress() {
         let progress = 0;
         
@@ -1329,7 +1596,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.elements.progressFill.style.width = `${progress}%`;
     }
 
-    // Update model display
     updateModelDisplay() {
         if (this.elements.currentModel) {
             const modelName = this.getModelDisplayName(this.state.currentModel);
@@ -1341,14 +1607,12 @@ This structured approach ensures you get detailed, actionable responses tailored
     // HISTORY MANAGEMENT
     // ======================
 
-    // Load history
     loadHistory() {
         const history = this.storageManager.load('promptHistory') || [];
         this.state.promptHistory = history;
         this.renderHistory();
     }
 
-    // Save to history
     saveToHistory(inputText, promptText, model) {
         const historyItem = {
             id: Date.now(),
@@ -1362,7 +1626,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         
         this.state.promptHistory.unshift(historyItem);
         
-        // Limit history size
         const maxItems = this.state.settings.maxHistoryItems || 25;
         if (this.state.promptHistory.length > maxItems) {
             this.state.promptHistory = this.state.promptHistory.slice(0, maxItems);
@@ -1372,7 +1635,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.renderHistory();
     }
 
-    // Render history
     renderHistory() {
         const historyList = this.elements.historyList;
         if (!historyList) return;
@@ -1419,7 +1681,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         });
     }
 
-    // Restore history item
     restoreHistoryItem(id) {
         const item = this.state.promptHistory.find(h => h.id === id);
         if (item) {
@@ -1430,16 +1691,13 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // View history item
     viewHistoryItem(id) {
         const item = this.state.promptHistory.find(h => h.id === id);
         if (item) {
-            // Open in full screen editor for viewing
             this.elements.userInput.value = item.fullInput;
             this.handleInputChange();
             this.openFullScreenEditor('input');
             
-            // Set the output if available
             const editorTextarea = document.getElementById('editorTextarea');
             if (editorTextarea && item.fullPrompt) {
                 setTimeout(() => {
@@ -1453,7 +1711,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // SETTINGS MANAGEMENT
     // ======================
 
-    // Load settings
     loadSettings() {
         const saved = this.storageManager.load('appSettings');
         if (saved) {
@@ -1464,7 +1721,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.applyUIDensity();
     }
 
-    // Save settings
     saveSettings() {
         try {
             this.storageManager.save('appSettings', this.state.settings);
@@ -1476,7 +1732,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Apply theme
     applyTheme() {
         const theme = this.state.settings.theme || 'dark';
         document.documentElement.setAttribute('data-theme', theme);
@@ -1486,7 +1741,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Apply UI density
     applyUIDensity() {
         const density = this.state.settings.uiDensity || 'comfortable';
         document.documentElement.setAttribute('data-density', density);
@@ -1496,7 +1750,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // NOTIFICATIONS
     // ======================
 
-    // Show notification
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -1512,12 +1765,10 @@ This structured approach ensures you get detailed, actionable responses tailored
         
         this.elements.notificationContainer.appendChild(notification);
         
-        // Close button
         notification.querySelector('.notification-close').addEventListener('click', () => {
             notification.remove();
         });
         
-        // Auto-remove
         const duration = this.state.settings.notificationDuration || 3000;
         setTimeout(() => {
             if (notification.parentNode) {
@@ -1527,7 +1778,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         }, duration);
     }
 
-    // Get notification icon
     getNotificationIcon(type) {
         const icons = {
             'success': 'check-circle',
@@ -1542,7 +1792,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // SUGGESTIONS
     // ======================
 
-    // Show suggestions
     showSuggestions(suggestions) {
         const suggestionsList = this.elements.suggestionsList;
         if (!suggestionsList) return;
@@ -1567,9 +1816,7 @@ This structured approach ensures you get detailed, actionable responses tailored
         this.elements.suggestionsPanel.style.display = 'block';
     }
 
-    // Apply suggestion
     applySuggestion(suggestion) {
-        // Add suggestion to input
         const currentInput = this.elements.userInput.value;
         this.elements.userInput.value = currentInput + ' ' + suggestion;
         this.handleInputChange();
@@ -1581,7 +1828,6 @@ This structured approach ensures you get detailed, actionable responses tailored
     // UTILITY METHODS
     // ======================
 
-    // Escape HTML
     escapeHTML(text) {
         if (!text) return '';
         const div = document.createElement('div');
@@ -1589,7 +1835,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         return div.innerHTML;
     }
 
-    // Test worker connection
     async testWorkerConnection() {
         try {
             console.log('Testing worker connection...');
@@ -1606,9 +1851,7 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Handle keyboard shortcuts
     handleKeyboardShortcuts(e) {
-        // Ctrl/Cmd + Enter to prepare prompt
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             if (!this.elements.stickyPrepareBtn.disabled) {
@@ -1616,7 +1859,6 @@ This structured approach ensures you get detailed, actionable responses tailored
             }
         }
         
-        // Escape to close panels
         if (e.key === 'Escape') {
             if (this.state.isEditorOpen) {
                 this.closeFullScreenEditor();
@@ -1632,7 +1874,6 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
     }
 
-    // Update UI
     updateUI() {
         this.updateButtonStates();
         this.updateProgress();
