@@ -1,7 +1,7 @@
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 2.2.0 (Production Fixed - Safe Metrics)
+// Version: 2.3.1 (Production Fixed - Clean DOM)
 // ============================================
 
 // 1. AI TOOL CONFIGURATION
@@ -311,7 +311,7 @@ function rankToolsForTask(taskAnalysis, promptText = '') {
   return ranked;
 }
 
-// 4. FIXED REORDER WITH PROPER EVENT DELEGATION
+// 4. FIXED CLEAN DOM MOVEMENT (NO CLONING, NO CLEARING)
 function reorderToolButtons(rankedTools, taskType, explanation = '') {
   const container = document.getElementById('platformsGrid');
   
@@ -320,25 +320,23 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
     return;
   }
   
-  // Cache original buttons BEFORE clearing
-  const originalButtons = {};
+  // Remove badges and highlights (DON'T CLONE!)
   container.querySelectorAll('[data-platform]').forEach(el => {
-    originalButtons[el.dataset.platform] = el.cloneNode(true);
-    
-    // Remove old badges and highlights
     el.classList.remove('recommended-tool');
     el.removeAttribute('data-recommendation');
+    el.removeAttribute('data-current-task-type');
+    el.removeAttribute('data-current-explanation');
+    
     const badge = el.querySelector('.recommendation-badge');
     if (badge) badge.remove();
   });
   
-  // Clear container
-  container.innerHTML = '';
-  
-  // Add ranked buttons in order
+  // CLEAN DOM REORDER: Just move elements (appendChild automatically moves)
   rankedTools.forEach(({ toolId }) => {
-    if (originalButtons[toolId]) {
-      container.appendChild(originalButtons[toolId]);
+    const el = container.querySelector(`[data-platform="${toolId}"]`);
+    if (el) {
+      // appendChild automatically moves node to end (reorders)
+      container.appendChild(el);
     }
   });
   
@@ -361,11 +359,23 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
         const tempBadge = document.createElement('span');
         tempBadge.textContent = '✓';
         tempBadge.style.cssText = `
-          margin-left: 8px;
-          color: #10b981;
-          font-weight: bold;
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: #10b981;
+          color: white;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          z-index: 100;
           animation: fadeOut 1s forwards;
         `;
+        
+        button.style.position = 'relative';
         button.appendChild(tempBadge);
         setTimeout(() => tempBadge.remove(), 1000);
       }
@@ -376,7 +386,7 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
   
   // Highlight best match
   const topTool = rankedTools[0];
-  if (topTool && originalButtons[topTool.toolId]) {
+  if (topTool) {
     const topButton = container.querySelector(`[data-platform="${topTool.toolId}"]`);
     if (topButton) {
       topButton.classList.add('recommended-tool');
@@ -384,7 +394,7 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
       topButton.dataset.currentTaskType = taskType;
       topButton.dataset.currentExplanation = explanation;
       
-      // Add badge with optional user preference indicator
+      // Add badge
       const badge = document.createElement('span');
       badge.className = 'recommendation-badge';
       
@@ -398,16 +408,22 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
         badge.textContent = '✨ Best Match';
       }
       
-      badge.style.cssText += `
-        margin-left: 8px;
-        font-size: 0.75em;
+      badge.style.cssText = `
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        font-size: 0.7em;
         background: linear-gradient(135deg, #4f46e5, #7c73ff);
         color: white;
-        padding: 2px 8px;
+        padding: 3px 8px;
         border-radius: 12px;
         font-weight: bold;
+        z-index: 10;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       `;
       
+      topButton.style.position = 'relative';
       topButton.appendChild(badge);
     }
   }
@@ -514,20 +530,9 @@ function safeApplyRanking(generatedPrompt) {
   } catch (error) {
     console.error('❌ Tool ranking failed:', error);
     
-    // FIXED FALLBACK: Cache before clearing
-    const container = document.getElementById('platformsGrid');
-    if (container) {
-      const buttons = {};
-      container.querySelectorAll('[data-platform]').forEach(el => {
-        buttons[el.dataset.platform] = el.cloneNode(true);
-      });
-      
-      container.innerHTML = '';
-      const defaultOrder = ['chatgpt', 'claude', 'gemini', 'perplexity', 'deepseek'];
-      defaultOrder.forEach(toolId => {
-        if (buttons[toolId]) container.appendChild(buttons[toolId]);
-      });
-    }
+    // FIXED FALLBACK: Just don't do anything
+    // Don't try to reorder or clear - just leave UI as-is
+    // The icons will remain intact
     
     return { 
       success: false, 
@@ -577,13 +582,13 @@ function showMetricsDashboard() {
       ${Object.entries(stats.taskTypeDistribution || {})
         .sort((a,b) => b[1] - a[1])
         .slice(0,3)
-        .map(([task, count]) => `${task.replace(/-/g,' ')}: ${count}`)
+        .map(([task, count]) => \`\${task.replace(/-/g,' ')}: \${count}\`)
         .join('<br>')}
     </div>
     <div style="margin: 8px 0">
       <strong>Recent Selections:</strong><br>
       ${stats.recentRecommendations?.slice(-3).map(rec => 
-        `${rec.taskType.replace(/-/g,' ')} → ${AI_TOOLS[rec.toolId]?.name || rec.toolId}`
+        \`\${rec.taskType.replace(/-/g,' ')} → \${AI_TOOLS[rec.toolId]?.name || rec.toolId}\`
       ).join('<br>') || 'None yet'}
     </div>
     <button onclick="this.parentElement.remove()" style="
@@ -631,6 +636,22 @@ document.addEventListener('DOMContentLoaded', function() {
     .ranking-explanation {
       animation: fadeIn 0.3s ease;
     }
+    
+    /* Safe badge positioning - no global position:relative */
+    .recommendation-badge {
+      position: absolute !important;
+      top: -10px !important;
+      right: -10px !important;
+      font-size: 0.7em !important;
+      background: linear-gradient(135deg, #4f46e5, #7c73ff) !important;
+      color: white !important;
+      padding: 3px 8px !important;
+      border-radius: 12px !important;
+      font-weight: bold !important;
+      z-index: 10 !important;
+      white-space: nowrap !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
   `;
   document.head.appendChild(style);
   
@@ -672,7 +693,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('🚀 Production AI Tool Ranking System v2.2.0 loaded');
+    console.log('🚀 Production AI Tool Ranking System v2.3.1 loaded');
     console.log('User preferences loaded:', UserPreferenceManager.getStats());
   }, 1000);
 });
@@ -694,4 +715,4 @@ window.PromptCraftRanking = {
   getRecommendationStats: () => UserPreferenceManager.getStats()
 };
 
-console.log('📦 Production AI Tool Ranking System loaded (Version 2.2.0)');
+console.log('📦 Production AI Tool Ranking System loaded (Version 2.3.1)');
