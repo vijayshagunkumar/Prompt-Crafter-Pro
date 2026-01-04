@@ -1,7 +1,7 @@
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 1.0.1 (Fully Corrected)
+// Version: 1.0.3 (Fixed model ID mapping)
 // ============================================
 
 // 1. AI TOOL CONFIGURATION
@@ -52,6 +52,11 @@ const AI_TOOLS = {
   }
 };
 
+// 1.5 GET MODEL USED FOR GENERATION
+function getLastUsedModel() {
+  return window.promptCraftApp?.state?.currentModel || null;
+}
+
 // 2. FIXED: PROMPT ANALYSIS (Priority-based detection)
 function analyzeGeneratedPrompt(promptText) {
   const text = promptText.toLowerCase();
@@ -101,9 +106,21 @@ function analyzeGeneratedPrompt(promptText) {
 // 3. TOOL RANKING
 function rankToolsForTask(taskAnalysis) {
   const scores = {};
+  const usedModel = getLastUsedModel();
+  let recommendedToolId = null;
   
   Object.entries(AI_TOOLS).forEach(([toolId, tool]) => {
     let score = tool.weight;
+    
+    // MODEL-BASED RECOMMENDATION LOGIC
+    // Only for models that actually exist in your app
+    if (usedModel === 'gpt-4o-mini' && toolId === 'chatgpt') {
+      score += 50;
+      recommendedToolId = toolId;
+    } else if (usedModel === 'gemini-3-flash-preview' && toolId === 'gemini') {
+      score += 50;
+      recommendedToolId = toolId;
+    }
     
     // Boost for matching strengths
     if (tool.strengths.includes(taskAnalysis.taskType)) {
@@ -179,7 +196,18 @@ function reorderToolButtons(rankedTools) {
     // Add badge
     const badge = document.createElement('span');
     badge.className = 'recommendation-badge';
-    badge.textContent = '✨ Best Match';
+    const usedModel = getLastUsedModel();
+    
+    // Check if this tool generated the current prompt
+    if (
+      (usedModel === 'gpt-4o-mini' && topTool === 'chatgpt') ||
+      (usedModel === 'gemini-3-flash-preview' && topTool === 'gemini')
+    ) {
+      badge.textContent = '✨ Recommended';
+    } else {
+      badge.textContent = '✨ Best Match';
+    }
+    
     badge.style.cssText = `
       margin-left: 8px;
       font-size: 0.75em;
@@ -204,6 +232,18 @@ function showRankingExplanation(taskAnalysis, topToolId) {
   const container = document.querySelector('.tool-container, .card-3, .output-section');
   if (!container || !tool) return;
   
+  const usedModel = getLastUsedModel();
+  let modelNote = '';
+  
+  if (
+    (usedModel === 'gpt-4o-mini' && topToolId === 'chatgpt') ||
+    (usedModel === 'gemini-3-flash-preview' && topToolId === 'gemini')
+  ) {
+    modelNote = `<small style="color: #4f46e5; display: block; margin-top: 4px; font-weight: bold;">
+      ⭐ This tool matches the model used for generation (${usedModel})
+    </small>`;
+  }
+  
   const explanation = document.createElement('div');
   explanation.className = 'ranking-explanation';
   explanation.innerHTML = `
@@ -221,6 +261,7 @@ function showRankingExplanation(taskAnalysis, topToolId) {
         This prompt appears to be <strong>${taskAnalysis.taskType.replace('-', ' ')}</strong>
         ${taskAnalysis.confidence === 'high' ? '— strong match' : ''}
       </small>
+      ${modelNote}
     </div>
   `;
   
@@ -273,31 +314,7 @@ function applySmartToolRanking(generatedPrompt) {
 
 // 7. FIXED: BULLETPROOF INTEGRATION
 function integrateWithPromptCraft() {
-  // Try multiple possible integration points
-  const handler = 
-    window.handlePromptResponse || 
-    window.handleGenerationSuccess;
-  
-  if (handler) {
-    const original = handler;
-    const hookName = window.handlePromptResponse ? 'handlePromptResponse' : 'handleGenerationSuccess';
-    
-    window[hookName] = function(response) {
-      // Call original handler
-      original(response);
-      
-      // Apply ranking after UI settles
-      setTimeout(() => {
-        if (response && response.result) {
-          applySmartToolRanking(response.result);
-        }
-      }, 100);
-    };
-    
-    console.log('✅ Hooked into:', hookName);
-  }
-  
-  // Also listen for custom events
+  // Listen for custom events (your app already uses this)
   document.addEventListener('promptGenerated', (event) => {
     if (event.detail && event.detail.result) {
       setTimeout(() => {
@@ -350,4 +367,4 @@ window.PromptCraftRanking = {
   AI_TOOLS
 };
 
-console.log('📦 AI Tool Ranking System loaded (Version 1.0.1)');
+console.log('📦 AI Tool Ranking System loaded (Version 1.0.3)');
