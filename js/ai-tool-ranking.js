@@ -594,8 +594,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .recommendation-badge {
   position: absolute !important;
-  top: -10px !important;
-  right: -10px !important;
+  top: -6px !important;
+  right: -6px !important;
   font-size: 0.7em !important;
   background: linear-gradient(135deg, #4f46e5, #7c73ff) !important;
   color: white !important;
