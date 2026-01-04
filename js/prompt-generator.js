@@ -4,12 +4,56 @@ class PromptGenerator {
         this.config = {
             workerUrl: config.workerUrl || 'https://promptcraft-api.vijay-shagunkumar.workers.dev/',
             defaultModel: config.defaultModel || 'gemini-3-flash-preview',
-            timeout: config.timeout || 20000, // 🔧 FIX 1: Reduced from 30s to 20s
-            retryAttempts: config.retryAttempts || 1, // 🔧 FIX 1: Reduced retries
+            timeout: config.timeout || 10000,
+            retryAttempts: config.retryAttempts || 0,
             fallbackToLocal: config.fallbackToLocal !== false,
             enableDebug: config.enableDebug || false,
             strictPromptMode: config.strictPromptMode !== false,
-            minPromptLength: config.minPromptLength || 150 // 🔧 FIX 2: Min length
+            minPromptLength: config.minPromptLength || 150
+        };
+        
+        // ✅ MODEL CAPABILITIES - SINGLE SOURCE OF TRUTH
+        this.MODEL_CAPABILITIES = {
+            "gemini-3-flash-preview": {
+                name: "Gemini 3 Flash",
+                executable: true,
+                chat: true,
+                description: "Fast, reliable prompt generation",
+                provider: "google",
+                default: true
+            },
+            "gpt-4o-mini": {
+                name: "GPT-4o Mini", 
+                executable: true,
+                chat: true,
+                description: "OpenAI's fast model",
+                provider: "openai",
+                default: false
+            },
+            "gemini-1.5-flash-latest": {
+                name: "Gemini 1.5 Flash Latest",
+                executable: true,
+                chat: true,
+                description: "Latest Gemini Flash",
+                provider: "google",
+                default: false
+            },
+            "gemini-1.5-flash": {
+                name: "Gemini 1.5 Flash",
+                executable: true,
+                chat: true,
+                description: "Stable Gemini Flash",
+                provider: "google",
+                default: false
+            },
+            "llama-3.1-8b-instant": {
+                name: "LLaMA 3.1 Instant",
+                executable: false,
+                chat: true,
+                description: "Fast chat & execution (not for prompt generation)",
+                provider: "groq",
+                default: false
+            }
         };
         
         console.log(`PromptGenerator initialized with worker: ${this.config.workerUrl}`);
@@ -25,14 +69,61 @@ class PromptGenerator {
             totalLatency: 0,
             averageLatency: 0,
             workerValidatedHits: 0,
-            workerTotalValidations: 0
+            workerTotalValidations: 0,
+            modelCorrections: 0
         };
         
         // Cache for recent requests with versioning
         this.cache = new Map();
         this.cacheMaxSize = 50;
-        this.cacheExpiry = 5 * 60 * 1000; // 5 minutes
-        this.cacheVersion = '1.0'; // 🔧 FIX 8: Cache version for invalidation
+        this.cacheExpiry = 5 * 60 * 1000;
+        this.cacheVersion = '1.2'; // ✅ UPDATED
+    }
+    
+    // ✅ Get allowed models based on mode
+    getAllowedModels(strictPromptMode = true) {
+        return Object.entries(this.MODEL_CAPABILITIES)
+            .filter(([modelId, capabilities]) => {
+                if (strictPromptMode) {
+                    return capabilities.executable;
+                }
+                return true;
+            })
+            .map(([modelId]) => modelId);
+    }
+    
+    // ✅ Get default model for mode
+    getDefaultModel(strictPromptMode = true) {
+        const allowedModels = this.getAllowedModels(strictPromptMode);
+        
+        const defaultModel = allowedModels.find(modelId => 
+            this.MODEL_CAPABILITIES[modelId]?.default === true
+        );
+        
+        return defaultModel || allowedModels[0] || "gemini-3-flash-preview";
+    }
+    
+    // ✅ Validate and correct model selection
+    validateModelSelection(selectedModel, strictPromptMode = true) {
+        const allowedModels = this.getAllowedModels(strictPromptMode);
+        
+        if (allowedModels.includes(selectedModel)) {
+            return {
+                valid: true,
+                model: selectedModel,
+                reason: ''
+            };
+        }
+        
+        const correctedModel = this.getDefaultModel(strictPromptMode);
+        const originalModelName = this.MODEL_CAPABILITIES[selectedModel]?.name || selectedModel;
+        
+        return {
+            valid: false,
+            model: correctedModel,
+            reason: `"${originalModelName}" is not available in ${strictPromptMode ? 'Executable Prompt' : 'Chat'} mode.`,
+            corrected: true
+        };
     }
     
     // ======================
@@ -43,7 +134,6 @@ class PromptGenerator {
         const startTime = Date.now();
         const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
-        // Default options
         const opts = {
             model: options.model || this.config.defaultModel,
             style: options.style || 'detailed',
@@ -52,13 +142,21 @@ class PromptGenerator {
             signal: options.signal,
             timeout: options.timeout || this.config.timeout,
             retryAttempts: options.retryAttempts || this.config.retryAttempts,
-            strictPromptMode: options.strictPromptMode !== false,
+            strictPromptMode: options.strictPromptMode !== undefined ? options.strictPromptMode : this.config.strictPromptMode,
             minPromptLength: options.minPromptLength || this.config.minPromptLength,
             ...options
         };
         
-        // 🔧 FIX 8: Check cache with version
-        const cacheKey = this.getCacheKey(prompt, opts);
+        // ✅ CRITICAL: Validate and correct model selection BEFORE API call
+        const modelValidation = this.validateModelSelection(opts.model, opts.strictPromptMode);
+        if (modelValidation.corrected) {
+            console.warn(`Model auto-corrected: ${modelValidation.reason} Using ${modelValidation.model} instead.`);
+            this.metrics.modelCorrections++;
+            opts.model = modelValidation.model;
+        }
+        
+        // 🔧 Check cache with version
+        const cacheKey = await this.getCacheKey(prompt, opts);
         if (this.cache.has(cacheKey)) {
             const cached = this.cache.get(cacheKey);
             if (cached.version === this.cacheVersion && 
@@ -88,89 +186,28 @@ class PromptGenerator {
             minLength: opts.minPromptLength
         });
         
-        // 🔧 FIX 5: UPDATED SYSTEM PROMPT FOR EXECUTABLE PROMPTS
-        const executableSystemPrompt = `You are creating prompts that users will COPY AND PASTE directly into AI tools like ChatGPT, Gemini, etc.
-
-CRITICAL REQUIREMENTS FOR EXECUTABLE PROMPTS:
-1. OUTPUT MUST BE A DIRECT TASK that an AI can execute immediately
-2. NEVER output meta-instructions like "Create a prompt for..." or "Write a template..."
-3. ALWAYS use imperative commands that start with action verbs:
-   - ✅ "Write a professional email..." 
-   - ✅ "Generate Python code that..."
-   - ✅ "Analyze this dataset and provide insights..."
-   - ✅ "Create a marketing strategy for..."
-   - ❌ "Create a prompt to write an email" (BAD - meta)
-   - ❌ "You should write a story about..." (BAD - indirect)
-   - ❌ "I need you to analyze..." (BAD - conversational)
-
-4. Start with execution context: "Execute the following task:" or "Task to perform:"
-5. Use DIRECT, IMPERATIVE language throughout
-6. Include ALL necessary context and requirements within the executable command
-7. Structure complex tasks with clear bullet points or numbered steps
-8. Minimum ${opts.minPromptLength} characters to ensure completeness
-
-EXAMPLE INPUT: "help me write a follow-up email to a client"
-EXAMPLE BAD OUTPUT (meta): "Role: Email writer, Objective: Create follow-up email..."
-EXAMPLE GOOD OUTPUT (executable): "Task to perform: Write a professional follow-up email to a client who attended our product demo last week. 
-
-Requirements:
-1. Thank the client for their time
-2. Highlight 2-3 key features relevant to their business
-3. Include a clear call-to-action for next steps
-4. Maintain professional but warm tone
-5. Keep under 200 words
-6. Include subject line and signature
-
-Format: Complete email with all components."
-
-The user will copy your output EXACTLY and paste it into an AI tool. The AI tool should execute it immediately, not analyze or improve it.`;
-        
-        // Prepare request data with SYSTEM PROMPT constraint
         const requestData = {
             prompt: prompt,
             model: opts.model,
-            style: opts.style,
-            temperature: opts.temperature,
-
-            // 🔧 FIX 5: Use executable system prompt
-            systemPrompt: opts.strictPromptMode ? executableSystemPrompt : null,
-
-            // Gemini-specific config
-            generationConfig: {
-                maxOutputTokens: opts.maxTokens || 2048,
-                temperature: opts.temperature || 0.4,
-                topP: 0.95,
-                topK: 40,
-                stopSequences: []
-            },
-
-            // Keep for non-Gemini models
-            maxTokens: opts.maxTokens || 2048,
-
+            enforceExecutableFormat: opts.strictPromptMode,
             requestId: requestId,
             timestamp: new Date().toISOString()
         };
-        
-        // 🔧 FIX 1: Try worker API with single attempt (faster)
-        let lastError = null;
         
         try {
             console.log(`Starting generation with model: ${opts.model}`);
             const result = await this.callWorkerAPI(requestData, opts);
             
             if (result.success) {
-                // ✅ CRITICAL FIX 1: TRUST WORKER VALIDATION
+                // ✅ TRUST WORKER VALIDATION
                 if (result.executableFormatValidated === true) {
                     console.log('✅ Worker validated executable format - skipping redundant checks');
-                    
-                    // Update worker validation metrics
                     this.metrics.workerValidatedHits++;
                     this.metrics.workerTotalValidations++;
                     
-                    // 🔧 FIX 8: Cache with version
-                    this.cacheResult(cacheKey, result);
+                    // ✅ FIX: Cache with version
+                    await this.cacheResult(cacheKey, result);
                     
-                    // Update metrics
                     const latency = Date.now() - startTime;
                     this.metrics.successfulRequests++;
                     this.metrics.totalLatency += latency;
@@ -182,17 +219,17 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
                     return result;
                 }
                 
-                // 🔧 FIX 3: Only validate if worker didn't validate (rare case)
+                // Only validate if worker didn't validate
                 if (opts.strictPromptMode && result.executableFormatValidated !== true) {
+                    this.metrics.workerTotalValidations++;
+                    
                     const validatedResult = this.validatePromptNotContent(result.prompt);
                     if (!validatedResult.isValid) {
                         console.warn(`⚠️ Generated content instead of prompt: ${validatedResult.reason}`);
-                        // ✅ FIX: Use local conversion instead of another API call
                         result.prompt = validatedResult.cleanedPrompt;
                         result.localConversion = true;
                     }
                     
-                    // 🔧 FIX 2 & 5: Check prompt length and executability
                     if (result.prompt.length < opts.minPromptLength) {
                         console.warn(`Prompt too short: ${result.prompt.length} chars (min ${opts.minPromptLength})`);
                         throw new Error('Generated prompt is incomplete');
@@ -204,13 +241,9 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
                     }
                 }
                 
-                // Update worker validation metrics
-                this.metrics.workerTotalValidations++;
+                // ✅ FIX: Cache with version
+                await this.cacheResult(cacheKey, result);
                 
-                // 🔧 FIX 8: Cache with version
-                this.cacheResult(cacheKey, result);
-                
-                // Update metrics
                 const latency = Date.now() - startTime;
                 this.metrics.successfulRequests++;
                 this.metrics.totalLatency += latency;
@@ -225,15 +258,12 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
             }
             
         } catch (error) {
-            lastError = error;
             console.error(`Request ${requestId} failed:`, error.message);
             
-            // 🔧 FIX 1: Immediate fallback instead of retries
             if (this.config.fallbackToLocal) {
                 console.log('Immediate fallback to local generation');
                 const localResult = this.generatePromptLocally(prompt, opts);
                 
-                // Update metrics for fallback
                 this.metrics.failedRequests++;
                 const latency = Date.now() - startTime;
                 this.metrics.totalLatency += latency;
@@ -246,39 +276,50 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
                 };
             }
             
-            // All attempts failed, no fallback
             this.metrics.failedRequests++;
-            console.error(`All attempts failed for ${requestId}:`, lastError?.message);
+            console.error(`All attempts failed for ${requestId}:`, error.message);
             
             return this.createErrorResponse(
-                `Failed to generate prompt: ${lastError?.message}`,
+                `Failed to generate prompt: ${error.message}`,
                 requestId
             );
         }
     }
     
     // ======================
-    // CONTENT VALIDATION - ENHANCED
+    // CONTENT VALIDATION - UPDATED WITH FIXES
     // ======================
     
     /**
-     * 🔧 NEW: Check if prompt is executable
+     * ✅ FIX 1: Stricter executable prompt detection
+     * Now ONLY accepts "Task to perform:" as canonical entry point
      */
     isExecutablePrompt(text) {
         if (!text || typeof text !== 'string') return false;
         
+        // ✅ FIX: Canonical entry point only
+        if (!/^task to perform:/i.test(text)) {
+            return false;
+        }
+        
         const lowerText = text.toLowerCase();
         
-        // Check for executable indicators
-        const executableIndicators = [
-            /^(execute|task|write|create|generate|analyze|build|develop|design|compose)/i,
+        // Still check for basic structure
+        const structureIndicators = [
             /requirements?:/i,
             /instructions?:/i,
-            /steps?:/i,
-            /format:/i,
-            /\d+\.\s+[A-Z]/, // Numbered steps
-            /-\s+[A-Z]/ // Bullet points
+            /format:/i
         ];
+        
+        let structureScore = 0;
+        for (const pattern of structureIndicators) {
+            if (pattern.test(text)) structureScore++;
+        }
+        
+        // Must have at least one structure indicator
+        if (structureScore < 1) {
+            return false;
+        }
         
         // Check for non-executable indicators (meta)
         const metaIndicators = [
@@ -294,29 +335,24 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
             /please create a prompt/i
         ];
         
-        let executableScore = 0;
-        for (const pattern of executableIndicators) {
-            if (pattern.test(text)) executableScore++;
-        }
-        
-        let metaScore = 0;
         for (const pattern of metaIndicators) {
-            if (pattern.test(lowerText)) metaScore++;
+            if (pattern.test(lowerText)) {
+                return false;
+            }
         }
         
-        // Must have more executable indicators than meta indicators
-        return executableScore > metaScore && text.length >= this.config.minPromptLength;
+        return text.length >= this.config.minPromptLength;
     }
     
     /**
-     * 🔧 ENHANCED: Validate that the output is a prompt, not content
+     * Validate that the output is a prompt, not content
      */
     validatePromptNotContent(text) {
         if (!text || typeof text !== 'string') {
             return { isValid: false, reason: 'Empty or invalid text', cleanedPrompt: text };
         }
         
-        // 🔧 FIX 2: Check minimum length
+        // Check minimum length
         if (text.length < this.config.minPromptLength) {
             return { 
                 isValid: false, 
@@ -325,91 +361,102 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
             };
         }
         
-        const lowerText = text.toLowerCase();
-        const first100Chars = text.substring(0, 100);
-        
-        // ✅ FIX 3: Relaxed content detection - only ACTUAL content, not prompts about content
-        
-        // Final sanity check - avoid false positives
-        const isPromptAboutCode = lowerText.includes('task') || 
-                                 lowerText.includes('requirement') || 
-                                 lowerText.includes('write a function') ||
-                                 lowerText.includes('create a') ||
-                                 lowerText.includes('generate a');
-        
-        const isActualCode = first100Chars.includes('def ') && 
-                            !first100Chars.includes('Task to perform') &&
-                            !first100Chars.includes('Requirements');
-        
-        if (isPromptAboutCode && !isActualCode) {
-            return { isValid: true, reason: 'prompt_about_code_not_actual_code', cleanedPrompt: text };
+        // ✅ Check for canonical entry point
+        if (!/^task to perform:/i.test(text)) {
+            return { 
+                isValid: false, 
+                reason: 'Missing canonical entry point "Task to perform:"',
+                cleanedPrompt: this.convertContentToPrompt(text)
+            };
         }
         
-        // 🔧 FIX 3: Enhanced content detection - only actual content, not prompts
-        const contentIndicators = [
-            // ✅ Actual email content (not prompts about emails)
-            /^dear\s+(?:mr|mrs|ms|dr)\.\s+\w+,\s*\n/im,
-            /^subject:\s*.+\n\s*(?:dear|hello|hi)\s+\w+/im,
-            /^best\s+regards,\s*\n/im,
-            /^sincerely,\s*\n/im,
-            
-            // ✅ Actual code content (not prompts about code)
-            /^\s*def\s+\w+\([^)]*\)\s*:/im,       // Only actual Python functions
-            /^\s*function\s+\w+\([^)]*\)\s*\{/im, // Only actual JS functions  
-            /^\s*console\.log\(.*\)/im,           // Only actual console.log statements
-            /^\s*return\s+\w+\s*;/im,             // Only actual return statements
-            /^\s*public\s+class\s+\w+\s*\{/im,    // Only actual Java classes
-            /^\s*void\s+main\s*\(/im,             // Only actual main methods
-            /^<!DOCTYPE html>/i,
-            /<\/?[a-z][\s\S]*>/i,
-            
-            // ✅ Actual story/Article content
-            /^once upon a time,/i,
-            /^in conclusion,/i,
-            /^the end/i,
-            /^chapter\s+\d+/i,
-            /\*\*the end\*\*/i,
-            /^happily ever after/i,
-            
-            // ✅ Direct responses (actual content, not prompts)
-            /^here(?:'s| is) (?:the|an?)\s+/i,
-            /^i (?:think|believe|would)\s+/i,
-            /^you should\s+/i,
-            /^as requested,/i,
-            /^here (?:is|are) the/i,
-            /^based on your request/i,
-            
-            // ✅ Actual conversation (not prompts)
-            /^hello,/i,
-            /^hi there,/i,
-            /^good morning/i,
-            /^how are you/i,
-            /^dear (?:user|reader)/i
+        // Detect software tutorials and reject them
+        const softwareTutorialPatterns = [
+            /software:.*\d{4}/i,
+            /image size:.*\d+.*x.*\d+/i,
+            /color mode:/i,
+            /resolution:.*dpi/i,
+            /use the.*tool to/i,
+            /create a new layer/i,
+            /adobe photoshop/i,
+            /photoshop cc \d{4}/i,
+            /utilize.*libraries/i,
+            /use python.*library/i
         ];
         
-        // Check if text STARTS with actual content (not just contains it)
-        for (const pattern of contentIndicators) {
+        for (const pattern of softwareTutorialPatterns) {
             if (pattern.test(text)) {
                 return { 
                     isValid: false, 
-                    reason: `Contains actual content pattern: ${pattern.toString().substring(0, 50)}...`,
+                    reason: `Contains software tutorial`,
                     cleanedPrompt: this.convertContentToPrompt(text)
                 };
             }
         }
         
-        // Check for executable prompt patterns
+        // Detect platform wrapper pollution
+        const wrapperPatterns = [
+            /^===.*===/m,
+            /^paste this.*exactly/im,
+            /^do not ask.*(ai|model)/im,
+            /^execute.*as.*written/im,
+            /copy.*paste.*below.*into.*ai/i
+        ];
+        
+        for (const pattern of wrapperPatterns) {
+            if (pattern.test(text)) {
+                return { 
+                    isValid: false, 
+                    reason: `Contains platform wrapper instructions`,
+                    cleanedPrompt: this.convertContentToPrompt(text)
+                };
+            }
+        }
+        
+        // Enhanced content detection - only actual content, not prompts
+        const contentIndicators = [
+            /^dear\s+(?:mr|mrs|ms|dr)\.\s+\w+,\s*\n/im,
+            /^subject:\s*.+\n\s*(?:dear|hello|hi)\s+\w+/im,
+            /^best\s+regards,\s*\n/im,
+            /^sincerely,\s*\n/im,
+            
+            /^\s*def\s+\w+\([^)]*\)\s*:/im,
+            /^\s*function\s+\w+\([^)]*\)\s*\{/im,
+            /^\s*console\.log\(.*\)/im,
+            /^\s*return\s+\w+\s*;/im,
+            /^\s*public\s+class\s+\w+\s*\{/im,
+            /^\s*void\s+main\s*\(/im,
+            /^<!DOCTYPE html>/i,
+            
+            /^once upon a time,/i,
+            /^in conclusion,/i,
+            /^the end/i,
+            
+            /^here(?:'s| is) (?:the|an?)\s+/i,
+            /^i (?:think|believe|would)\s+/i,
+            /^you should\s+/i,
+            /^as requested,/i,
+            
+            /^hello,/i,
+            /^hi there,/i,
+            /^good morning/i
+        ];
+        
+        for (const pattern of contentIndicators) {
+            if (pattern.test(text)) {
+                return { 
+                    isValid: false, 
+                    reason: `Contains actual content pattern`,
+                    cleanedPrompt: this.convertContentToPrompt(text)
+                };
+            }
+        }
+        
+        // Check for basic prompt structure
         const promptIndicators = [
-            /^(execute|task|write|create|generate|analyze|build|develop|design|compose|perform)/i,
             /requirements?:/i,
             /instructions?:/i,
-            /constraints?:/i,
-            /format:/i,
-            /steps?:/i,
-            /\d+\.\s+[A-Z]/,
-            /-\s+[A-Z]/,
-            /output\s+(?:format|structure):/i,
-            /expected\s+output:/i
+            /format:/i
         ];
         
         let promptScore = 0;
@@ -419,47 +466,15 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
             }
         }
         
-        if (promptScore < 2) {
+        if (promptScore < 1) {
             return { 
                 isValid: false, 
-                reason: 'Missing executable prompt structure',
+                reason: 'Missing basic prompt structure',
                 cleanedPrompt: this.convertContentToPrompt(text)
             };
         }
         
         return { isValid: true, reason: 'Valid executable prompt', cleanedPrompt: text };
-    }
-    
-    getStricterSystemPrompt() {
-        return `CRITICAL: You MUST output ONLY an EXECUTABLE prompt, NEVER actual content.
-
-EXECUTABLE PROMPT REQUIREMENTS:
-- MUST start with action verb (Write, Create, Generate, Analyze, Build, Design)
-- MUST use imperative language (commands)
-- MUST NOT contain meta-language ("prompt for", "template for")
-- MUST be minimum ${this.config.minPromptLength} characters
-- MUST include specific requirements and format instructions
-
-VIOLATION EXAMPLES (DO NOT DO THIS):
-- ❌ "Dear Mr. Smith, thank you for..." (This is email CONTENT)
-- ❌ "Role: Professional writer" (This is META structure)
-- ❌ "You should write an email about..." (This is INDIRECT)
-- ❌ "I need you to analyze..." (This is CONVERSATIONAL)
-
-REQUIRED OUTPUT FORMAT:
-Task to perform: [Clear action]
-Requirements: [Specific bullet points]
-Format: [Expected output structure]
-
-Example: "Task to perform: Write a professional business proposal...
-Requirements:
-1. Include executive summary
-2. Detail project scope
-3. Provide budget breakdown
-4. Timeline and deliverables
-Format: Formal business document with sections
-
-Remember: The user will copy-paste this directly into an AI tool.`;
     }
     
     /**
@@ -468,53 +483,15 @@ Remember: The user will copy-paste this directly into an AI tool.`;
     convertContentToPrompt(content) {
         console.log('Converting content to executable prompt structure...');
         
-        // Try to extract structure from content
-        const lines = content.split('\n').filter(line => line.trim());
-        
-        // Check if it's email-like
-        if (content.includes('@') || content.includes('Subject:') || content.includes('Dear')) {
-            return `Task to perform: Write a professional email communication
+        return `Task to perform: Produce the requested output according to requirements
 
 Requirements:
-1. Craft appropriate subject line
-2. Write professional greeting
-3. Structure email body logically
-4. Include clear call-to-action
-5. Add professional closing
-6. Maintain appropriate tone
-
-Format: Complete email with all components
-
-Context: ${content.substring(0, 150)}...`;
-        }
-        
-        // Check if it's code
-        if (content.includes('function') || content.includes('def ') || content.includes('class ')) {
-            return `Task to perform: Write efficient, clean code
-
-Requirements:
-1. Write well-documented code
-2. Include error handling
-3. Follow best practices
-4. Add comments for clarity
-5. Consider edge cases
-6. Optimize for readability
-
-Format: Complete code with documentation
-
-Context: ${content.substring(0, 150)}...`;
-        }
-        
-        // Default executable prompt
-        return `Task to perform: Generate high-quality output based on requirements
-
-Requirements:
-1. Analyze requirements carefully
-2. Provide comprehensive response
-3. Include relevant details
-4. Structure information logically
-5. Consider different perspectives
-6. Be accurate and thorough
+1. Analyze input requirements carefully
+2. Generate comprehensive, detailed output
+3. Follow appropriate formatting guidelines
+4. Consider relevant constraints and edge cases
+5. Ensure professional quality and accuracy
+6. Structure information logically and clearly
 
 Format: Well-structured, actionable output
 
@@ -533,8 +510,7 @@ Context: ${content.substring(0, 200)}...`;
             console.log(`Request data:`, {
                 model: requestData.model,
                 promptLength: requestData.prompt?.length || 0,
-                style: requestData.style,
-                hasSystemPrompt: !!requestData.systemPrompt
+                enforceExecutableFormat: requestData.enforceExecutableFormat
             });
             
             const response = await fetch(this.config.workerUrl, {
@@ -552,7 +528,6 @@ Context: ${content.substring(0, 200)}...`;
             
             console.log(`Response status: ${response.status}`);
             
-            // Get response as text first to handle incomplete JSON
             const responseText = await response.text();
             console.log(`Raw response length: ${responseText.length}`);
             
@@ -560,16 +535,13 @@ Context: ${content.substring(0, 200)}...`;
                 console.log(`Full raw response: ${responseText}`);
             }
             
-            // Parse response
             let parsedResponse;
             try {
                 parsedResponse = JSON.parse(responseText);
                 console.log('✅ Parsed response successfully as-is');
             } catch (parseError) {
                 console.warn('❌ JSON parse error:', parseError.message);
-                console.warn('Response preview (first 500 chars):', responseText.substring(0, 500));
                 
-                // Try to fix incomplete JSON
                 const fixedResponse = this.fixIncompleteJson(responseText);
                 if (fixedResponse) {
                     parsedResponse = fixedResponse;
@@ -579,7 +551,6 @@ Context: ${content.substring(0, 200)}...`;
                 }
             }
             
-            // Validate response structure
             if (!parsedResponse) {
                 throw new Error('Empty response from worker');
             }
@@ -588,17 +559,14 @@ Context: ${content.substring(0, 200)}...`;
                 throw new Error(parsedResponse.error || 'Worker returned unsuccessful response');
             }
             
-            // Extract and validate result
             let result = parsedResponse.result;
             if (!result || typeof result !== 'string') {
                 console.warn('No result field or invalid type in response:', parsedResponse);
                 result = 'No response generated.';
             }
             
-            // Ensure result is complete
             result = this.ensureCompletePrompt(result);
             
-            // Create suggestions if not present
             let suggestions = [];
             if (parsedResponse.suggestions && Array.isArray(parsedResponse.suggestions)) {
                 suggestions = parsedResponse.suggestions;
@@ -606,21 +574,18 @@ Context: ${content.substring(0, 200)}...`;
                 suggestions = this.generateSuggestions(result);
             }
             
-            // Log worker validation status
             console.log(`Worker validation: ${parsedResponse.executableFormatValidated ? '✅ Validated' : '❌ Not validated'}`);
             
             console.log(`Worker response parsed:`, {
                 success: true,
                 model: parsedResponse.model,
                 hasResult: !!result,
-                resultLength: result.length,
-                isExecutable: this.isExecutablePrompt(result)
+                resultLength: result.length
             });
             
             console.log(`Result preview (first 500 chars): ${result.substring(0, 500)}...`);
             console.log(`Result length: ${result.length}`);
             
-            // ✅ CRITICAL FIX 2: Return validation flag
             return {
                 success: true,
                 prompt: result,
@@ -632,8 +597,9 @@ Context: ${content.substring(0, 200)}...`;
                 rateLimit: parsedResponse.rateLimit,
                 timestamp: parsedResponse.timestamp || new Date().toISOString(),
                 rawResponse: this.config.enableDebug ? parsedResponse : undefined,
-                // ✅ NEW: Pass through worker validation flag
-                executableFormatValidated: parsedResponse.executableFormatValidated || false
+                executableFormatValidated: parsedResponse.executableFormatValidated || false,
+                fallbackUsed: parsedResponse.fallbackUsed || false,
+                ultraStrictUsed: parsedResponse.ultraStrictUsed || false
             };
             
         } catch (error) {
@@ -658,7 +624,297 @@ Context: ${content.substring(0, 200)}...`;
     }
     
     // ======================
-    // JSON FIXING UTILITIES
+    // LOCAL FALLBACK GENERATION - UPDATED WITH FIX 2
+    // ======================
+    generatePromptLocally(prompt, options = {}) {
+        console.log('Generating executable prompt locally...');
+        
+        // ✅ FIX 2: Neutral objective for local fallback
+        const template = `Task to perform: Produce the requested output according to requirements
+
+Requirements:
+1. Analyze input requirements carefully
+2. Generate comprehensive, detailed output
+3. Follow appropriate formatting guidelines
+4. Consider relevant constraints and edge cases
+5. Ensure professional quality and accuracy
+6. Structure information logically and clearly
+
+Format: Well-structured, actionable output ready for execution
+
+Additional context: ${prompt.substring(0, 200)}...`;
+
+        const suggestions = this.generateSuggestions(template);
+        
+        return {
+            success: true,
+            prompt: template,
+            model: 'local-fallback',
+            provider: 'local',
+            usage: {
+                prompt_tokens: prompt.length,
+                completion_tokens: template.length,
+                total_tokens: prompt.length + template.length
+            },
+            suggestions: suggestions,
+            requestId: `local_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            isLocalFallback: true,
+            executableFormatValidated: false
+        };
+    }
+    
+    // ✅ REMOVED: extractObjective() method entirely
+    // Local fallback now uses neutral phrasing
+    
+    generateSuggestions(prompt) {
+        const suggestions = [];
+        
+        if (prompt.length < 200) {
+            suggestions.push('Add more specific requirements');
+        }
+        
+        if (!prompt.includes('Format:')) {
+            suggestions.push('Specify the expected output format');
+        }
+        
+        if (!prompt.match(/\d+\.\s/)) {
+            suggestions.push('Add numbered steps for clarity');
+        }
+        
+        if (prompt.length > 800) {
+            suggestions.push('Consider breaking into smaller tasks');
+        }
+        
+        return suggestions.slice(0, 3);
+    }
+    
+    // ======================
+    // UTILITY METHODS - UPDATED WITH FIX 3
+    // ======================
+    
+    async getCacheKey(prompt, options) {
+        // ✅ FIX 3: Better cache key generation
+        let promptHash;
+        
+        if (typeof crypto !== 'undefined' && crypto.subtle) {
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(prompt.substring(0, 1000));
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                promptHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) {
+                // Fallback to substring if crypto fails
+                promptHash = prompt.substring(0, 200);
+            }
+        } else {
+            // Fallback for non-secure contexts
+            promptHash = prompt.substring(0, 200);
+        }
+        
+        const keyData = {
+            promptHash: promptHash,
+            model: options.model,
+            style: options.style,
+            temperature: options.temperature,
+            strictPromptMode: options.strictPromptMode,
+            cacheVersion: this.cacheVersion
+        };
+        
+        return JSON.stringify(keyData);
+    }
+    
+    async cacheResult(key, result) {
+        if (this.cache.size >= this.cacheMaxSize) {
+            const oldestKey = this.cache.keys().next().value;
+            this.cache.delete(oldestKey);
+        }
+        
+        this.cache.set(key, {
+            result: result,
+            timestamp: Date.now(),
+            version: this.cacheVersion
+        });
+    }
+    
+    createErrorResponse(errorMessage, requestId) {
+        return {
+            success: false,
+            error: errorMessage,
+            requestId: requestId,
+            timestamp: new Date().toISOString(),
+            prompt: '',
+            suggestions: []
+        };
+    }
+    
+    // ======================
+    // HEALTH CHECK
+    // ======================
+    async testConnection() {
+        try {
+            console.log(`Testing connection to: ${this.config.workerUrl}health`);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(`${this.config.workerUrl}health`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            const responseText = await response.text();
+            console.log(`Health response raw: ${responseText.substring(0, 200)}...`);
+            
+            try {
+                const data = JSON.parse(responseText);
+                
+                if (response.ok) {
+                    console.log('Health check successful:', data);
+                    return {
+                        success: true,
+                        status: data.status,
+                        models: data.models,
+                        keys: data.availableModels,
+                        version: data.version,
+                        architecture: data.architecture
+                    };
+                } else {
+                    return {
+                        success: false,
+                        error: data.error || `Health check failed: ${response.status}`,
+                        status: response.status
+                    };
+                }
+            } catch (parseError) {
+                console.error('Health check parse error:', parseError);
+                return {
+                    success: false,
+                    error: `Invalid health response: ${responseText.substring(0, 100)}`,
+                    rawResponse: responseText
+                };
+            }
+            
+        } catch (error) {
+            console.error('Health check failed:', error.message);
+            return {
+                success: false,
+                error: error.message,
+                isNetworkError: error.name === 'AbortError' || error.message.includes('fetch')
+            };
+        }
+    }
+    
+    // ======================
+    // METRICS & DIAGNOSTICS
+    // ======================
+    getMetrics() {
+        const workerValidationHitRate = this.metrics.workerTotalValidations > 0 
+            ? (this.metrics.workerValidatedHits / this.metrics.workerTotalValidations) * 100 
+            : 0;
+            
+        const estimatedPerformanceGain = (24 / Math.max(1, this.metrics.averageLatency / 1000)).toFixed(1);
+        
+        return {
+            ...this.metrics,
+            cacheSize: this.cache.size,
+            cacheVersion: this.cacheVersion,
+            successRate: this.metrics.totalRequests > 0 
+                ? (this.metrics.successfulRequests / this.metrics.totalRequests) * 100 
+                : 0,
+            averageResponseTime: this.metrics.averageLatency,
+            minPromptLength: this.config.minPromptLength,
+            workerValidationHitRate: workerValidationHitRate,
+            workerValidationStatus: `${this.metrics.workerValidatedHits}/${this.metrics.workerTotalValidations} validated`,
+            estimatedPerformanceGain: `${estimatedPerformanceGain}x faster`,
+            debug: {
+                shouldBeFaster: this.metrics.averageLatency < 6000 ? '✅ Yes (<6s)' : '❌ No (>6s)',
+                workerTrustLevel: workerValidationHitRate > 95 ? '✅ High (>95%)' : '⚠️ Medium/Low',
+                modelCorrections: this.metrics.modelCorrections
+            }
+        };
+    }
+    
+    clearCache() {
+        this.cache.clear();
+        this.cacheVersion = (parseFloat(this.cacheVersion) + 0.1).toFixed(1);
+        console.log('Cache cleared and version updated to:', this.cacheVersion);
+        return true;
+    }
+    
+    resetMetrics() {
+        this.metrics = {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            totalLatency: 0,
+            averageLatency: 0,
+            workerValidatedHits: 0,
+            workerTotalValidations: 0,
+            modelCorrections: 0
+        };
+        console.log('Metrics reset');
+    }
+    
+    // ======================
+    // UI HELPER METHODS
+    // ======================
+    
+    getAvailableModels(strictMode = true) {
+        return Object.entries(this.MODEL_CAPABILITIES).map(([id, config]) => ({
+            id,
+            name: config.name,
+            executable: config.executable,
+            chat: config.chat,
+            description: config.description,
+            provider: config.provider,
+            default: config.default || false,
+            availableInStrictMode: strictMode ? config.executable : true
+        }));
+    }
+    
+    getModelInfo(modelId) {
+        return this.MODEL_CAPABILITIES[modelId] || null;
+    }
+    
+    updateSettings(options = {}) {
+        if (options.defaultModel !== undefined) {
+            this.config.defaultModel = options.defaultModel;
+        }
+        
+        if (options.strictPromptMode !== undefined) {
+            this.config.strictPromptMode = options.strictPromptMode;
+            
+            const validation = this.validateModelSelection(this.config.defaultModel, this.config.strictPromptMode);
+            if (!validation.valid) {
+                this.config.defaultModel = validation.model;
+                console.log(`Model auto-corrected to: ${this.config.defaultModel}`);
+            }
+        }
+        
+        if (options.minPromptLength !== undefined) {
+            this.config.minPromptLength = options.minPromptLength;
+        }
+        
+        if (options.workerUrl !== undefined) {
+            this.config.workerUrl = options.workerUrl;
+        }
+        
+        console.log('PromptGenerator settings updated:', {
+            defaultModel: this.config.defaultModel,
+            strictPromptMode: this.config.strictPromptMode,
+            minPromptLength: this.config.minPromptLength
+        });
+    }
+    
+    // ======================
+    // JSON FIXING UTILITIES (keep from original)
     // ======================
     fixIncompleteJson(jsonText) {
         if (!jsonText || typeof jsonText !== 'string') return null;
@@ -741,247 +997,5 @@ Context: ${content.substring(0, 200)}...`;
         }
         
         return result;
-    }
-    
-    // ======================
-    // LOCAL FALLBACK GENERATION
-    // ======================
-    generatePromptLocally(prompt, options = {}) {
-        console.log('Generating executable prompt locally...');
-        
-        // Always ensure local generation creates executable prompts
-        const template = `Task to perform: ${this.extractObjective(prompt)}
-
-Requirements:
-1. Provide comprehensive, detailed output
-2. Include all necessary context and specifications
-3. Follow best practices for the task type
-4. Consider potential edge cases
-5. Ensure professional quality
-6. Structure information logically
-
-Format: Well-structured, actionable output ready for execution
-
-Additional context: ${prompt.substring(0, 200)}...`;
-
-        const suggestions = this.generateSuggestions(template);
-        
-        return {
-            success: true,
-            prompt: template,
-            model: 'local-fallback',
-            provider: 'local',
-            usage: {
-                prompt_tokens: prompt.length,
-                completion_tokens: template.length,
-                total_tokens: prompt.length + template.length
-            },
-            suggestions: suggestions,
-            requestId: `local_${Date.now()}`,
-            timestamp: new Date().toISOString(),
-            isLocalFallback: true,
-            executableFormatValidated: false
-        };
-    }
-    
-    extractObjective(prompt) {
-        if (!prompt) return 'Address the user query';
-        
-        const lowerPrompt = prompt.toLowerCase();
-        
-        if (lowerPrompt.includes('write') || lowerPrompt.includes('create') || lowerPrompt.includes('generate')) {
-            return 'Generate content based on specifications';
-        } else if (lowerPrompt.includes('explain') || lowerPrompt.includes('describe')) {
-            return 'Explain concepts clearly';
-        } else if (lowerPrompt.includes('help') || lowerPrompt.includes('assist')) {
-            return 'Provide helpful assistance';
-        } else if (lowerPrompt.includes('code') || lowerPrompt.includes('program')) {
-            return 'Write and explain code';
-        } else if (lowerPrompt.includes('email') || lowerPrompt.includes('letter')) {
-            return 'Compose professional communication';
-        } else if (lowerPrompt.includes('analyze') || lowerPrompt.includes('review')) {
-            return 'Analyze and provide insights';
-        } else if (lowerPrompt.includes('summarize') || lowerPrompt.includes('summary')) {
-            return 'Create comprehensive summary';
-        }
-        
-        return 'Address the user query effectively';
-    }
-    
-    generateSuggestions(prompt) {
-        const suggestions = [];
-        
-        if (prompt.length < 200) {
-            suggestions.push('Add more specific requirements');
-        }
-        
-        if (!prompt.includes('Format:')) {
-            suggestions.push('Specify the expected output format');
-        }
-        
-        if (!prompt.match(/\d+\.\s/)) {
-            suggestions.push('Add numbered steps for clarity');
-        }
-        
-        if (prompt.length > 800) {
-            suggestions.push('Consider breaking into smaller tasks');
-        }
-        
-        return suggestions.slice(0, 3);
-    }
-    
-    // ======================
-    // UTILITY METHODS
-    // ======================
-    
-    getCacheKey(prompt, options) {
-        const keyData = {
-            prompt: prompt.substring(0, 100),
-            model: options.model,
-            style: options.style,
-            temperature: options.temperature,
-            strictPromptMode: options.strictPromptMode,
-            cacheVersion: this.cacheVersion // 🔧 FIX 8: Include version
-        };
-        return JSON.stringify(keyData);
-    }
-    
-    cacheResult(key, result) {
-        if (this.cache.size >= this.cacheMaxSize) {
-            const oldestKey = this.cache.keys().next().value;
-            this.cache.delete(oldestKey);
-        }
-        
-        this.cache.set(key, {
-            result: result,
-            timestamp: Date.now(),
-            version: this.cacheVersion // 🔧 FIX 8: Store version
-        });
-    }
-    
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    
-    createErrorResponse(errorMessage, requestId) {
-        return {
-            success: false,
-            error: errorMessage,
-            requestId: requestId,
-            timestamp: new Date().toISOString(),
-            prompt: '',
-            suggestions: []
-        };
-    }
-    
-    // ======================
-    // HEALTH CHECK
-    // ======================
-    async testConnection() {
-        try {
-            console.log(`Testing connection to: ${this.config.workerUrl}health`);
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            const response = await fetch(`${this.config.workerUrl}health`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                },
-                signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            const responseText = await response.text();
-            console.log(`Health response raw: ${responseText.substring(0, 200)}...`);
-            
-            try {
-                const data = JSON.parse(responseText);
-                
-                if (response.ok) {
-                    console.log('Health check successful:', data);
-                    return {
-                        success: true,
-                        status: data.status,
-                        models: data.models,
-                        keys: data.keys,
-                        version: data.version
-                    };
-                } else {
-                    return {
-                        success: false,
-                        error: data.error || `Health check failed: ${response.status}`,
-                        status: response.status
-                    };
-                }
-            } catch (parseError) {
-                console.error('Health check parse error:', parseError);
-                return {
-                    success: false,
-                    error: `Invalid health response: ${responseText.substring(0, 100)}`,
-                    rawResponse: responseText
-                };
-            }
-            
-        } catch (error) {
-            console.error('Health check failed:', error.message);
-            return {
-                success: false,
-                error: error.message,
-                isNetworkError: error.name === 'AbortError' || error.message.includes('fetch')
-            };
-        }
-    }
-    
-    // ======================
-    // METRICS & DIAGNOSTICS
-    // ======================
-    getMetrics() {
-        const workerValidationHitRate = this.metrics.workerTotalValidations > 0 
-            ? (this.metrics.workerValidatedHits / this.metrics.workerTotalValidations) * 100 
-            : 0;
-            
-        const estimatedPerformanceGain = (24 / Math.max(1, this.metrics.averageLatency / 1000)).toFixed(1);
-        
-        return {
-            ...this.metrics,
-            cacheSize: this.cache.size,
-            cacheVersion: this.cacheVersion,
-            successRate: this.metrics.totalRequests > 0 
-                ? (this.metrics.successfulRequests / this.metrics.totalRequests) * 100 
-                : 0,
-            averageResponseTime: this.metrics.averageLatency,
-            minPromptLength: this.config.minPromptLength,
-            workerValidationHitRate: workerValidationHitRate,
-            workerValidationStatus: `${this.metrics.workerValidatedHits}/${this.metrics.workerTotalValidations} validated`,
-            estimatedPerformanceGain: `${estimatedPerformanceGain}x faster`,
-            debug: {
-                shouldBeFaster: this.metrics.averageLatency < 6000 ? '✅ Yes (<6s)' : '❌ No (>6s)',
-                workerTrustLevel: workerValidationHitRate > 95 ? '✅ High (>95%)' : '⚠️ Medium/Low'
-            }
-        };
-    }
-    
-    // 🔧 FIX 8: Clear cache when settings change
-    clearCache() {
-        this.cache.clear();
-        this.cacheVersion = (parseFloat(this.cacheVersion) + 0.1).toFixed(1);
-        console.log('Cache cleared and version updated to:', this.cacheVersion);
-        return true;
-    }
-    
-    resetMetrics() {
-        this.metrics = {
-            totalRequests: 0,
-            successfulRequests: 0,
-            failedRequests: 0,
-            totalLatency: 0,
-            averageLatency: 0,
-            workerValidatedHits: 0,
-            workerTotalValidations: 0
-        };
-        console.log('Metrics reset');
     }
 }
