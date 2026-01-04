@@ -126,7 +126,7 @@ class PlatformIntegrations {
                     </div>
                     <div class="platform-desc">${platform.description}</div>
                     
-                    <!-- 🔧 FIX 5: Add execution hint -->
+                    <!-- 🔧 FIX: Clean execution hint -->
                     <div class="platform-execution-hint">
                         <i class="fas fa-exclamation-circle"></i>
                         Paste prompt directly - AI will execute it
@@ -260,15 +260,8 @@ class PlatformIntegrations {
                 throw new Error(`Platform ${platformId} not found`);
             }
             
-            // 🔧 FIX 5: Copy with execution instructions
-            const copyText = `=== PROMPT FOR ${platform.name.toUpperCase()} ===
-            
-${prompt}
-
-=== IMPORTANT ===
-Paste this EXACTLY. Do NOT ask AI to improve or modify it.
-Execute the task as written.
-=================`;
+            // ✅ FIX: Copy EXACT prompt — no wrappers, no instructions
+            const copyText = prompt;
             
             // Open window FIRST
             const win = window.open(
@@ -412,7 +405,7 @@ Execute the task as written.
         };
     }
 
-    // ✅ NEW: Optimized launch method for immediate user gesture
+    // ✅ FIXED: Optimized launch method for immediate user gesture
     handlePlatformClick(platformId, prompt) {
         const platform = this.getPlatformById(platformId);
         if (!platform) return false;
@@ -425,22 +418,16 @@ Execute the task as written.
                 'noopener,noreferrer'
             );
             
-            // 🔧 FIX 5: Copy with instructions
-            const copyText = `=== PROMPT FOR ${platform.name.toUpperCase()} ===
-            
-${prompt}
-
-=== IMPORTANT ===
-Paste directly. Do NOT ask for improvements.
-=================`;
+            // ✅ FIX: Copy EXACT prompt — platform-agnostic
+            const copyText = prompt;
             
             // Copy to clipboard (async - after window is opened)
             navigator.clipboard.writeText(copyText).then(() => {
-                console.log(`Prompt copied for ${platform.name} with instructions`);
+                console.log(`Prompt copied for ${platform.name} (clean copy)`);
             }).catch(err => {
                 console.warn('Clipboard write failed:', err);
-                // Try without instructions
-                navigator.clipboard.writeText(prompt);
+                // Try fallback
+                this.fallbackCopyAndLaunch(platformId, prompt);
             });
             
             return {
