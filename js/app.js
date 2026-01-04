@@ -1032,7 +1032,7 @@ ${text}
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
-        this.showNotification('Application reset to initial state', 'info');
+        
     }
 
     clearGeneratedPrompt() {
