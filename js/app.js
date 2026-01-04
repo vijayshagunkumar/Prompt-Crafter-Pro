@@ -884,6 +884,9 @@ This structured approach ensures you get detailed, actionable responses tailored
     // ======================
     // PROMPT ACTIONS
     // ======================
+    // ======================
+    // PROMPT ACTIONS - FIXED FOR PROBLEM 5
+    // ======================
 
     async copyPrompt() {
         if (!this.elements.outputArea) return;
@@ -896,8 +899,21 @@ This structured approach ensures you get detailed, actionable responses tailored
         }
         
         try {
-            await navigator.clipboard.writeText(text);
-            this.showNotification('Prompt copied to clipboard!', 'success');
+            // 🔧 FIX 5: Add execution instructions when copying
+            const copyText = `=== COPY AND PASTE BELOW INTO YOUR AI TOOL ===
+
+${text}
+
+=== IMPORTANT INSTRUCTIONS ===
+1. Paste this EXACTLY as shown
+2. Do NOT ask the AI to improve, modify, or analyze this prompt
+3. Let the AI execute the task directly
+4. If the AI asks to improve it, respond with: "Execute the task as written"
+5. The prompt is already optimized and ready for execution
+==============================`;
+            
+            await navigator.clipboard.writeText(copyText);
+            this.showNotification('✅ Prompt copied with execution instructions!', 'success');
             
             if (this.elements.copyBtn) {
                 this.elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
@@ -910,7 +926,17 @@ This structured approach ensures you get detailed, actionable responses tailored
             
         } catch (err) {
             console.error('Copy failed:', err);
-            this.showNotification('Failed to copy. Please try again.', 'error');
+            
+            // Fallback: Try without instructions
+            try {
+                await navigator.clipboard.writeText(text);
+                this.showNotification('Prompt copied (basic)', 'info');
+            } catch (fallbackErr) {
+                console.error('Fallback copy failed:', fallbackErr);
+                
+                // Last resort: Show prompt for manual copy
+                this.showNotification(`Copy failed. Here's your prompt to copy manually: ${text.substring(0, 100)}...`, 'error', 5000);
+            }
         }
     }
 
