@@ -606,7 +606,10 @@ document.addEventListener('DOMContentLoaded', function() {
   transform: translateY(-2px);
 }
 
-
+/* Allow badge to render outside card */
+[data-platform] {
+  overflow: visible !important;
+}
 .recommendation-badge {
   position: absolute !important;
   top: -6px !important;
