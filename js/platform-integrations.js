@@ -232,6 +232,8 @@ class PlatformIntegrations {
         
         // Set up safe logo error handlers after render
         setTimeout(() => this.setupLogoErrorHandlers(), 0);
+        // ✅ CRITICAL: notify ranking system AFTER platforms exist in DOM
+    document.dispatchEvent(new CustomEvent('platformsRendered'));
     }
 
     // Get platform by ID
