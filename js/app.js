@@ -752,40 +752,45 @@ if (!validation.valid && validation.correctedModel) {
         }
     }
 
-    setOutputText(text) {
-        try {
-            if (!this.elements.outputArea) return false;
+setOutputText(text) {
+    try {
+        if (!this.elements.outputArea) return false;
 
-            this.elements.outputArea.innerHTML = '';
-            this.elements.outputArea.textContent = '';
+        this.elements.outputArea.innerHTML = '';
+        this.elements.outputArea.textContent = '';
 
-            const cleanText = this.cleanTextForDOM(text);
-            this.elements.outputArea.textContent = cleanText;
-            window.lastGeneratedPrompt = cleanText;
-          document.dispatchEvent(
-  new CustomEvent('promptGenerated', {
-    detail: { result: cleanText }
-  })
-);
+        const cleanText = this.cleanTextForDOM(text);
+        this.elements.outputArea.textContent = cleanText;
 
-            this.elements.outputArea.style.display = 'none';
-            this.elements.outputArea.offsetHeight;
-            this.elements.outputArea.style.display = '';
+        // ✅ STORE FOR RANKING
+        window.lastGeneratedPrompt = cleanText;
 
-            requestAnimationFrame(() => {
-                this.elements.outputArea.scrollTop = this.elements.outputArea.scrollHeight;
-            });
+        // ✅ DISPATCH EVENT (ONLY ONCE)
+        document.dispatchEvent(new CustomEvent('promptGenerated', {
+            detail: { result: cleanText }
+        }));
 
-            console.log('Successfully set output text:', cleanText.length, 'chars');
-            return true;
-        } catch (e) {
-            console.error('Display failed:', e);
-            if (this.elements.outputArea) {
-                this.elements.outputArea.textContent = text.slice(0, 500);
-            }
-            return false;
+        // UI refresh
+        this.elements.outputArea.style.display = 'none';
+        this.elements.outputArea.offsetHeight;
+        this.elements.outputArea.style.display = '';
+
+        requestAnimationFrame(() => {
+            this.elements.outputArea.scrollTop = this.elements.outputArea.scrollHeight;
+        });
+
+        console.log('📢 promptGenerated dispatched:', cleanText.length, 'chars');
+        return true;
+
+    } catch (e) {
+        console.error('Display failed:', e);
+        if (this.elements.outputArea) {
+            this.elements.outputArea.textContent = text.slice(0, 500);
         }
+        return false;
     }
+}
+
     
     cleanTextForDOM(text) {
         if (!text || typeof text !== 'string') return '';
