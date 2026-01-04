@@ -1,7 +1,7 @@
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 1.0.0 (Production Ready)
+// Version: 1.0.1 (Fully Corrected)
 // ============================================
 
 // 1. AI TOOL CONFIGURATION
@@ -133,32 +133,31 @@ function rankToolsForTask(taskAnalysis) {
     .map(([toolId]) => toolId);
 }
 
-// 4. FIXED: SAFE UI REORDERING (with reset)
+// 4. CORRECTED: SAFE UI REORDERING (using data-platform attributes)
 function reorderToolButtons(rankedTools) {
-  // FIX: First reset ALL button highlights
-  Object.values(AI_TOOLS).forEach(tool => {
-    const btn = document.getElementById(tool.buttonId);
-    if (btn) {
-      btn.classList.remove('recommended-tool');
-      const badge = btn.querySelector('.recommendation-badge');
-      if (badge) badge.remove();
-    }
-  });
+  const container = document.getElementById('platformsGrid');
   
-  const container = document.querySelector('.launch-list, .tool-container, [data-tools]');
   if (!container) {
-    console.warn('Tool container not found');
+    console.warn('❌ platformsGrid not found');
     return;
   }
   
-  // Get all existing buttons
-  const buttons = {};
-  rankedTools.forEach(toolId => {
-    const btn = document.getElementById(AI_TOOLS[toolId]?.buttonId);
-    if (btn) buttons[toolId] = btn;
+  // Reset all existing highlights safely
+  container.querySelectorAll('[data-platform]').forEach(el => {
+    el.classList.remove('recommended-tool');
+    el.removeAttribute('data-recommendation');
+    const badge = el.querySelector('.recommendation-badge');
+    if (badge) badge.remove();
   });
   
-  // Create fragment for safe reordering
+  // Map platform elements
+  const buttons = {};
+  rankedTools.forEach(toolId => {
+    const el = container.querySelector(`[data-platform="${toolId}"]`);
+    if (el) buttons[toolId] = el;
+  });
+  
+  // Reorder safely using fragment
   const fragment = document.createDocumentFragment();
   rankedTools.forEach(toolId => {
     if (buttons[toolId]) {
@@ -167,16 +166,15 @@ function reorderToolButtons(rankedTools) {
   });
   
   // Clear and re-add buttons
-  while (container.firstChild) {
-    container.removeChild(container.firstChild);
-  }
+  container.innerHTML = '';
   container.appendChild(fragment);
   
-  // Highlight top tool
-  if (rankedTools.length > 0 && buttons[rankedTools[0]]) {
-    const topButton = buttons[rankedTools[0]];
-    topButton.classList.add('recommended-tool');
-    topButton.setAttribute('data-recommendation', 'best-match');
+  // Highlight best match
+  const topTool = rankedTools[0];
+  if (topTool && buttons[topTool]) {
+    const topEl = buttons[topTool];
+    topEl.classList.add('recommended-tool');
+    topEl.setAttribute('data-recommendation', 'best-match');
     
     // Add badge
     const badge = document.createElement('span');
@@ -191,7 +189,8 @@ function reorderToolButtons(rankedTools) {
       border-radius: 12px;
       font-weight: bold;
     `;
-    topButton.appendChild(badge);
+    
+    topEl.appendChild(badge);
   }
 }
 
@@ -351,4 +350,4 @@ window.PromptCraftRanking = {
   AI_TOOLS
 };
 
-console.log('📦 AI Tool Ranking System loaded');
+console.log('📦 AI Tool Ranking System loaded (Version 1.0.1)');
