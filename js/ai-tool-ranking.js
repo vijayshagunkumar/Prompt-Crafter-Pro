@@ -347,13 +347,14 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
   });
   
   // Handle buttons (now guaranteed to be unique)
-  rankedTools.forEach(({ toolId }) => {
-    const el = container.querySelector(`[data-platform="${toolId}"]`);
-    if (el) {
-      // appendChild automatically moves node to end (reorders)
-      container.appendChild(el);
-    }
-  });
+// ✅ VISUAL FIX: Top-ranked tool appears FIRST
+[...rankedTools].reverse().forEach(({ toolId }) => {
+  const el = container.querySelector(`[data-platform="${toolId}"]`);
+  if (el) {
+    container.prepend(el);
+  }
+});
+
   
   // Set up event delegation ONCE at container level
   if (!container.dataset.delegationSet) {
@@ -585,10 +586,11 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .recommended-tool {
-  border-color: #4f46e5 !important;
-  background: linear-gradient(135deg, #f0f2ff, #ffffff) !important;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15) !important;
+  border: 2px solid #4f46e5 !important;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.18) !important;
+  transform: translateY(-2px);
 }
+
 
 .recommendation-badge {
   position: absolute !important;
