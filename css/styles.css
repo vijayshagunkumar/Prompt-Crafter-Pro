@@ -2466,4 +2466,240 @@ select:focus, .language-select:focus {
 .textarea {
     padding-right: calc(var(--spacing-xl) + 28px); /* scrollbar + button space */
 }
+/* =====================================================
+   FIXES FOR ALL PROBLEMS - APPEND TO EXISTING FILE
+   ===================================================== */
 
+/* 🔧 FIX 5: UI indicators for executable prompts */
+
+/* Copy button tooltip enhancement */
+#copyBtn {
+    position: relative;
+}
+
+#copyBtn::after {
+    content: "Copy ready-to-execute prompt. Paste directly - don't ask AI to improve it.";
+    position: absolute;
+    bottom: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-800);
+    color: white;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+    pointer-events: none;
+    z-index: var(--z-tooltip);
+    width: max-content;
+    max-width: 200px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.dark-theme #copyBtn::after {
+    background: var(--gray-700);
+    color: var(--text-primary);
+}
+
+#copyBtn:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Output area execution note */
+.output-area::before {
+    content: "✓ Ready-to-execute prompt - Copy and paste directly into AI tools";
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--success);
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--success);
+    font-weight: 500;
+}
+
+.dark-theme .output-area::before {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+/* Platform card execution hint */
+.platform-execution-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-xs);
+    color: var(--warning);
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px dashed rgba(245, 158, 11, 0.3);
+}
+
+.dark-theme .platform-execution-hint {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning-light);
+}
+
+.platform-execution-hint i {
+    font-size: 10px;
+}
+
+/* 🔧 FIX 1: Loading speed indicators */
+.sticky-cta.prepare.loading {
+    background: var(--primary-light);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+/* Performance optimization - reduce animations on slow devices */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 🔧 FIX 2: Prompt length indicator */
+.prompt-length-indicator {
+    position: absolute;
+    top: -25px;
+    left: 10px;
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    background: var(--card-bg);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.prompt-length-indicator.warning {
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.prompt-length-indicator.good {
+    color: var(--success);
+}
+
+/* 🔧 FIX: Memory leak prevention - lazy loading */
+.platform-logo {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.platform-logo.loaded {
+    opacity: 1;
+}
+
+/* Progress bar for generation */
+.generation-progress {
+    height: 3px;
+    width: 0%;
+    background: var(--primary-gradient);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: width 0.3s ease;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+/* 🔧 FIX 3: Validation error styling */
+.validation-error {
+    border: 2px solid var(--danger) !important;
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.validation-message {
+    color: var(--danger);
+    font-size: var(--font-size-sm);
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--danger);
+}
+
+/* 🔧 FIX: Responsive improvements for speed */
+@media (max-width: 768px) {
+    /* Reduce animations on mobile */
+    .action-btn:hover {
+        transform: none;
+    }
+    
+    .platform-card:hover {
+        transform: none;
+    }
+    
+    /* Optimize images */
+    .platform-logo-container {
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Simplify UI elements */
+    .platform-execution-hint {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+}
+
+/* 🔧 FIX: Performance monitoring */
+.performance-badge {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    z-index: 9999;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.performance-badge:hover {
+    opacity: 1;
+}
+
+/* Prompt quality indicators */
+.prompt-quality-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--success);
+    color: white;
+    font-weight: 600;
+}
+
+.prompt-quality-indicator.short {
+    background: var(--warning);
+}
+
+.prompt-quality-indicator.poor {
+    background: var(--danger);
+}
