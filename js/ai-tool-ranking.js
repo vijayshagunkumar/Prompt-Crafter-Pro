@@ -1,7 +1,7 @@
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 2.1.0 (Production Fixed)
+// Version: 2.2.0 (Production Fixed - Safe Metrics)
 // ============================================
 
 // 1. AI TOOL CONFIGURATION
@@ -419,7 +419,53 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
   });
 }
 
-// 5. FIXED FALLBACK LOGIC
+// 5. ENHANCED EXPLANATION WITH USER PREFERENCE
+function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanation = '') {
+  // Remove previous explanation
+  const prevExplanation = document.querySelector('.ranking-explanation');
+  if (prevExplanation) prevExplanation.remove();
+  
+  const tool = AI_TOOLS[topToolId];
+  const container = document.querySelector('.tool-container, .card-3, .output-section');
+  if (!container || !tool) return;
+  
+  const userPref = UserPreferenceManager.getPreference(taskAnalysis.taskType);
+  const userStats = UserPreferenceManager.getStats();
+  
+  let preferenceNote = '';
+  if (userPref === topToolId && userStats.totalSelections > 0) {
+    const prefCount = UserPreferenceManager.prefs[taskAnalysis.taskType]?.count || 0;
+    preferenceNote = `<small style="color: #10b981; display: block; margin-top: 4px;">
+      ✓ Based on your previous ${prefCount} selection${prefCount !== 1 ? 's' : ''} for similar tasks
+    </small>`;
+  }
+  
+  // Build explanation HTML
+  const explanationEl = document.createElement('div');
+  explanationEl.className = 'ranking-explanation';
+  explanationEl.innerHTML = `
+    <div style="
+      background: #f8f9ff;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      border-left: 4px solid #4f46e5;
+      font-size: 0.9em;
+    ">
+      <strong style="color: #4f46e5;">Why ${tool.name}?</strong>
+      <p style="margin: 6px 0 4px 0; color: #333;">${tool.explanation}</p>
+      <small style="color: #666; display: block; margin-top: 4px;">
+        Detected: <strong>${taskAnalysis.taskType.replace(/-/g, ' ')}</strong>
+        ${taskAnalysis.confidence === 'high' ? '(strong match)' : ''}
+      </small>
+      ${preferenceNote}
+    </div>
+  `;
+  
+  container.appendChild(explanationEl);
+}
+
+// 6. SAFE APPLICATION WITH ERROR BOUNDARY
 function safeApplyRanking(generatedPrompt) {
   try {
     if (!generatedPrompt || generatedPrompt.length < 50) {
@@ -491,10 +537,147 @@ function safeApplyRanking(generatedPrompt) {
   }
 }
 
-// [Remaining functions unchanged: showRankingExplanation, debouncedRanking, 
-//  showMetricsDashboard, and initialization remain the same as v2.0.0]
+// 7. DEBOUNCED INTEGRATION
+const debouncedRanking = (function() {
+  let timeout;
+  return function(prompt) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => safeApplyRanking(prompt), 200);
+  };
+})();
 
-// 10. EXPORT FOR MODULAR USE
+// 8. SAFE METRICS DASHBOARD (OPTIONAL)
+// Comment this function out if you don't want metrics
+function showMetricsDashboard() {
+  const stats = UserPreferenceManager.getStats();
+  const dashboard = document.createElement('div');
+  dashboard.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-family: system-ui;
+    font-size: 12px;
+    max-width: 300px;
+  `;
+  
+  dashboard.innerHTML = `
+    <h4 style="margin-top:0; color:#4f46e5">📊 Ranking Metrics</h4>
+    <div style="margin: 8px 0">
+      <strong>Recommendation Accuracy:</strong><br>
+      ${(stats.recommendationAccuracy * 100).toFixed(1)}% (${stats.totalSelections} selections)
+    </div>
+    <div style="margin: 8px 0">
+      <strong>Most Common Tasks:</strong><br>
+      ${Object.entries(stats.taskTypeDistribution || {})
+        .sort((a,b) => b[1] - a[1])
+        .slice(0,3)
+        .map(([task, count]) => `${task.replace(/-/g,' ')}: ${count}`)
+        .join('<br>')}
+    </div>
+    <div style="margin: 8px 0">
+      <strong>Recent Selections:</strong><br>
+      ${stats.recentRecommendations?.slice(-3).map(rec => 
+        `${rec.taskType.replace(/-/g,' ')} → ${AI_TOOLS[rec.toolId]?.name || rec.toolId}`
+      ).join('<br>') || 'None yet'}
+    </div>
+    <button onclick="this.parentElement.remove()" style="
+      margin-top: 8px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    ">Close</button>
+  `;
+  
+  document.body.appendChild(dashboard);
+}
+
+// 9. SAFE INITIALIZATION WITH OPTIONAL METRICS
+document.addEventListener('DOMContentLoaded', function() {
+  // Add CSS styles
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    .recommended-tool {
+      border-color: #4f46e5 !important;
+      background: linear-gradient(135deg, #f0f2ff, #ffffff) !important;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15) !important;
+      transform: translateY(-1px);
+      transition: all 0.3s ease;
+    }
+    
+    .recommended-tool:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.2) !important;
+    }
+    
+    .ranking-explanation {
+      animation: fadeIn 0.3s ease;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Only add metrics toggle if dashboard function exists
+  if (typeof showMetricsDashboard === 'function') {
+    // Add metrics toggle button
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'metrics-toggle';
+    toggleBtn.textContent = '📊';
+    toggleBtn.title = 'Show ranking metrics';
+    toggleBtn.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+      z-index: 999;
+    `;
+    toggleBtn.onclick = showMetricsDashboard;
+    document.body.appendChild(toggleBtn);
+  }
+  
+  // Initialize integration (after app loads)
+  setTimeout(() => {
+    document.addEventListener('promptGenerated', (event) => {
+      if (event.detail?.result) {
+        // Use debounced ranking
+        if (typeof debouncedRanking === 'function') {
+          debouncedRanking(event.detail.result);
+        } else {
+          safeApplyRanking(event.detail.result);
+        }
+      }
+    });
+    
+    console.log('🚀 Production AI Tool Ranking System v2.2.0 loaded');
+    console.log('User preferences loaded:', UserPreferenceManager.getStats());
+  }, 1000);
+});
+
+// 10. SAFE EXPORT WITH OPTIONAL FEATURES
 window.PromptCraftRanking = {
   analyzeGeneratedPrompt,
   rankToolsForTask,
@@ -502,8 +685,13 @@ window.PromptCraftRanking = {
   safeApplyRanking,
   AI_TOOLS,
   UserPreferenceManager,
-  showMetricsDashboard,
+  showMetricsDashboard: typeof showMetricsDashboard === 'function' 
+    ? showMetricsDashboard 
+    : function() { 
+        console.warn('Metrics dashboard not available'); 
+        return null; 
+      },
   getRecommendationStats: () => UserPreferenceManager.getStats()
 };
 
-console.log('📦 Production AI Tool Ranking System loaded (Version 2.1.0)');
+console.log('📦 Production AI Tool Ranking System loaded (Version 2.2.0)');
