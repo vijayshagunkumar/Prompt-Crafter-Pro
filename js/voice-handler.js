@@ -23,6 +23,7 @@ class VoiceHandler {
             autoRestart: false,
             maxListenTime: 30000, // 30 seconds
             debounceDelay: 300, // 300ms debounce
+            mergeProgressiveResults: true, // NEW: Merge partial results
             ...config
         };
 
@@ -34,8 +35,13 @@ class VoiceHandler {
         
         // Transcript handling
         this.lastTranscript = '';
+        this.lastFinalTranscript = '';
         this.transcriptTimeout = null;
         this.silenceTimeout = null;
+        
+        // Progressive result tracking
+        this.progressiveResults = [];
+        this.isProgressiveResult = false;
         
         // Speech API instances
         this.speechRecognition = null;
@@ -120,6 +126,9 @@ class VoiceHandler {
             this.isListening = true;
             this.isProcessing = false;
             this.lastTranscript = '';
+            this.lastFinalTranscript = '';
+            this.progressiveResults = [];
+            this.isProgressiveResult = false;
             
             // Set maximum listening time
             if (this.config.maxListenTime > 0) {
@@ -138,6 +147,7 @@ class VoiceHandler {
             // Reset silence detection
             this.resetSilenceDetection();
             
+            let hasFinal = false;
             let finalTranscript = '';
             let interimTranscript = '';
             
@@ -147,6 +157,7 @@ class VoiceHandler {
                 const transcript = result[0].transcript.trim();
                 
                 if (result.isFinal) {
+                    hasFinal = true;
                     finalTranscript += transcript + ' ';
                 } else {
                     interimTranscript += transcript + ' ';
@@ -158,41 +169,12 @@ class VoiceHandler {
             interimTranscript = interimTranscript.trim();
             
             // Handle final results
-            if (finalTranscript) {
-                // 🔥 CRITICAL FIX: Normalize and compare to prevent duplicates
-                const normalized = this.normalizeTranscript(finalTranscript);
-                
-                // Skip if same as last transcript (prevents duplicates)
-                if (normalized !== this.lastTranscript) {
-                    this.lastTranscript = normalized;
-                    
-                    // Clear any pending debounce timeout
-                    if (this.transcriptTimeout) {
-                        clearTimeout(this.transcriptTimeout);
-                        this.transcriptTimeout = null;
-                    }
-                    
-                    this.onTranscript?.(finalTranscript, { 
-                        isFinal: true,
-                        final: finalTranscript,
-                        interim: interimTranscript 
-                    });
-                    
-                    // 🔥 Auto-stop after final result (one-shot mode)
-                    if (!this.config.continuous) {
-                        setTimeout(() => {
-                            if (this.isListening) {
-                                this.speechRecognition.stop();
-                            }
-                        }, 100);
-                    }
-                } else {
-                    console.log('Skipping duplicate transcript:', normalized);
-                }
+            if (hasFinal && finalTranscript) {
+                this.handleFinalResult(finalTranscript);
             } 
-            // Handle interim results (with debouncing)
+            // Handle interim results
             else if (interimTranscript && this.config.interimResults) {
-                this.debounceTranscript(interimTranscript, false);
+                this.handleInterimResult(interimTranscript);
             }
         };
 
@@ -221,6 +203,8 @@ class VoiceHandler {
             
             // Update state
             this.isListening = false;
+            this.progressiveResults = [];
+            this.isProgressiveResult = false;
             
             // Auto-restart if configured
             if (this.config.autoRestart && !this.userStoppedSpeech) {
@@ -248,8 +232,127 @@ class VoiceHandler {
     }
 
     // ======================
-    // TRANSCRIPT HANDLING
+    // INTELLIGENT TRANSCRIPT HANDLING
     // ======================
+    /**
+     * Handle final recognition result
+     * @param {string} finalTranscript - Final transcript text
+     */
+    handleFinalResult(finalTranscript) {
+        console.log('Final result received:', finalTranscript);
+        
+        // Check if this is a progressive result (building on previous)
+        if (this.config.mergeProgressiveResults && this.isProgressiveResult) {
+            // Merge with previous progressive results
+            const mergedTranscript = this.mergeProgressiveResults(finalTranscript);
+            this.isProgressiveResult = false;
+            
+            // Send merged result
+            this.sendTranscript(mergedTranscript, true);
+        } else {
+            // Send as-is
+            this.sendTranscript(finalTranscript, true);
+        }
+        
+        // Store for future reference
+        this.lastFinalTranscript = finalTranscript;
+        this.progressiveResults = [];
+    }
+
+    /**
+     * Handle interim recognition result
+     * @param {string} interimTranscript - Interim transcript text
+     */
+    handleInterimResult(interimTranscript) {
+        console.log('Interim result received:', interimTranscript);
+        
+        // Track progressive results
+        this.progressiveResults.push(interimTranscript);
+        this.isProgressiveResult = true;
+        
+        // Debounce interim results
+        this.debounceTranscript(interimTranscript, false);
+    }
+
+    /**
+     * Merge progressive results into a single transcript
+     * @param {string} finalTranscript - The final transcript
+     * @returns {string} Merged transcript
+     */
+    mergeProgressiveResults(finalTranscript) {
+        if (this.progressiveResults.length === 0) {
+            return finalTranscript;
+        }
+        
+        // Start with all progressive results
+        let merged = [...this.progressiveResults, finalTranscript].join(' ');
+        
+        // Remove duplicates (common words that appear multiple times)
+        merged = this.removeProgressiveDuplicates(merged);
+        
+        // Normalize
+        merged = this.normalizeTranscript(merged);
+        
+        console.log('Merged progressive results:', merged);
+        return merged;
+    }
+
+    /**
+     * Remove duplicates from progressive results
+     * @param {string} text - Text with possible duplicates
+     * @returns {string} Cleaned text
+     */
+    removeProgressiveDuplicates(text) {
+        // Split into sentences or phrases
+        const phrases = text.split(/(?<=[.!?])\s+/);
+        
+        // Keep only unique phrases (case-insensitive)
+        const uniquePhrases = [];
+        const seen = new Set();
+        
+        for (const phrase of phrases) {
+            const normalizedPhrase = this.normalizeTranscript(phrase);
+            if (!seen.has(normalizedPhrase)) {
+                seen.add(normalizedPhrase);
+                uniquePhrases.push(phrase.trim());
+            }
+        }
+        
+        // Also remove word-level duplicates within phrases
+        let result = uniquePhrases.join(' ');
+        result = result.replace(/\b(\w+)\b(?=.*\b\1\b)/gi, '').replace(/\s+/g, ' ').trim();
+        
+        return result;
+    }
+
+    /**
+     * Send transcript to callback
+     * @param {string} transcript - Transcript text
+     * @param {boolean} isFinal - Whether it's final
+     */
+    sendTranscript(transcript, isFinal = false) {
+        const normalized = this.normalizeTranscript(transcript);
+        
+        // Skip if same as last transcript (prevents duplicates)
+        if (normalized !== this.lastTranscript) {
+            this.lastTranscript = normalized;
+            
+            // Clear any pending debounce timeout
+            if (this.transcriptTimeout) {
+                clearTimeout(this.transcriptTimeout);
+                this.transcriptTimeout = null;
+            }
+            
+            this.onTranscript?.(transcript, { 
+                isFinal,
+                final: isFinal ? transcript : null,
+                interim: !isFinal ? transcript : null 
+            });
+        } else {
+            console.log('Skipping duplicate transcript:', normalized);
+        }
+    }
+
     /**
      * Normalize transcript for duplicate detection
      * @param {string} transcript - Transcript text
@@ -260,8 +363,10 @@ class VoiceHandler {
             .toLowerCase()
             .trim()
             .replace(/\s+/g, ' ')        // Remove extra spaces
-            .replace(/[^\w\s]/g, '')     // Remove punctuation for comparison
-            .replace(/\b(\w+)\s+\1\b/gi, '$1'); // Remove duplicate words
+            .replace(/[^\w\s.,!?]/g, '') // Remove special chars except basic punctuation
+            .replace(/\b(a|an|the|and|or|but)\b/gi, '') // Remove common articles
+            .replace(/\s+/g, ' ')        // Clean up spaces again
+            .trim();
     }
 
     /**
@@ -277,14 +382,45 @@ class VoiceHandler {
         
         // Set new timeout
         this.transcriptTimeout = setTimeout(() => {
-            // Skip if same as last transcript
+            // For interim results, we want to send them but they might be partial
+            // Only send if significantly different from last
             const normalized = this.normalizeTranscript(transcript);
-            if (normalized !== this.lastTranscript || isFinal) {
+            const lastNormalized = this.normalizeTranscript(this.lastTranscript);
+            
+            // Check if this is a meaningful update (not just a small addition)
+            if (isFinal || this.isMeaningfulUpdate(normalized, lastNormalized)) {
                 this.lastTranscript = normalized;
                 this.onTranscript?.(transcript, { isFinal });
             }
             this.transcriptTimeout = null;
         }, this.config.debounceDelay);
+    }
+
+    /**
+     * Check if update is meaningful (not just adding a word to existing text)
+     * @param {string} newText - New transcript
+     * @param {string} oldText - Old transcript
+     * @returns {boolean} Whether update is meaningful
+     */
+    isMeaningfulUpdate(newText, oldText) {
+        if (!oldText) return true;
+        if (newText === oldText) return false;
+        
+        // Check if new text just adds to old text
+        if (newText.startsWith(oldText) && newText.length > oldText.length + 5) {
+            return false; // It's just adding more words, not a meaningful change
+        }
+        
+        // Check word count difference
+        const oldWords = oldText.split(/\s+/).length;
+        const newWords = newText.split(/\s+/).length;
+        
+        // If it's just adding 1-2 words to the end, it's likely progressive
+        if (newWords <= oldWords + 2 && newText.includes(oldText)) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -367,6 +503,9 @@ class VoiceHandler {
             // Reset state
             this.userStoppedSpeech = false;
             this.lastTranscript = '';
+            this.lastFinalTranscript = '';
+            this.progressiveResults = [];
+            this.isProgressiveResult = false;
             
             // Set language and start
             this.speechRecognition.lang = language;
@@ -405,6 +544,8 @@ class VoiceHandler {
         } finally {
             this.clearTimeouts();
             this.isListening = false;
+            this.progressiveResults = [];
+            this.isProgressiveResult = false;
             this.onListeningEnd?.();
         }
     }
@@ -629,6 +770,9 @@ class VoiceHandler {
         this.stopSpeaking();
         this.clearTimeouts();
         this.lastTranscript = '';
+        this.lastFinalTranscript = '';
+        this.progressiveResults = [];
+        this.isProgressiveResult = false;
         this.userStoppedSpeech = false;
     }
 
