@@ -93,20 +93,24 @@ class PlatformIntegrations {
             }
         ];
         
-        // Store logo loading state to prevent duplicate onerror handlers
-        this.loadedLogos = new Set();
+        // 🔧 FIX: LRU Cache to prevent memory leak
+        this.loadedLogos = new Map();
+        this.MAX_LOGOS = 50;
+        this.logoCacheHits = 0;
+        this.logoCacheMisses = 0;
+        
+        console.log('PlatformIntegrations initialized with LRU cache');
     }
 
-    // ✅ FIXED: Generate platform card HTML without inline onerror JS
+    // ✅ FIXED: Generate platform card HTML
     generatePlatformCard(platform, isSelected = false) {
-        // ✅ FIX 2: Remove inline onerror JS completely
-        // Use data attributes and handle fallback in separate function
         const logoHtml = platform.logoUrl ? 
             `<img src="${platform.logoUrl}" 
                   alt="${platform.name} Logo" 
                   class="platform-logo" 
                   data-platform="${platform.id}"
-                  data-fallback-icon="${platform.icon}">` :
+                  data-fallback-icon="${platform.icon}"
+                  loading="lazy">` :
             `<i class="${platform.icon}"></i>`;
         
         return `
@@ -121,6 +125,13 @@ class PlatformIntegrations {
                         ${platform.recommended ? '<span class="recommended-badge">Recommended</span>' : ''}
                     </div>
                     <div class="platform-desc">${platform.description}</div>
+                    
+                    <!-- 🔧 FIX 5: Add execution hint -->
+                    <div class="platform-execution-hint">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Paste prompt directly - AI will execute it
+                    </div>
+                    
                     <div class="platform-tags">
                         ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
                     </div>
@@ -129,29 +140,91 @@ class PlatformIntegrations {
         `;
     }
 
-    // ✅ FIXED: Handle logo image errors safely
+    // ✅ FIXED: Handle logo image errors with LRU cache
     setupLogoErrorHandlers() {
         document.querySelectorAll('.platform-logo').forEach(img => {
-            if (this.loadedLogos.has(img.src)) return;
+            const imgSrc = img.src;
             
-            img.addEventListener('error', (e) => {
-                const target = e.target;
-                const fallbackIcon = target.getAttribute('data-fallback-icon');
-                const platformId = target.getAttribute('data-platform');
-                
-                if (fallbackIcon && platformId) {
-                    // Replace with icon
-                    const container = target.parentElement;
-                    container.innerHTML = `<i class="${fallbackIcon}"></i>`;
-                    this.loadedLogos.add(target.src);
+            // Check cache first
+            if (this.loadedLogos.has(imgSrc)) {
+                const cached = this.loadedLogos.get(imgSrc);
+                if (cached.status === 'loaded') {
+                    this.logoCacheHits++;
+                    img.classList.add('loaded');
+                    return; // Already loaded successfully
+                } else if (cached.status === 'failed') {
+                    this.replaceWithFallback(img);
+                    return;
                 }
+            }
+            
+            // Add error handler
+            img.addEventListener('error', (e) => {
+                this.handleLogoError(e.target);
             });
             
             // Mark as loaded when successful
             img.addEventListener('load', (e) => {
-                this.loadedLogos.add(e.target.src);
+                e.target.classList.add('loaded');
+                this.updateLogoCache(e.target.src, 'loaded');
+                this.logoCacheMisses++;
             });
         });
+        
+        // 🔧 FIX: Clean cache if too large
+        this.cleanLogoCache();
+    }
+    
+    handleLogoError(img) {
+        const fallbackIcon = img.getAttribute('data-fallback-icon');
+        const platformId = img.getAttribute('data-platform');
+        
+        if (fallbackIcon && platformId) {
+            this.replaceWithFallback(img);
+            this.updateLogoCache(img.src, 'failed');
+        }
+    }
+    
+    replaceWithFallback(img) {
+        const fallbackIcon = img.getAttribute('data-fallback-icon');
+        const container = img.parentElement;
+        if (container) {
+            container.innerHTML = `<i class="${fallbackIcon}"></i>`;
+            container.style.background = 'transparent';
+        }
+    }
+    
+    // 🔧 NEW: LRU Cache management
+    updateLogoCache(src, status) {
+        this.loadedLogos.set(src, {
+            status: status,
+            timestamp: Date.now()
+        });
+    }
+    
+    cleanLogoCache() {
+        if (this.loadedLogos.size > this.MAX_LOGOS) {
+            // Convert to array, sort by timestamp, remove oldest 20%
+            const entries = Array.from(this.loadedLogos.entries());
+            entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+            
+            const toRemove = entries.slice(0, Math.floor(this.MAX_LOGOS * 0.2));
+            toRemove.forEach(([key]) => {
+                this.loadedLogos.delete(key);
+            });
+            
+            console.log(`Cleaned logo cache: removed ${toRemove.length} entries`);
+        }
+    }
+    
+    getCacheStats() {
+        const total = this.logoCacheHits + this.logoCacheMisses;
+        return {
+            size: this.loadedLogos.size,
+            hits: this.logoCacheHits,
+            misses: this.logoCacheMisses,
+            hitRate: total > 0 ? (this.logoCacheHits / total) * 100 : 0
+        };
     }
 
     // Render all platforms to container
@@ -176,8 +249,6 @@ class PlatformIntegrations {
         const platform = this.getPlatformById(platformId);
         if (!platform) return null;
         
-        // For most platforms, just return the base URL since they don't accept prompt in URL
-        // The prompt will be copied to clipboard
         return platform.launchUrl;
     }
 
@@ -189,16 +260,25 @@ class PlatformIntegrations {
                 throw new Error(`Platform ${platformId} not found`);
             }
             
-            // ✅ FIX 1 & 3: Open window FIRST (within user gesture context)
-         window.open(
-  platform.launchUrl,
-  '_blank',
-  'noopener,noreferrer'
-);
-
+            // 🔧 FIX 5: Copy with execution instructions
+            const copyText = `=== PROMPT FOR ${platform.name.toUpperCase()} ===
             
-            // Then copy to clipboard (async)
-            await navigator.clipboard.writeText(prompt);
+${prompt}
+
+=== IMPORTANT ===
+Paste this EXACTLY. Do NOT ask AI to improve or modify it.
+Execute the task as written.
+=================`;
+            
+            // Open window FIRST
+            const win = window.open(
+                platform.launchUrl,
+                '_blank',
+                'noopener,noreferrer'
+            );
+            
+            // Then copy to clipboard
+            await navigator.clipboard.writeText(copyText);
             
             // Handle popup block scenario
             if (!win) {
@@ -255,52 +335,7 @@ class PlatformIntegrations {
             
             // Fallback for older browsers
             if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
-                // Use fallback copy method
-                const textArea = document.createElement('textarea');
-                textArea.value = prompt;
-                document.body.appendChild(textArea);
-                textArea.select();
-                
-                try {
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        // Open platform after successful copy
-                        const platform = this.getPlatformById(platformId);
-                        if (platform) {
-                            const win = window.open(
-                                platform.launchUrl,
-                                '_blank',
-                                'noopener,noreferrer'
-                            );
-                            
-                            const message = win ? 
-                                'Prompt copied! Opening platform...' :
-                                'Prompt copied! Please visit manually.';
-                            
-                            if (callback) {
-                                callback({
-                                    success: true,
-                                    platformId,
-                                    platformName: platform.name,
-                                    message: message + ' (used fallback method)',
-                                    usedFallback: true
-                                });
-                            }
-                            
-                            return {
-                                success: true,
-                                platformId,
-                                platformName: platform.name,
-                                message: message,
-                                usedFallback: true
-                            };
-                        }
-                    }
-                } catch (fallbackErr) {
-                    console.error('Fallback copy failed:', fallbackErr);
-                } finally {
-                    document.body.removeChild(textArea);
-                }
+                return this.fallbackCopyAndLaunch(platformId, prompt, callback);
             }
             
             const errorMessage = 'Failed to copy prompt. Please try manually.';
@@ -322,10 +357,63 @@ class PlatformIntegrations {
             };
         }
     }
+    
+    fallbackCopyAndLaunch(platformId, prompt, callback) {
+        try {
+            const platform = this.getPlatformById(platformId);
+            if (!platform) return false;
+            
+            const textArea = document.createElement('textarea');
+            textArea.value = prompt;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (successful) {
+                const win = window.open(
+                    platform.launchUrl,
+                    '_blank',
+                    'noopener,noreferrer'
+                );
+                
+                const message = win ? 
+                    'Prompt copied! Opening platform...' :
+                    'Prompt copied! Please visit manually.';
+                
+                if (callback) {
+                    callback({
+                        success: true,
+                        platformId,
+                        platformName: platform.name,
+                        message: message + ' (used fallback method)',
+                        usedFallback: true
+                    });
+                }
+                
+                return {
+                    success: true,
+                    platformId,
+                    platformName: platform.name,
+                    message: message,
+                    usedFallback: true
+                };
+            }
+        } catch (fallbackErr) {
+            console.error('Fallback copy failed:', fallbackErr);
+        }
+        
+        return {
+            success: false,
+            platformId,
+            error: 'All copy methods failed',
+            message: 'Please copy the prompt manually'
+        };
+    }
 
     // ✅ NEW: Optimized launch method for immediate user gesture
     handlePlatformClick(platformId, prompt) {
-        // This should be called DIRECTLY from a click event handler
         const platform = this.getPlatformById(platformId);
         if (!platform) return false;
         
@@ -337,12 +425,22 @@ class PlatformIntegrations {
                 'noopener,noreferrer'
             );
             
+            // 🔧 FIX 5: Copy with instructions
+            const copyText = `=== PROMPT FOR ${platform.name.toUpperCase()} ===
+            
+${prompt}
+
+=== IMPORTANT ===
+Paste directly. Do NOT ask for improvements.
+=================`;
+            
             // Copy to clipboard (async - after window is opened)
-            navigator.clipboard.writeText(prompt).then(() => {
-                console.log(`Prompt copied for ${platform.name}`);
+            navigator.clipboard.writeText(copyText).then(() => {
+                console.log(`Prompt copied for ${platform.name} with instructions`);
             }).catch(err => {
                 console.warn('Clipboard write failed:', err);
-                // Still show platform opened message
+                // Try without instructions
+                navigator.clipboard.writeText(prompt);
             });
             
             return {
@@ -380,7 +478,6 @@ class PlatformIntegrations {
 
     // Add custom platform (for extensibility)
     addCustomPlatform(platform) {
-        // Validate required fields
         const required = ['id', 'name', 'icon', 'launchUrl'];
         const missing = required.filter(field => !platform[field]);
         
@@ -401,5 +498,13 @@ class PlatformIntegrations {
             return true;
         }
         return false;
+    }
+    
+    // 🔧 NEW: Clear logo cache
+    clearLogoCache() {
+        this.loadedLogos.clear();
+        this.logoCacheHits = 0;
+        this.logoCacheMisses = 0;
+        console.log('Logo cache cleared');
     }
 }
