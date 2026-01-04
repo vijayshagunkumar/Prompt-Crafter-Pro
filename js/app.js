@@ -762,6 +762,12 @@ if (!validation.valid && validation.correctedModel) {
             const cleanText = this.cleanTextForDOM(text);
             this.elements.outputArea.textContent = cleanText;
             window.lastGeneratedPrompt = cleanText;
+          document.dispatchEvent(
+  new CustomEvent('promptGenerated', {
+    detail: { result: cleanText }
+  })
+);
+
             this.elements.outputArea.style.display = 'none';
             this.elements.outputArea.offsetHeight;
             this.elements.outputArea.style.display = '';
