@@ -4,16 +4,18 @@ class PromptGenerator {
         this.config = {
             workerUrl: config.workerUrl || 'https://promptcraft-api.vijay-shagunkumar.workers.dev/',
             defaultModel: config.defaultModel || 'gemini-3-flash-preview',
-            timeout: config.timeout || 30000,
-            retryAttempts: config.retryAttempts || 2,
+            timeout: config.timeout || 20000, // 🔧 FIX 1: Reduced from 30s to 20s
+            retryAttempts: config.retryAttempts || 1, // 🔧 FIX 1: Reduced retries
             fallbackToLocal: config.fallbackToLocal !== false,
             enableDebug: config.enableDebug || false,
-            strictPromptMode: config.strictPromptMode !== false // 🔥 NEW: Strict mode to prevent content generation
+            strictPromptMode: config.strictPromptMode !== false,
+            minPromptLength: config.minPromptLength || 150 // 🔧 FIX 2: Min length
         };
         
         console.log(`PromptGenerator initialized with worker: ${this.config.workerUrl}`);
         console.log(`Default model: ${this.config.defaultModel}`);
         console.log(`Strict prompt mode: ${this.config.strictPromptMode}`);
+        console.log(`Min prompt length: ${this.config.minPromptLength} chars`);
         
         // Performance metrics
         this.metrics = {
@@ -24,10 +26,11 @@ class PromptGenerator {
             averageLatency: 0
         };
         
-        // Cache for recent requests
+        // Cache for recent requests with versioning
         this.cache = new Map();
         this.cacheMaxSize = 50;
         this.cacheExpiry = 5 * 60 * 1000; // 5 minutes
+        this.cacheVersion = '1.0'; // 🔧 FIX 8: Cache version for invalidation
     }
     
     // ======================
@@ -47,15 +50,17 @@ class PromptGenerator {
             signal: options.signal,
             timeout: options.timeout || this.config.timeout,
             retryAttempts: options.retryAttempts || this.config.retryAttempts,
-            strictPromptMode: options.strictPromptMode !== false, // 🔥 NEW
+            strictPromptMode: options.strictPromptMode !== false,
+            minPromptLength: options.minPromptLength || this.config.minPromptLength,
             ...options
         };
         
-        // Check cache first
+        // 🔧 FIX 8: Check cache with version
         const cacheKey = this.getCacheKey(prompt, opts);
         if (this.cache.has(cacheKey)) {
             const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheExpiry) {
+            if (cached.version === this.cacheVersion && 
+                Date.now() - cached.timestamp < this.cacheExpiry) {
                 console.log(`Cache hit for key: ${cacheKey.substring(0, 20)}...`);
                 return cached.result;
             } else {
@@ -77,8 +82,46 @@ class PromptGenerator {
             model: opts.model,
             style: opts.style,
             temperature: opts.temperature,
-            strictPromptMode: opts.strictPromptMode
+            strictPromptMode: opts.strictPromptMode,
+            minLength: opts.minPromptLength
         });
+        
+        // 🔧 FIX 5: UPDATED SYSTEM PROMPT FOR EXECUTABLE PROMPTS
+        const executableSystemPrompt = `You are creating prompts that users will COPY AND PASTE directly into AI tools like ChatGPT, Gemini, etc.
+
+CRITICAL REQUIREMENTS FOR EXECUTABLE PROMPTS:
+1. OUTPUT MUST BE A DIRECT TASK that an AI can execute immediately
+2. NEVER output meta-instructions like "Create a prompt for..." or "Write a template..."
+3. ALWAYS use imperative commands that start with action verbs:
+   - ✅ "Write a professional email..." 
+   - ✅ "Generate Python code that..."
+   - ✅ "Analyze this dataset and provide insights..."
+   - ✅ "Create a marketing strategy for..."
+   - ❌ "Create a prompt to write an email" (BAD - meta)
+   - ❌ "You should write a story about..." (BAD - indirect)
+   - ❌ "I need you to analyze..." (BAD - conversational)
+
+4. Start with execution context: "Execute the following task:" or "Task to perform:"
+5. Use DIRECT, IMPERATIVE language throughout
+6. Include ALL necessary context and requirements within the executable command
+7. Structure complex tasks with clear bullet points or numbered steps
+8. Minimum ${opts.minPromptLength} characters to ensure completeness
+
+EXAMPLE INPUT: "help me write a follow-up email to a client"
+EXAMPLE BAD OUTPUT (meta): "Role: Email writer, Objective: Create follow-up email..."
+EXAMPLE GOOD OUTPUT (executable): "Task to perform: Write a professional follow-up email to a client who attended our product demo last week. 
+
+Requirements:
+1. Thank the client for their time
+2. Highlight 2-3 key features relevant to their business
+3. Include a clear call-to-action for next steps
+4. Maintain professional but warm tone
+5. Keep under 200 words
+6. Include subject line and signature
+
+Format: Complete email with all components."
+
+The user will copy your output EXACTLY and paste it into an AI tool. The AI tool should execute it immediately, not analyze or improve it.`;
         
         // Prepare request data with SYSTEM PROMPT constraint
         const requestData = {
@@ -87,35 +130,8 @@ class PromptGenerator {
             style: opts.style,
             temperature: opts.temperature,
 
-            // 🔥 CRITICAL: SYSTEM PROMPT TO PREVENT CONTENT GENERATION
-            systemPrompt: opts.strictPromptMode ? 
-                `You are a professional prompt engineer. Your ONLY task is to convert user requests into high-quality, structured AI prompts.
-                
-                ABSOLUTE RULES:
-                1. NEVER generate actual content (emails, code, articles, stories, etc.)
-                2. ALWAYS output ONLY a structured prompt template
-                3. The prompt must be ready to be copied and pasted into any AI tool
-                4. The prompt should guide the AI to generate the content, NOT contain the content
-                
-                REQUIRED PROMPT STRUCTURE:
-                • Role: [Define the AI's role]
-                • Objective: [What the prompt should achieve]
-                • Context: [Background information]
-                • Instructions: [Step-by-step guidance]
-                • Constraints: [Limitations or requirements]
-                • Output Format: [Expected response structure]
-                
-                EXAMPLE INPUT: "Write a professional follow-up email"
-                EXAMPLE CORRECT OUTPUT (NOT the email):
-                Role: Professional B2B email copywriter
-                Objective: Create a concise follow-up email after a product demo
-                Context: Client attended demo last week
-                Instructions: 1. Thank client 2. Highlight key features 3. Include call-to-action
-                Constraints: Under 200 words, professional tone
-                Output Format: Complete email with subject line and body
-                
-                REMEMBER: If the output can be sent directly to a client, it's WRONG.` 
-                : null,
+            // 🔧 FIX 5: Use executable system prompt
+            systemPrompt: opts.strictPromptMode ? executableSystemPrompt : null,
 
             // Gemini-specific config
             generationConfig: {
@@ -133,100 +149,162 @@ class PromptGenerator {
             timestamp: new Date().toISOString()
         };
         
-        // Try worker API with retries
+        // 🔧 FIX 1: Try worker API with single attempt (faster)
         let lastError = null;
         
-        for (let attempt = 1; attempt <= opts.retryAttempts; attempt++) {
-            try {
-                if (attempt > 1) {
-                    console.log(`Retry attempt ${attempt}/${opts.retryAttempts} for request ${requestId}`);
-                    await this.delay(attempt * 1000); // Exponential backoff
-                }
-                
-                const result = await this.callWorkerAPI(requestData, opts);
-                
-                if (result.success) {
-                    // 🔥 Validate that output is actually a prompt, not content
-                    if (opts.strictPromptMode) {
-                        const validatedResult = this.validatePromptNotContent(result.prompt);
-                        if (!validatedResult.isValid) {
-                            console.warn(`⚠️ Generated content instead of prompt: ${validatedResult.reason}`);
-                            // Regenerate with stricter constraints
-                            if (attempt < opts.retryAttempts) {
-                                console.log(`Regenerating with stricter constraints...`);
-                                requestData.systemPrompt = this.getStricterSystemPrompt();
-                                continue;
-                            }
+        try {
+            console.log(`Starting generation with model: ${opts.model}`);
+            const result = await this.callWorkerAPI(requestData, opts);
+            
+            if (result.success) {
+                // 🔧 FIX 3: Enhanced validation
+                if (opts.strictPromptMode) {
+                    const validatedResult = this.validatePromptNotContent(result.prompt);
+                    if (!validatedResult.isValid) {
+                        console.warn(`⚠️ Generated content instead of prompt: ${validatedResult.reason}`);
+                        // Try once more with stricter prompt
+                        requestData.systemPrompt = this.getStricterSystemPrompt();
+                        const retryResult = await this.callWorkerAPI(requestData, opts);
+                        if (retryResult.success) {
+                            result.prompt = retryResult.prompt;
+                        } else {
+                            throw new Error('Failed to generate valid prompt after retry');
                         }
-                        result.prompt = validatedResult.cleanedPrompt;
                     }
                     
-                    // Cache successful result
-                    this.cacheResult(cacheKey, result);
+                    // 🔧 FIX 2 & 5: Check prompt length and executability
+                    if (result.prompt.length < opts.minPromptLength) {
+                        console.warn(`Prompt too short: ${result.prompt.length} chars (min ${opts.minPromptLength})`);
+                        throw new Error('Generated prompt is incomplete');
+                    }
                     
-                    // Update metrics
-                    const latency = Date.now() - startTime;
-                    this.metrics.successfulRequests++;
-                    this.metrics.totalLatency += latency;
-                    this.metrics.averageLatency = this.metrics.totalLatency / this.metrics.successfulRequests;
-                    
-                    console.log(`✅ Request ${requestId} successful in ${latency}ms`);
-                    console.log(`Metrics: ${this.metrics.successfulRequests}/${this.metrics.totalRequests} successful`);
-                    
-                    return result;
-                } else {
-                    throw new Error(result.error || 'Worker API returned unsuccessful response');
+                    if (!this.isExecutablePrompt(result.prompt)) {
+                        console.warn('Prompt not in executable format');
+                        throw new Error('Prompt not executable');
+                    }
                 }
                 
-            } catch (error) {
-                lastError = error;
-                console.warn(`Attempt ${attempt} failed for ${requestId}:`, error.message);
+                // 🔧 FIX 8: Cache with version
+                this.cacheResult(cacheKey, result);
                 
-                // If this is the last attempt and we should fallback to local
-                if (attempt === opts.retryAttempts && this.config.fallbackToLocal) {
-                    console.log('All API attempts failed, falling back to local generation');
-                    const localResult = this.generatePromptLocally(prompt, opts);
-                    
-                    // Update metrics for fallback
-                    this.metrics.failedRequests++;
-                    const latency = Date.now() - startTime;
-                    this.metrics.totalLatency += latency;
-                    
-                    return {
-                        ...localResult,
-                        fallbackUsed: true,
-                        originalError: error.message,
-                        requestId: requestId
-                    };
-                }
+                // Update metrics
+                const latency = Date.now() - startTime;
+                this.metrics.successfulRequests++;
+                this.metrics.totalLatency += latency;
+                this.metrics.averageLatency = this.metrics.totalLatency / this.metrics.successfulRequests;
+                
+                console.log(`✅ Request ${requestId} successful in ${latency}ms`);
+                console.log(`Metrics: ${this.metrics.successfulRequests}/${this.metrics.totalRequests} successful`);
+                
+                return result;
+            } else {
+                throw new Error(result.error || 'Worker API returned unsuccessful response');
             }
+            
+        } catch (error) {
+            lastError = error;
+            console.error(`Request ${requestId} failed:`, error.message);
+            
+            // 🔧 FIX 1: Immediate fallback instead of retries
+            if (this.config.fallbackToLocal) {
+                console.log('Immediate fallback to local generation');
+                const localResult = this.generatePromptLocally(prompt, opts);
+                
+                // Update metrics for fallback
+                this.metrics.failedRequests++;
+                const latency = Date.now() - startTime;
+                this.metrics.totalLatency += latency;
+                
+                return {
+                    ...localResult,
+                    fallbackUsed: true,
+                    originalError: error.message,
+                    requestId: requestId
+                };
+            }
+            
+            // All attempts failed, no fallback
+            this.metrics.failedRequests++;
+            console.error(`All attempts failed for ${requestId}:`, lastError?.message);
+            
+            return this.createErrorResponse(
+                `Failed to generate prompt: ${lastError?.message}`,
+                requestId
+            );
         }
-        
-        // All attempts failed, no fallback
-        this.metrics.failedRequests++;
-        console.error(`All attempts failed for ${requestId}:`, lastError?.message);
-        
-        return this.createErrorResponse(
-            `Failed to generate prompt after ${opts.retryAttempts} attempts: ${lastError?.message}`,
-            requestId
-        );
     }
     
     // ======================
-    // CONTENT VALIDATION
+    // CONTENT VALIDATION - ENHANCED
     // ======================
     
     /**
-     * Validate that the output is a prompt, not content
+     * 🔧 NEW: Check if prompt is executable
+     */
+    isExecutablePrompt(text) {
+        if (!text || typeof text !== 'string') return false;
+        
+        const lowerText = text.toLowerCase();
+        
+        // Check for executable indicators
+        const executableIndicators = [
+            /^(execute|task|write|create|generate|analyze|build|develop|design|compose)/i,
+            /requirements?:/i,
+            /instructions?:/i,
+            /steps?:/i,
+            /format:/i,
+            /\d+\.\s+[A-Z]/, // Numbered steps
+            /-\s+[A-Z]/ // Bullet points
+        ];
+        
+        // Check for non-executable indicators (meta)
+        const metaIndicators = [
+            /prompt for/i,
+            /template for/i,
+            /role:\s*/i,
+            /objective:\s*/i,
+            /context:\s*/i,
+            /you should/i,
+            /i need you to/i,
+            /can you/i,
+            /would you/i,
+            /please create a prompt/i
+        ];
+        
+        let executableScore = 0;
+        for (const pattern of executableIndicators) {
+            if (pattern.test(text)) executableScore++;
+        }
+        
+        let metaScore = 0;
+        for (const pattern of metaIndicators) {
+            if (pattern.test(lowerText)) metaScore++;
+        }
+        
+        // Must have more executable indicators than meta indicators
+        return executableScore > metaScore && text.length >= this.config.minPromptLength;
+    }
+    
+    /**
+     * 🔧 ENHANCED: Validate that the output is a prompt, not content
      */
     validatePromptNotContent(text) {
         if (!text || typeof text !== 'string') {
             return { isValid: false, reason: 'Empty or invalid text', cleanedPrompt: text };
         }
         
+        // 🔧 FIX 2: Check minimum length
+        if (text.length < this.config.minPromptLength) {
+            return { 
+                isValid: false, 
+                reason: `Prompt too short (${text.length} chars, min ${this.config.minPromptLength})`,
+                cleanedPrompt: this.convertContentToPrompt(text)
+            };
+        }
+        
         const lowerText = text.toLowerCase();
         
-        // 🔥 Check for content patterns (what we DON'T want)
+        // 🔧 FIX 3: Enhanced content detection
         const contentIndicators = [
             // Email content patterns
             /dear\s+(?:mr|mrs|ms|dr)\./i,
@@ -235,6 +313,9 @@ class PromptGenerator {
             /best\s+regards,/i,
             /sincerely,/i,
             /thank you for your time/i,
+            /yours\s+(?:truly|sincerely)/i,
+            /kind\s+regards/i,
+            /warm\s+regards/i,
             
             // Code content patterns
             /def\s+\w+\(/i,
@@ -243,40 +324,57 @@ class PromptGenerator {
             /import\s+/i,
             /console\.log/i,
             /return\s+/i,
+            /public\s+class/i,
+            /void\s+main/i,
+            /<!DOCTYPE html>/i,
+            /<\/?[a-z][\s\S]*>/i,
             
             // Story/Article content
             /once upon a time/i,
             /in conclusion,/i,
             /the end/i,
             /chapter\s+\d+/i,
+            /\*\*the end\*\*/i,
+            /happily ever after/i,
             
             // Direct responses
             /here(?:'s| is) (?:the|an?)\s+/i,
             /i (?:think|believe|would)\s+/i,
             /you should\s+/i,
-            /as requested,/i
+            /as requested,/i,
+            /here (?:is|are) the/i,
+            /based on your request/i,
+            
+            // Conversation
+            /hello,/i,
+            /hi there,/i,
+            /good morning/i,
+            /how are you/i,
+            /dear (?:user|reader)/i
         ];
         
         for (const pattern of contentIndicators) {
             if (pattern.test(text)) {
                 return { 
                     isValid: false, 
-                    reason: `Contains content pattern: ${pattern.toString().substring(0, 30)}...`,
+                    reason: `Contains content pattern: ${pattern.toString().substring(0, 50)}...`,
                     cleanedPrompt: this.convertContentToPrompt(text)
                 };
             }
         }
         
-        // 🔥 Check for prompt patterns (what we DO want)
+        // Check for executable prompt patterns
         const promptIndicators = [
-            /role\s*:/i,
-            /objective\s*:/i,
-            /context\s*:/i,
-            /instructions\s*:/i,
-            /constraints\s*:/i,
-            /output format\s*:/i,
-            /step\s+\d+\s*:/i,
-            /\*\*[^*]+\*\*/ // Markdown bold
+            /^(execute|task|write|create|generate|analyze|build|develop|design|compose|perform)/i,
+            /requirements?:/i,
+            /instructions?:/i,
+            /constraints?:/i,
+            /format:/i,
+            /steps?:/i,
+            /\d+\.\s+[A-Z]/,
+            /-\s+[A-Z]/,
+            /output\s+(?:format|structure):/i,
+            /expected\s+output:/i
         ];
         
         let promptScore = 0;
@@ -286,91 +384,106 @@ class PromptGenerator {
             }
         }
         
-        // If text has more content indicators than prompt indicators, it's likely content
         if (promptScore < 2) {
             return { 
                 isValid: false, 
-                reason: 'Missing prompt structure indicators',
+                reason: 'Missing executable prompt structure',
                 cleanedPrompt: this.convertContentToPrompt(text)
             };
         }
         
-        return { isValid: true, reason: 'Valid prompt structure', cleanedPrompt: text };
+        return { isValid: true, reason: 'Valid executable prompt', cleanedPrompt: text };
+    }
+    
+    getStricterSystemPrompt() {
+        return `CRITICAL: You MUST output ONLY an EXECUTABLE prompt, NEVER actual content.
+
+EXECUTABLE PROMPT REQUIREMENTS:
+- MUST start with action verb (Write, Create, Generate, Analyze, Build, Design)
+- MUST use imperative language (commands)
+- MUST NOT contain meta-language ("prompt for", "template for")
+- MUST be minimum ${this.config.minPromptLength} characters
+- MUST include specific requirements and format instructions
+
+VIOLATION EXAMPLES (DO NOT DO THIS):
+- ❌ "Dear Mr. Smith, thank you for..." (This is email CONTENT)
+- ❌ "Role: Professional writer" (This is META structure)
+- ❌ "You should write an email about..." (This is INDIRECT)
+- ❌ "I need you to analyze..." (This is CONVERSATIONAL)
+
+REQUIRED OUTPUT FORMAT:
+Task to perform: [Clear action]
+Requirements: [Specific bullet points]
+Format: [Expected output structure]
+
+Example: "Task to perform: Write a professional business proposal...
+Requirements:
+1. Include executive summary
+2. Detail project scope
+3. Provide budget breakdown
+4. Timeline and deliverables
+Format: Formal business document with sections
+
+Remember: The user will copy-paste this directly into an AI tool.`;
     }
     
     /**
      * Convert accidental content into a prompt structure
      */
     convertContentToPrompt(content) {
-        console.log('Converting content to prompt structure...');
+        console.log('Converting content to executable prompt structure...');
         
         // Try to extract structure from content
         const lines = content.split('\n').filter(line => line.trim());
         
         // Check if it's email-like
         if (content.includes('@') || content.includes('Subject:') || content.includes('Dear')) {
-            return `Role: Professional Email Copywriter
-Objective: ${lines[0] || 'Create professional email communication'}
-Context: ${content.substring(0, 100)}...
-Instructions: 
+            return `Task to perform: Write a professional email communication
+
+Requirements:
 1. Craft appropriate subject line
 2. Write professional greeting
 3. Structure email body logically
 4. Include clear call-to-action
 5. Add professional closing
-Constraints: Maintain professional tone, be concise
-Output Format: Complete email with all components`;
+6. Maintain appropriate tone
+
+Format: Complete email with all components
+
+Context: ${content.substring(0, 150)}...`;
         }
         
         // Check if it's code
         if (content.includes('function') || content.includes('def ') || content.includes('class ')) {
-            return `Role: Expert Software Developer
-Objective: ${lines[0] || 'Write efficient, clean code'}
-Context: ${content.substring(0, 100)}...
-Instructions:
+            return `Task to perform: Write efficient, clean code
+
+Requirements:
 1. Write well-documented code
 2. Include error handling
 3. Follow best practices
 4. Add comments for clarity
 5. Consider edge cases
-Constraints: Follow language conventions, optimize for readability
-Output Format: Complete code with documentation`;
+6. Optimize for readability
+
+Format: Complete code with documentation
+
+Context: ${content.substring(0, 150)}...`;
         }
         
-        // Default structured prompt
-        return `Role: Expert Assistant
-Objective: Generate high-quality output based on user request
-Context: ${content.substring(0, 150)}...
-Instructions:
+        // Default executable prompt
+        return `Task to perform: Generate high-quality output based on requirements
+
+Requirements:
 1. Analyze requirements carefully
 2. Provide comprehensive response
 3. Include relevant details
 4. Structure information logically
 5. Consider different perspectives
-Constraints: Be accurate, thorough, and helpful
-Output Format: Well-structured response`;
-    }
-    
-    getStricterSystemPrompt() {
-        return `CRITICAL: You MUST output ONLY a structured prompt, NEVER actual content.
+6. Be accurate and thorough
 
-VIOLATION EXAMPLES (DO NOT DO THIS):
-- ❌ "Dear Mr. Smith, thank you for..." (This is email content)
-- ❌ "def calculate_total(items):" (This is code content)  
-- ❌ "Once upon a time..." (This is story content)
-- ❌ "Here is the answer:" (This is a direct response)
+Format: Well-structured, actionable output
 
-REQUIRED OUTPUT FORMAT:
-Role: [Specific role for AI]
-Objective: [What the AI should accomplish]
-Context: [Background information]
-Instructions: [Numbered steps]
-Constraints: [Limitations/rules]
-Output Format: [Expected structure]
-
-If user asks for "email", output a prompt to WRITE an email, NOT the email itself.
-If user asks for "code", output a prompt to WRITE code, NOT the code itself.
-If user asks for "story", output a prompt to WRITE a story, NOT the story itself.`;
+Context: ${content.substring(0, 200)}...`;
     }
     
     // ======================
@@ -463,7 +576,7 @@ If user asks for "story", output a prompt to WRITE a story, NOT the story itself
                 model: parsedResponse.model,
                 hasResult: !!result,
                 resultLength: result.length,
-                isPrompt: this.validatePromptNotContent(result).isValid
+                isExecutable: this.isExecutablePrompt(result)
             });
             
             console.log(`Result preview (first 500 chars): ${result.substring(0, 500)}...`);
@@ -504,10 +617,9 @@ If user asks for "story", output a prompt to WRITE a story, NOT the story itself
     }
     
     // ======================
-    // JSON FIXING UTILITIES (keep existing)
+    // JSON FIXING UTILITIES
     // ======================
     fixIncompleteJson(jsonText) {
-        // ... keep existing implementation ...
         if (!jsonText || typeof jsonText !== 'string') return null;
         
         let text = jsonText.trim();
@@ -594,23 +706,22 @@ If user asks for "story", output a prompt to WRITE a story, NOT the story itself
     // LOCAL FALLBACK GENERATION
     // ======================
     generatePromptLocally(prompt, options = {}) {
-        console.log('Generating prompt locally...');
+        console.log('Generating executable prompt locally...');
         
-        // Always ensure local generation creates prompts, not content
-        const template = `Role: Expert Assistant
-Objective: ${this.extractObjective(prompt)}
-Context: User needs assistance with: ${prompt.substring(0, 100)}...
-Instructions:
-1. Analyze the requirements carefully
-2. Provide detailed, step-by-step guidance
-3. Include examples where helpful
-4. Consider edge cases
-5. Offer best practices
+        // Always ensure local generation creates executable prompts
+        const template = `Task to perform: ${this.extractObjective(prompt)}
 
-Constraints: Be comprehensive yet concise
-Output Format: Structured response with clear organization
+Requirements:
+1. Provide comprehensive, detailed output
+2. Include all necessary context and specifications
+3. Follow best practices for the task type
+4. Consider potential edge cases
+5. Ensure professional quality
+6. Structure information logically
 
-Notes: This prompt is designed to elicit comprehensive, actionable responses from an AI system.`;
+Format: Well-structured, actionable output ready for execution
+
+Additional context: ${prompt.substring(0, 200)}...`;
 
         const suggestions = this.generateSuggestions(template);
         
@@ -648,6 +759,8 @@ Notes: This prompt is designed to elicit comprehensive, actionable responses fro
             return 'Compose professional communication';
         } else if (lowerPrompt.includes('analyze') || lowerPrompt.includes('review')) {
             return 'Analyze and provide insights';
+        } else if (lowerPrompt.includes('summarize') || lowerPrompt.includes('summary')) {
+            return 'Create comprehensive summary';
         }
         
         return 'Address the user query effectively';
@@ -656,33 +769,27 @@ Notes: This prompt is designed to elicit comprehensive, actionable responses fro
     generateSuggestions(prompt) {
         const suggestions = [];
         
-        if (prompt.includes('Role')) {
-            suggestions.push('Consider adjusting the role for different perspectives');
+        if (prompt.length < 200) {
+            suggestions.push('Add more specific requirements');
         }
         
-        if (prompt.includes('Objective')) {
-            suggestions.push('Make the objective more specific');
+        if (!prompt.includes('Format:')) {
+            suggestions.push('Specify the expected output format');
         }
         
-        if (prompt.length > 500) {
-            suggestions.push('Consider making the prompt more concise');
-        } else if (prompt.length < 200) {
-            suggestions.push('Add more details to the prompt');
+        if (!prompt.match(/\d+\.\s/)) {
+            suggestions.push('Add numbered steps for clarity');
         }
         
-        if (!prompt.includes('Examples')) {
-            suggestions.push('Include specific examples');
-        }
-        
-        if (!prompt.includes('Format')) {
-            suggestions.push('Specify the desired output format');
+        if (prompt.length > 800) {
+            suggestions.push('Consider breaking into smaller tasks');
         }
         
         return suggestions.slice(0, 3);
     }
     
     // ======================
-    // UTILITY METHODS (keep existing)
+    // UTILITY METHODS
     // ======================
     
     getCacheKey(prompt, options) {
@@ -691,7 +798,8 @@ Notes: This prompt is designed to elicit comprehensive, actionable responses fro
             model: options.model,
             style: options.style,
             temperature: options.temperature,
-            strictPromptMode: options.strictPromptMode
+            strictPromptMode: options.strictPromptMode,
+            cacheVersion: this.cacheVersion // 🔧 FIX 8: Include version
         };
         return JSON.stringify(keyData);
     }
@@ -704,7 +812,8 @@ Notes: This prompt is designed to elicit comprehensive, actionable responses fro
         
         this.cache.set(key, {
             result: result,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            version: this.cacheVersion // 🔧 FIX 8: Store version
         });
     }
     
@@ -724,7 +833,7 @@ Notes: This prompt is designed to elicit comprehensive, actionable responses fro
     }
     
     // ======================
-    // HEALTH CHECK (keep existing)
+    // HEALTH CHECK
     // ======================
     async testConnection() {
         try {
@@ -791,15 +900,21 @@ Notes: This prompt is designed to elicit comprehensive, actionable responses fro
         return {
             ...this.metrics,
             cacheSize: this.cache.size,
+            cacheVersion: this.cacheVersion,
             successRate: this.metrics.totalRequests > 0 
                 ? (this.metrics.successfulRequests / this.metrics.totalRequests) * 100 
-                : 0
+                : 0,
+            averageResponseTime: this.metrics.averageLatency,
+            minPromptLength: this.config.minPromptLength
         };
     }
     
+    // 🔧 FIX 8: Clear cache when settings change
     clearCache() {
         this.cache.clear();
-        console.log('Cache cleared');
+        this.cacheVersion = (parseFloat(this.cacheVersion) + 0.1).toFixed(1);
+        console.log('Cache cleared and version updated to:', this.cacheVersion);
+        return true;
     }
     
     resetMetrics() {
