@@ -188,7 +188,7 @@ function analyzeGeneratedPrompt(promptText) {
   }
 
   // BUSINESS WRITING (single term is enough)
-  const BUSINESS_TERMS = ['email', 'proposal', 'client', 'report', 'business', 'professional', 'presentation', 'deck'];
+  const BUSINESS_TERMS = ['email', 'proposal', 'client', 'report', 'business', 'professional', 'presentation', 'deck','follow-up','demo',];
   for (const term of BUSINESS_TERMS) {
     if (text.includes(term)) {
       analysis.taskType = "business-writing";
@@ -198,14 +198,7 @@ function analyzeGeneratedPrompt(promptText) {
   }
 
   // STRUCTURED PROMPTS (exact patterns)
-  if (
-    (text.includes("task to perform:") && text.includes("requirements:")) ||
-    (text.includes("format:") && text.includes("instructions:"))
-  ) {
-    analysis.taskType = "structured-prompt";
-    analysis.confidence = "high";
-    return analysis;
-  }
+
 
   // TECHNICAL/CONTENT TASKS
   const CODING_TERMS = ['code', 'function', 'algorithm', 'program', 'debug', 'api', 'javascript', 'python'];
@@ -235,7 +228,14 @@ function analyzeGeneratedPrompt(promptText) {
     analysis.confidence = "medium";
     return analysis;
   }
-
+  if (
+    (text.includes("task to perform:") && text.includes("requirements:")) ||
+    (text.includes("format:") && text.includes("instructions:"))
+  ) {
+    analysis.taskType = "structured-prompt";
+    analysis.confidence = "medium";
+    return analysis;
+  }
   return analysis;
 }
 
