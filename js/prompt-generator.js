@@ -7,12 +7,13 @@ class PromptGenerator {
             timeout: config.timeout || 30000,
             retryAttempts: config.retryAttempts || 2,
             fallbackToLocal: config.fallbackToLocal !== false,
-            enableDebug: config.enableDebug || false
+            enableDebug: config.enableDebug || false,
+            strictPromptMode: config.strictPromptMode !== false // 🔥 NEW: Strict mode to prevent content generation
         };
         
         console.log(`PromptGenerator initialized with worker: ${this.config.workerUrl}`);
         console.log(`Default model: ${this.config.defaultModel}`);
-        console.log(`Fallback to local: ${this.config.fallbackToLocal}`);
+        console.log(`Strict prompt mode: ${this.config.strictPromptMode}`);
         
         // Performance metrics
         this.metrics = {
@@ -46,6 +47,7 @@ class PromptGenerator {
             signal: options.signal,
             timeout: options.timeout || this.config.timeout,
             retryAttempts: options.retryAttempts || this.config.retryAttempts,
+            strictPromptMode: options.strictPromptMode !== false, // 🔥 NEW
             ...options
         };
         
@@ -75,32 +77,61 @@ class PromptGenerator {
             model: opts.model,
             style: opts.style,
             temperature: opts.temperature,
-            maxTokens: opts.maxTokens
+            strictPromptMode: opts.strictPromptMode
         });
         
-        // Prepare request data
-       const requestData = {
-    prompt: prompt,
-    model: opts.model,
-    style: opts.style,
-    temperature: opts.temperature,
+        // Prepare request data with SYSTEM PROMPT constraint
+        const requestData = {
+            prompt: prompt,
+            model: opts.model,
+            style: opts.style,
+            temperature: opts.temperature,
 
-    // 🔥 REQUIRED FOR GEMINI (THIS FIXES TRUNCATION)
-    generationConfig: {
-        maxOutputTokens: opts.maxTokens || 2048,
-        temperature: opts.temperature || 0.4,
-        topP: 0.95,
-        topK: 40,
-        stopSequences: []
-    },
+            // 🔥 CRITICAL: SYSTEM PROMPT TO PREVENT CONTENT GENERATION
+            systemPrompt: opts.strictPromptMode ? 
+                `You are a professional prompt engineer. Your ONLY task is to convert user requests into high-quality, structured AI prompts.
+                
+                ABSOLUTE RULES:
+                1. NEVER generate actual content (emails, code, articles, stories, etc.)
+                2. ALWAYS output ONLY a structured prompt template
+                3. The prompt must be ready to be copied and pasted into any AI tool
+                4. The prompt should guide the AI to generate the content, NOT contain the content
+                
+                REQUIRED PROMPT STRUCTURE:
+                • Role: [Define the AI's role]
+                • Objective: [What the prompt should achieve]
+                • Context: [Background information]
+                • Instructions: [Step-by-step guidance]
+                • Constraints: [Limitations or requirements]
+                • Output Format: [Expected response structure]
+                
+                EXAMPLE INPUT: "Write a professional follow-up email"
+                EXAMPLE CORRECT OUTPUT (NOT the email):
+                Role: Professional B2B email copywriter
+                Objective: Create a concise follow-up email after a product demo
+                Context: Client attended demo last week
+                Instructions: 1. Thank client 2. Highlight key features 3. Include call-to-action
+                Constraints: Under 200 words, professional tone
+                Output Format: Complete email with subject line and body
+                
+                REMEMBER: If the output can be sent directly to a client, it's WRONG.` 
+                : null,
 
-    // Keep for non-Gemini models
-    maxTokens: opts.maxTokens || 2048,
+            // Gemini-specific config
+            generationConfig: {
+                maxOutputTokens: opts.maxTokens || 2048,
+                temperature: opts.temperature || 0.4,
+                topP: 0.95,
+                topK: 40,
+                stopSequences: []
+            },
 
-    requestId: requestId,
-    timestamp: new Date().toISOString()
-};
+            // Keep for non-Gemini models
+            maxTokens: opts.maxTokens || 2048,
 
+            requestId: requestId,
+            timestamp: new Date().toISOString()
+        };
         
         // Try worker API with retries
         let lastError = null;
@@ -115,6 +146,21 @@ class PromptGenerator {
                 const result = await this.callWorkerAPI(requestData, opts);
                 
                 if (result.success) {
+                    // 🔥 Validate that output is actually a prompt, not content
+                    if (opts.strictPromptMode) {
+                        const validatedResult = this.validatePromptNotContent(result.prompt);
+                        if (!validatedResult.isValid) {
+                            console.warn(`⚠️ Generated content instead of prompt: ${validatedResult.reason}`);
+                            // Regenerate with stricter constraints
+                            if (attempt < opts.retryAttempts) {
+                                console.log(`Regenerating with stricter constraints...`);
+                                requestData.systemPrompt = this.getStricterSystemPrompt();
+                                continue;
+                            }
+                        }
+                        result.prompt = validatedResult.cleanedPrompt;
+                    }
+                    
                     // Cache successful result
                     this.cacheResult(cacheKey, result);
                     
@@ -139,7 +185,7 @@ class PromptGenerator {
                 // If this is the last attempt and we should fallback to local
                 if (attempt === opts.retryAttempts && this.config.fallbackToLocal) {
                     console.log('All API attempts failed, falling back to local generation');
-                    const localResult = this.generatePromptLocally(prompt);
+                    const localResult = this.generatePromptLocally(prompt, opts);
                     
                     // Update metrics for fallback
                     this.metrics.failedRequests++;
@@ -167,6 +213,167 @@ class PromptGenerator {
     }
     
     // ======================
+    // CONTENT VALIDATION
+    // ======================
+    
+    /**
+     * Validate that the output is a prompt, not content
+     */
+    validatePromptNotContent(text) {
+        if (!text || typeof text !== 'string') {
+            return { isValid: false, reason: 'Empty or invalid text', cleanedPrompt: text };
+        }
+        
+        const lowerText = text.toLowerCase();
+        
+        // 🔥 Check for content patterns (what we DON'T want)
+        const contentIndicators = [
+            // Email content patterns
+            /dear\s+(?:mr|mrs|ms|dr)\./i,
+            /to:\s*[^\n]+\ncc:/i,
+            /subject:\s*[^\n]+/i,
+            /best\s+regards,/i,
+            /sincerely,/i,
+            /thank you for your time/i,
+            
+            // Code content patterns
+            /def\s+\w+\(/i,
+            /function\s+\w+\(/i,
+            /class\s+\w+/i,
+            /import\s+/i,
+            /console\.log/i,
+            /return\s+/i,
+            
+            // Story/Article content
+            /once upon a time/i,
+            /in conclusion,/i,
+            /the end/i,
+            /chapter\s+\d+/i,
+            
+            // Direct responses
+            /here(?:'s| is) (?:the|an?)\s+/i,
+            /i (?:think|believe|would)\s+/i,
+            /you should\s+/i,
+            /as requested,/i
+        ];
+        
+        for (const pattern of contentIndicators) {
+            if (pattern.test(text)) {
+                return { 
+                    isValid: false, 
+                    reason: `Contains content pattern: ${pattern.toString().substring(0, 30)}...`,
+                    cleanedPrompt: this.convertContentToPrompt(text)
+                };
+            }
+        }
+        
+        // 🔥 Check for prompt patterns (what we DO want)
+        const promptIndicators = [
+            /role\s*:/i,
+            /objective\s*:/i,
+            /context\s*:/i,
+            /instructions\s*:/i,
+            /constraints\s*:/i,
+            /output format\s*:/i,
+            /step\s+\d+\s*:/i,
+            /\*\*[^*]+\*\*/ // Markdown bold
+        ];
+        
+        let promptScore = 0;
+        for (const pattern of promptIndicators) {
+            if (pattern.test(text)) {
+                promptScore++;
+            }
+        }
+        
+        // If text has more content indicators than prompt indicators, it's likely content
+        if (promptScore < 2) {
+            return { 
+                isValid: false, 
+                reason: 'Missing prompt structure indicators',
+                cleanedPrompt: this.convertContentToPrompt(text)
+            };
+        }
+        
+        return { isValid: true, reason: 'Valid prompt structure', cleanedPrompt: text };
+    }
+    
+    /**
+     * Convert accidental content into a prompt structure
+     */
+    convertContentToPrompt(content) {
+        console.log('Converting content to prompt structure...');
+        
+        // Try to extract structure from content
+        const lines = content.split('\n').filter(line => line.trim());
+        
+        // Check if it's email-like
+        if (content.includes('@') || content.includes('Subject:') || content.includes('Dear')) {
+            return `Role: Professional Email Copywriter
+Objective: ${lines[0] || 'Create professional email communication'}
+Context: ${content.substring(0, 100)}...
+Instructions: 
+1. Craft appropriate subject line
+2. Write professional greeting
+3. Structure email body logically
+4. Include clear call-to-action
+5. Add professional closing
+Constraints: Maintain professional tone, be concise
+Output Format: Complete email with all components`;
+        }
+        
+        // Check if it's code
+        if (content.includes('function') || content.includes('def ') || content.includes('class ')) {
+            return `Role: Expert Software Developer
+Objective: ${lines[0] || 'Write efficient, clean code'}
+Context: ${content.substring(0, 100)}...
+Instructions:
+1. Write well-documented code
+2. Include error handling
+3. Follow best practices
+4. Add comments for clarity
+5. Consider edge cases
+Constraints: Follow language conventions, optimize for readability
+Output Format: Complete code with documentation`;
+        }
+        
+        // Default structured prompt
+        return `Role: Expert Assistant
+Objective: Generate high-quality output based on user request
+Context: ${content.substring(0, 150)}...
+Instructions:
+1. Analyze requirements carefully
+2. Provide comprehensive response
+3. Include relevant details
+4. Structure information logically
+5. Consider different perspectives
+Constraints: Be accurate, thorough, and helpful
+Output Format: Well-structured response`;
+    }
+    
+    getStricterSystemPrompt() {
+        return `CRITICAL: You MUST output ONLY a structured prompt, NEVER actual content.
+
+VIOLATION EXAMPLES (DO NOT DO THIS):
+- ❌ "Dear Mr. Smith, thank you for..." (This is email content)
+- ❌ "def calculate_total(items):" (This is code content)  
+- ❌ "Once upon a time..." (This is story content)
+- ❌ "Here is the answer:" (This is a direct response)
+
+REQUIRED OUTPUT FORMAT:
+Role: [Specific role for AI]
+Objective: [What the AI should accomplish]
+Context: [Background information]
+Instructions: [Numbered steps]
+Constraints: [Limitations/rules]
+Output Format: [Expected structure]
+
+If user asks for "email", output a prompt to WRITE an email, NOT the email itself.
+If user asks for "code", output a prompt to WRITE code, NOT the code itself.
+If user asks for "story", output a prompt to WRITE a story, NOT the story itself.`;
+    }
+    
+    // ======================
     // WORKER API CALL
     // ======================
     async callWorkerAPI(requestData, options) {
@@ -178,7 +385,8 @@ class PromptGenerator {
             console.log(`Request data:`, {
                 model: requestData.model,
                 promptLength: requestData.prompt?.length || 0,
-                style: requestData.style
+                style: requestData.style,
+                hasSystemPrompt: !!requestData.systemPrompt
             });
             
             const response = await fetch(this.config.workerUrl, {
@@ -204,7 +412,7 @@ class PromptGenerator {
                 console.log(`Full raw response: ${responseText}`);
             }
             
-            // ✅ FIXED: Check for incomplete JSON
+            // Parse response
             let parsedResponse;
             try {
                 parsedResponse = JSON.parse(responseText);
@@ -255,7 +463,7 @@ class PromptGenerator {
                 model: parsedResponse.model,
                 hasResult: !!result,
                 resultLength: result.length,
-                keys: Object.keys(parsedResponse)
+                isPrompt: this.validatePromptNotContent(result).isValid
             });
             
             console.log(`Result preview (first 500 chars): ${result.substring(0, 500)}...`);
@@ -296,22 +504,19 @@ class PromptGenerator {
     }
     
     // ======================
-    // JSON FIXING UTILITIES
+    // JSON FIXING UTILITIES (keep existing)
     // ======================
-    
     fixIncompleteJson(jsonText) {
+        // ... keep existing implementation ...
         if (!jsonText || typeof jsonText !== 'string') return null;
         
         let text = jsonText.trim();
         
-        // Common incomplete patterns
         if (text.endsWith(',') || text.endsWith('"') || text.endsWith("'")) {
             text = text.slice(0, -1);
         }
         
-        // If it starts with { but doesn't end with }
         if (text.startsWith('{') && !text.endsWith('}')) {
-            // Try to find the last complete object
             let braceCount = 0;
             let lastCompletePos = -1;
             
@@ -327,12 +532,10 @@ class PromptGenerator {
             if (lastCompletePos !== -1) {
                 text = text.substring(0, lastCompletePos + 1);
             } else {
-                // Just close it
                 text = text + '}';
             }
         }
         
-        // Remove trailing commas before }
         text = text.replace(/,\s*}/g, '}');
         text = text.replace(/,\s*]/g, ']');
         
@@ -341,9 +544,7 @@ class PromptGenerator {
         } catch (parseError) {
             console.warn('Failed to fix JSON:', parseError.message);
             
-            // Last resort: create a minimal valid response
             try {
-                // Try to extract just the result field
                 const resultMatch = text.match(/"result"\s*:\s*"([^"]*)"/);
                 if (resultMatch && resultMatch[1]) {
                     return {
@@ -366,28 +567,23 @@ class PromptGenerator {
         
         let result = prompt.trim();
         
-        // Check if ends with complete punctuation
         const lastChar = result.slice(-1);
         if (['.', '!', '?', ':', ')', ']', '}'].includes(lastChar)) {
             return result;
         }
         
-        // Remove trailing comma or dash
         if ([',', '-', '—', '–', ';'].includes(lastChar)) {
             result = result.slice(0, -1);
         }
         
-        // Check if ends with complete sentence
         const sentences = result.split(/[.!?]/);
         const lastSentence = sentences[sentences.length - 1].trim();
         
         if (lastSentence.length < 10 || lastSentence.split(' ').length < 3) {
-            // Probably incomplete, remove it
             if (sentences.length > 1) {
                 result = sentences.slice(0, -1).join('.') + '.';
             }
         } else {
-            // Add period
             result = result + '.';
         }
         
@@ -397,23 +593,24 @@ class PromptGenerator {
     // ======================
     // LOCAL FALLBACK GENERATION
     // ======================
-    generatePromptLocally(prompt) {
+    generatePromptLocally(prompt, options = {}) {
         console.log('Generating prompt locally...');
         
-        // Create a structured prompt template
-        const template = `Based on your request, here is a structured prompt:
-
-**Role**: Expert Assistant
-**Objective**: ${this.extractObjective(prompt)}
-**Context**: User needs assistance with: ${prompt.substring(0, 100)}...
-**Instructions**:
+        // Always ensure local generation creates prompts, not content
+        const template = `Role: Expert Assistant
+Objective: ${this.extractObjective(prompt)}
+Context: User needs assistance with: ${prompt.substring(0, 100)}...
+Instructions:
 1. Analyze the requirements carefully
 2. Provide detailed, step-by-step guidance
 3. Include examples where helpful
 4. Consider edge cases
 5. Offer best practices
 
-**Notes**: This prompt is designed to elicit comprehensive, actionable responses.`;
+Constraints: Be comprehensive yet concise
+Output Format: Structured response with clear organization
+
+Notes: This prompt is designed to elicit comprehensive, actionable responses from an AI system.`;
 
         const suggestions = this.generateSuggestions(template);
         
@@ -440,7 +637,7 @@ class PromptGenerator {
         const lowerPrompt = prompt.toLowerCase();
         
         if (lowerPrompt.includes('write') || lowerPrompt.includes('create') || lowerPrompt.includes('generate')) {
-            return 'Create content based on specifications';
+            return 'Generate content based on specifications';
         } else if (lowerPrompt.includes('explain') || lowerPrompt.includes('describe')) {
             return 'Explain concepts clearly';
         } else if (lowerPrompt.includes('help') || lowerPrompt.includes('assist')) {
@@ -481,11 +678,11 @@ class PromptGenerator {
             suggestions.push('Specify the desired output format');
         }
         
-        return suggestions.slice(0, 3); // Return top 3 suggestions
+        return suggestions.slice(0, 3);
     }
     
     // ======================
-    // UTILITY METHODS
+    // UTILITY METHODS (keep existing)
     // ======================
     
     getCacheKey(prompt, options) {
@@ -493,13 +690,13 @@ class PromptGenerator {
             prompt: prompt.substring(0, 100),
             model: options.model,
             style: options.style,
-            temperature: options.temperature
+            temperature: options.temperature,
+            strictPromptMode: options.strictPromptMode
         };
         return JSON.stringify(keyData);
     }
     
     cacheResult(key, result) {
-        // Clean old cache entries if needed
         if (this.cache.size >= this.cacheMaxSize) {
             const oldestKey = this.cache.keys().next().value;
             this.cache.delete(oldestKey);
@@ -527,7 +724,7 @@ class PromptGenerator {
     }
     
     // ======================
-    // HEALTH CHECK
+    // HEALTH CHECK (keep existing)
     // ======================
     async testConnection() {
         try {
