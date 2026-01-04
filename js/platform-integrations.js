@@ -11,7 +11,6 @@ class PlatformIntegrations {
                 tags: ['Multimodal', 'Advanced', 'Google'],
                 launchUrl: 'https://gemini.google.com/',
                 params: { prompt: '' },
-                recommended: true,
                 logoUrl: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg'
             },
             {
@@ -113,26 +112,23 @@ class PlatformIntegrations {
                   loading="lazy">` :
             `<i class="${platform.icon}"></i>`;
         
-        return `
-            <div class="platform-card ${platform.recommended ? 'recommended' : ''} ${isSelected ? 'selected' : ''}" 
-                 data-platform="${platform.id}">
-                <div class="platform-logo-container" style="background: ${platform.id === 'gemini' ? 'white' : platform.color}">
-                    ${logoHtml}
-                </div>
-                <div class="platform-info">
-                    <div class="platform-name">
-                        ${platform.name}
-                        ${platform.recommended ? '<span class="recommended-badge">Recommended</span>' : ''}
-                    </div>
-                    <div class="platform-desc">${platform.description}</div>
-                    
-                                  
-                    <div class="platform-tags">
-                        ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
+       return `
+  <div class="platform-card ${isSelected ? 'selected' : ''}"
+       data-platform="${platform.id}">
+    <div class="platform-logo-container"
+         style="background: ${platform.id === 'gemini' ? 'white' : platform.color}">
+      ${logoHtml}
+    </div>
+
+    <div class="platform-info">
+      <div class="platform-name">${platform.name}</div>
+      <div class="platform-desc">${platform.description}</div>
+      <div class="platform-tags">
+        ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
+      </div>
+    </div>
+  </div>
+`;
     }
 
     // ✅ FIXED: Handle logo image errors with LRU cache
