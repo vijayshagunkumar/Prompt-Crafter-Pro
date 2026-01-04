@@ -2,9 +2,93 @@
 // PROMPTCRAFT PRO - MAIN APPLICATION CONTROLLER
 // Version: 2.0.0 - PRODUCTION READY
 // ============================================
+// Add to app.js (somewhere near the top or in your initialization)
 
-// NO OTHER CLASS DEFINITIONS HERE - THEY ARE IN SEPARATE FILES
+// MODEL VALIDATION FUNCTIONS
+const MODEL_CAPABILITIES = {
+  "gemini-3-flash-preview": {
+    name: "Gemini 3 Flash",
+    executable: true,
+    chat: true,
+    description: "Fast, reliable prompt generation",
+    provider: "google",
+    default: true
+  },
+  "gpt-4o-mini": {
+    name: "GPT-4o Mini", 
+    executable: true,
+    chat: true,
+    description: "OpenAI's fast model",
+    provider: "openai",
+    default: false
+  },
+  "llama-3.1-8b-instant": {
+    name: "LLaMA 3.1 Instant",
+    executable: false,
+    chat: true,
+    description: "Fast chat & execution (not for prompt generation)",
+    provider: "groq",
+    default: false
+  }
+};
 
+function validateModelForMode(modelId, strictMode) {
+  const model = MODEL_CAPABILITIES[modelId];
+  if (!model) return { valid: false, reason: "Model not found" };
+  
+  if (strictMode && !model.executable) {
+    return {
+      valid: false,
+      reason: `${model.name} is not available in Executable Prompt mode`,
+      correctedModel: "gemini-3-flash-preview"
+    };
+  }
+  
+  return { valid: true, model: model };
+}
+
+// Then in your model selection UI (wherever you have dropdowns):
+function updateModelDropdown(strictMode) {
+  const dropdown = document.getElementById('model-selector');
+  if (!dropdown) return;
+  
+  // Clear existing options
+  dropdown.innerHTML = '';
+  
+  // Add available models
+  Object.entries(MODEL_CAPABILITIES).forEach(([id, config]) => {
+    if (strictMode && !config.executable) {
+      // Add as disabled option
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = `${config.name} (Executable mode not available)`;
+      option.disabled = true;
+      dropdown.appendChild(option);
+    } else {
+      // Add as available option
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = config.name;
+      if (config.default) option.selected = true;
+      dropdown.appendChild(option);
+    }
+  });
+}
+
+// Call this when strict mode toggles
+function onStrictModeToggle(isStrict) {
+  updateModelDropdown(isStrict);
+  
+  // Also validate current selection
+  const currentModel = document.getElementById('model-selector').value;
+  const validation = validateModelForMode(currentModel, isStrict);
+  
+  if (!validation.valid && validation.correctedModel) {
+    // Auto-correct and show toast
+    document.getElementById('model-selector').value = validation.correctedModel;
+window.promptCraftApp?.showNotification(validation.reason, 'warning');
+  }
+}
 // ======================
 // MAIN APPLICATION CONTROLLER
 // ======================
@@ -570,8 +654,14 @@ setupVoiceCallbacks() {
             return;
         }
         
-        const selectedModel = this.state.currentModel || 'gemini-3-flash-preview';
-        
+let selectedModel = this.state.currentModel || 'gemini-3-flash-preview';
+
+const validation = validateModelForMode(selectedModel, true);
+if (!validation.valid && validation.correctedModel) {
+    this.showNotification(validation.reason, 'warning');
+    selectedModel = validation.correctedModel;     // 🔥 CRITICAL
+    this.state.currentModel = validation.correctedModel;
+}
         this.showLoading(true);
         
         try {
@@ -702,7 +792,7 @@ setupVoiceCallbacks() {
     }
         
     async tryFallbackModels(inputText) {
-        const fallbackModels = ['gpt-4o-mini', 'llama-3.1-8b-instant'];
+  const fallbackModels = ['gpt-4o-mini'];
         let fallbackSuccess = false;
         
         for (const fallbackModel of fallbackModels) {
