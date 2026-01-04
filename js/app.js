@@ -83,7 +83,19 @@ class PromptCraftApp {
         // INITIALIZE MANAGERS
         // ======================
         this.storageManager = new StorageManager();
-        this.voiceHandler = new VoiceHandler();
+
+        // In your PromptCraftApp constructor
+this.voiceHandler = new VoiceHandler({
+    continuous: false,
+    interimResults: false, // 🔥 Only final results (no interim)
+    defaultLang: this.state.settings.voiceInputLanguage || 'en-US',
+    maxListenTime: 10000, // 🔥 10 seconds max
+    maxSimilarityThreshold: 0.75, // 🔥 Stricter threshold
+    replaceMode: true, // 🔥 Critical for preventing duplicates
+    mergeProgressiveResults: true,
+    debounceDelay: 400
+});
+        
         this.platformIntegrations = new PlatformIntegrations();
         this.promptGenerator = new PromptGenerator({
             workerUrl: this.config.WORKER_CONFIG?.workerUrl,
@@ -391,42 +403,84 @@ class PromptCraftApp {
     }
 
     // Set up voice handler callbacks
-    setupVoiceCallbacks() {
-        this.voiceHandler.setCallbacks({
-            onListeningStart: () => {
-                this.showNotification('Listening... Start speaking', 'info');
-            },
-            onTranscript: (text) => {
+setupVoiceCallbacks() {
+    this.voiceHandler.setCallbacks({
+        onListeningStart: () => {
+            this.showNotification('🎤 Listening... Speak now', 'info');
+            // Visual feedback
+            if (this.elements.micBtn) {
+                this.elements.micBtn.classList.add('listening');
+                this.elements.micBtn.innerHTML = '<i class="fas fa-circle"></i>'; // Red dot
+            }
+        },
+        onListeningEnd: () => {
+            // Clear visual feedback
+            if (this.elements.micBtn) {
+                this.elements.micBtn.classList.remove('listening');
+                this.elements.micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            }
+        },
+        onTranscript: (text, metadata = {}) => {
+            console.log('🎯 Voice input received:', {
+                text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+                isFinal: metadata.isFinal,
+                replaceMode: metadata.replaceMode,
+                similarityCheck: metadata.similarityCheck
+            });
+            
+            // 🔥 CRITICAL: ONLY process FINAL results
+            if (metadata.isFinal) {
+                // 🔥 CRITICAL: Use REPLACE mode - don't append!
                 if (this.state.isEditorOpen && this.state.currentEditor === 'input') {
                     const editor = document.getElementById('editorTextarea');
                     if (editor) {
-                        const start = editor.selectionStart;
-                        const end = editor.selectionEnd;
-                        editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
-                        editor.selectionStart = editor.selectionEnd = start + text.length;
+                        // REPLACE entire content
+                        editor.value = text;
+                        editor.selectionStart = editor.selectionEnd = text.length;
+                        editor.focus();
+                        // Trigger input event
+                        editor.dispatchEvent(new Event('input', { bubbles: true }));
                     }
                 } else if (this.elements.userInput) {
-                    const start = this.elements.userInput.selectionStart;
-                    const end = this.elements.userInput.selectionEnd;
-                    this.elements.userInput.value = 
-                        this.elements.userInput.value.substring(0, start) + 
-                        text + 
-                        this.elements.userInput.value.substring(end);
-                    this.elements.userInput.selectionStart = this.elements.userInput.selectionEnd = start + text.length;
+                    // 🔥 REPLACE main input entirely (not append!)
+                    this.elements.userInput.value = text;
+                    this.elements.userInput.selectionStart = 
+                    this.elements.userInput.selectionEnd = text.length;
+                    this.elements.userInput.focus();
+                    
+                    // Trigger input change handler
                     this.handleInputChange();
                 }
-            },
-            onSpeakingStart: () => {
-                this.showNotification('Reading prompt...', 'info');
-            },
-            onSpeakingEnd: () => {
-                this.showNotification('Finished reading prompt', 'info');
-            },
-            onError: (error) => {
+                
+                // Show success notification
+                const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+                if (wordCount > 2) {
+                    this.showNotification(`✓ ${wordCount} words added via voice`, 'success', 2000);
+                }
+            }
+            // 🔥 IGNORE interim results completely (they're disabled anyway)
+        },
+        onSpeakingStart: () => {
+            this.showNotification('🔊 Reading prompt...', 'info');
+        },
+        onSpeakingEnd: () => {
+            this.showNotification('Finished reading prompt', 'info');
+        },
+        onError: (error) => {
+            const errorLower = error.toLowerCase();
+            if (errorLower.includes('not supported')) {
+                this.showNotification('Voice features not available in your browser', 'warning');
+            } else if (errorLower.includes('permission') || errorLower.includes('not-allowed')) {
+                this.showNotification('Please allow microphone access', 'error');
+            } else if (errorLower.includes('network')) {
+                this.showNotification('Network error. Check your connection', 'error');
+            } else if (!errorLower.includes('aborted')) {
+                // Don't show "aborted" errors (user stopped)
                 this.showNotification(`Voice error: ${error}`, 'error');
             }
-        });
-    }
+        }
+    });
+}
 
     // Set up auto-generation
     setupAutoGeneration() {
