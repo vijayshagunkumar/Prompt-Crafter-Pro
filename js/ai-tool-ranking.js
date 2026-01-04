@@ -537,7 +537,22 @@ const debouncedRanking = (function() {
 function showMetricsDashboard() {
   const stats = UserPreferenceManager.getStats();
   const dashboard = document.createElement('div');
-  dashboard.style.cssText = 'position: fixed; top: 20px; right: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; font-family: system-ui; font-size: 12px; max-width: 300px;';
+  dashboard.style.cssText = `
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  z-index: 1000;
+  font-family: system-ui;
+  font-size: 12px;
+  max-width: 300px;
+`;
+
   
   const mostCommonTasks = Object.entries(stats.taskTypeDistribution || {})
     .sort((a,b) => b[1] - a[1])
