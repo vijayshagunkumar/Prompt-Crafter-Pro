@@ -126,12 +126,7 @@ class PlatformIntegrations {
                     </div>
                     <div class="platform-desc">${platform.description}</div>
                     
-                    <!-- 🔧 FIX: Clean execution hint -->
-                    <div class="platform-execution-hint">
-                        <i class="fas fa-exclamation-circle"></i>
-                        Paste prompt directly - AI will execute it
-                    </div>
-                    
+                                  
                     <div class="platform-tags">
                         ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
                     </div>
