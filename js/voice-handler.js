@@ -1,6 +1,6 @@
 /**
  * Voice Handler for Speech Recognition and Synthesis
- * Production-ready with intelligent progressive result handling
+ * Production-ready with intelligent duplicate sentence detection
  * @class VoiceHandler
  */
 class VoiceHandler {
@@ -15,18 +15,22 @@ class VoiceHandler {
      * @param {number} config.debounceDelay - Debounce delay for transcripts in ms
      * @param {boolean} config.mergeProgressiveResults - Merge progressive results
      * @param {boolean} config.removeArticles - Remove articles for deduplication
+     * @param {boolean} config.replaceMode - Replace content instead of append
+     * @param {number} config.maxSimilarityThreshold - Threshold for considering duplicates
      */
     constructor(config = {}) {
         // Default configuration - optimized for production
         this.config = {
             continuous: false, // ALWAYS FALSE for one-shot recognition
-            interimResults: true,
+            interimResults: false, // 🔥 Only finals for cleaner input
             defaultLang: 'en-US',
             autoRestart: false,
-            maxListenTime: 30000, // 30 seconds
-            debounceDelay: 300, // 300ms debounce (400ms for mobile)
+            maxListenTime: 10000, // 🔥 10 seconds max (shorter to prevent multiple results)
+            debounceDelay: 400, // 400ms debounce for mobile
             mergeProgressiveResults: true, // Merge partial results
             removeArticles: false, // Preserve semantics by default
+            replaceMode: true, // 🔥 Replace instead of append
+            maxSimilarityThreshold: 0.75, // 🔥 Stricter threshold
             ...config
         };
 
@@ -38,12 +42,17 @@ class VoiceHandler {
         // Transcript handling
         this.lastTranscript = '';
         this.lastFinalTranscript = '';
+        this.lastProcessedTranscript = '';
         this.transcriptTimeout = null;
         this.silenceTimeout = null;
         
         // Progressive result tracking
         this.progressiveResults = [];
         this.isProgressiveResult = false;
+        
+        // Sentence tracking
+        this.sentenceHistory = [];
+        this.maxSentenceHistory = 5;
         
         // Speech API instances
         this.speechRecognition = null;
@@ -152,21 +161,26 @@ class VoiceHandler {
                 const result = event.results[i];
                 const transcript = result[0].transcript;
                 
+                // 🔥 FIXED: Proper spacing logic
                 if (result.isFinal) {
                     hasFinal = true;
                     finalTranscript += (finalTranscript && !finalTranscript.endsWith(' ') ? ' ' : '') + transcript;
-                } else {
+                } else if (this.config.interimResults) {
                     interimTranscript += (interimTranscript && !interimTranscript.endsWith(' ') ? ' ' : '') + transcript;
                 }
             }
             
+            // Clean up transcripts
+            finalTranscript = finalTranscript.trim();
+            interimTranscript = interimTranscript.trim();
+            
             // Handle final results
-            if (hasFinal && finalTranscript.trim()) {
-                this.handleFinalResult(finalTranscript.trim());
+            if (hasFinal && finalTranscript) {
+                this.handleFinalResult(finalTranscript);
             } 
-            // Handle interim results
-            else if (interimTranscript.trim() && this.config.interimResults) {
-                this.handleInterimResult(interimTranscript.trim());
+            // Handle interim results (if enabled)
+            else if (interimTranscript && this.config.interimResults) {
+                this.handleInterimResult(interimTranscript);
             }
         };
 
@@ -227,8 +241,10 @@ class VoiceHandler {
     resetTranscriptState() {
         this.lastTranscript = '';
         this.lastFinalTranscript = '';
+        this.lastProcessedTranscript = '';
         this.progressiveResults = [];
         this.isProgressiveResult = false;
+        this.sentenceHistory = [];
     }
 
     // ======================
@@ -239,8 +255,27 @@ class VoiceHandler {
      * @param {string} finalTranscript - Final transcript text
      */
     handleFinalResult(finalTranscript) {
-        console.log('✅ Final result:', finalTranscript);
+        console.log('✅ Final result received:', finalTranscript);
         
+        // 🔥 NEW: Block obvious progressive extensions
+        if (this.lastFinalTranscript) {
+            const lastNorm = this.normalizeForComparison(this.lastFinalTranscript);
+            const currNorm = this.normalizeForComparison(finalTranscript);
+            
+            // Check if current is just an extension of previous
+            if (currNorm.startsWith(lastNorm) && currNorm.length > lastNorm.length * 1.1) {
+                console.log('🚫 Blocked progressive extension (prefix match)');
+                return;
+            }
+        }
+        
+        // Check for duplicates using Jaccard similarity
+        if (this.isDuplicateSentence(finalTranscript)) {
+            console.log('⏭️ Skipping duplicate sentence (Jaccard similarity)');
+            return;
+        }
+        
+        // Progressive merging (if enabled)
         if (this.config.mergeProgressiveResults && this.isProgressiveResult) {
             const mergedTranscript = this.mergeProgressiveResults(finalTranscript);
             this.isProgressiveResult = false;
@@ -249,6 +284,10 @@ class VoiceHandler {
             this.sendTranscript(finalTranscript, true);
         }
         
+        // Add to sentence history
+        this.addToSentenceHistory(finalTranscript);
+        
+        // Store as last final transcript
         this.lastFinalTranscript = finalTranscript;
         this.progressiveResults = [];
     }
@@ -269,6 +308,60 @@ class VoiceHandler {
     }
 
     /**
+     * Check if sentence is a duplicate of previous ones using Jaccard similarity
+     * @param {string} sentence - Sentence to check
+     * @returns {boolean} Whether it's a duplicate
+     */
+    isDuplicateSentence(sentence) {
+        const normalizedNew = this.normalizeForComparison(sentence);
+        
+        for (const oldSentence of this.sentenceHistory) {
+            const similarity = this.calculateJaccardSimilarity(normalizedNew, oldSentence);
+            if (similarity > this.config.maxSimilarityThreshold) {
+                console.log(`📊 Similarity score: ${similarity.toFixed(2)} (threshold: ${this.config.maxSimilarityThreshold})`);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Calculate Jaccard similarity between two strings (0-1)
+     * @param {string} str1 - First string
+     * @param {string} str2 - Second string
+     * @returns {number} Jaccard similarity score
+     */
+    calculateJaccardSimilarity(str1, str2) {
+        if (str1 === str2) return 1.0;
+        if (str1.length === 0 || str2.length === 0) return 0.0;
+        
+        // Convert to sets of words
+        const words1 = new Set(str1.split(/\s+/).filter(w => w.length > 0));
+        const words2 = new Set(str2.split(/\s+/).filter(w => w.length > 0));
+        
+        // Calculate intersection and union
+        const intersection = new Set([...words1].filter(x => words2.has(x)));
+        const union = new Set([...words1, ...words2]);
+        
+        return intersection.size / union.size;
+    }
+
+    /**
+     * Add sentence to history
+     * @param {string} sentence - Sentence to add
+     */
+    addToSentenceHistory(sentence) {
+        const normalized = this.normalizeForComparison(sentence);
+        this.sentenceHistory.unshift(normalized);
+        
+        // Keep only recent history
+        if (this.sentenceHistory.length > this.maxSentenceHistory) {
+            this.sentenceHistory = this.sentenceHistory.slice(0, this.maxSentenceHistory);
+        }
+    }
+
+    /**
      * Merge progressive results into a single transcript
      * @param {string} finalTranscript - The final transcript
      * @returns {string} Merged transcript
@@ -278,44 +371,18 @@ class VoiceHandler {
             return finalTranscript;
         }
         
-        const allResults = [...this.progressiveResults, finalTranscript];
+        // Use the longest result as base (usually the final one)
         let merged = finalTranscript;
         
+        // If any progressive result is longer, use it
         for (const result of this.progressiveResults) {
-            const normalizedResult = this.normalizeForComparison(result);
-            const normalizedMerged = this.normalizeForComparison(merged);
-            
-            if (normalizedResult.length > normalizedMerged.length * 0.8 && 
-                !merged.toLowerCase().includes(result.toLowerCase())) {
-                merged = this.mergeTranscripts(merged, result);
+            if (result.length > merged.length) {
+                merged = result;
             }
         }
         
-        console.log('🔗 Merged progressive results:', merged);
+        console.log('🔗 Using merged result:', merged);
         return merged;
-    }
-
-    /**
-     * Merge two transcripts intelligently
-     * @param {string} base - Base transcript
-     * @param {string} addition - Additional transcript
-     * @returns {string} Merged transcript
-     */
-    mergeTranscripts(base, addition) {
-        const baseWords = base.toLowerCase().split(/\s+/);
-        const additionWords = addition.toLowerCase().split(/\s+/);
-        
-        // Find natural overlap points
-        for (let i = Math.min(baseWords.length, 5); i >= 0; i--) {
-            const baseEnd = baseWords.slice(-i).join(' ');
-            const additionStart = additionWords.slice(0, i).join(' ');
-            
-            if (baseEnd && additionStart && baseEnd === additionStart) {
-                return base + additionWords.slice(i).join(' ');
-            }
-        }
-        
-        return base + ' ' + addition;
     }
 
     /**
@@ -326,8 +393,8 @@ class VoiceHandler {
     sendTranscript(transcript, isFinal = false) {
         const normalized = this.normalizeForComparison(transcript);
         
-        if (normalized !== this.lastTranscript) {
-            this.lastTranscript = normalized;
+        if (normalized !== this.lastProcessedTranscript) {
+            this.lastProcessedTranscript = normalized;
             
             if (this.transcriptTimeout) {
                 clearTimeout(this.transcriptTimeout);
@@ -339,10 +406,12 @@ class VoiceHandler {
                 final: isFinal ? transcript : null,
                 interim: !isFinal ? transcript : null,
                 normalized: normalized,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                replaceMode: this.config.replaceMode, // 🔥 Tell app to replace instead of append
+                similarityCheck: this.sentenceHistory.length > 0
             });
         } else {
-            console.log('⏭️ Skipping duplicate transcript');
+            console.log('⏭️ Skipping duplicate processed transcript');
         }
     }
 
@@ -355,10 +424,11 @@ class VoiceHandler {
         let normalized = transcript
             .toLowerCase()
             .trim()
-            .replace(/\s+/g, ' ')
-            .replace(/[^\w\s.,!?']/g, '')
+            .replace(/\s+/g, ' ')        // Normalize spaces
+            .replace(/[^\w\s.,!?']/g, '') // Keep basic punctuation
             .trim();
         
+        // Optionally remove articles for better deduplication
         if (this.config.removeArticles) {
             normalized = normalized.replace(/\b(a|an|the|and|or|but)\b/g, '');
         }
@@ -679,15 +749,6 @@ class VoiceHandler {
         });
     }
 
-    /**
-     * Get available languages
-     * @returns {Promise<Array>} Array of language codes
-     */
-    async getAvailableLanguages() {
-        const voices = await this.getVoices();
-        return [...new Set(voices.map(v => v.lang))].sort();
-    }
-
     // ======================
     // CALLBACK MANAGEMENT
     // ======================
@@ -718,7 +779,7 @@ class VoiceHandler {
             supported: this.supported,
             currentLang: this.speechRecognition?.lang || this.config.defaultLang,
             config: { ...this.config },
-            progressiveResults: this.progressiveResults.length
+            sentenceHistory: this.sentenceHistory.length
         };
     }
 
@@ -731,19 +792,6 @@ class VoiceHandler {
         this.clearTimeouts();
         this.resetTranscriptState();
         this.userStoppedSpeech = false;
-    }
-
-    /**
-     * Update configuration
-     * @param {Object} newConfig - New configuration
-     */
-    updateConfig(newConfig) {
-        this.config = { ...this.config, ...newConfig };
-        
-        if (this.speechRecognition) {
-            this.speechRecognition.continuous = this.config.continuous;
-            this.speechRecognition.interimResults = this.config.interimResults;
-        }
     }
 
     // ======================
