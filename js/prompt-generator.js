@@ -23,7 +23,9 @@ class PromptGenerator {
             successfulRequests: 0,
             failedRequests: 0,
             totalLatency: 0,
-            averageLatency: 0
+            averageLatency: 0,
+            workerValidatedHits: 0,
+            workerTotalValidations: 0
         };
         
         // Cache for recent requests with versioning
@@ -157,19 +159,37 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
             const result = await this.callWorkerAPI(requestData, opts);
             
             if (result.success) {
-                // 🔧 FIX 3: Enhanced validation
-                if (opts.strictPromptMode) {
+                // ✅ CRITICAL FIX 1: TRUST WORKER VALIDATION
+                if (result.executableFormatValidated === true) {
+                    console.log('✅ Worker validated executable format - skipping redundant checks');
+                    
+                    // Update worker validation metrics
+                    this.metrics.workerValidatedHits++;
+                    this.metrics.workerTotalValidations++;
+                    
+                    // 🔧 FIX 8: Cache with version
+                    this.cacheResult(cacheKey, result);
+                    
+                    // Update metrics
+                    const latency = Date.now() - startTime;
+                    this.metrics.successfulRequests++;
+                    this.metrics.totalLatency += latency;
+                    this.metrics.averageLatency = this.metrics.totalLatency / this.metrics.successfulRequests;
+                    
+                    console.log(`✅ Request ${requestId} successful in ${latency}ms`);
+                    console.log(`Metrics: ${this.metrics.successfulRequests}/${this.metrics.totalRequests} successful`);
+                    
+                    return result;
+                }
+                
+                // 🔧 FIX 3: Only validate if worker didn't validate (rare case)
+                if (opts.strictPromptMode && result.executableFormatValidated !== true) {
                     const validatedResult = this.validatePromptNotContent(result.prompt);
                     if (!validatedResult.isValid) {
                         console.warn(`⚠️ Generated content instead of prompt: ${validatedResult.reason}`);
-                        // Try once more with stricter prompt
-                        requestData.systemPrompt = this.getStricterSystemPrompt();
-                        const retryResult = await this.callWorkerAPI(requestData, opts);
-                        if (retryResult.success) {
-                            result.prompt = retryResult.prompt;
-                        } else {
-                            throw new Error('Failed to generate valid prompt after retry');
-                        }
+                        // ✅ FIX: Use local conversion instead of another API call
+                        result.prompt = validatedResult.cleanedPrompt;
+                        result.localConversion = true;
                     }
                     
                     // 🔧 FIX 2 & 5: Check prompt length and executability
@@ -183,6 +203,9 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
                         throw new Error('Prompt not executable');
                     }
                 }
+                
+                // Update worker validation metrics
+                this.metrics.workerTotalValidations++;
                 
                 // 🔧 FIX 8: Cache with version
                 this.cacheResult(cacheKey, result);
@@ -303,61 +326,73 @@ The user will copy your output EXACTLY and paste it into an AI tool. The AI tool
         }
         
         const lowerText = text.toLowerCase();
+        const first100Chars = text.substring(0, 100);
         
-        // 🔧 FIX 3: Enhanced content detection
+        // ✅ FIX 3: Relaxed content detection - only ACTUAL content, not prompts about content
+        
+        // Final sanity check - avoid false positives
+        const isPromptAboutCode = lowerText.includes('task') || 
+                                 lowerText.includes('requirement') || 
+                                 lowerText.includes('write a function') ||
+                                 lowerText.includes('create a') ||
+                                 lowerText.includes('generate a');
+        
+        const isActualCode = first100Chars.includes('def ') && 
+                            !first100Chars.includes('Task to perform') &&
+                            !first100Chars.includes('Requirements');
+        
+        if (isPromptAboutCode && !isActualCode) {
+            return { isValid: true, reason: 'prompt_about_code_not_actual_code', cleanedPrompt: text };
+        }
+        
+        // 🔧 FIX 3: Enhanced content detection - only actual content, not prompts
         const contentIndicators = [
-            // Email content patterns
-            /dear\s+(?:mr|mrs|ms|dr)\./i,
-            /to:\s*[^\n]+\ncc:/i,
-            /subject:\s*[^\n]+/i,
-            /best\s+regards,/i,
-            /sincerely,/i,
-            /thank you for your time/i,
-            /yours\s+(?:truly|sincerely)/i,
-            /kind\s+regards/i,
-            /warm\s+regards/i,
+            // ✅ Actual email content (not prompts about emails)
+            /^dear\s+(?:mr|mrs|ms|dr)\.\s+\w+,\s*\n/im,
+            /^subject:\s*.+\n\s*(?:dear|hello|hi)\s+\w+/im,
+            /^best\s+regards,\s*\n/im,
+            /^sincerely,\s*\n/im,
             
-            // Code content patterns
-            /def\s+\w+\(/i,
-            /function\s+\w+\(/i,
-            /class\s+\w+/i,
-            /import\s+/i,
-            /console\.log/i,
-            /return\s+/i,
-            /public\s+class/i,
-            /void\s+main/i,
-            /<!DOCTYPE html>/i,
+            // ✅ Actual code content (not prompts about code)
+            /^\s*def\s+\w+\([^)]*\)\s*:/im,       // Only actual Python functions
+            /^\s*function\s+\w+\([^)]*\)\s*\{/im, // Only actual JS functions  
+            /^\s*console\.log\(.*\)/im,           // Only actual console.log statements
+            /^\s*return\s+\w+\s*;/im,             // Only actual return statements
+            /^\s*public\s+class\s+\w+\s*\{/im,    // Only actual Java classes
+            /^\s*void\s+main\s*\(/im,             // Only actual main methods
+            /^<!DOCTYPE html>/i,
             /<\/?[a-z][\s\S]*>/i,
             
-            // Story/Article content
-            /once upon a time/i,
-            /in conclusion,/i,
-            /the end/i,
-            /chapter\s+\d+/i,
+            // ✅ Actual story/Article content
+            /^once upon a time,/i,
+            /^in conclusion,/i,
+            /^the end/i,
+            /^chapter\s+\d+/i,
             /\*\*the end\*\*/i,
-            /happily ever after/i,
+            /^happily ever after/i,
             
-            // Direct responses
-            /here(?:'s| is) (?:the|an?)\s+/i,
-            /i (?:think|believe|would)\s+/i,
-            /you should\s+/i,
-            /as requested,/i,
-            /here (?:is|are) the/i,
-            /based on your request/i,
+            // ✅ Direct responses (actual content, not prompts)
+            /^here(?:'s| is) (?:the|an?)\s+/i,
+            /^i (?:think|believe|would)\s+/i,
+            /^you should\s+/i,
+            /^as requested,/i,
+            /^here (?:is|are) the/i,
+            /^based on your request/i,
             
-            // Conversation
-            /hello,/i,
-            /hi there,/i,
-            /good morning/i,
-            /how are you/i,
-            /dear (?:user|reader)/i
+            // ✅ Actual conversation (not prompts)
+            /^hello,/i,
+            /^hi there,/i,
+            /^good morning/i,
+            /^how are you/i,
+            /^dear (?:user|reader)/i
         ];
         
+        // Check if text STARTS with actual content (not just contains it)
         for (const pattern of contentIndicators) {
             if (pattern.test(text)) {
                 return { 
                     isValid: false, 
-                    reason: `Contains content pattern: ${pattern.toString().substring(0, 50)}...`,
+                    reason: `Contains actual content pattern: ${pattern.toString().substring(0, 50)}...`,
                     cleanedPrompt: this.convertContentToPrompt(text)
                 };
             }
@@ -571,6 +606,9 @@ Context: ${content.substring(0, 200)}...`;
                 suggestions = this.generateSuggestions(result);
             }
             
+            // Log worker validation status
+            console.log(`Worker validation: ${parsedResponse.executableFormatValidated ? '✅ Validated' : '❌ Not validated'}`);
+            
             console.log(`Worker response parsed:`, {
                 success: true,
                 model: parsedResponse.model,
@@ -582,6 +620,7 @@ Context: ${content.substring(0, 200)}...`;
             console.log(`Result preview (first 500 chars): ${result.substring(0, 500)}...`);
             console.log(`Result length: ${result.length}`);
             
+            // ✅ CRITICAL FIX 2: Return validation flag
             return {
                 success: true,
                 prompt: result,
@@ -592,7 +631,9 @@ Context: ${content.substring(0, 200)}...`;
                 requestId: parsedResponse.requestId || requestData.requestId,
                 rateLimit: parsedResponse.rateLimit,
                 timestamp: parsedResponse.timestamp || new Date().toISOString(),
-                rawResponse: this.config.enableDebug ? parsedResponse : undefined
+                rawResponse: this.config.enableDebug ? parsedResponse : undefined,
+                // ✅ NEW: Pass through worker validation flag
+                executableFormatValidated: parsedResponse.executableFormatValidated || false
             };
             
         } catch (error) {
@@ -738,7 +779,8 @@ Additional context: ${prompt.substring(0, 200)}...`;
             suggestions: suggestions,
             requestId: `local_${Date.now()}`,
             timestamp: new Date().toISOString(),
-            isLocalFallback: true
+            isLocalFallback: true,
+            executableFormatValidated: false
         };
     }
     
@@ -897,6 +939,12 @@ Additional context: ${prompt.substring(0, 200)}...`;
     // METRICS & DIAGNOSTICS
     // ======================
     getMetrics() {
+        const workerValidationHitRate = this.metrics.workerTotalValidations > 0 
+            ? (this.metrics.workerValidatedHits / this.metrics.workerTotalValidations) * 100 
+            : 0;
+            
+        const estimatedPerformanceGain = (24 / Math.max(1, this.metrics.averageLatency / 1000)).toFixed(1);
+        
         return {
             ...this.metrics,
             cacheSize: this.cache.size,
@@ -905,7 +953,14 @@ Additional context: ${prompt.substring(0, 200)}...`;
                 ? (this.metrics.successfulRequests / this.metrics.totalRequests) * 100 
                 : 0,
             averageResponseTime: this.metrics.averageLatency,
-            minPromptLength: this.config.minPromptLength
+            minPromptLength: this.config.minPromptLength,
+            workerValidationHitRate: workerValidationHitRate,
+            workerValidationStatus: `${this.metrics.workerValidatedHits}/${this.metrics.workerTotalValidations} validated`,
+            estimatedPerformanceGain: `${estimatedPerformanceGain}x faster`,
+            debug: {
+                shouldBeFaster: this.metrics.averageLatency < 6000 ? '✅ Yes (<6s)' : '❌ No (>6s)',
+                workerTrustLevel: workerValidationHitRate > 95 ? '✅ High (>95%)' : '⚠️ Medium/Low'
+            }
         };
     }
     
@@ -923,7 +978,9 @@ Additional context: ${prompt.substring(0, 200)}...`;
             successfulRequests: 0,
             failedRequests: 0,
             totalLatency: 0,
-            averageLatency: 0
+            averageLatency: 0,
+            workerValidatedHits: 0,
+            workerTotalValidations: 0
         };
         console.log('Metrics reset');
     }
