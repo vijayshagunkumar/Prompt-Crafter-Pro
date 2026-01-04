@@ -102,7 +102,8 @@ this.voiceHandler = new VoiceHandler({
             defaultModel: this.config.WORKER_CONFIG?.defaultModel,
             timeout: 30000,
             fallbackToLocal: true,
-            enableDebug: true
+            enableDebug: true,
+        strictPromptMode: true // 🔥 ADD THIS LINE
         });
 
         // Bind elements (with null safety)
@@ -583,7 +584,8 @@ setupVoiceCallbacks() {
                 model: selectedModel,
                 style: 'detailed',
                 temperature: 0.4,
-                timeout: 25000
+                timeout: 25000,
+                strictPromptMode: true // 🔥 ADD THIS
             });
             
             console.log('Generation result:', {
