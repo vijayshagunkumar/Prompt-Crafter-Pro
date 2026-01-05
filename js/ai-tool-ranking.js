@@ -353,15 +353,16 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
   });
   
   // ✅ CRITICAL FIX: Reorder so BEST tool appears FIRST (top)
-  rankedTools
-    .slice()              // safety: don't mutate original
-    .reverse()            // reverse so worst moves first
-    .forEach(({ toolId }) => {
-      const el = container.querySelector(`[data-platform="${toolId}"]`);
-      if (el) {
-        container.appendChild(el); // appendChild moves to end, so worst goes first
-      }
-    });
+
+  // ✅ FIX: Force BEST tool to appear FIRST (top/left) visually
+// prepend() works correctly for flex, grid, wrap, reverse layouts
+rankedTools.forEach(({ toolId }) => {
+  const el = container.querySelector(`[data-platform="${toolId}"]`);
+  if (el) {
+    container.prepend(el);
+  }
+});
+
   
   // Set up event delegation ONCE at container level
   if (!container.dataset.delegationSet) {
