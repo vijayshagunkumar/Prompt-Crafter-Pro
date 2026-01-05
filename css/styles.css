@@ -2861,3 +2861,21 @@ select:focus, .language-select:focus {
   margin-bottom: 60px;
 }
 */
+/* =========================================
+   FIX: History panel visibility & interaction
+   ========================================= */
+
+.history-section {
+  position: fixed !important;
+  top: 80px;              /* below header */
+  right: 20px;
+  width: 420px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  z-index: 9999 !important;
+  display: none;
+}
+
+.history-section.active {
+  display: block;
+}
