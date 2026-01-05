@@ -5,231 +5,141 @@ class PlatformIntegrations {
             {
                 id: 'gemini',
                 name: 'Google Gemini',
-                icon: 'fab fa-google',
+                logo: '<i class="fas fa-robot"></i>', // ✅ Icon instead of image
                 color: '#8B5CF6',
                 description: 'Advanced reasoning and multimodal capabilities',
                 tags: ['Multimodal', 'Advanced', 'Google'],
                 launchUrl: 'https://gemini.google.com/',
-                params: { prompt: '' },
-                logoUrl: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg'
+                params: { prompt: '' }
             },
             {
                 id: 'chatgpt',
                 name: 'ChatGPT',
-                icon: 'fas fa-comment-alt',
+                logo: '<i class="fas fa-comment-alt"></i>', // ✅ Icon
                 color: '#10A37F',
                 description: 'Industry-leading conversational AI',
                 tags: ['Conversational', 'Popular', 'OpenAI'],
                 launchUrl: 'https://chat.openai.com/',
-                params: { text: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/openai-2.svg'
+                params: { text: '' }
             },
             {
                 id: 'claude',
                 name: 'Anthropic Claude',
-                icon: 'fas fa-brain',
+                logo: '<i class="fas fa-brain"></i>', // ✅ Icon
                 color: '#D4A574',
                 description: 'Constitutional AI with safety focus',
                 tags: ['Safe', 'Contextual', 'Anthropic'],
                 launchUrl: 'https://claude.ai/',
-                params: { query: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/anthropic-1.svg'
+                params: { query: '' }
             },
             {
                 id: 'perplexity',
                 name: 'Perplexity AI',
-                icon: 'fas fa-search',
+                logo: '<i class="fas fa-search"></i>', // ✅ Icon
                 color: '#6B7280',
                 description: 'Search-enhanced AI with citations',
                 tags: ['Search', 'Citations', 'Real-time'],
                 launchUrl: 'https://www.perplexity.ai/',
-                params: { q: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/perplexity-1.svg'
+                params: { q: '' }
             },
             {
                 id: 'deepseek',
                 name: 'DeepSeek',
-                icon: 'fas fa-code',
+                logo: '<i class="fas fa-code"></i>', // ✅ Icon
                 color: '#3B82F6',
                 description: 'Code-focused AI with reasoning',
                 tags: ['Code', 'Developer', 'Reasoning'],
                 launchUrl: 'https://chat.deepseek.com/',
-                params: { message: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/deepseek-1.svg'
+                params: { message: '' }
             },
             {
                 id: 'copilot',
                 name: 'Microsoft Copilot',
-                icon: 'fab fa-microsoft',
+                logo: '<i class="fab fa-microsoft"></i>', // ✅ Icon
                 color: '#0078D4',
                 description: 'Microsoft-powered AI assistant',
                 tags: ['Microsoft', 'Productivity', 'Office'],
                 launchUrl: 'https://copilot.microsoft.com/',
-                params: { prompt: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/microsoft-copilot.svg'
+                params: { prompt: '' }
             },
             {
                 id: 'grok',
                 name: 'Grok AI',
-                icon: 'fab fa-x-twitter',
+                logo: '<i class="fab fa-x-twitter"></i>', // ✅ Icon
                 color: '#FF6B35',
                 description: 'Real-time knowledge AI',
                 tags: ['Real-time', 'X', 'Elon'],
                 launchUrl: 'https://grok.x.ai/',
-                params: { query: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/x-social-media-logo.svg'
+                params: { query: '' }
             },
             {
                 id: 'groq',
                 name: 'Groq Playground',
-                icon: 'fas fa-rocket',
+                logo: '<i class="fas fa-rocket"></i>', // ✅ Icon
                 color: '#00B894',
                 description: 'Ultra-fast inference engine',
                 tags: ['Fast', 'API', 'Playground'],
                 launchUrl: 'https://console.groq.com/playground',
-                params: { prompt: '' },
-                logoUrl: 'https://cdn.worldvectorlogo.com/logos/groq-logo.svg'
+                params: { prompt: '' }
             }
         ];
         
-        // 🔧 FIX: LRU Cache to prevent memory leak
-        this.loadedLogos = new Map();
-        this.MAX_LOGOS = 50;
-        this.logoCacheHits = 0;
-        this.logoCacheMisses = 0;
+        // Simple cache for performance
+        this.loadedLogos = new Set();
         
-        console.log('PlatformIntegrations initialized with LRU cache');
+        console.log('PlatformIntegrations initialized with icons');
     }
 
-    // ✅ FIXED: Generate platform card HTML
+    // ✅ FIXED: Generate platform card HTML with icons
     generatePlatformCard(platform, isSelected = false) {
-        const logoHtml = platform.logoUrl ? 
-            `<img src="${platform.logoUrl}" 
-                  alt="${platform.name} Logo" 
-                  class="platform-logo" 
-                  data-platform="${platform.id}"
-                  data-fallback-icon="${platform.icon}"
-                  loading="lazy">` :
-            `<i class="${platform.icon}"></i>`;
-        
-       return `
-  <div class="platform-card ${isSelected ? 'selected' : ''}"
-       data-platform="${platform.id}">
-    <div class="platform-logo-container"
-         style="background: ${platform.id === 'gemini' ? 'white' : platform.color}">
-      ${logoHtml}
-    </div>
+        return `
+            <div class="platform-card ${isSelected ? 'selected' : ''}"
+                 data-platform="${platform.id}">
+                <div class="platform-logo-container"
+                     style="background: ${platform.id === 'gemini' ? 'white' : platform.color}">
+                    ${platform.logo}
+                </div>
 
-    <div class="platform-info">
-      <div class="platform-name">${platform.name}</div>
-      <div class="platform-desc">${platform.description}</div>
-      <div class="platform-tags">
-        ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
-      </div>
-    </div>
-  </div>
-`;
+                <div class="platform-info">
+                    <div class="platform-name">${platform.name}</div>
+                    <div class="platform-desc">${platform.description}</div>
+                    <div class="platform-tags">
+                        ${platform.tags.map(tag => `<span class="platform-tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
-    // ✅ FIXED: Handle logo image errors with LRU cache
-    setupLogoErrorHandlers() {
-        document.querySelectorAll('.platform-logo').forEach(img => {
-            const imgSrc = img.src;
-            
-            // Check cache first
-            if (this.loadedLogos.has(imgSrc)) {
-                const cached = this.loadedLogos.get(imgSrc);
-                if (cached.status === 'loaded') {
-                    this.logoCacheHits++;
-                    img.classList.add('loaded');
-                    return; // Already loaded successfully
-                } else if (cached.status === 'failed') {
-                    this.replaceWithFallback(img);
-                    return;
-                }
-            }
-            
-            // Add error handler
-            img.addEventListener('error', (e) => {
-                this.handleLogoError(e.target);
-            });
-            
-            // Mark as loaded when successful
-            img.addEventListener('load', (e) => {
-                e.target.classList.add('loaded');
-                this.updateLogoCache(e.target.src, 'loaded');
-                this.logoCacheMisses++;
-            });
-        });
-        
-        // 🔧 FIX: Clean cache if too large
-        this.cleanLogoCache();
-    }
-    
-    handleLogoError(img) {
-        const fallbackIcon = img.getAttribute('data-fallback-icon');
-        const platformId = img.getAttribute('data-platform');
-        
-        if (fallbackIcon && platformId) {
-            this.replaceWithFallback(img);
-            this.updateLogoCache(img.src, 'failed');
-        }
-    }
-    
-    replaceWithFallback(img) {
-        const fallbackIcon = img.getAttribute('data-fallback-icon');
-        const container = img.parentElement;
-        if (container) {
-            container.innerHTML = `<i class="${fallbackIcon}"></i>`;
-            container.style.background = 'transparent';
-        }
-    }
-    
-    // 🔧 NEW: LRU Cache management
-    updateLogoCache(src, status) {
-        this.loadedLogos.set(src, {
-            status: status,
-            timestamp: Date.now()
+    // Setup logo handlers (simplified)
+    setupLogoHandlers() {
+        const icons = document.querySelectorAll('.platform-logo-container i');
+        icons.forEach(icon => {
+            icon.style.opacity = '0.9';
+            icon.style.fontSize = '1.5rem';
         });
     }
     
-    cleanLogoCache() {
-        if (this.loadedLogos.size > this.MAX_LOGOS) {
-            // Convert to array, sort by timestamp, remove oldest 20%
-            const entries = Array.from(this.loadedLogos.entries());
-            entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-            
-            const toRemove = entries.slice(0, Math.floor(this.MAX_LOGOS * 0.2));
-            toRemove.forEach(([key]) => {
-                this.loadedLogos.delete(key);
-            });
-            
-            console.log(`Cleaned logo cache: removed ${toRemove.length} entries`);
-        }
-    }
-    
-    getCacheStats() {
-        const total = this.logoCacheHits + this.logoCacheMisses;
-        return {
-            size: this.loadedLogos.size,
-            hits: this.logoCacheHits,
-            misses: this.logoCacheMisses,
-            hitRate: total > 0 ? (this.logoCacheHits / total) * 100 : 0
-        };
-    }
-
     // Render all platforms to container
     renderPlatforms(container, selectedPlatform = null) {
         if (!container) return;
         
-        container.innerHTML = this.platforms.map(platform => 
-            this.generatePlatformCard(platform, selectedPlatform === platform.id)
-        ).join('');
+        // Clear container
+        container.innerHTML = '';
         
-        // Set up safe logo error handlers after render
-        setTimeout(() => this.setupLogoErrorHandlers(), 0);
+        // Render each platform card
+        this.platforms.forEach(platform => {
+            const cardHtml = this.generatePlatformCard(platform, selectedPlatform === platform.id);
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        });
+        
+        // Set up handlers
+        setTimeout(() => this.setupLogoHandlers(), 0);
+        
         // ✅ CRITICAL: notify ranking system AFTER platforms exist in DOM
-    document.dispatchEvent(new CustomEvent('platformsRendered'));
+        setTimeout(() => {
+            document.dispatchEvent(new CustomEvent('platformsRendered'));
+        }, 50);
     }
 
     // Get platform by ID
@@ -458,7 +368,7 @@ class PlatformIntegrations {
 
     // Add custom platform (for extensibility)
     addCustomPlatform(platform) {
-        const required = ['id', 'name', 'icon', 'launchUrl'];
+        const required = ['id', 'name', 'logo', 'launchUrl'];
         const missing = required.filter(field => !platform[field]);
         
         if (missing.length > 0) {
@@ -480,11 +390,14 @@ class PlatformIntegrations {
         return false;
     }
     
-    // 🔧 NEW: Clear logo cache
-    clearLogoCache() {
+    // Clear cache
+    clearCache() {
         this.loadedLogos.clear();
-        this.logoCacheHits = 0;
-        this.logoCacheMisses = 0;
-        console.log('Logo cache cleared');
+        console.log('Platform cache cleared');
     }
+}
+
+// ✅ Export for global use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PlatformIntegrations;
 }
