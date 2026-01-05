@@ -3,7 +3,7 @@ console.log('🔥 ai-tool-ranking.js LOADED');
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 2.4.1 (Final Production-Ready with Fix)
+// Version: 2.4.3 (DOM Prepend Fix for Grid Layout)
 // ============================================
 
 // ✅ ADD: Global recommendation tracking with protection
@@ -317,7 +317,7 @@ function rankToolsForTask(taskAnalysis, promptText = '') {
   return ranked;
 }
 
-// 4. FIXED CLEAN DOM MOVEMENT (NO CLONING, NO CLEARING) - FINAL VERSION WITH DEDUPLICATION
+// 4. ✅ BULLETPROOF DOM PREPEND SOLUTION FOR GRID LAYOUT
 function reorderToolButtons(rankedTools, taskType, explanation = '') {
   const container = document.getElementById('platformsGrid');
   
@@ -352,17 +352,45 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
     if (badge) badge.remove();
   });
   
-  // ✅ CRITICAL FIX: Reorder so BEST tool appears FIRST (top)
+  // ✅ CRITICAL FIX: DOM PREPEND APPROACH (works for grid, flex, anything)
+  const topTool = rankedTools[0];
+  if (!topTool) return;
 
-  // ✅ FIX: Force BEST tool to appear FIRST (top/left) visually
-// prepend() works correctly for flex, grid, wrap, reverse layouts
-rankedTools.forEach(({ toolId }) => {
-  const el = container.querySelector(`[data-platform="${toolId}"]`);
-  if (el) {
-    container.prepend(el);
+  const topEl = container.querySelector(
+    `[data-platform="${topTool.toolId}"]`
+  );
+
+  if (topEl) {
+    // ✅ MOVE BEST TOOL TO VERY TOP OF CONTAINER
+    // This ALWAYS works because DOM order wins over CSS layout
+    container.prepend(topEl);
+
+    topEl.classList.add('recommended-tool');
+    topEl.setAttribute('data-recommendation', 'best-match');
+    topEl.dataset.currentTaskType = taskType;
+    topEl.dataset.currentExplanation = explanation;
+
+    // Add badge
+    const badge = document.createElement('span');
+    badge.className = 'recommendation-badge';
+
+    const userPref = UserPreferenceManager.getPreference(taskType);
+    const userConfidence = UserPreferenceManager.getConfidence(taskType);
+
+    if (userPref === topTool.toolId && userConfidence > 0.5) {
+      badge.textContent = 'Your Preferred';
+      badge.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+    } else {
+      badge.textContent = 'Best Match';
+    }
+    
+    badge.style.cssText = 'position: absolute; top: -6px; right: -6px; font-size: 0.7em; background: linear-gradient(135deg, #4f46e5, #7c73ff); color: white; padding: 3px 8px; border-radius: 12px; font-weight: bold; z-index: 10; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+    
+    topEl.style.position = 'relative';
+    topEl.appendChild(badge);
+
+    console.log(`🏆 Forced TOP placement: ${topTool.toolId}`);
   }
-});
-
   
   // Set up event delegation ONCE at container level
   if (!container.dataset.delegationSet) {
@@ -393,48 +421,22 @@ rankedTools.forEach(({ toolId }) => {
     container.dataset.delegationSet = 'true';
   }
   
-  // Highlight best match
-  const topTool = rankedTools[0];
-  if (topTool) {
-    const topButton = container.querySelector(`[data-platform="${topTool.toolId}"]`);
-    if (topButton) {
-      topButton.classList.add('recommended-tool');
-      topButton.setAttribute('data-recommendation', 'best-match');
-      topButton.dataset.currentTaskType = taskType;
-      topButton.dataset.currentExplanation = explanation;
-      
-      // Add badge
-      const badge = document.createElement('span');
-      badge.className = 'recommendation-badge';
-      
-      const userPref = UserPreferenceManager.getPreference(taskType);
-      const userConfidence = UserPreferenceManager.getConfidence(taskType);
-      
-      if (userPref === topTool.toolId && userConfidence > 0.5) {
-        badge.textContent = 'Your Preferred';
-        badge.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
-      } else {
-        badge.textContent = 'Best Match';
-      }
-      
-      badge.style.cssText = 'position: absolute; top: -6px; right: -6px; font-size: 0.7em; background: linear-gradient(135deg, #4f46e5, #7c73ff); color: white; padding: 3px 8px; border-radius: 12px; font-weight: bold; z-index: 10; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
-      
-      topButton.style.position = 'relative';
-      topButton.appendChild(badge);
-      
-      console.log(`🏆 Top tool: ${topTool.toolId} (${AI_TOOLS[topTool.toolId]?.name})`);
-    }
-  }
-  
   // Store task type on all buttons for event delegation
   container.querySelectorAll('[data-platform]').forEach(btn => {
     btn.dataset.currentTaskType = taskType;
     btn.dataset.currentExplanation = explanation;
   });
   
-  // Log final order
+  // Log final order (for debugging)
   const finalOrder = Array.from(container.querySelectorAll('[data-platform]')).map(el => el.dataset.platform);
   console.log('📊 Final platform order:', finalOrder);
+  
+  // ✅ VERIFICATION: Best tool should now be first child
+  console.log('✅ DOM verification:', {
+    firstChildId: container.firstElementChild?.dataset?.platform,
+    expectedBestTool: topTool.toolId,
+    match: container.firstElementChild?.dataset?.platform === topTool.toolId
+  });
 }
 
 // 5. ENHANCED EXPLANATION WITH USER PREFERENCE
@@ -669,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('🚀 Production AI Tool Ranking System v2.4.1 loaded');
+    console.log('🚀 Production AI Tool Ranking System v2.4.3 (DOM Prepend Fix) loaded');
     console.log('User preferences loaded:', UserPreferenceManager.getStats());
   }, 1000);
 });
@@ -691,4 +693,4 @@ window.PromptCraftRanking = {
   getRecommendationStats: () => UserPreferenceManager.getStats()
 };
 
-console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.1)');
+console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.3 - DOM Prepend Fix)');
