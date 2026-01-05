@@ -2703,3 +2703,161 @@ select:focus, .language-select:focus {
 .prompt-quality-indicator.poor {
     background: var(--danger);
 }
+
+/* =====================================================
+   FINAL FIXES - NO LAYOUT REGRESSIONS
+   ===================================================== */
+
+/* ✅ FIX 1: Platform card badge visibility (KEEP THIS) */
+[data-platform] {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+#platformsGrid {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+.platforms-grid {
+  position: relative !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* ✅ FIX 2: Card content visibility (KEEP THIS) */
+.card {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+#aiCard {
+  overflow: visible !important;
+}
+
+/* ✅ FIX 3: Platform logo styling (KEEP THIS) */
+.platform-logo-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 1.5rem !important;
+  opacity: 0.9 !important;
+  color: white !important;
+}
+
+/* Platform-specific logo colors (KEEP THIS) */
+.platform-card[data-platform="chatgpt"] .platform-logo-container {
+  background: linear-gradient(135deg, #74aa9c, #10a37f) !important;
+}
+
+.platform-card[data-platform="claude"] .platform-logo-container {
+  background: linear-gradient(135deg, #d4a574, #a86e15) !important;
+}
+
+.platform-card[data-platform="gemini"] .platform-logo-container {
+  background: linear-gradient(135deg, #4285f4, #34a853) !important;
+}
+
+.platform-card[data-platform="perplexity"] .platform-logo-container {
+  background: linear-gradient(135deg, #9333ea, #7c3aed) !important;
+}
+
+.platform-card[data-platform="deepseek"] .platform-logo-container {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+}
+
+/* ✅ FIX 4: Best Match badge positioning (KEEP THIS) */
+.recommendation-badge {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  z-index: 100 !important;
+  pointer-events: none !important;
+  font-size: 0.7em !important;
+  background: linear-gradient(135deg, #4f46e5, #7c73ff) !important;
+  color: white !important;
+  padding: 3px 8px !important;
+  border-radius: 12px !important;
+  font-weight: bold !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* ✅ FIX 5: Tool icon visibility (KEEP THIS) */
+.platform-card .fas {
+  font-size: 1.5rem !important;
+  opacity: 0.9 !important;
+}
+
+/* ✅ FIX 6: Recommendation explanation spacing (KEEP THIS) */
+.ranking-explanation {
+  margin-top: 16px !important;
+  animation: fadeIn 0.3s ease !important;
+}
+
+/* ✅ FIX 7: History and inspiration panel z-index (KEEP THIS) */
+.history-section,
+.inspiration-panel {
+  z-index: 9999 !important;
+}
+
+/* ✅ FIX 8: Button states (KEEP THIS) */
+.sticky-cta.prepare:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ✅ FIX 9: Metrics button styling WITHOUT positioning */
+.metrics-toggle {
+  z-index: 999 !important;
+  background: #4f46e5 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* ✅ FIX 10: Proper action bar layout */
+.action-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+
+/* =====================================================
+   CRITICAL: REMOVE DANGEROUS POSITIONING
+   ===================================================== */
+
+/* ❌ DO NOT ADD these - they break layout */
+/*
+.sticky-cta-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.sticky-cta.reset {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.sticky-cta.prepare {
+  margin-bottom: 60px;
+}
+*/
