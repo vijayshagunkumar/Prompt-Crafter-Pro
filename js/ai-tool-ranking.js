@@ -3,8 +3,15 @@ console.log('🔥 ai-tool-ranking.js LOADED');
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 2.3.4 (Production Fixed - Final with Deduplication)
+// Version: 2.4.0 (Final Production-Ready)
 // ============================================
+
+// ✅ ADD: Global recommendation tracking with protection
+Object.defineProperty(window, 'currentRecommendedTool', {
+  value: null,
+  writable: true,
+  configurable: false
+});
 
 // 1. AI TOOL CONFIGURATION
 const AI_TOOLS = {
@@ -322,18 +329,20 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
     return;
   }
   
-  // ✅ FINAL FIX: Remove duplicate platform buttons
-  const seen = new Set();
+  // ✅ SAFE FIX: Remove duplicates only if DOM corruption detected
   const allButtons = container.querySelectorAll('[data-platform]');
-  allButtons.forEach(el => {
-    const id = el.dataset.platform;
-    if (seen.has(id)) {
-      console.log(`🔧 Removing duplicate: ${id}`);
-      el.remove();
-    } else {
-      seen.add(id);
-    }
-  });
+  if (allButtons.length !== Object.keys(AI_TOOLS).length) {
+    const seen = new Set();
+    allButtons.forEach(el => {
+      const id = el.dataset.platform;
+      if (seen.has(id)) {
+        console.log(`🔧 Removing duplicate: ${id}`);
+        el.remove();
+      } else {
+        seen.add(id);
+      }
+    });
+  }
   
   // Remove badges and highlights
   container.querySelectorAll('[data-platform]').forEach(el => {
@@ -346,15 +355,13 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
     if (badge) badge.remove();
   });
   
-  // Handle buttons (now guaranteed to be unique)
-// ✅ VISUAL FIX: Top-ranked tool appears FIRST
-[...rankedTools].reverse().forEach(({ toolId }) => {
-  const el = container.querySelector(`[data-platform="${toolId}"]`);
-  if (el) {
-    container.prepend(el);
-  }
-});
-
+  // ✅ CRITICAL FIX: Correct ordering - top tool should come LAST (appears first visually)
+  rankedTools.forEach(({ toolId }) => {
+    const el = container.querySelector(`[data-platform="${toolId}"]`);
+    if (el) {
+      container.appendChild(el); // ✅ FIX: Append, not prepend
+    }
+  });
   
   // Set up event delegation ONCE at container level
   if (!container.dataset.delegationSet) {
@@ -409,7 +416,7 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
         badge.textContent = 'Best Match';
       }
       
-      badge.style.cssText = 'position: absolute; top: -10px; right: -10px; font-size: 0.7em; background: linear-gradient(135deg, #4f46e5, #7c73ff); color: white; padding: 3px 8px; border-radius: 12px; font-weight: bold; z-index: 10; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+      badge.style.cssText = 'position: absolute; top: -6px; right: -6px; font-size: 0.7em; background: linear-gradient(135deg, #4f46e5, #7c73ff); color: white; padding: 3px 8px; border-radius: 12px; font-weight: bold; z-index: 10; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
       
       topButton.style.position = 'relative';
       topButton.appendChild(badge);
@@ -479,8 +486,19 @@ function safeApplyRanking(generatedPrompt) {
     const topTool = AI_TOOLS[rankedTools[0].toolId];
     const explanation = topTool.name + ': ' + topTool.explanation;
     
+    // ✅ CRITICAL FIX: Log auto-recommended selection
+    UserPreferenceManager.logSelection(
+      taskAnalysis.taskType,
+      rankedTools[0].toolId,
+      true,
+      explanation
+    );
+    
     // Reorder UI buttons
     reorderToolButtons(rankedTools, taskAnalysis.taskType, explanation);
+    
+    // ✅ CRITICAL FIX: Set global recommendation tracking
+    window.currentRecommendedTool = rankedTools[0].toolId;
     
     // Show explanation
     showRankingExplanation(taskAnalysis, rankedTools[0].toolId, rankedTools, explanation);
@@ -650,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('🚀 Production AI Tool Ranking System v2.3.4 loaded');
+    console.log('🚀 Production AI Tool Ranking System v2.4.0 loaded');
     console.log('User preferences loaded:', UserPreferenceManager.getStats());
   }, 1000);
 });
@@ -672,4 +690,4 @@ window.PromptCraftRanking = {
   getRecommendationStats: () => UserPreferenceManager.getStats()
 };
 
-console.log('📦 Production AI Tool Ranking System loaded (Version 2.3.4)');
+console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.0)');
