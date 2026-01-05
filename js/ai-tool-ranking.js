@@ -461,7 +461,9 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
   // Build explanation HTML
   const explanationEl = document.createElement('div');
   explanationEl.className = 'ranking-explanation';
-  explanationEl.innerHTML = '<div style="background: #f8f9ff; border-radius: 8px; padding: 12px 16px; margin-top: 16px; border-left: 4px solid #4f46e5; font-size: 0.9em;">' +
+  explanationEl.innerHTML =
+  '<div class="ranking-explanation-box">' +
+
     '<strong style="color: #4f46e5;">Why ' + tool.name + '?</strong>' +
     '<p style="margin: 6px 0 4px 0; color: #333;">' + tool.explanation + '</p>' +
     '<small style="color: #666; display: block; margin-top: 4px;">Detected: <strong>' + taskAnalysis.taskType.replace(/-/g, ' ') + '</strong>' +
@@ -653,9 +655,15 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleBtn.className = 'metrics-toggle';
     toggleBtn.textContent = '📊';
     toggleBtn.title = 'Show ranking metrics';
-    toggleBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #4f46e5; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3); z-index: 999;';
+    toggleBtn.style.cssText = '';
+toggleBtn.classList.add('ranking-metrics-btn');
+
     toggleBtn.onclick = showMetricsDashboard;
-    document.body.appendChild(toggleBtn);
+   const explanationBox = document.querySelector('.ranking-explanation-box');
+if (explanationBox) {
+  explanationBox.appendChild(toggleBtn);
+}
+
   }
   
   // Initialize integration (after app loads)
