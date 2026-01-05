@@ -13,41 +13,9 @@
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/styles.css">
     
-    <!-- Critical CSS Fixes -->
+    <!-- ✅ CRITICAL: Keep ONLY truly essential inline CSS -->
     <style>
-        /* Fix History Section */
-        .history-section {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 9999;
-            display: none;
-        }
-        
-        .history-section.active {
-            display: block;
-        }
-        
-       
-        /* Reset button positioned separately */
-        .sticky-cta.reset {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            margin: 0;
-            transition: all 0.3s ease;
-        }
-        
-        /* Voice recording indicator */
-        #micBtn.recording,
-        #editorMicBtn.recording {
-            background-color: #ff4444 !important;
-            color: white !important;
-            animation: pulse 1.5s infinite;
-            border-color: #ff4444;
-        }
-        
+        /* Voice recording animation ONLY - no layout rules */
         @keyframes pulse {
             0% { 
                 box-shadow: 0 0 5px #ff4444;
@@ -61,35 +29,6 @@
                 box-shadow: 0 0 5px #ff4444;
                 transform: scale(1);
             }
-        }
-        
-      
-        /* Notification styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            padding: 12px 20px;
-            border-radius: var(--border-radius-md);
-            font-size: var(--font-size-sm);
-            animation: slideIn 0.3s ease;
-            max-width: 300px;
-        }
-        
-        .notification.success {
-            background: linear-gradient(135deg, #00b09b, #96c93d);
-            color: white;
-        }
-        
-        .notification.error {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: white;
-        }
-        
-        .notification.info {
-            background: linear-gradient(135deg, #2193b0, #6dd5ed);
-            color: white;
         }
         
         @keyframes slideIn {
@@ -367,19 +306,17 @@
             </div>
         </div>
 
-        <!-- Sticky CTA Buttons - FIXED: Reset hidden initially -->
-        <div class="sticky-cta-container">
+        <!-- Action Bar for proper button layout -->
+        <div class="action-bar">
             <button id="stickyPrepareBtn" class="sticky-cta prepare">
                 <i class="fas fa-magic cta-icon"></i>
                 <span>Prepare Prompt</span>
             </button>
+            <button id="stickyResetBtn" class="sticky-cta reset" style="display:none">
+                <i class="fas fa-redo cta-icon"></i>
+                <span>Reset</span>
+            </button>
         </div>
-        
-        <!-- ✅ FIX 1: Reset Button hidden initially with inline style -->
-        <button id="stickyResetBtn" class="sticky-cta reset" style="display:none">
-            <i class="fas fa-redo cta-icon"></i>
-            <span>Reset</span>
-        </button>
     </main>
 
     <!-- Footer -->
@@ -603,7 +540,7 @@
                     </button>
                 </div>
                 <div class="editor-right-controls">
-               
+                    <!-- Editor actions can be added here -->
                 </div>
             </div>
             
