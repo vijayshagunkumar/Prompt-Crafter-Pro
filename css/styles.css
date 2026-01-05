@@ -2879,3 +2879,26 @@ select:focus, .language-select:focus {
 .history-section.active {
   display: block;
 }
+
+/* Metrics button inside ranking box */
+.ranking-metrics-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+
+.ranking-metrics-btn:hover {
+  transform: scale(1.05);
+}
