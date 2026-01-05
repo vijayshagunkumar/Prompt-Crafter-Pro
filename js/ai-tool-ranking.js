@@ -3,7 +3,7 @@ console.log('🔥 ai-tool-ranking.js LOADED');
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 2.4.0 (Final Production-Ready)
+// Version: 2.4.1 (Final Production-Ready with Fix)
 // ============================================
 
 // ✅ ADD: Global recommendation tracking with protection
@@ -204,9 +204,6 @@ function analyzeGeneratedPrompt(promptText) {
     }
   }
 
-  // STRUCTURED PROMPTS (exact patterns)
-
-
   // TECHNICAL/CONTENT TASKS
   const CODING_TERMS = ['code', 'function', 'algorithm', 'program', 'debug', 'api', 'javascript', 'python'];
   if (CODING_TERMS.some(term => text.includes(term))) {
@@ -355,13 +352,16 @@ function reorderToolButtons(rankedTools, taskType, explanation = '') {
     if (badge) badge.remove();
   });
   
-  // ✅ CRITICAL FIX: Correct ordering - top tool should come LAST (appears first visually)
-  rankedTools.forEach(({ toolId }) => {
-    const el = container.querySelector(`[data-platform="${toolId}"]`);
-    if (el) {
-      container.appendChild(el); // ✅ FIX: Append, not prepend
-    }
-  });
+  // ✅ CRITICAL FIX: Reorder so BEST tool appears FIRST (top)
+  rankedTools
+    .slice()              // safety: don't mutate original
+    .reverse()            // reverse so worst moves first
+    .forEach(({ toolId }) => {
+      const el = container.querySelector(`[data-platform="${toolId}"]`);
+      if (el) {
+        container.appendChild(el); // appendChild moves to end, so worst goes first
+      }
+    });
   
   // Set up event delegation ONCE at container level
   if (!container.dataset.delegationSet) {
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('🚀 Production AI Tool Ranking System v2.4.0 loaded');
+    console.log('🚀 Production AI Tool Ranking System v2.4.1 loaded');
     console.log('User preferences loaded:', UserPreferenceManager.getStats());
   }, 1000);
 });
@@ -690,4 +690,4 @@ window.PromptCraftRanking = {
   getRecommendationStats: () => UserPreferenceManager.getStats()
 };
 
-console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.0)');
+console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.1)');
