@@ -463,15 +463,27 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
   explanationEl.className = 'ranking-explanation';
   explanationEl.innerHTML =
   '<div class="ranking-explanation-box">' +
-
     '<strong style="color: #4f46e5;">Why ' + tool.name + '?</strong>' +
     '<p style="margin: 6px 0 4px 0; color: #333;">' + tool.explanation + '</p>' +
     '<small style="color: #666; display: block; margin-top: 4px;">Detected: <strong>' + taskAnalysis.taskType.replace(/-/g, ' ') + '</strong>' +
     (taskAnalysis.confidence === 'high' ? ' (strong match)' : '') + '</small>' +
     preferenceNote +
-    '</div>';
+  '</div>';
   
   container.appendChild(explanationEl);
+  
+  // 🔘 Attach metrics button safely AFTER explanation box exists
+  let metricsBtn = document.querySelector('.ranking-metrics-btn');
+  
+  if (!metricsBtn) {
+    metricsBtn = document.createElement('button');
+    metricsBtn.className = 'ranking-metrics-btn';
+    metricsBtn.textContent = '📊';
+    metricsBtn.title = 'Show ranking metrics';
+    metricsBtn.onclick = showMetricsDashboard;
+  }
+  
+  explanationEl.querySelector('.ranking-explanation-box').appendChild(metricsBtn);
 }
 
 // 6. SAFE APPLICATION WITH ERROR BOUNDARY
@@ -647,24 +659,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 `;
   document.head.appendChild(style);
-  
-  // Only add metrics toggle if dashboard function exists
-  if (typeof showMetricsDashboard === 'function') {
-    // Add metrics toggle button
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'metrics-toggle';
-    toggleBtn.textContent = '📊';
-    toggleBtn.title = 'Show ranking metrics';
-    toggleBtn.style.cssText = '';
-toggleBtn.classList.add('ranking-metrics-btn');
-
-    toggleBtn.onclick = showMetricsDashboard;
-   const explanationBox = document.querySelector('.ranking-explanation-box');
-if (explanationBox) {
-  explanationBox.appendChild(toggleBtn);
-}
-
-  }
   
   // Initialize integration (after app loads)
   setTimeout(() => {
