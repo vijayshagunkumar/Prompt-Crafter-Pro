@@ -3,7 +3,7 @@ console.log('🔥 ai-tool-ranking.js LOADED');
 // ============================================
 // AI TOOL RANKING SYSTEM FOR PROMPTCRAFT
 // File: ai-tool-ranking.js
-// Version: 2.4.3 (DOM Prepend Fix for Grid Layout)
+// Version: 2.4.4 (Image Generation Fix)
 // ============================================
 
 // ✅ ADD: Global recommendation tracking with protection
@@ -156,6 +156,21 @@ function analyzeGeneratedPrompt(promptText) {
   const text = promptText.toLowerCase();
   const analysis = { taskType: "general", confidence: "medium" };
 
+  // ✅ FIX: IMAGE GENERATION DETECTION (HIGH PRIORITY, EARLY)
+  const IMAGE_TERMS = [
+    'image', 'picture', 'photo', 'photograph',
+    'illustration', 'art', 'artwork',
+    'generate an image', 'create an image',
+    'digital painting', 'drawing', 'sketch',
+    'render', 'visual', 'portrait', 'scene'
+  ];
+
+  if (IMAGE_TERMS.some(term => text.includes(term))) {
+    analysis.taskType = "image-generation";
+    analysis.confidence = "high";
+    return analysis; // EARLY RETURN
+  }
+
   // ENTERPRISE TASKS (requires 2+ matching terms)
   const ENTERPRISE_CATEGORIES = [
     {
@@ -243,7 +258,7 @@ function analyzeGeneratedPrompt(promptText) {
   return analysis;
 }
 
-// 3. FIXED TOOL RANKING WITH ALIAS SUPPORT
+// 3. FIXED TOOL RANKING WITH IMAGE GENERATION FIX
 function rankToolsForTask(taskAnalysis, promptText = '') {
   const scores = {};
   const userPref = UserPreferenceManager.getPreference(taskAnalysis.taskType);
@@ -252,6 +267,15 @@ function rankToolsForTask(taskAnalysis, promptText = '') {
   
   Object.entries(AI_TOOLS).forEach(([toolId, tool]) => {
     let score = tool.weight;
+    
+    // ✅ FIX: IMAGE GENERATION TASKS — HARD RULES
+    if (taskAnalysis.taskType === "image-generation") {
+      if (toolId === "chatgpt") score += 40;   // DALL·E access
+      if (toolId === "gemini") score += 15;    // Imagen access
+      if (toolId === "claude") score -= 50;    // ❌ TEXT-ONLY
+      if (toolId === "deepseek") score -= 40;  // ❌ TEXT-ONLY
+      if (toolId === "perplexity") score += 10; // Image references
+    }
     
     // Check if tool matches task (with alias support)
     let matchesTask = false;
@@ -300,6 +324,7 @@ function rankToolsForTask(taskAnalysis, promptText = '') {
       if (toolId === "chatgpt") score += 10;
     }
     
+    // ✅ CRITICAL: MUST STILL BE HERE
     scores[toolId] = score;
   });
   
@@ -673,7 +698,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('🚀 Production AI Tool Ranking System v2.4.3 (DOM Prepend Fix) loaded');
+    console.log('🚀 Production AI Tool Ranking System v2.4.4 (Image Generation Fix) loaded');
     console.log('User preferences loaded:', UserPreferenceManager.getStats());
   }, 1000);
 });
@@ -695,4 +720,4 @@ window.PromptCraftRanking = {
   getRecommendationStats: () => UserPreferenceManager.getStats()
 };
 
-console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.3 - DOM Prepend Fix)');
+console.log('📦 Production AI Tool Ranking System loaded (Version 2.4.4 - Image Generation Fix)');
