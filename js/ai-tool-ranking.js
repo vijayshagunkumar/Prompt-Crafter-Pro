@@ -489,8 +489,13 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
   explanationEl.innerHTML =
   '<div class="ranking-explanation-box">' +
     '<strong style="color: #4f46e5;">Why ' + tool.name + '?</strong>' +
-    '<p style="margin: 6px 0 4px 0; color: #333;">' + tool.explanation + '</p>' +
-    '<small style="color: #666; display: block; margin-top: 4px;">Detected: <strong>' + taskAnalysis.taskType.replace(/-/g, ' ') + '</strong>' +
+    '<p style="margin: 6px 0 4px 0; color: var(--text-primary, #e5e7eb);">' + tool.explanation + '</p>' +
+'<small style="color: var(--text-secondary, #94a3b8); display: block; margin-top: 4px;">Detected: <strong>' +
+taskAnalysis.taskType.replace(/-/g,' ') +
+'</strong>' +
+(taskAnalysis.confidence === 'high' ? ' (strong match)' : '') +
+'</small>'
+
     (taskAnalysis.confidence === 'high' ? ' (strong match)' : '') + '</small>' +
     preferenceNote +
   '</div>';
