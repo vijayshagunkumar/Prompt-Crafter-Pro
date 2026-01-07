@@ -41,18 +41,6 @@
                 opacity: 1;
             }
         }
-        
-        /* Metrics button disabled state */
-        .metrics-toggle.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
-        .metrics-toggle.disabled:hover {
-            transform: none;
-            background: var(--glass-bg);
-        }
     </style>
 </head>
 <body class="dark-theme">
@@ -100,6 +88,57 @@
             </div>
         </div>
     </header>
+
+    <!-- ✅ FIX 2: Metrics Panel placed BEFORE main content (proper hierarchy) -->
+    <div class="ranking-explanation">
+        <div class="metrics-header">
+            <h3>
+                <i class="fas fa-chart-line"></i>
+                Performance Metrics
+            </h3>
+            <button class="metrics-close-btn" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="metrics-content">
+            <p>Real-time performance analytics and optimization insights.</p>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="avgGenerationTime">0ms</div>
+                    <div class="metric-label">Avg. Generation Time</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value" id="executableRate">0%</div>
+                    <div class="metric-label">Executable Prompts</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value" id="avgPromptLength">0</div>
+                    <div class="metric-label">Avg. Prompt Length</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value" id="cacheHits">0</div>
+                    <div class="metric-label">Cache Hits</div>
+                </div>
+            </div>
+            
+            <div class="metrics-tips">
+                <div class="tips-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Optimization Tips</span>
+                </div>
+                <ul>
+                    <li>Keep prompts 150-500 characters for best results</li>
+                    <li>Use action-oriented language for executable prompts</li>
+                    <li>Include specific requirements and constraints</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="container">
