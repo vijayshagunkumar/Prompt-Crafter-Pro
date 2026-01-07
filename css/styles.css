@@ -2946,3 +2946,17 @@ select:focus, .language-select:focus {
 
   white-space: nowrap;
 }
+.ranking-explain-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  white-space: nowrap;
+}
