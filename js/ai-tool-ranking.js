@@ -469,42 +469,49 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
   // Remove previous explanation
   const prevExplanation = document.querySelector('.ranking-explanation');
   if (prevExplanation) prevExplanation.remove();
-  
+
   const tool = AI_TOOLS[topToolId];
   const container = document.querySelector('.tool-container, .card-3, .output-section');
   if (!container || !tool) return;
-  
+
   const userPref = UserPreferenceManager.getPreference(taskAnalysis.taskType);
   const userStats = UserPreferenceManager.getStats();
-  
+
   let preferenceNote = '';
   if (userPref === topToolId && userStats.totalSelections > 0) {
     const prefCount = UserPreferenceManager.prefs[taskAnalysis.taskType]?.count || 0;
-    preferenceNote = '<small style="color: #10b981; display: block; margin-top: 4px;">✓ Based on your previous ' + prefCount + ' selection' + (prefCount !== 1 ? 's' : '') + ' for similar tasks</small>';
+    preferenceNote =
+      '<small style="color: #10b981; display: block; margin-top: 4px;">' +
+      '✓ Based on your previous ' + prefCount + ' selection' +
+      (prefCount !== 1 ? 's' : '') +
+      ' for similar tasks</small>';
   }
-  
-  // Build explanation HTML
+
   const explanationEl = document.createElement('div');
   explanationEl.className = 'ranking-explanation';
-  explanationEl.innerHTML =
-  '<div class="ranking-explanation-box">' +
-    '<strong style="color: #4f46e5;">Why ' + tool.name + '?</strong>' +
-    '<p style="margin: 6px 0 4px 0; color: var(--text-primary, #e5e7eb);">' + tool.explanation + '</p>' +
-'<small style="color: var(--text-secondary, #94a3b8); display: block; margin-top: 4px;">Detected: <strong>' +
-taskAnalysis.taskType.replace(/-/g,' ') +
-'</strong>' +
-(taskAnalysis.confidence === 'high' ? ' (strong match)' : '') +
-'</small>'
 
-    (taskAnalysis.confidence === 'high' ? ' (strong match)' : '') + '</small>' +
-    preferenceNote +
-  '</div>';
-  
+  explanationEl.innerHTML =
+    '<div class="ranking-explanation-box">' +
+      '<strong style="color: #4f46e5;">Why ' + tool.name + '?</strong>' +
+
+      '<p style="margin: 6px 0 4px 0; color: var(--text-primary, #e5e7eb);">' +
+        tool.explanation +
+      '</p>' +
+
+      '<small style="color: var(--text-secondary, #94a3b8); display: block; margin-top: 4px;">' +
+        'Detected: <strong>' +
+        taskAnalysis.taskType.replace(/-/g, ' ') +
+        '</strong>' +
+        (taskAnalysis.confidence === 'high' ? ' (strong match)' : '') +
+      '</small>' +
+
+      preferenceNote +
+    '</div>';
+
   container.appendChild(explanationEl);
-  
-  // 🔘 Attach metrics button safely AFTER explanation box exists
+
+  // Attach metrics button
   let metricsBtn = document.querySelector('.ranking-metrics-btn');
-  
   if (!metricsBtn) {
     metricsBtn = document.createElement('button');
     metricsBtn.className = 'ranking-metrics-btn';
@@ -512,9 +519,12 @@ taskAnalysis.taskType.replace(/-/g,' ') +
     metricsBtn.title = 'Show ranking metrics';
     metricsBtn.onclick = showMetricsDashboard;
   }
-  
-  explanationEl.querySelector('.ranking-explanation-box').appendChild(metricsBtn);
+
+  explanationEl
+    .querySelector('.ranking-explanation-box')
+    .appendChild(metricsBtn);
 }
+
 
 // 6. SAFE APPLICATION WITH ERROR BOUNDARY
 function safeApplyRanking(generatedPrompt) {
