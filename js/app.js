@@ -485,6 +485,31 @@ this.voiceHandler = new VoiceHandler({
         
         // Auto-generation
         this.setupAutoGeneration();
+      // ================================
+// METRICS BUTTON ENABLE / DISABLE
+// ================================
+
+const metricsBtn = document.querySelector('.metrics-toggle');
+const metricsBox = document.querySelector('.ranking-explanation');
+const metricsCloseBtn = document.querySelector('.metrics-close-btn');
+
+if (metricsBtn && metricsBox && metricsCloseBtn) {
+
+    // OPEN metrics → disable button
+    metricsBtn.addEventListener('click', () => {
+        metricsBox.classList.add('active');   // open (already working visually)
+        metricsBtn.disabled = true;           // 🔒 disable click
+        metricsBtn.classList.add('disabled'); // optional visual state
+    });
+
+    // CLOSE metrics → enable button
+    metricsCloseBtn.addEventListener('click', () => {
+        metricsBox.classList.remove('active'); // close (already working)
+        metricsBtn.disabled = false;           // 🔓 re-enable click
+        metricsBtn.classList.remove('disabled');
+    });
+}
+
     }
 
     // Set up voice handler callbacks
