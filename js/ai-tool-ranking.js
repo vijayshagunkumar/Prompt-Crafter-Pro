@@ -506,10 +506,12 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
     '</div>';
 
   // ✅ INSERT DIRECTLY AFTER GENERATED PROMPT
-  outputContainer.parentNode.insertBefore(
-    explanationEl,
-    outputContainer.nextSibling
-  );
+const slot = document.getElementById('rankingExplanationSlot');
+if (slot) {
+  slot.innerHTML = '';
+  slot.appendChild(explanationEl);
+}
+
 
   // ✅ METRICS BUTTON (RESTORED)
   let metricsBtn = explanationEl.querySelector('.ranking-metrics-btn');
