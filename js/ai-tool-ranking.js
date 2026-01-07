@@ -492,7 +492,7 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
 
   explanationEl.innerHTML =
     '<div class="ranking-explanation-box">' +
-     '<strong style="color: #e5e7eb;">Why ' + tool.name + '?</strong>' +
+'<span class="ranking-explain-pill">Why ' + tool.name + '?</span>' +
 
       '<p style="margin: 6px 0 4px 0; color: var(--text-primary, #e5e7eb);">' +
         tool.explanation +
