@@ -471,8 +471,8 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
   if (prevExplanation) prevExplanation.remove();
 
   const tool = AI_TOOLS[topToolId];
-  const container = document.querySelector('.tool-container, .card-3, .output-section');
-  if (!container || !tool) return;
+  const outputContainer = document.querySelector('#outputCard .output-container');
+  if (!outputContainer || !tool) return;
 
   const userPref = UserPreferenceManager.getPreference(taskAnalysis.taskType);
   const userStats = UserPreferenceManager.getStats();
@@ -481,7 +481,7 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
   if (userPref === topToolId && userStats.totalSelections > 0) {
     const prefCount = UserPreferenceManager.prefs[taskAnalysis.taskType]?.count || 0;
     preferenceNote =
-      '<small style="color: #10b981; display: block; margin-top: 4px;">' +
+      '<small style="color:#10b981; display:block; margin-top:4px;">' +
       '✓ Based on your previous ' + prefCount + ' selection' +
       (prefCount !== 1 ? 's' : '') +
       ' for similar tasks</small>';
@@ -492,38 +492,39 @@ function showRankingExplanation(taskAnalysis, topToolId, rankedTools, explanatio
 
   explanationEl.innerHTML =
     '<div class="ranking-explanation-box">' +
-'<span class="ranking-explain-pill">Why ' + tool.name + '?</span>' +
-
-      '<p style="margin: 6px 0 4px 0; color: var(--text-primary, #e5e7eb);">' +
+      '<span class="ranking-explain-pill">Why ' + tool.name + '?</span>' +
+      '<p style="margin:6px 0 4px 0; color:var(--text-primary,#e5e7eb);">' +
         tool.explanation +
       '</p>' +
-
-      '<small style="color: var(--text-secondary, #94a3b8); display: block; margin-top: 4px;">' +
+      '<small style="color:var(--text-secondary,#94a3b8); display:block;">' +
         'Detected: <strong>' +
         taskAnalysis.taskType.replace(/-/g, ' ') +
         '</strong>' +
         (taskAnalysis.confidence === 'high' ? ' (strong match)' : '') +
       '</small>' +
-
       preferenceNote +
     '</div>';
 
-  container.appendChild(explanationEl);
+  // ✅ INSERT DIRECTLY AFTER GENERATED PROMPT
+  outputContainer.parentNode.insertBefore(
+    explanationEl,
+    outputContainer.nextSibling
+  );
 
-  // Attach metrics button
-  let metricsBtn = document.querySelector('.ranking-metrics-btn');
+  // ✅ METRICS BUTTON (RESTORED)
+  let metricsBtn = explanationEl.querySelector('.ranking-metrics-btn');
   if (!metricsBtn) {
     metricsBtn = document.createElement('button');
     metricsBtn.className = 'ranking-metrics-btn';
     metricsBtn.textContent = '📊';
     metricsBtn.title = 'Show ranking metrics';
     metricsBtn.onclick = showMetricsDashboard;
+    explanationEl
+      .querySelector('.ranking-explanation-box')
+      .appendChild(metricsBtn);
   }
-
-  explanationEl
-    .querySelector('.ranking-explanation-box')
-    .appendChild(metricsBtn);
 }
+
 
 
 // 6. SAFE APPLICATION WITH ERROR BOUNDARY
