@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!document.querySelector('.executable-hint')) {
                             const hint = document.createElement('div');
                             hint.className = 'executable-hint';
-                            hint.innerHTML = '<i class="fas fa-info-circle"></i> This prompt is ready to execute. Copy and paste directly into AI tools.';
+                            
                             hint.style.cssText = 'font-size: 12px; color: var(--success); margin-top: 5px; padding: 5px; background: rgba(16, 185, 129, 0.1); border-radius: 4px;';
                             outputArea.parentNode.insertBefore(hint, outputArea.nextSibling);
                         }
