@@ -58,41 +58,29 @@
             background: var(--glass-bg);
         }
         
-        /* ✅ ADDED: Workflow highlight style */
+        /* ✅ ADDED: Workflow highlight - CLEAR AND VISIBLE */
         .workflow-highlight {
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background: rgba(79, 70, 229, 0.15);
+            color: #d1d5ff;
             font-weight: 600;
-            font-size: 0.95rem;
-            margin-top: 3px;
-            padding: 4px 8px;
-            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
             display: inline-block;
-            position: relative;
-            animation: pulse-glow 2s infinite;
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            animation: gentle-pulse 3s infinite;
         }
         
-        .workflow-highlight::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            border-radius: 6px;
-            opacity: 0.1;
-            z-index: -1;
-        }
-        
-        @keyframes pulse-glow {
-            0%, 100% {
-                box-shadow: 0 0 0px rgba(79, 70, 229, 0.3);
+        @keyframes gentle-pulse {
+            0%, 100% { 
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                transform: translateY(0);
             }
-            50% {
-                box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            50% { 
+                box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+                transform: translateY(-1px);
             }
         }
     </style>
@@ -112,8 +100,8 @@
                             <p>Enterprise-grade AI prompt optimization for professional workflows</p>
                             <!-- ✅ ADDED: Highlighted workflow instructions in header -->
                             <div class="workflow-highlight">
-                                <i class="fas fa-play-circle" style="margin-right: 6px;"></i>
-                                Type or speak → Prepare prompt → Click AI tool (auto-copied) → Paste
+                                <i class="fas fa-play-circle" style="margin-right: 6px; color: #4f46e5;"></i>
+                                1. Type or speak → 2. Prepare prompt → 3. Click AI tool (auto-copied) → Paste
                             </div>
                         </div>
                     </a>
@@ -150,25 +138,18 @@
                         <div class="step-number">1</div>
                         <div>
                             <div class="step-title">Describe Your Task</div>
-                            <div class="step-subtitle">Provide detailed context for optimal AI prompt generation</div>
+                            <!-- ✅ CHANGED: Removed subtitle, moved question up with bulb button -->
+                            <div class="step-subtitle" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>What would you like the AI to help you with?</span>
+                                <button id="needInspirationBtn" class="need-inspiration-btn" title="Need Inspiration" style="margin-left: 10px;">
+                                    <i class="fas fa-lightbulb"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- ✅ REMOVED: Workflow instructions from here -->
-                    <!-- <div class="usage-hint">
-                        1. Type or speak → 2. Prepare prompt → 3. Click AI tool (auto-copied) → Paste
-                    </div> -->
+                    <!-- ✅ REMOVED: Old workflow instructions from here -->
 
-                    <div class="input-label-row">
-                        <div class="input-label">
-                            What would you like the AI to help you with?
-                        </div>
-
-                        <button id="needInspirationBtn" class="need-inspiration-btn" title="Need Inspiration">
-                            <i class="fas fa-lightbulb"></i>
-                        </button>
-                    </div>
-                    
                     <div class="textarea-container">
                         <!-- Character Counter (Top-right corner) -->
                         <div class="char-counter" id="charCounter">0/5000</div>
@@ -196,14 +177,14 @@
                                     <i class="fas fa-microphone"></i>
                                     <span class="action-btn-tooltip">Voice Input</span>
                                 </button>
-                                
-                                <!-- Clear Button -->
+                            </div>
+                            <div class="right-controls">
+                                <!-- Clear Button (Bottom-right) -->
                                 <button id="clearInputBtn" class="action-btn" title="Clear Input">
                                     <i class="fas fa-times"></i>
                                     <span class="action-btn-tooltip">Clear</span>
                                 </button>
                             </div>
-                            
                         </div>
                     </div>
                     
