@@ -404,7 +404,6 @@
     margin-top: var(--spacing-md);
     box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
     letter-spacing: 0.01em;
-    width: 7%;
     justify-content: center;
     position: relative;
     z-index: 1;
@@ -2959,4 +2958,77 @@ select:focus, .language-select:focus {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.35);
   white-space: nowrap;
+}
+
+/* =========================================
+   INPUT LABEL ROW FIX - Move bulb to right side
+   ========================================= */
+
+.input-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    position: relative;
+}
+
+.input-label {
+    margin-bottom: 0;
+    flex: 1;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Reduce bulb button size and move to right */
+.need-inspiration-btn {
+    width: auto !important; /* Override the 7% width */
+    padding: 8px 16px !important; /* Reduce padding */
+    margin-top: 0 !important; /* Remove top margin */
+    font-size: var(--font-size-xs) !important; /* Smaller font */
+    height: 36px !important; /* Fixed height */
+    min-width: 100px !important; /* Minimum width */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Make the bulb icon smaller */
+.need-inspiration-btn i {
+    font-size: var(--font-size-sm) !important; /* Smaller icon */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .need-inspiration-btn {
+        padding: 6px 12px !important;
+        height: 32px !important;
+        min-width: 80px !important;
+    }
+    
+    .need-inspiration-btn i {
+        font-size: var(--font-size-xs) !important;
+    }
+    
+    .input-label {
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .input-label-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .need-inspiration-btn {
+        align-self: flex-end;
+        width: 100% !important;
+        justify-content: center;
+    }
+    
+    .input-label {
+        width: 100%;
+    }
 }
