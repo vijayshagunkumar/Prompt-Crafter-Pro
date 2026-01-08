@@ -148,6 +148,11 @@ class PromptGenerator {
             minPromptLength: options.minPromptLength || this.config.minPromptLength,
             ...options
         };
+        // ✅ FIX: Disable strict prompt mode for image prompts
+if (this.isLikelyImagePrompt(prompt)) {
+    opts.strictPromptMode = false;
+}
+
         
         // ✅ Validate and correct model selection BEFORE API call
         const modelValidation = this.validateModelSelection(opts.model, opts.strictPromptMode);
