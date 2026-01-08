@@ -3032,3 +3032,31 @@ select:focus, .language-select:focus {
         width: 100%;
     }
 }
+/* Add these lines at the end of your CSS */
+
+/* 1. Ensure label has proper spacing */
+.input-label {
+    margin-bottom: 12px !important;
+    display: block;
+}
+
+/* 2. Prevent mobile stretching */
+@media (max-width: 480px) {
+    .input-label-row {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    .need-inspiration-btn {
+        width: auto !important;
+        min-width: 90px !important;
+        margin-left: auto !important; /* Push to right */
+    }
+}
+
+/* 3. Slightly reduce button size if still too big */
+.need-inspiration-btn {
+    padding: 6px 14px !important; /* Slightly smaller */
+    height: 34px !important; /* Slightly shorter */
+}
