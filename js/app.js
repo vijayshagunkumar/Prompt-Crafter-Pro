@@ -1986,7 +1986,8 @@ handleKeyboardShortcuts(e) {
     }
 
     // Block other shortcuts while typing
-    if (isTyping) return;
+// Block other shortcuts while typing (except Alt-based actions)
+if (isTyping && !e.altKey) return;
 
     /* =========================
        Ctrl / Cmd + Enter
