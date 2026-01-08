@@ -487,7 +487,10 @@ if (this.isLikelyImagePrompt(prompt)) {
                 result = '';
             }
             
-            result = this.ensureCompletePrompt(result);
+            if (!this.isLikelyImagePrompt(result)) {
+    result = this.ensureCompletePrompt(result);
+}
+
             
             let suggestions = [];
             if (data.suggestions && Array.isArray(data.suggestions)) {
