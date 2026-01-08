@@ -3095,3 +3095,44 @@ select:focus, .language-select:focus {
     }
 }
 
+
+/* ============================================
+   FIX HEADER TEXT LINE BREAK
+   ============================================ */
+
+/* 1. Make the logo text container wider */
+.logo-text {
+    max-width: 500px !important; /* Increased from 400px */
+    min-width: 0 !important;
+}
+
+/* 2. Prevent text wrapping for the subtitle */
+.logo-text p {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: 100% !important;
+}
+
+/* 3. Make header content wider */
+.header-top {
+    align-items: flex-start !important;
+}
+
+/* 4. Reduce right padding if needed */
+.logo {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* 5. For mobile, allow wrapping naturally */
+@media (max-width: 768px) {
+    .logo-text p {
+        white-space: normal !important;
+        max-width: 280px !important;
+    }
+    
+    .logo-text {
+        max-width: 300px !important;
+    }
+}
