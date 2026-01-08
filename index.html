@@ -57,6 +57,44 @@
             transform: none;
             background: var(--glass-bg);
         }
+        
+        /* ✅ ADDED: Workflow highlight style */
+        .workflow-highlight {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 3px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            position: relative;
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .workflow-highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            border-radius: 6px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 0px rgba(79, 70, 229, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            }
+        }
     </style>
 </head>
 <body class="dark-theme">
@@ -72,12 +110,15 @@
                         <div class="logo-text">
                             <h1>PromptCraft Pro</h1>
                             <p>Enterprise-grade AI prompt optimization for professional workflows</p>
+                            <!-- ✅ ADDED: Highlighted workflow instructions in header -->
+                            <div class="workflow-highlight">
+                                <i class="fas fa-play-circle" style="margin-right: 6px;"></i>
+                                Type or speak → Prepare prompt → Click AI tool (auto-copied) → Paste
+                            </div>
                         </div>
                     </a>
                     
                     <div class="header-actions">
-                        <!-- ✅ REMOVED: Metrics Button -->
-                        
                         <!-- History Button -->
                         <button id="historyBtn" class="action-btn glass-effect" title="Prompt History">
                             <i class="fas fa-history"></i>
@@ -113,10 +154,10 @@
                         </div>
                     </div>
                     
-                    <!-- ✅ ADDED: Workflow Instructions -->
-                    <div class="usage-hint">
+                    <!-- ✅ REMOVED: Workflow instructions from here -->
+                    <!-- <div class="usage-hint">
                         1. Type or speak → 2. Prepare prompt → 3. Click AI tool (auto-copied) → Paste
-                    </div>
+                    </div> -->
 
                     <div class="input-label-row">
                         <div class="input-label">
