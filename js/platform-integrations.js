@@ -90,21 +90,18 @@ class PlatformIntegrations {
         console.log('PlatformIntegrations initialized with icons');
     }
 
-    // ✅ FIXED #3: Clean mobile detection (UA only, no screen size)
+    // ✅ Mobile detection (UA only)
     isMobileDevice() {
-        // Only use User-Agent for reliability
-        // Removed screen size detection to avoid false positives
         return /Android|iPhone|iPod|iPad/i.test(navigator.userAgent);
     }
 
-    // ✅ IMPROVED: Clipboard copy with robust fallback
+    // ✅ Clipboard copy with robust fallback
     async copyToClipboardWithFallback(text) {
-        // Check for very long prompts (optional)
         if (text.length > 10000) {
             console.warn('Prompt is very long, clipboard may truncate');
         }
         
-        // 1. Try modern clipboard API first (works on secure contexts)
+        // 1. Try modern clipboard API first
         if (navigator.clipboard && window.isSecureContext) {
             try {
                 await navigator.clipboard.writeText(text);
@@ -115,7 +112,7 @@ class PlatformIntegrations {
             }
         }
         
-        // 2. Fallback to document.execCommand (deprecated but needed)
+        // 2. Fallback to document.execCommand
         try {
             const textArea = document.createElement('textarea');
             textArea.value = text;
@@ -157,7 +154,7 @@ class PlatformIntegrations {
         }
     }
 
-    // ✅ FIXED #2: Consistent copy-first approach for ALL devices
+    // ✅ Handle platform click with consistent copy-first approach
     async handlePlatformClick(platformId, prompt) {
         if (!prompt || !prompt.trim()) {
             console.warn('No prompt provided for platform launch');
@@ -173,11 +170,10 @@ class PlatformIntegrations {
         const trimmedPrompt = prompt.trim();
         
         try {
-            // ✅ UNIFIED FLOW: Copy FIRST on ALL devices (simpler, consistent)
+            // ✅ Copy FIRST on ALL devices (consistent)
             const copyResult = await this.copyToClipboardWithFallback(trimmedPrompt);
             
             if (!copyResult.success) {
-                // Copy failed - show appropriate message
                 const errorMessage = isMobile 
                     ? 'Could not copy automatically. Please copy manually.'
                     : 'Copy failed. Please copy the prompt manually.';
@@ -201,14 +197,14 @@ class PlatformIntegrations {
                 };
             }
             
-            // Copy succeeded - show success message
+            // Copy succeeded
             const successMessage = isMobile
                 ? '✅ Prompt copied! Opening AI tool...'
                 : '✅ Prompt copied! Opening AI tool...';
             
             this.showNotification(successMessage, 'success');
             
-            // Small delay to ensure clipboard commit and show notification
+            // Small delay for clipboard commit
             await new Promise(resolve => setTimeout(resolve, isMobile ? 120 : 50));
             
             // Open the platform
@@ -218,7 +214,7 @@ class PlatformIntegrations {
                 'noopener,noreferrer'
             );
             
-            // Handle popup block scenario
+            // Handle popup block
             if (!win) {
                 const blockedMessage = isMobile
                     ? 'Popup blocked. Prompt is copied - open the AI tool manually.'
@@ -263,7 +259,7 @@ class PlatformIntegrations {
         }
     }
 
-    // ✅ FIXED #1: Make fallback method properly async
+    // ✅ Fallback method (properly async)
     async fallbackCopyAndLaunch(platformId, prompt, callback) {
         const platform = this.getPlatformById(platformId);
         if (!platform) {
@@ -311,7 +307,7 @@ class PlatformIntegrations {
         return result;
     }
 
-    // Notification helper with proper duration
+    // Notification helper
     showNotification(message, type = 'info', duration = 3000) {
         const event = new CustomEvent('platformNotification', {
             detail: {
@@ -336,7 +332,7 @@ class PlatformIntegrations {
         return result;
     }
 
-    // ✅ Generate platform card with mobile hint
+    // Generate platform card with mobile hint
     generatePlatformCard(platform, isSelected = false) {
         const isMobile = this.isMobileDevice();
         let description = platform.description;
