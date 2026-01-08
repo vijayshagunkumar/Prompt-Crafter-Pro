@@ -85,6 +85,33 @@
     opacity: 0.9;
     font-weight: 400;
     max-width: 400px;
+    margin-bottom: 4px;
+}
+
+/* Workflow highlight - visible in header */
+.workflow-highlight {
+    background: rgba(79, 70, 229, 0.15);
+    color: #d1d5ff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    border: 1px solid rgba(79, 70, 229, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: gentle-pulse 3s infinite;
+}
+
+@keyframes gentle-pulse {
+    0%, 100% { 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(0);
+    }
+    50% { 
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        transform: translateY(-1px);
+    }
 }
 
 /* Header Actions */
@@ -265,6 +292,21 @@
     font-weight: 400;
 }
 
+/* Step subtitle with bulb button inline */
+.step-subtitle.with-bulb {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-xs);
+}
+
+.step-subtitle.with-bulb span {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
 /* Input Area */
 .input-label {
     display: block;
@@ -395,7 +437,7 @@
     color: white;
     border: none;
     padding: var(--spacing-sm) var(--spacing-xl);
-    margin-bottom: 8px !important; /* adds 1-line space below the bulb */
+    margin-bottom: 8px !important;
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     font-weight: 600;
@@ -408,6 +450,16 @@
     justify-content: center;
     position: relative;
     z-index: 1;
+}
+
+/* Bulb button when in subtitle */
+.step-subtitle .need-inspiration-btn {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: var(--spacing-md);
+    padding: 6px 12px !important;
+    font-size: var(--font-size-xs) !important;
+    height: 28px !important;
 }
 
 .need-inspiration-btn:hover {
@@ -737,9 +789,8 @@
 .platforms-sidebar {
     display: flex;
     flex-direction: column;
-    min-height: 0;   /* 🔥 FIXES FLEX + SCROLL BUG */
+    min-height: 0;
 }
-
 
 .platforms-header {
     margin-bottom: var(--spacing-lg);
@@ -1734,6 +1785,11 @@ select:focus, .language-select:focus {
     opacity: 0.5;
 }
 
+/* Input Label Row - Hidden since moved to subtitle */
+.input-label-row {
+    display: none;
+}
+
 /* Responsive Design - UPDATED for inspiration panel */
 @media (max-width: 1200px) {
     .output-section {
@@ -2458,13 +2514,13 @@ select:focus, .language-select:focus {
 #clearInputBtn {
     position: absolute;
     right: 12px;
-    bottom: 10px;          /* ⬅ matches mic baseline */
+    bottom: 10px;
     z-index: 4;
 }
 
 /* Compensate for textarea scrollbar */
 .textarea {
-    padding-right: calc(var(--spacing-xl) + 28px); /* scrollbar + button space */
+    padding-right: calc(var(--spacing-xl) + 28px);
 }
 /* =====================================================
    FIXES FOR ALL PROBLEMS - APPEND TO EXISTING FILE
@@ -2867,7 +2923,7 @@ select:focus, .language-select:focus {
 
 .history-section {
   position: fixed !important;
-  top: 80px;              /* below header */
+  top: 80px;
   right: 20px;
   width: 420px;
   max-height: calc(100vh - 120px);
@@ -2914,12 +2970,12 @@ select:focus, .language-select:focus {
 
 .ranking-explanation-box {
   position: relative;
-  background: var(--card-bg);              /* 🔥 theme aware */
+  background: var(--card-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
-  padding: 14px 16px 42px 16px;             /* space for metrics btn */
+  padding: 14px 16px 42px 16px;
   box-shadow: var(--shadow);
   font-size: var(--font-size-sm);
 }
@@ -2935,23 +2991,6 @@ select:focus, .language-select:focus {
   padding: 4px 12px;
   margin-bottom: 6px;
   border-radius: 999px;
-
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-
-  white-space: nowrap;
-}
-.ranking-explain-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  margin-bottom: 6px;
-  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -2959,120 +2998,6 @@ select:focus, .language-select:focus {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.35);
   white-space: nowrap;
-}
-
-/* =========================================
-   INPUT LABEL ROW FIX - Move bulb to right side
-   ========================================= */
-
-.input-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-    position: relative;
-}
-
-.input-label {
-    margin-bottom: 0;
-    flex: 1;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-/* Reduce bulb button size and move to right */
-.need-inspiration-btn {
-    width: auto !important; /* Override the 7% width */
-    padding: 8px 12px !important; /* Reduce padding */
-    margin-top: 0 !important; /* Remove top margin */
-    font-size: var(--font-size-xs) !important; /* Smaller font */
-    height: 32px !important; /* Fixed height */
-    min-width: 90px !important; /* Minimum width */
-    flex-shrink: 0; /* Prevent shrinking */
-}
-
-/* Make the bulb icon smaller */
-.need-inspiration-btn i {
-    font-size: var(--font-size-sm) !important; /* Smaller icon */
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-    .need-inspiration-btn {
-        padding: 6px 12px !important;
-        height: 32px !important;
-        min-width: 80px !important;
-    }
-    
-    .need-inspiration-btn i {
-        font-size: var(--font-size-xs) !important;
-    }
-    
-    .input-label {
-        font-size: var(--font-size-xs);
-    }
-}
-
-/* Extra small screens */
-@media (max-width: 480px) {
-    .input-label-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .need-inspiration-btn {
-        align-self: flex-end;
-        width: 100% !important;
-        justify-content: center;
-    }
-    
-    .input-label {
-        width: 100%;
-    }
-}
-/* Add these lines at the end of your CSS */
-
-/* 1. Ensure label has proper spacing */
-.input-label {
-    margin-bottom: 12px !important;
-    display: block;
-}
-
-/* 2. Prevent mobile stretching */
-@media (max-width: 480px) {
-    .input-label-row {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-    }
-    
-    .need-inspiration-btn {
-        width: auto !important;
-        
-        min-width: 90px !important;
-        margin-left: auto !important; /* Push to right */
-    }
-}
-
-/* 3. Slightly reduce button size if still too big */
-.need-inspiration-btn {
-    padding: 6px 14px !important; /* Slightly smaller */
-    height: 34px !important; /* Slightly shorter */
-}
-/* Usage hint – highlighted */
-.usage-hint {
-    margin: 8px 0 12px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #fbbf24; /* warm yellow highlight */
-    background: rgba(251, 191, 36, 0.12);
-    padding: 8px 12px;
-    border-radius: 6px;
-    border-left: 4px solid #f59e0b;
-    letter-spacing: 0.2px;
 }
 
 /* Sticky action bar – always visible */
