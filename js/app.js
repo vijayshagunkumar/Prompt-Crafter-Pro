@@ -1963,28 +1963,74 @@ viewHistoryItem(id) {
         }
     }
 
-    handleKeyboardShortcuts(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            if (this.elements.stickyPrepareBtn && !this.elements.stickyPrepareBtn.disabled) {
-                this.preparePrompt();
-            }
-        }
-        
-        if (e.key === 'Escape') {
-            if (this.state.isEditorOpen) {
-                this.closeFullScreenEditor();
-            }
-            
-            if (this.state.inspirationPanelOpen) {
-                this.closeInspirationPanel();
-            }
-            
-            if (this.elements.historySection && this.elements.historySection.classList.contains('active')) {
-                this.closeHistory();
-            }
+handleKeyboardShortcuts(e) {
+    const tag = e.target.tagName?.toLowerCase();
+
+    // ❌ Do not trigger shortcuts while typing
+    if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) {
+        return;
+    }
+
+    /* =========================
+       Ctrl / Cmd + Enter
+       ========================= */
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (this.elements.stickyPrepareBtn && !this.elements.stickyPrepareBtn.disabled) {
+            this.preparePrompt();
         }
     }
+
+    /* =========================
+       ALT + P → Prepare Prompt
+       ========================= */
+    if (e.altKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+
+        if (this.elements.stickyPrepareBtn && !this.elements.stickyPrepareBtn.disabled) {
+            this.preparePrompt();
+            this.showNotification('⚡ Prepare Prompt (Alt + P)', 'info');
+        }
+        return;
+    }
+
+    /* =========================
+       ALT + T → Open AI Tool
+       ========================= */
+    if (e.altKey && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+
+        const toolBtn =
+            document.querySelector('.platform-card.selected') ||
+            document.querySelector('.platform-card');
+
+        if (toolBtn) {
+            toolBtn.click();
+            toolBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            this.showNotification('🚀 AI Tool opened (Alt + T)', 'info');
+        } else {
+            this.showNotification('Generate a prompt first', 'warning');
+        }
+        return;
+    }
+
+    /* =========================
+       ESC key handling
+       ========================= */
+    if (e.key === 'Escape') {
+        if (this.state.isEditorOpen) {
+            this.closeFullScreenEditor();
+        }
+
+        if (this.state.inspirationPanelOpen) {
+            this.closeInspirationPanel();
+        }
+
+        if (this.elements.historySection?.classList.contains('active')) {
+            this.closeHistory();
+        }
+    }
+}
 
     updateUI() {
         this.updateButtonStates();
