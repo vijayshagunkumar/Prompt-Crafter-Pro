@@ -3200,3 +3200,78 @@ select:focus, .language-select:focus {
         display: block !important;
     }
 }
+
+/* ============================================
+   FIX: Reduce space between textarea and button
+   AND Increase textarea size
+   ============================================ */
+
+/* 1. Reduce textarea container margin */
+.textarea-container {
+    margin-bottom: var(--spacing-md) !important;
+}
+
+/* 2. Increase textarea height and make it responsive */
+.textarea {
+    min-height: 200px !important; /* Increased from 180px */
+    padding: var(--spacing-xl) var(--spacing-xl) calc(var(--spacing-xl) + 40px) !important;
+    resize: vertical;
+    max-height: 500px; /* Maximum height */
+    transition: min-height var(--transition-base);
+}
+
+/* 3. Make textarea taller on larger screens */
+@media (min-width: 768px) {
+    .textarea {
+        min-height: 220px !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .textarea {
+        min-height: 240px !important;
+    }
+}
+
+/* 4. Reduce margin above inspiration container if visible */
+.inspiration-container {
+    margin-top: var(--spacing-sm) !important;
+}
+
+/* 5. When inspiration panel is expanded, adjust spacing */
+.inspiration-panel.expanded + .action-bar {
+    margin-top: var(--spacing-md) !important;
+}
+
+/* 6. Adjust the action bar spacing */
+.action-bar {
+    margin-top: var(--spacing-lg) !important;
+    padding-top: var(--spacing-md) !important;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 7. For mobile, ensure textarea is still usable */
+@media (max-width: 768px) {
+    .textarea {
+        min-height: 180px !important; /* Slightly reduced for mobile */
+    }
+    
+    .action-bar {
+        margin-top: var(--spacing-md) !important;
+    }
+}
+
+/* 8. When textarea is focused, make it slightly taller */
+.textarea:focus {
+    min-height: 220px !important;
+}
+
+/* 9. Fullscreen editor textarea should be even larger */
+.editor-textarea {
+    min-height: calc(100vh - 200px) !important;
+}
+
+/* 10. Adjust clear button position for larger textarea */
+.textarea-controls {
+    bottom: 12px !important; /* Adjusted for taller textarea */
+}
