@@ -73,7 +73,10 @@
                     
                     <div class="header-actions">
                         <!-- ✅ ADDED: Metrics Button (CRITICAL MISSING ELEMENT) -->
-                        
+                        <button id="metricsBtn" class="action-btn glass-effect" title="Performance Metrics">
+                            <i class="fas fa-chart-line"></i>
+                            <span class="action-btn-tooltip">Metrics</span>
+                        </button>
                         
                         <!-- History Button -->
                         <button id="historyBtn" class="action-btn glass-effect" title="Prompt History">
@@ -111,15 +114,14 @@
                     </div>
                     
                     <div class="input-label-row">
-    <div class="input-label">
-        What would you like the AI to help you with?
-    </div>
+                        <div class="input-label">
+                            What would you like the AI to help you with?
+                        </div>
 
-    <button id="needInspirationBtn" class="need-inspiration-btn" title="Need Inspiration">
-        <i class="fas fa-lightbulb"></i>
-    </button>
-</div>
-
+                        <button id="needInspirationBtn" class="need-inspiration-btn" title="Need Inspiration">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                    </div>
                     
                     <div class="textarea-container">
                         <!-- Character Counter (Top-right corner) -->
@@ -161,10 +163,6 @@
                     
                     <!-- Need Inspiration Button and Panel - IMPROVED DESIGN -->
                     <div class="inspiration-container">
-                        <button id="needInspirationBtn" class="need-inspiration-btn">
-                            <i class="fas fa-lightbulb"></i>
-                        </button>
-                        
                         <!-- Inspiration Panel with border -->
                         <div class="inspiration-panel" id="inspirationPanel">
                             <div class="inspiration-header">
