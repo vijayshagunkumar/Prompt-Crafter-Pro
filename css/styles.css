@@ -3051,6 +3051,7 @@ select:focus, .language-select:focus {
     
     .need-inspiration-btn {
         width: auto !important;
+        
         min-width: 90px !important;
         margin-left: auto !important; /* Push to right */
     }
@@ -3061,3 +3062,5 @@ select:focus, .language-select:focus {
     padding: 6px 14px !important; /* Slightly smaller */
     height: 34px !important; /* Slightly shorter */
 }
+
+
