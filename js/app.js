@@ -1966,23 +1966,14 @@ viewHistoryItem(id) {
 handleKeyboardShortcuts(e) {
     const tag = e.target.tagName?.toLowerCase();
 
-    // ❌ Do not trigger shortcuts while typing
-    if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) {
-        return;
-    }
-
-    /* =========================
-       Ctrl / Cmd + Enter
-       ========================= */
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        if (this.elements.stickyPrepareBtn && !this.elements.stickyPrepareBtn.disabled) {
-            this.preparePrompt();
-        }
-    }
+    const isTyping =
+        tag === 'input' ||
+        tag === 'textarea' ||
+        e.target.isContentEditable;
 
     /* =========================
        ALT + P → Prepare Prompt
+       (ALLOW while typing)
        ========================= */
     if (e.altKey && e.key.toLowerCase() === 'p') {
         e.preventDefault();
@@ -1992,6 +1983,19 @@ handleKeyboardShortcuts(e) {
             this.showNotification('⚡ Prepare Prompt (Alt + P)', 'info');
         }
         return;
+    }
+
+    // Block other shortcuts while typing
+    if (isTyping) return;
+
+    /* =========================
+       Ctrl / Cmd + Enter
+       ========================= */
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (this.elements.stickyPrepareBtn && !this.elements.stickyPrepareBtn.disabled) {
+            this.preparePrompt();
+        }
     }
 
     /* =========================
@@ -2018,19 +2022,14 @@ handleKeyboardShortcuts(e) {
        ESC key handling
        ========================= */
     if (e.key === 'Escape') {
-        if (this.state.isEditorOpen) {
-            this.closeFullScreenEditor();
-        }
-
-        if (this.state.inspirationPanelOpen) {
-            this.closeInspirationPanel();
-        }
-
+        if (this.state.isEditorOpen) this.closeFullScreenEditor();
+        if (this.state.inspirationPanelOpen) this.closeInspirationPanel();
         if (this.elements.historySection?.classList.contains('active')) {
             this.closeHistory();
         }
     }
 }
+
 
     updateUI() {
         this.updateButtonStates();
