@@ -2984,11 +2984,11 @@ select:focus, .language-select:focus {
 /* Reduce bulb button size and move to right */
 .need-inspiration-btn {
     width: auto !important; /* Override the 7% width */
-    padding: 8px 16px !important; /* Reduce padding */
+    padding: 8px 12px !important; /* Reduce padding */
     margin-top: 0 !important; /* Remove top margin */
     font-size: var(--font-size-xs) !important; /* Smaller font */
     height: 32px !important; /* Fixed height */
-    min-width: 100px !important; /* Minimum width */
+    min-width: 90px !important; /* Minimum width */
     flex-shrink: 0; /* Prevent shrinking */
 }
 
