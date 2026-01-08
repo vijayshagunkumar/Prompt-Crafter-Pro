@@ -1530,7 +1530,17 @@ Focus on practical insights that drive decision-making.`,
 4. Discussing limitations and implications
 5. Suggesting areas for future research
 
-Keep the summary concise yet comprehensive.`
+Keep the summary concise yet comprehensive.`,
+            
+            // 🔥 ADDED: Business Strategy template
+            strategy: `Develop a comprehensive business strategy for an organization. The strategy should:
+1. Define vision, mission, and long-term objectives
+2. Analyze market, customers, and competitors
+3. Identify value propositions and differentiators
+4. Outline growth and expansion plans
+5. Address financial and operational considerations
+6. Highlight risks and mitigation strategies
+7. Provide clear, actionable recommendations`
         };
         
         const example = examples[type] || '';
