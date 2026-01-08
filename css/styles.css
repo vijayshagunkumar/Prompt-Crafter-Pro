@@ -3074,3 +3074,18 @@ select:focus, .language-select:focus {
     border-left: 4px solid #f59e0b;
     letter-spacing: 0.2px;
 }
+
+/* Sticky action bar – always visible */
+.action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+    background: linear-gradient(
+        to top,
+        rgba(15, 23, 42, 0.95),
+        rgba(15, 23, 42, 0.75)
+    );
+    backdrop-filter: blur(8px);
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
