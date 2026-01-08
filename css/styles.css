@@ -3014,3 +3014,84 @@ select:focus, .language-select:focus {
     padding: 10px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
+/* ============================================
+   SPACE REDUCTION - HEADER TO TEXT AREA
+   ============================================ */
+
+/* 1. Reduce header bottom margin */
+.app-header {
+    margin-bottom: var(--spacing-md) !important;
+    padding: var(--spacing-md) 0 !important;
+}
+
+/* 2. Reduce header content spacing */
+.header-top {
+    margin-bottom: var(--spacing-md) !important;
+}
+
+/* 3. Reduce main container gap */
+.app-container {
+    gap: var(--spacing-lg) !important;
+}
+
+/* 4. Reduce card padding */
+.card {
+    padding: var(--spacing-lg) !important;
+}
+
+/* 5. Reduce step header spacing */
+.step-header {
+    margin-bottom: var(--spacing-lg) !important;
+    padding-bottom: var(--spacing-md) !important;
+}
+
+/* 6. Reduce textarea container margin */
+.textarea-container {
+    margin-bottom: var(--spacing-md) !important;
+}
+
+/* 7. Reduce inspiration container margin */
+.inspiration-container {
+    margin-top: var(--spacing-sm) !important;
+}
+
+/* 8. Additional spacing reduction for text area */
+.textarea {
+    min-height: 160px !important; /* Reduced from 180px */
+    padding: var(--spacing-lg) var(--spacing-lg) calc(var(--spacing-lg) + 40px) !important;
+}
+
+/* 9. Reduce workflow highlight margin */
+.workflow-highlight {
+    margin-top: 4px !important;
+    padding: 6px 10px !important;
+    font-size: 0.85rem !important;
+}
+
+/* 10. Reduce logo text margin */
+.logo-text p {
+    margin-bottom: 2px !important;
+}
+
+/* 11. Compact mode for smaller screens */
+@media (max-width: 768px) {
+    .app-header {
+        margin-bottom: var(--spacing-sm) !important;
+        padding: var(--spacing-sm) 0 !important;
+    }
+    
+    .card {
+        padding: var(--spacing-md) !important;
+    }
+    
+    .step-header {
+        margin-bottom: var(--spacing-md) !important;
+        padding-bottom: var(--spacing-sm) !important;
+    }
+    
+    .textarea {
+        min-height: 140px !important;
+        padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 40px) !important;
+    }
+}
+
