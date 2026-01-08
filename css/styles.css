@@ -3136,3 +3136,67 @@ select:focus, .language-select:focus {
         max-width: 300px !important;
     }
 }
+/* ============================================
+   FIX: Workflow text "→ Paste" breaking line
+   ============================================ */
+
+/* 1. REMOVE max-width constraint from logo text */
+.logo-text {
+    max-width: none !important; /* Remove the 400px limit */
+    min-width: 0 !important;
+    flex: 1 !important;
+}
+
+/* 2. Let the paragraph use all available width */
+.logo-text p {
+    max-width: none !important; /* Remove any width limit */
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+
+/* 3. Make workflow highlight use full available width */
+.workflow-highlight {
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    display: inline-block !important;
+    width: auto !important;
+}
+
+/* 4. Make logo use available space */
+.logo {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+/* 5. Reduce header actions width if they're taking too much space */
+.header-actions {
+    flex-shrink: 0 !important; /* Don't let buttons shrink */
+    min-width: fit-content !important;
+}
+
+/* 6. For very large screens, make text slightly smaller if needed */
+@media (min-width: 1400px) {
+    .logo-text p {
+        font-size: 0.95rem !important;
+    }
+    
+    .workflow-highlight {
+        font-size: 0.88rem !important;
+    }
+}
+
+/* 7. Mobile: allow wrapping naturally */
+@media (max-width: 768px) {
+    .logo-text p {
+        white-space: normal !important;
+        max-width: 280px !important;
+    }
+    
+    .workflow-highlight {
+        white-space: normal !important;
+        font-size: 0.8rem !important;
+        display: block !important;
+    }
+}
