@@ -645,6 +645,7 @@ setupVoiceCallbacks() {
             if (this.elements.outputSection) {
                 this.elements.outputSection.classList.remove('visible');
             }
+          
             this.state.selectedPlatform = null;
         }
 
@@ -740,7 +741,13 @@ if (!validation.valid && validation.correctedModel) {
                 if (this.elements.outputSection) {
                     this.elements.outputSection.classList.add('visible');
                 }
-                
+                // ✅ UX FIX: Auto-scroll to generated prompt (Step 2)
+setTimeout(() => {
+    this.elements.outputSection?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}, 150);
                 if (this.elements.platformsGrid && this.elements.platformsEmptyState) {
                     this.platformIntegrations.renderPlatforms(this.elements.platformsGrid);
                 }
