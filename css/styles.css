@@ -2987,7 +2987,7 @@ select:focus, .language-select:focus {
     padding: 8px 16px !important; /* Reduce padding */
     margin-top: 0 !important; /* Remove top margin */
     font-size: var(--font-size-xs) !important; /* Smaller font */
-    height: 36px !important; /* Fixed height */
+    height: 32px !important; /* Fixed height */
     min-width: 100px !important; /* Minimum width */
     flex-shrink: 0; /* Prevent shrinking */
 }
